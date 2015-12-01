@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-project</artifactId>
+            <artifactId>che-core-api-machine</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
@@ -107,11 +107,6 @@
         <dependency>
             <groupId>com.jayway.restassured</groupId>
             <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-machine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -12,11 +12,9 @@ package org.eclipse.che.api.factory.server;
 
 import com.jayway.restassured.response.Response;
 
-import org.eclipse.che.api.account.server.dao.AccountDao;
-import org.eclipse.che.api.account.server.dao.Member;
-import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
@@ -26,7 +24,10 @@ import org.eclipse.che.api.factory.shared.dto.Author;
 import org.eclipse.che.api.factory.shared.dto.Button;
 import org.eclipse.che.api.factory.shared.dto.ButtonAttributes;
 import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.project.server.ProjectManager;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.workspace.server.WorkspaceManager;
+import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
+import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
@@ -69,6 +70,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static java.lang.String.format;
 import static java.net.URLEncoder.encode;
 import static javax.ws.rs.core.Response.Status;
+import static org.eclipse.che.api.workspace.server.DtoConverter.asDto;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySetOf;
@@ -95,9 +97,6 @@ public class FactoryServiceTest {
     private FactoryStore factoryStore;
 
     @Mock
-    private AccountDao accountDao;
-
-    @Mock
     private FactoryCreateValidator createValidator;
 
     @Mock
@@ -107,7 +106,7 @@ public class FactoryServiceTest {
     private FactoryEditValidator editValidator;
 
     @Mock
-    private ProjectManager projectManager;
+    private WorkspaceManager workspaceManager;
 
     private FactoryBuilder factoryBuilder;
 
@@ -121,15 +120,12 @@ public class FactoryServiceTest {
         doNothing().when(factoryBuilder).checkValid(any(Factory.class));
         factoryService = new FactoryService("https://codenvy.com/api",
                                             factoryStore,
-                                            accountDao,
                                             createValidator,
                                             acceptValidator,
                                             editValidator,
                                             new LinksHelper(),
                                             factoryBuilder,
-                                            projectManager);
-
-        when(accountDao.getByMember(anyString())).thenReturn(Arrays.asList(new Member().withRoles(Arrays.asList("account/owner"))));
+                                            workspaceManager);
     }
 
     @Filter
@@ -161,7 +157,7 @@ public class FactoryServiceTest {
         // then
         assertEquals(response.getStatusCode(), 200);
         Factory responseFactory = dto.createDtoFromJson(response.getBody()
-                                                                   .asInputStream(), Factory.class);
+                                                                .asInputStream(), Factory.class);
         responseFactory.setLinks(Collections.<Link>emptyList());
         assertEquals(responseFactory, expected);
     }
@@ -353,17 +349,7 @@ public class FactoryServiceTest {
     @Test
     public void shouldBeAbleToSaveFactoryWithSetImageFieldButWithOutImageContent() throws Exception {
         // given
-        Factory factory  =  dto.createDto(Factory.class)
-                               .withV("4.0")
-                               .withWorkspace(dto.createDto(WorkspaceConfigDto.class)
-                                                 .withProjects(Collections.singletonList(dto.createDto(
-                                                         ProjectConfigDto.class)
-                                                                                            .withSource(
-                                                                                                    dto.createDto(SourceStorageDto.class)
-                                                                                                       .withType("git")
-                                                                                                       .withLocation(
-                                                                                                               "http://github.com/codenvy/platform-api.git")))));
-
+        Factory factory  =  prepareFactoryWithGivenStorage("git", "http://github.com/codenvy/platform-api.git");
 
         FactorySaveAnswer factorySaveAnswer = new FactorySaveAnswer();
         when(factoryStore.saveFactory(any(Factory.class), anySetOf(FactoryImage.class))).then(factorySaveAnswer);
@@ -382,16 +368,7 @@ public class FactoryServiceTest {
     @Test
     public void shouldReturnStatus409OnSaveFactoryIfImageHasUnsupportedMediaType() throws Exception {
         // given
-        Factory factory  =  dto.createDto(Factory.class)
-                               .withV("4.0")
-                               .withWorkspace(dto.createDto(WorkspaceConfigDto.class)
-                                                 .withProjects(Collections.singletonList(dto.createDto(
-                                                         ProjectConfigDto.class)
-                                                                                            .withSource(
-                                                                                                    dto.createDto(SourceStorageDto.class)
-                                                                                                       .withType("git")
-                                                                                                       .withLocation(
-                                                                                                               "http://github.com/codenvy/platform-api.git")))));
+        Factory factory  =  prepareFactoryWithGivenStorage("git", "http://github.com/codenvy/platform-api.git");
 
         Path path = Paths.get(Thread.currentThread().getContextClassLoader().getResource("100x100_image.jpeg").toURI());
 
@@ -510,11 +487,11 @@ public class FactoryServiceTest {
                                                                                                           .getFactory(anyString());
 
         // when, then
-        Response response = given().//
-                expect().//
-                statusCode(404).//
-                when().//
-                get(SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
+        Response response = given()
+                .expect()
+                .statusCode(404)
+                .when()
+                .get(SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
 
         assertEquals(dto.createDtoFromJson(response.getBody().asString(), ServiceError.class).getMessage(),
                      format("Factory with id %s is not found.", ILLEGAL_FACTORY_ID));
@@ -564,11 +541,11 @@ public class FactoryServiceTest {
         when(factoryStore.getFactoryImages(CORRECT_FACTORY_ID, null)).thenReturn(new HashSet<>());
 
         // when, then
-        Response response = given().//
-                expect().//
-                statusCode(404).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/image?imgId=illegalImageId");
+        Response response = given()
+                .expect()
+                .statusCode(404)
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/image?imgId=illegalImageId");
 
         assertEquals(dto.createDtoFromJson(response.getBody().asString(), ServiceError.class).getMessage(),
                      format("Image with id %s is not found.", "illegalImageId"));
@@ -581,11 +558,11 @@ public class FactoryServiceTest {
                                                                                                       .getFactoryImages(anyString(), anyString());
 
         // when, then
-        Response response = given().//
-                expect().//
-                statusCode(404).//
-                when().//
-                get(SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID + "/image?imgId=ImageId");
+        Response response = given()
+                .expect()
+                .statusCode(404)
+                .when()
+                .get(SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID + "/image?imgId=ImageId");
 
         assertEquals(dto.createDtoFromJson(response.getBody().asString(), ServiceError.class).getMessage(),
                      format("Factory with id %s is not found.", ILLEGAL_FACTORY_ID));
@@ -598,13 +575,13 @@ public class FactoryServiceTest {
                 (Factory.class));
 
         // when, then
-        given().//
-                expect().//
-                statusCode(200).//
-                contentType(MediaType.TEXT_PLAIN).//
-                body(equalTo(getServerUrl(context) + "/factory?id=" + CORRECT_FACTORY_ID)).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=url");
+        given()
+                .expect()
+                .statusCode(200)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(equalTo(getServerUrl(context) + "/factory?id=" + CORRECT_FACTORY_ID))
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=url");
     }
 
     @Test
@@ -614,13 +591,13 @@ public class FactoryServiceTest {
                 (Factory.class));
 
         // when, then
-        given().//
-                expect().//
-                statusCode(200).//
-                contentType(MediaType.TEXT_PLAIN).//
-                body(equalTo(getServerUrl(context) + "/factory?id=" + CORRECT_FACTORY_ID)).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet");
+        given()
+                .expect()
+                .statusCode(200)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(equalTo(getServerUrl(context) + "/factory?id=" + CORRECT_FACTORY_ID))
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet");
     }
 
     @Test
@@ -629,12 +606,12 @@ public class FactoryServiceTest {
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(dto.createDto(Factory.class));
 
         // when, then
-        Response response = given().//
-                expect().//
-                statusCode(200).//
-                contentType(MediaType.TEXT_PLAIN).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=html");
+        Response response = given()
+                .expect()
+                .statusCode(200)
+                .contentType(MediaType.TEXT_PLAIN)
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=html");
 
         assertEquals(response.body().asString(), "<script type=\"text/javascript\" src=\"" + getServerUrl(context) +
                                                  "/factory/resources/factory.js?" + CORRECT_FACTORY_ID + "\"></script>");
@@ -663,18 +640,18 @@ public class FactoryServiceTest {
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(factory);
         when(factoryStore.getFactoryImages(CORRECT_FACTORY_ID, null)).thenReturn(new HashSet<>(Arrays.asList(image)));
         // when, then
-        given().//
-                expect().//
-                statusCode(200).//
-                contentType(MediaType.TEXT_PLAIN).//
-                body(
+        given()
+                .expect()
+                .statusCode(200)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(
                 equalTo("[![alt](" + getServerUrl(context) + "/api/factory/" + CORRECT_FACTORY_ID + "/image?imgId=" +
                         imageName + ")](" +
                         getServerUrl(context) + "/factory?id=" +
                         CORRECT_FACTORY_ID + ")")
-                    ).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
+                    )
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
     }
 
 
@@ -693,18 +670,18 @@ public class FactoryServiceTest {
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(factory);
         when(factoryStore.getFactoryImages(CORRECT_FACTORY_ID, null)).thenReturn(new HashSet<>(Arrays.asList(image)));
         // when, then
-        given().//
-                expect().//
-                statusCode(200).//
-                contentType(MediaType.TEXT_PLAIN).//
-                body(
-                equalTo("[![alt](" + getServerUrl(context) + "/api/factory/" + CORRECT_FACTORY_ID + "/image?imgId=" +
-                        imageName + ")](" +
-                        getServerUrl(context) + "/factory?id=" +
-                        CORRECT_FACTORY_ID + ")")
-                    ).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
+        given()
+                .expect()
+                .statusCode(200)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(
+                        equalTo("[![alt](" + getServerUrl(context) + "/api/factory/" + CORRECT_FACTORY_ID + "/image?imgId=" +
+                                imageName + ")](" +
+                                getServerUrl(context) + "/factory?id=" +
+                                CORRECT_FACTORY_ID + ")")
+                     )
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
     }
 
     @Test
@@ -719,18 +696,18 @@ public class FactoryServiceTest {
 
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(factory);
         // when, then
-        given().//
-                expect().//
-                statusCode(200).//
-                contentType(MediaType.TEXT_PLAIN).//
-                body(
-                equalTo("[![alt](" + getServerUrl(context) + "/factory/resources/factory-white.png)](" + getServerUrl
-                        (context) +
-                        "/factory?id=" +
-                        CORRECT_FACTORY_ID + ")")
-                    ).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
+        given()
+                .expect()
+                .statusCode(200)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(
+                        equalTo("[![alt](" + getServerUrl(context) + "/factory/resources/factory-white.png)](" + getServerUrl
+                                (context) +
+                                "/factory?id=" +
+                                CORRECT_FACTORY_ID + ")")
+                     )
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
     }
 
 
@@ -740,11 +717,11 @@ public class FactoryServiceTest {
         Factory factory = prepareFactoryWithGivenStorage("git", "http://github.com/codenvy/platform-api.git").withId(CORRECT_FACTORY_ID);
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(factory);
         // when, then
-        Response response = given().//
-                expect().//
-                statusCode(409).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
+        Response response = given()
+                .expect()
+                .statusCode(409)
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
 
         assertEquals(dto.createDtoFromJson(response.getBody().asInputStream(), ServiceError.class).getMessage(),
                      "Unable to generate markdown snippet for factory without button");
@@ -762,11 +739,11 @@ public class FactoryServiceTest {
 
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(factory);
         // when, then
-        Response response = given().//
-                expect().//
-                statusCode(409).//
-                when().//
-                get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
+        Response response = given()
+                .expect()
+                .statusCode(409)
+                .when()
+                .get(SERVICE_PATH + "/" + CORRECT_FACTORY_ID + "/snippet?type=markdown");
 
         assertEquals(dto.createDtoFromJson(response.getBody().asInputStream(), ServiceError.class).getMessage(),
                      "Unable to generate markdown snippet with nologo button and empty color");
@@ -779,11 +756,11 @@ public class FactoryServiceTest {
                                                                                                       .getFactory(anyString());
 
         // when, then
-        Response response = given().//
-                expect().//
-                statusCode(404).//
-                when().//
-                get(SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID + "/snippet?type=url");
+        Response response = given()
+                .expect()
+                .statusCode(404)
+                .when()
+                .get(SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID + "/snippet?type=url");
 
         assertEquals(dto.createDtoFromJson(response.getBody().asString(), ServiceError.class).getMessage(),
                      "Factory URL with id " + ILLEGAL_FACTORY_ID + " is not found.");
@@ -803,10 +780,10 @@ public class FactoryServiceTest {
 
         // when, then
         Response response =
-                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).//
-                        param("id", CORRECT_FACTORY_ID).//
-                        when().//
-                        delete("/private" + SERVICE_PATH + "/" + CORRECT_FACTORY_ID);
+                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                       .param("id", CORRECT_FACTORY_ID)
+                       .when()
+                       .delete("/private" + SERVICE_PATH + "/" + CORRECT_FACTORY_ID);
 
 
         assertEquals(response.getStatusCode(), 204);
@@ -826,11 +803,10 @@ public class FactoryServiceTest {
 
         // when, then
         Response response =
-                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).//
-                        param("id", ILLEGAL_FACTORY_ID).//
-                        when().//
-                        delete("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
-
+                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                       .param("id", ILLEGAL_FACTORY_ID)
+                       .when()
+                       .delete("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
 
         assertEquals(response.getStatusCode(), 404);
 
@@ -887,11 +863,11 @@ public class FactoryServiceTest {
 
         // when, then
         Response response =
-                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).//
-                        contentType(MediaType.APPLICATION_JSON).
-                               body(JsonHelper.toJson(factory))
-                       .when().//
-                        put("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
+                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .body(JsonHelper.toJson(factory))
+                       .when()
+                       .put("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
 
         assertEquals(response.getStatusCode(), 404);
         assertEquals(dto.createDtoFromJson(response.getBody().asString(), ServiceError.class).getMessage(),
@@ -909,10 +885,10 @@ public class FactoryServiceTest {
 
         // when, then
         Response response =
-                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).//
-                        contentType(MediaType.APPLICATION_JSON).
-                               when().//
-                        put("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
+                given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                       .contentType(MediaType.APPLICATION_JSON)
+                       .when()
+                       .put("/private" + SERVICE_PATH + "/" + ILLEGAL_FACTORY_ID);
         assertEquals(response.getStatusCode(), 500);
         assertEquals(dto.createDtoFromJson(response.getBody().asString(), ServiceError.class).getMessage(),
                      format("The updating factory shouldn't be null"));
@@ -947,17 +923,6 @@ public class FactoryServiceTest {
         return "http://localhost:" + serverPort;
     }
 
-    @Test
-    public void shouldRespondNotFoundIfProjectIsNotExist() throws ServerException, ForbiddenException, NotFoundException {
-
-        given().//
-                expect().//
-                statusCode(404).//
-                when().//
-                get(SERVICE_PATH + "/ws/projectName");
-        verify(projectManager).getProject(eq("ws"), eq("projectName"));
-
-    }
 
     @Test
     public void shouldNotFindWhenNoAttributesProvided() throws Exception {
@@ -982,13 +947,122 @@ public class FactoryServiceTest {
                 Arrays.asList(factory, factory));
 
         // when
-        Response response = given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD).
-                when().get("/private" + SERVICE_PATH + "/find?creator.accountid=testorg");
+        Response response = given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                                   .when().get("/private" + SERVICE_PATH + "/find?creator.accountid=testorg");
 
         // then
         assertEquals(response.getStatusCode(), 200);
         List<Link> responseLinks = dto.createListDtoFromJson(response.getBody().asString(), Link.class);
         assertEquals(responseLinks.size(), 2);
+    }
+
+
+    @Test
+    public void shouldGenerateFactoryJsonIncludeAllProjects() throws Exception {
+        // given
+        final String wsId = "workspace123234";
+        UsersWorkspaceImpl.UsersWorkspaceImplBuilder ws = UsersWorkspaceImpl.builder();
+        ws.setId(wsId);
+        ws.setProjects(Arrays.asList(dto.createDto(ProjectConfigDto.class)
+                                        .withSource(dto.createDto(SourceStorageDto.class)
+                                                       .withType("git")
+                                                       .withLocation("location")),
+                                     dto.createDto(ProjectConfigDto.class)
+                                        .withSource(dto.createDto(SourceStorageDto.class)
+                                                       .withType("git")
+                                                       .withLocation("location"))));
+        ws.setName("wsname");
+        ws.setOwner("id-2314");
+        ws.setDefaultEnvName("env1");
+        ws.setEnvironments(Collections.singletonMap("env1", dto.createDto(EnvironmentDto.class).withName("env1")));
+        ws.setStatus(WorkspaceStatus.RUNNING);
+        ws.setCommands(Collections.singletonList(
+                dto.createDto(CommandDto.class).withName("MCI").withType("mvn").withCommandLine("clean install")));
+
+        UsersWorkspaceImpl usersWorkspace = ws.build();
+        when(workspaceManager.getWorkspace(eq(wsId))).thenReturn(usersWorkspace);
+
+        // when
+        Response response = given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                .when().get("/private" + SERVICE_PATH + "/workspace/" + wsId);
+
+        // then
+        assertEquals(response.getStatusCode(), 200);
+        Factory result = dto.createDtoFromJson(response.getBody().asString(), Factory.class);
+        assertEquals(result.getWorkspace().getProjects().size(), 2);
+        assertEquals(result.getWorkspace().getName(), usersWorkspace.getName());
+        assertEquals(result.getWorkspace().getEnvironments().get("env1").toString(),
+                     asDto(usersWorkspace.getEnvironments().get("env1")).toString());
+        assertEquals(result.getWorkspace().getCommands().get(0), asDto(usersWorkspace.getCommands().get(0)));
+    }
+
+    @Test
+    public void shouldGenerateFactoryJsonIncludeGivenProjects() throws Exception {
+        // given
+        final String wsId = "workspace123234";
+        UsersWorkspaceImpl.UsersWorkspaceImplBuilder ws  = UsersWorkspaceImpl.builder();
+        ws.setId(wsId);
+        ws.setProjects(Arrays.asList(dto.createDto(ProjectConfigDto.class)
+                                        .withPath("/proj1")
+                                        .withSource(dto.createDto(SourceStorageDto.class)
+                                                       .withType("git")
+                                                       .withLocation("location")),
+                                     dto.createDto(ProjectConfigDto.class)
+                                        .withPath("/proj2")
+                                        .withSource(
+                                                dto.createDto(SourceStorageDto.class)
+                                                   .withType("git")
+                                                   .withLocation("location"))));
+        ws.setName("wsname");
+        ws.setOwner("id-2314");
+        ws.setEnvironments(Collections.singletonMap("env1", dto.createDto(EnvironmentDto.class).withName("env1")));
+        ws.setDefaultEnvName("env1");
+        ws.setStatus(WorkspaceStatus.RUNNING);
+        ws.setCommands(Collections.singletonList(
+                dto.createDto(CommandDto.class).withName("MCI").withType("mvn").withCommandLine("clean install")));
+
+        UsersWorkspaceImpl usersWorkspace = ws.build();
+        when(workspaceManager.getWorkspace(eq(wsId))).thenReturn(usersWorkspace);
+
+        // when
+        Response response = given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                .when().get("/private" + SERVICE_PATH + "/workspace/" + wsId + "?path=/proj1");
+
+        // then
+        assertEquals(response.getStatusCode(), 200);
+        Factory result = dto.createDtoFromJson(response.getBody().asString(), Factory.class);
+        assertEquals(result.getWorkspace().getProjects().size(), 1);
+    }
+
+
+    @Test
+    public void shouldNotGenerateFactoryIfNoProjectsWithSourceStorage() throws Exception {
+        // given
+        final String wsId = "workspace123234";
+        UsersWorkspaceImpl.UsersWorkspaceImplBuilder ws  = UsersWorkspaceImpl.builder();
+        ws.setId(wsId);
+        ws.setProjects(Arrays.asList(dto.createDto(ProjectConfigDto.class)
+                                        .withPath("/proj1"),
+                                     dto.createDto(
+                                             ProjectConfigDto.class)
+                                        .withPath("/proj2")));
+        ws.setName("wsname");
+        ws.setOwner("id-2314");
+        ws.setEnvironments(Collections.singletonMap("env1", dto.createDto(EnvironmentDto.class).withName("env1")));
+        ws.setDefaultEnvName("env1");
+        ws.setStatus(WorkspaceStatus.RUNNING);
+        ws.setCommands(Collections.singletonList(
+                dto.createDto(CommandDto.class).withName("MCI").withType("mvn").withCommandLine("clean install")));
+
+        UsersWorkspaceImpl usersWorkspace = ws.build();
+        when(workspaceManager.getWorkspace(eq(wsId))).thenReturn(usersWorkspace);
+
+        // when
+        Response response = given().auth().basic(JettyHttpServer.ADMIN_USER_NAME, JettyHttpServer.ADMIN_USER_PASSWORD)
+                .when().get("/private" + SERVICE_PATH + "/workspace/" + wsId);
+
+        // then
+        assertEquals(response.getStatusCode(), 409);
     }
 
 
