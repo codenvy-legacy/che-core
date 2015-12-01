@@ -32,7 +32,6 @@ import org.eclipse.che.api.vfs.server.observation.UpdateContentEvent;
 import org.eclipse.che.api.vfs.server.observation.UpdatePropertiesEvent;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.server.util.NotClosableInputStream;
-import org.eclipse.che.api.vfs.server.util.VirtualFileDefaults;
 import org.eclipse.che.api.vfs.server.util.ZipContent;
 import org.eclipse.che.api.vfs.shared.PropertyFilter;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
@@ -490,7 +489,7 @@ public class MemoryVirtualFile implements VirtualFile {
             }
         }
         if (child != null) {
-            if (!VirtualFileDefaults.isPathIgnored(child.getVirtualFilePath())) {
+            if (mountPoint.acceptPath(child.getVirtualFilePath())) {
                 // Don't check permissions for file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
                 // Need to work with 'misc.xml' independently to user.
                 if (!child.hasPermission(BasicPermissions.READ.value(), false)) {
@@ -544,7 +543,7 @@ public class MemoryVirtualFile implements VirtualFile {
         if (!isFile()) {
             throw new ForbiddenException(String.format("We were unable to update the content. Item '%s' is not a file. ", getPath()));
         }
-        if (!VirtualFileDefaults.isPathIgnored(getVirtualFilePath())) {
+        if (mountPoint.acceptPath(getVirtualFilePath())) {
             // Don't check permissions when update file ".codenvy/misc.xml". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(BasicPermissions.WRITE.value(), true)) {
@@ -1197,7 +1196,7 @@ public class MemoryVirtualFile implements VirtualFile {
         if (!isFolder()) {
             throw new ForbiddenException("Unable create new file. Item specified as parent is not a folder. ");
         }
-        if (!VirtualFileDefaults.isPathIgnored(getVirtualFilePath().newPath(name))) {
+        if (mountPoint.acceptPath(getVirtualFilePath().newPath(name))) {
             // Don't check permissions when create file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(BasicPermissions.WRITE.value(), true)) {

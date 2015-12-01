@@ -21,6 +21,7 @@ import org.eclipse.che.api.vfs.server.LazyIterator;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.PathLockFactory;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
@@ -36,7 +37,6 @@ import org.eclipse.che.api.vfs.server.observation.UpdatePropertiesEvent;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.server.util.DeleteOnCloseFileInputStream;
 import org.eclipse.che.api.vfs.server.util.NotClosableInputStream;
-import org.eclipse.che.api.vfs.server.util.VirtualFileDefaults;
 import org.eclipse.che.api.vfs.server.util.ZipContent;
 import org.eclipse.che.api.vfs.shared.PropertyFilter;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
@@ -281,6 +281,7 @@ public class FSMountPoint implements MountPoint {
     private final java.io.File     ioRoot;
     private final EventService     eventService;
     private final SearcherProvider searcherProvider;
+    private final SystemPathsFilter systemFilter;
 
     /* NOTE -- This does not related to virtual file system locking in any kind. -- */
     private final PathLockFactory pathLockFactory;
@@ -309,11 +310,12 @@ public class FSMountPoint implements MountPoint {
      *         virtual file system API.
      */
     @SuppressWarnings("unchecked")
-    FSMountPoint(String workspaceId, java.io.File ioRoot, EventService eventService, SearcherProvider searcherProvider) {
+    FSMountPoint(String workspaceId, java.io.File ioRoot, EventService eventService, SearcherProvider searcherProvider, SystemPathsFilter systemFilter) {
         this.workspaceId = workspaceId;
         this.ioRoot = ioRoot;
         this.eventService = eventService;
         this.searcherProvider = searcherProvider;
+        this.systemFilter = systemFilter;
 
         root = new VirtualFileImpl(ioRoot, Path.ROOT, pathToId(Path.ROOT), this);
         pathLockFactory = new PathLockFactory(FILE_LOCK_MAX_THREADS);
@@ -446,7 +448,7 @@ public class FSMountPoint implements MountPoint {
         final Path childPath = parent.getVirtualFilePath().newPath(name);
         final VirtualFileImpl child = new VirtualFileImpl(new java.io.File(parent.getIoFile(), name), childPath, pathToId(childPath), this);
         if (child.exists()) {
-            if (!VirtualFileDefaults.isPathIgnored(child.getVirtualFilePath())) {
+            if (systemFilter.accept(workspaceId, child.getVirtualFilePath())) {
                 // Don't check permissions for file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
                 // Need to work with 'misc.xml' independently to user.
                 if (!hasPermission(child, BasicPermissions.READ.value(), true)) {
@@ -511,7 +513,7 @@ public class FSMountPoint implements MountPoint {
         }
 
         final Path newPath = parent.getVirtualFilePath().newPath(name);
-        if (!VirtualFileDefaults.isPathIgnored(newPath)) {
+        if (systemFilter.accept(workspaceId, newPath)) {
             // Don't check permissions when create file "misc.xml" in folder ".codenvy". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(parent, BasicPermissions.WRITE.value(), true)) {
@@ -910,7 +912,7 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable update content. Item '%s' is not file. ", virtualFile.getPath()));
         }
 
-        if (!VirtualFileDefaults.isPathIgnored(virtualFile.getVirtualFilePath())) {
+        if (systemFilter.accept(workspaceId, virtualFile.getVirtualFilePath())) {
             // Don't check permissions when update file ".codenvy/misc.xml". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
             if (!hasPermission(virtualFile, BasicPermissions.WRITE.value(), true)) {

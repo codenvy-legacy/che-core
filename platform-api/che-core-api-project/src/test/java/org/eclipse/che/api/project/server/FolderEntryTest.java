@@ -11,6 +11,7 @@
 package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
@@ -21,6 +22,7 @@ import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -46,7 +48,7 @@ public class FolderEntryTest {
             public VirtualFileSystemUser getVirtualFileSystemUser() {
                 return new VirtualFileSystemUser(vfsUserName, vfsUserGroups);
             }
-        });
+        }, new SystemPathsFilter(Collections.singleton(new ProjectMiscPathFilter())));
         VirtualFile myVfRoot = mmp.getRoot();
         myVfProject = myVfRoot.createFolder("my_project");
         myVfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
