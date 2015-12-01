@@ -79,6 +79,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.eclipse.che.api.project.server.Constants.CODENVY_DIR;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * @author andrew00x
@@ -432,7 +433,7 @@ public final class DefaultProjectManager implements ProjectManager {
     public ProjectConfig getProjectConfig(Project project) throws ServerException, ProjectTypeConstraintException, ValueStorageException {
         ProjectConfigDto projectConfigDto = getProjectFromWorkspace(project.getWorkspace(), project.getPath());
         if (projectConfigDto == null) {
-            projectConfigDto = DtoFactory.getInstance().createDto(ProjectConfigDto.class);
+            projectConfigDto = newDto(ProjectConfigDto.class);
         }
 
         ProjectTypes types = new ProjectTypes(project, projectConfigDto.getType(), projectConfigDto.getMixins(), this);
@@ -472,12 +473,12 @@ public final class DefaultProjectManager implements ProjectManager {
             }
         }
 
-        return DtoFactory.getInstance()
-                         .createDto(ProjectConfigDto.class)
+        return DtoFactory.newDto(ProjectConfigDto.class)
                          .withDescription(projectConfigDto.getDescription())
                          .withType(types.getPrimary().getId())
                          .withAttributes(attributes)
                          .withMixins(types.mixinIds())
+                         .withSource(projectConfigDto.getSource())
                          .withModules(projectConfigDto.getModules());
     }
 
@@ -491,11 +492,18 @@ public final class DefaultProjectManager implements ProjectManager {
             getModulesRecursive(moduleConfig, modules);
         }
 
-        final ProjectConfigDto projectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+        SourceStorageDto storageDto = newDto(SourceStorageDto.class);
+        if (config.getSource() != null) {
+            storageDto.withType(config.getSource().getType())
+                      .withLocation(config.getSource().getLocation())
+                      .withParameters(config.getSource().getParameters());
+        }
+
+        final ProjectConfigDto projectConfig = newDto(ProjectConfigDto.class)
                                                          .withPath(project.getPath())
                                                          .withName(project.getName())
                                                          .withModules(modules)
-                                                         .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                         .withSource(storageDto);
 
         ProjectTypes types = new ProjectTypes(project, config.getType(), config.getMixins(), this);
         types.removeTransient();
@@ -580,15 +588,14 @@ public final class DefaultProjectManager implements ProjectManager {
             getModulesRecursive(config, modules);
         }
 
-        ModuleConfigDto module = DtoFactory.getInstance()
-                                           .createDto(ModuleConfigDto.class)
-                                           .withName(moduleConfig.getName())
-                                           .withPath(moduleConfig.getPath())
-                                           .withType(moduleConfig.getType())
-                                           .withModules(modules)
-                                           .withAttributes(moduleConfig.getAttributes())
-                                           .withDescription(moduleConfig.getDescription())
-                                           .withMixins(moduleConfig.getMixins());
+        ModuleConfigDto module = newDto(ModuleConfigDto.class)
+                .withName(moduleConfig.getName())
+                .withPath(moduleConfig.getPath())
+                .withType(moduleConfig.getType())
+                .withModules(modules)
+                .withAttributes(moduleConfig.getAttributes())
+                .withDescription(moduleConfig.getDescription())
+                .withMixins(moduleConfig.getMixins());
 
         projectModules.add(module);
     }
@@ -597,7 +604,7 @@ public final class DefaultProjectManager implements ProjectManager {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "getById")
                                       .build(wsId).toString();
-        final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("GET").withHref(href);
+        final Link link = newDto(Link.class).withMethod("GET").withHref(href);
 
         try {
             return HttpJsonHelper.request(UsersWorkspaceDto.class, link);
@@ -621,7 +628,7 @@ public final class DefaultProjectManager implements ProjectManager {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "update")
                                       .build(wsId).toString();
-        final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("PUT").withHref(href);
+        final Link link = newDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
             HttpJsonHelper.request(WorkspaceConfigDto.class, link, workspaceConfig);
@@ -634,7 +641,7 @@ public final class DefaultProjectManager implements ProjectManager {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "updateProject")
                                       .build(wsId).toString();
-        final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("PUT").withHref(href);
+        final Link link = newDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
             HttpJsonHelper.request(UsersWorkspaceDto.class, link, projectConfig);
@@ -642,7 +649,7 @@ public final class DefaultProjectManager implements ProjectManager {
             final String addProjectHref = UriBuilder.fromUri(apiEndpoint)
                                                     .path(WorkspaceService.class).path(WorkspaceService.class, "addProject")
                                                     .build(wsId).toString();
-            final Link addProjectLink = DtoFactory.getInstance().createDto(Link.class).withMethod("POST").withHref(addProjectHref);
+            final Link addProjectLink = newDto(Link.class).withMethod("POST").withHref(addProjectHref);
             try {
                 HttpJsonHelper.request(UsersWorkspaceDto.class, addProjectLink, projectConfig);
             } catch (IOException | ApiException e1) {
@@ -820,10 +827,7 @@ public final class DefaultProjectManager implements ProjectManager {
                 }
 
                 if (!attributes.isEmpty()) {
-                    estimations.add(DtoFactory.getInstance().createDto(SourceEstimation.class)
-                                              .withType(type.getId())
-                                              .withAttributes(attributes));
-
+                    estimations.add(newDto(SourceEstimation.class).withType(type.getId()).withAttributes(attributes));
                     ProjectType projectType = projectTypeRegistry.getProjectType(type.getId());
                     if (projectType.canBePrimary()) {
                         isPresentPrimaryType = true;
@@ -834,8 +838,7 @@ public final class DefaultProjectManager implements ProjectManager {
             }
         }
         if (!isPresentPrimaryType) {
-            estimations.add(DtoFactory.getInstance().createDto(SourceEstimation.class)
-                                      .withType(BaseProjectType.ID));
+            estimations.add(newDto(SourceEstimation.class).withType(BaseProjectType.ID));
         }
 
         return estimations;
@@ -1012,7 +1015,7 @@ public final class DefaultProjectManager implements ProjectManager {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "deleteProject")
                                       .build(wsId, projectName).toString();
-        final Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("DELETE").withHref(href);
+        final Link link = newDto(Link.class).withMethod("DELETE").withHref(href);
 
         try {
             HttpJsonHelper.request(null, link);
