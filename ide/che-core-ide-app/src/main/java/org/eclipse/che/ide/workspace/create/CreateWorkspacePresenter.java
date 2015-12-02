@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace.create;
 
+import com.google.common.base.Strings;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.inject.Inject;
@@ -50,10 +51,7 @@ import java.util.Map;
 public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDelegate {
 
     private static final RegExp FILE_NAME   = RegExp.compile("^[A-Za-z0-9_\\s-\\.]+$");
-    private static final String URL_PATTERN =
-            "(https?|ftp)://(www\\.)?(((([a-zA-Z0-9.-]+\\.){1,}[a-zA-Z]{2,4}|localhost))|((\\d{1,3}\\.){3}(\\d{1,3})))(:(\\d+))?(/" +
-            "([a-zA-Z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?(\\?([a-zA-Z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)?(#([a-zA-Z0-9" +
-            "._-]|%[0-9A-F]{2})*)?";
+    private static final String URL_PATTERN = "^((ftp|http|https)://[\\w@.\\-\\_]+(:\\d{1,5})?(/[\\w#!:.?+=&%@!\\_\\-/]+)*){1}$";
     private static final RegExp URL         = RegExp.compile(URL_PATTERN);
 
     static final String RECIPE_TYPE     = "docker";
@@ -159,7 +157,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
 
         String recipeUrl = view.getRecipeUrl();
 
-        boolean urlIsIncorrect = !URL.test(recipeUrl);
+        boolean urlIsIncorrect = !Strings.isNullOrEmpty(recipeUrl) && !URL.test(recipeUrl) ;
 
         view.setVisibleUrlError(urlIsIncorrect);
 
