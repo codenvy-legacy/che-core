@@ -237,7 +237,7 @@ public class CreateWorkspacePresenterTest {
 
     @Test
     public void errorLabelShouldBeShownWhenRecipeUrlIsNotCorrect() {
-        when(view.getRecipeUrl()).thenReturn("http://localh/correct/url");
+        when(view.getRecipeUrl()).thenReturn("xxx://localh/correct/url");
 
         presenter.onRecipeUrlChanged();
 
