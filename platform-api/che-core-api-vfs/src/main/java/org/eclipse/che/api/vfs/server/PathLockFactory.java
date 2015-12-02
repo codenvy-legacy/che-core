@@ -31,7 +31,7 @@ package org.eclipse.che.api.vfs.server;
  *      }
  * </pre>
  *
- * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
+ * @author andrew00x>
  */
 public final class PathLockFactory {
     private static final int MAX_RECURSIVE_LOCKS = (1 << 10) - 1;

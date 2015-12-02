@@ -37,11 +37,9 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.IOUtils;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.server.LazyIterator;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
-import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * Lucene based searcher.
@@ -66,8 +65,8 @@ public abstract class LuceneSearcher implements Searcher {
     private SearcherManager searcherManager;
     private boolean         closed;
 
-    public LuceneSearcher() {
-        this(new MediaTypeFilter());
+    public LuceneSearcher(Set<String> indexedMediaTypes) {
+        this(new MediaTypeFilter(indexedMediaTypes));
     }
 
     public LuceneSearcher(VirtualFileFilter filter) {
@@ -142,7 +141,6 @@ public abstract class LuceneSearcher implements Searcher {
         }
         if (text != null) {
             QueryParser qParser = new QueryParser("text", makeAnalyzer());
-            qParser.setDefaultOperator(QueryParser.Operator.AND);
             try {
                 luceneQuery.add(qParser.parse(text), BooleanClause.Occur.MUST);
             } catch (ParseException e) {
@@ -194,9 +192,7 @@ public abstract class LuceneSearcher implements Searcher {
         while (!q.isEmpty()) {
             final VirtualFile folder = q.pop();
             if (folder.exists()) {
-                LazyIterator<VirtualFile> children = folder.getChildren(VirtualFileFilter.ALL);
-                while (children.hasNext()) {
-                    final VirtualFile child = children.next();
+                for (VirtualFile child : folder.getChildren()) {
                     if (child.isFolder()) {
                         q.push(child);
                     } else {
@@ -213,8 +209,8 @@ public abstract class LuceneSearcher implements Searcher {
     protected void addFile(VirtualFile virtualFile) throws ServerException {
         if (virtualFile.exists()) {
             try (Reader fContentReader = filter.accept(virtualFile) ? new BufferedReader(
-                    new InputStreamReader(virtualFile.getContent().getStream())) : null) {
-                getIndexWriter().updateDocument(new Term("path", virtualFile.getPath()), createDocument(virtualFile, fContentReader));
+                    new InputStreamReader(virtualFile.getContent())) : null) {
+                getIndexWriter().updateDocument(new Term("path", virtualFile.getPath().toString()), createDocument(virtualFile, fContentReader));
             } catch (OutOfMemoryError oome) {
                 close();
                 throw oome;
@@ -246,12 +242,12 @@ public abstract class LuceneSearcher implements Searcher {
 
     @Override
     public final void update(VirtualFile virtualFile) throws ServerException {
-        doUpdate(new Term("path", virtualFile.getPath()), virtualFile);
+        doUpdate(new Term("path", virtualFile.getPath().toString()), virtualFile);
     }
 
     protected void doUpdate(Term deleteTerm, VirtualFile virtualFile) throws ServerException {
         try (Reader fContentReader = filter.accept(virtualFile) ? new BufferedReader(
-                new InputStreamReader(virtualFile.getContent().getStream())) : null) {
+                new InputStreamReader(virtualFile.getContent())) : null) {
             getIndexWriter().updateDocument(deleteTerm, createDocument(virtualFile, fContentReader));
         } catch (OutOfMemoryError oome) {
             close();
@@ -263,25 +259,13 @@ public abstract class LuceneSearcher implements Searcher {
         }
     }
 
-    protected Document createDocument(VirtualFile virtualFile, Reader inReader) throws ServerException {
+    protected Document createDocument(VirtualFile virtualFile, Reader reader) throws ServerException {
         final Document doc = new Document();
-        doc.add(new StringField("path", virtualFile.getPath(), Field.Store.YES));
+        doc.add(new StringField("path", virtualFile.getPath().toString(), Field.Store.YES));
         doc.add(new StringField("name", virtualFile.getName(), Field.Store.YES));
-        doc.add(new StringField("mediatype", getMediaType(virtualFile), Field.Store.YES));
-        if (inReader != null) {
-            doc.add(new TextField("text", inReader));
+        if (reader != null) {
+            doc.add(new TextField("text", reader));
         }
         return doc;
     }
-
-    /** Get virtual file media type. Any additional parameters (e.g. 'charset') are removed. */
-    private String getMediaType(VirtualFile virtualFile) throws ServerException {
-        String mediaType = virtualFile.getMediaType();
-        final int paramStartIndex = mediaType.indexOf(';');
-        if (paramStartIndex != -1) {
-            mediaType = mediaType.substring(0, paramStartIndex).trim();
-        }
-        return mediaType;
-    }
-
 }

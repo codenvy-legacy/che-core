@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
-import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 
@@ -23,46 +20,12 @@ import org.eclipse.che.api.vfs.server.search.SearcherProvider;
  * @author andrew00x
  */
 public interface MountPoint {
-
-    /** Get id of workspace to which this mount point associated to. */
-    String getWorkspaceId();
-
     /**
      * Get root folder of virtual file system. Any files in higher level than root are not accessible through virtual file system API.
      *
      * @return root folder of virtual file system
      */
     VirtualFile getRoot();
-
-    /**
-     * Get VirtualFile by {@code path}.
-     *
-     * @param path
-     *         path of virtual file
-     * @return VirtualFile
-     * @throws NotFoundException
-     *         if {@code path} does not exist
-     * @throws ForbiddenException
-     *         if user which perform operation has no permissions
-     * @throws ServerException
-     *         if any other errors occur
-     */
-    VirtualFile getVirtualFile(String path) throws NotFoundException, ForbiddenException, ServerException;
-
-    /**
-     * Get VirtualFile by {@code id}.
-     *
-     * @param id
-     *         id of virtual file
-     * @return VirtualFile
-     * @throws NotFoundException
-     *         if {@code id} does not exist
-     * @throws ForbiddenException
-     *         if user which perform operation has no permissions
-     * @throws ServerException
-     *         if any other errors occur
-     */
-    VirtualFile getVirtualFileById(String id) throws NotFoundException, ForbiddenException, ServerException;
 
     /** Get searcher provider associated with this MountPoint. Method may return {@code null} if implementation doesn't support searching. */
     SearcherProvider getSearcherProvider();

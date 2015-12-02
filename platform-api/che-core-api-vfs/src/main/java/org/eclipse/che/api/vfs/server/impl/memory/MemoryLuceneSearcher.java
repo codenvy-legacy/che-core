@@ -14,10 +14,10 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
 
+import java.util.Set;
+
 /**
  * In-memory implementation of LuceneSearcher.
- *
- * @author <a href="mailto:aparfonov@codenvy.com">Andrey Parfonov</a>
  */
 public class MemoryLuceneSearcher extends LuceneSearcher {
     public MemoryLuceneSearcher() {

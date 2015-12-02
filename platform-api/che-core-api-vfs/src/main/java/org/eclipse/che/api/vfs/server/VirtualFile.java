@@ -14,19 +14,13 @@ import com.google.common.annotations.Beta;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.shared.PropertyFilter;
-import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.commons.lang.Pair;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Item of Virtual Filesystem.
@@ -35,29 +29,14 @@ import java.util.Set;
  */
 public interface VirtualFile extends Comparable<VirtualFile> {
     /**
-     * Gets unique id.
-     */
-    String getId();
-
-    /**
-     * Gets unique id of version of this VirtualFile.
-     */
-    String getVersionId();
-
-    /**
      * Gets name.
      */
     String getName();
 
     /**
-     * Gets path. Path of root folder is "/".
-     */
-    String getPath();
-
-    /**
      * Gets internal representation of path of item.
      */
-    Path getVirtualFilePath();
+    Path getPath();
 
     /**
      * Tests whether this VirtualFile exists.
@@ -79,10 +58,11 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      */
     boolean isFolder();
 
-    /**
-     * Gets creation time in long format or {@code -1} if creation time is unknown.
-     */
-    long getCreationDate();
+//    /**
+//     * Gets creation time in long format or {@code -1} if creation time is unknown.
+//     */
+//    // TODO : Do we need this ?? Can move this to project api. Seems that is important for project only.
+//    long getCreationDate();
 
     /**
      * Gets time of last modification in long format or {@code -1} if time is unknown.
@@ -97,58 +77,69 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     VirtualFile getParent();
 
     /**
-     * Gets media type of the VirtualFile. This method should not return {@code null}.
-     *
-     * @throws ServerException
-     *         if an error occurs
-     */
-    String getMediaType() throws ServerException;
-
-    /**
-     * Sets media type of the VirtualFile.
-     *
-     * @param mediaType
-     *         new media type
-     * @throws ServerException
-     *         if an error occurs
-     */
-    VirtualFile setMediaType(String mediaType) throws ServerException;
-
-    /**
-     * Gets iterator over files in this folder. If this VirtualFile isn't a folder this method returns empty iterator. If current user
-     * doesn't have read access to some child they should not be included in returned result.
+     * Gets files in this folder. If this VirtualFile is not a folder this method returns empty list.
      *
      * @param filter
      *         virtual files filter
      * @throws ServerException
      *         if an error occurs
      */
-    LazyIterator<VirtualFile> getChildren(VirtualFileFilter filter) throws ServerException;
+    List<VirtualFile> getChildren(VirtualFileFilter filter) throws ServerException;
 
     /**
-     * Gets child by relative path. If this VirtualFile isn't folder this method returns {@code null}.
+     * Gets files in this folder. If this VirtualFile is not a folder this method returns empty list.
+     *
+     * @throws ServerException
+     *         if an error occurs
+     */
+    List<VirtualFile> getChildren() throws ServerException;
+
+    /**
+     * Gets child by relative path. If this VirtualFile is not folder this method returns {@code null}.
      *
      * @param path
      *         child item path
-     * @return child
-     * @throws ForbiddenException
-     *         if current user doesn't have read permission to the child
+     * @return child or {@code null} if path does not exist
      * @throws ServerException
-     *         if other error occurs
+     *         if an error occurs
      */
-    VirtualFile getChild(String path) throws ForbiddenException, ServerException;
+    VirtualFile getChild(Path path) throws ServerException;
 
     /**
      * Gets content of the file.
      *
      * @return content ot he file
      * @throws ForbiddenException
-     *         if this item isn't a file
+     *         if this item is not a file
      * @throws ServerException
      *         if other error occurs
      * @see #isFile()
      */
-    ContentStream getContent() throws ForbiddenException, ServerException;
+    InputStream getContent() throws ForbiddenException, ServerException;
+
+    /**
+     * Gets content of the file as bytes.
+     *
+     * @return content ot he file
+     * @throws ForbiddenException
+     *         if this item is not a file
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFile()
+     */
+    byte[] getContentAsBytes() throws ForbiddenException, ServerException;
+
+    /**
+     * Gets content of the file as String decoding bytes using the platform's default charset.
+     *
+     * @return content ot he file
+     * @throws ForbiddenException
+     *         if this item is not a file
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFile()
+     */
+    String getContentAsString() throws ForbiddenException, ServerException;
 
     /**
      * Updates content of the file.
@@ -161,15 +152,108 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ForbiddenException
      *         if any of following conditions are met:
      *         <ul>
-     *         <li>this item isn't a file</li>
-     *         <li>this file is locked and {@code lockToken} is {@code null} or doesn't match</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
+     *         <li>this item is not a file</li>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
      *         </ul>
      * @throws ServerException
      *         if other error occurs
      * @see #isFile()
      */
     VirtualFile updateContent(InputStream content, String lockToken) throws ForbiddenException, ServerException;
+
+    /**
+     * Updates content of the file.
+     *
+     * @param content
+     *         content
+     * @return VirtualFile after updating content
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is not a file</li>
+     *         <li>this item is locked file</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFile()
+     */
+    VirtualFile updateContent(InputStream content) throws ForbiddenException, ServerException;
+
+    /**
+     * Updates content of the file.
+     *
+     * @param content
+     *         content
+     * @param lockToken
+     *         lock token. This parameter is required if the file is locked
+     * @return VirtualFile after updating content
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is not a file</li>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFile()
+     */
+    VirtualFile updateContent(byte[] content, String lockToken) throws ForbiddenException, ServerException;
+
+    /**
+     * Updates content of the file.
+     *
+     * @param content
+     *         content
+     * @return VirtualFile after updating content
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is not a file</li>
+     *         <li>this item is locked file</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFile()
+     */
+    VirtualFile updateContent(byte[] content) throws ForbiddenException, ServerException;
+
+    /**
+     * Updates content of the file.
+     *
+     * @param content
+     *         content
+     * @param lockToken
+     *         lock token. This parameter is required if the file is locked
+     * @return VirtualFile after updating content
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is not a file</li>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFile()
+     */
+    VirtualFile updateContent(String content, String lockToken) throws ForbiddenException, ServerException;
+
+    /**
+     * Updates content of the file.
+     *
+     * @param content
+     *         content
+     * @return VirtualFile after updating content
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is not a file</li>
+     *         <li>this item is locked file</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFile()
+     */
+    VirtualFile updateContent(String content) throws ForbiddenException, ServerException;
 
     /**
      * Get length of content of the file. Always returns {@code 0} for folders.
@@ -180,42 +264,12 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     long getLength() throws ServerException;
 
     /**
-     * Gets properties of the file.
+     * Gets properties of the file. Updating of map returned by this method does not effect state of this file.
      *
      * @throws ServerException
      *         if an error occurs
-     * @see PropertyFilter
      */
-    List<Property> getProperties(PropertyFilter filter) throws ServerException;
-
-    /**
-     * Updates properties of the file.
-     *
-     * @param properties
-     *         list of properties to update
-     * @param lockToken
-     *         lock token. This parameter is required if the file is locked
-     * @return VirtualFile after updating properties
-     * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this item is locked file and {@code lockToken} is {@code null} or doesn't match</li>
-     *         <li>at least one property can't be updated cause to any constraint, e.g. property is read only</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
-     *         </ul>
-     * @throws ServerException
-     *         if other error occurs
-     */
-    VirtualFile updateProperties(List<Property> properties, String lockToken) throws ForbiddenException, ServerException;
-
-    /**
-     * Gets value of property. If property has multiple values this method returns the first value in the set.
-     *
-     * @throws ServerException
-     *         if an error occurs
-     * @see #getPropertyValues(String)
-     */
-    String getPropertyValue(String name) throws ServerException;
+    Map<String, List<String>> getProperties() throws ServerException;
 
     /**
      * Gets multiple values of property.
@@ -223,13 +277,137 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ServerException
      *         if an error occurs
      */
-    String[] getPropertyValues(String name) throws ServerException;
+    List<String> getProperties(String name) throws ServerException;
+
+    /**
+     * Gets value of property. If property has multiple values this method returns the first value in the set.
+     *
+     * @throws ServerException
+     *         if an error occurs
+     */
+    String getProperty(String name) throws ServerException;
+
+    /**
+     * Updates properties of the file.
+     *
+     * @param properties
+     *         map of properties to update
+     * @param lockToken
+     *         lock token. This parameter is required if the file is locked
+     * @return VirtualFile after updating properties
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
+     *         <li>at least one property can't be updated cause to any constraint, e.g. property is read only</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile updateProperties(Map<String, List<String>> properties, String lockToken) throws ForbiddenException, ServerException;
+
+    /**
+     * Updates properties of the file.
+     *
+     * @param properties
+     *         map of properties to update
+     * @return VirtualFile after updating properties
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is locked file</li>
+     *         <li>at least one property can't be updated cause to any constraint, e.g. property is read only</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile updateProperties(Map<String, List<String>> properties) throws ForbiddenException, ServerException;
+
+    /**
+     * Set multivalued property of the file.
+     *
+     * @param name
+     *         name of property
+     * @param values
+     *         values of multivalued property
+     * @param lockToken
+     *         lock token. This parameter is required if the file is locked
+     * @return VirtualFile after updating property
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
+     *         <li>property can't be updated cause to any constraint, e.g. property is read only</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile setProperties(String name, List<String> values, String lockToken) throws ForbiddenException, ServerException;
+
+    /**
+     * Set multivalued property of the file.
+     *
+     * @param name
+     *         name of property
+     * @param values
+     *         values of multivalued property
+     * @return VirtualFile after updating property
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is locked file</li>
+     *         <li>property can't be updated cause to any constraint, e.g. property is read only</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile setProperties(String name, List<String> values) throws ForbiddenException, ServerException;
+
+    /**
+     * Set property of the file.
+     *
+     * @param name
+     *         name of property
+     * @param value
+     *         value of property
+     * @param lockToken
+     *         lock token. This parameter is required if the file is locked
+     * @return VirtualFile after updating property
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
+     *         <li>property can't be updated cause to any constraint, e.g. property is read only</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile setProperty(String name, String value, String lockToken) throws ForbiddenException, ServerException;
+
+    /**
+     * Set property of the file.
+     *
+     * @param name
+     *         name of property
+     * @param value
+     *         value of property
+     * @return VirtualFile after updating property
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is locked file</li>
+     *         <li>property can't be updated cause to any constraint, e.g. property is read only</li>
+     *         </ul>
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile setProperty(String name, String value) throws ForbiddenException, ServerException;
 
     /**
      * Copies this file to the new parent.
      *
      * @throws ForbiddenException
-     *         if specified {@code parent} doesn't denote a folder or user doesn't have write permission to the specified {@code parent}
+     *         if specified {@code parent} does not denote a folder
      * @throws ConflictException
      *         if {@code parent} already contains item with the same name as this virtual file has
      * @throws ServerException
@@ -245,37 +423,11 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         the new parent
      * @param name
      *         a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
-     * @param overWrite
+     * @param overwrite
      *         should the destination be overwritten, set to true to overwrite, false otherwise
      * @return reference to copy
      * @throws ForbiddenException
-     *         if specified {@code parent} doesn't denote a
-     *         folder or user doesn't have write permission to the specified
-     *         {@code parent}
-     * @throws ConflictException
-     *         if {@code parent} already contains item with
-     *         the same name as this virtual file has
-     * @throws ServerException
-     *         if other error occurs
-     * @see #isFolder()
-     */
-    @Beta
-    VirtualFile copyTo(VirtualFile parent, String name, boolean overWrite) throws ForbiddenException, ConflictException, ServerException;
-
-    /**
-     * Moves this file to the new parent.
-     *
-     * @param parent
-     *         parent to move
-     * @param lockToken
-     *         lock token. This parameter is required if the file is locked
-     * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>specified {@code parent} doesn't denote a folder</li>
-     *         <li>user doesn't have write permission to the specified {@code parent} or this item</li>
-     *         <li>this item is locked file and {@code lockToken} is {@code null} or doesn't match</li>
-     *         </ul>
+     *         if specified {@code parent} does not denote a folder
      * @throws ConflictException
      *         if {@code parent} already contains item with the same name as this virtual file has
      * @throws ServerException
@@ -283,7 +435,26 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @see #isFolder()
      */
     @Beta
-    VirtualFile moveTo(VirtualFile parent, String lockToken) throws ForbiddenException, ConflictException, ServerException;
+    VirtualFile copyTo(VirtualFile parent, String name, boolean overwrite) throws ForbiddenException, ConflictException, ServerException;
+
+    /**
+     * Moves this file to the new parent.
+     *
+     * @param parent
+     *         parent to move
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>specified {@code parent} does not denote a folder</li>
+     *         <li>this item is locked file</li>
+     *         </ul>
+     * @throws ConflictException
+     *         if {@code parent} already contains item with the same name as this virtual file has
+     * @throws ServerException
+     *         if other error occurs
+     * @see #isFolder()
+     */
+    VirtualFile moveTo(VirtualFile parent) throws ForbiddenException, ConflictException, ServerException;
 
     /**
      * Moves this VirtualFile under new parent.
@@ -292,51 +463,54 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         parent to move
      * @param name
      *         a new name for the moved source, can be left {@code null} or empty {@code String} for current source name
-     * @param overWrite
-     *         should the destination be overwritten, set to true to overwrite, false otherwise
+     * @param overwrite
+     *         should the destination be overwritten, set to {@code true} to overwrite, {@code false} otherwise
      * @param lockToken
      *         lock token. This parameter is required if the file is
      *         locked
      * @throws ForbiddenException
      *         if any of following conditions are met:
      *         <ul>
-     *         <li>specified {@code parent} doesn't denote a folder</li>
-     *         <li>user doesn't have write permission to the specified {@code parent} or
-     *         this item</li>
-     *         <li>this item is locked file and {@code lockToken} is {@code null} or
-     *         doesn't match</li>
+     *         <li>specified {@code parent} does not denote a folder</li>
+     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
      *         </ul>
      * @throws ConflictException
-     *         if {@code parent} already contains item with
-     *         the same name as this virtual file has
+     *         if {@code parent} already contains item with the same name as this virtual file has
      * @throws ServerException
      *         if other error occurs
      * @see #isFolder()
      */
-    VirtualFile moveTo(VirtualFile parent, String name, boolean overWrite, String lockToken)
-            throws ForbiddenException, ConflictException, ServerException;
+    VirtualFile moveTo(VirtualFile parent, String name, boolean overwrite, String lockToken) throws ForbiddenException, ConflictException, ServerException;
 
     /**
-     * Renames and (or) update media type of this VirtualFile.
+     * Renames this VirtualFile.
      *
      * @param newName
      *         new name
-     * @param newMediaType
-     *         new media type, may be {@code null} if need change name only
      * @param lockToken
      *         lock token. This parameter is required if the file is locked
      * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this item is locked file and {@code lockToken} is {@code null} or doesn't match</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
-     *         </ul>
+     *         if this item is locked file and {@code lockToken} is {@code null} or does not match
      * @throws ConflictException
      *         if parent of this item already contains other item with {@code newName}
      * @throws ServerException
      *         if other error occurs
      */
-    VirtualFile rename(String newName, String newMediaType, String lockToken) throws ForbiddenException, ConflictException, ServerException;
+    VirtualFile rename(String newName, String lockToken) throws ForbiddenException, ConflictException, ServerException;
+
+    /**
+     * Renames this VirtualFile.
+     *
+     * @param newName
+     *         new name
+     * @throws ForbiddenException
+     *         if this item is locked file
+     * @throws ConflictException
+     *         if parent of this item already contains other item with {@code newName}
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile rename(String newName) throws ForbiddenException, ConflictException, ServerException;
 
     /**
      * Deletes this VirtualFile.
@@ -346,9 +520,8 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ForbiddenException
      *         if any of following conditions are met:
      *         <ul>
-     *         <li>this item is locked file and {@code lockToken} is {code null} or doesn't match or if this item is folder that contains
-     *         at least one locked file</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
+     *         <li>this item is locked file and {@code lockToken} is {code null} or does not match</li>
+     *         <li>this item is folder that contains at least one locked file</li>
      *         </ul>
      * @throws ServerException
      *         if other error occurs
@@ -356,21 +529,32 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     void delete(String lockToken) throws ForbiddenException, ServerException;
 
     /**
-     * Gets zipped content of folder denoted by this VirtualFile. All child items that user doesn't have read permission are not added in
-     * result archive.
+     * Deletes this VirtualFile.
      *
-     * @param filter
-     *         filter of file. Only files that are matched to the filter are added in the zip archive
-     * @return zipped content of folder denoted by this VirtualFile
      * @throws ForbiddenException
-     *         if this item doesn't denote a folder
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is locked file</li>
+     *         <li>this item is folder that contains at least one locked file</li>
+     *         </ul>
      * @throws ServerException
      *         if other error occurs
      */
-    ContentStream zip(VirtualFileFilter filter) throws ForbiddenException, ServerException;
+    void delete() throws ForbiddenException, ServerException;
 
     /**
-     * Imports ZIP content to the folder denoted by this VirtualFile.
+     * Gets zipped content of folder denoted by this VirtualFile.
+     *
+     * @return zipped content of folder denoted by this VirtualFile
+     * @throws ForbiddenException
+     *         if this item does not denote a folder
+     * @throws ServerException
+     *         if other error occurs
+     */
+    InputStream zip() throws ForbiddenException, ServerException;
+
+    /**
+     * Imports zipped content to the folder denoted by this VirtualFile.
      *
      * @param zipped
      *         ZIP content
@@ -381,9 +565,8 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ForbiddenException
      *         if any of following conditions are met:
      *         <ul>
-     *         <li>if this item doesn't denote a folder</li>
-     *         <li>user which perform operation doesn't have write permissions (include children)</li>
-     *         <li>this folder contains at least one locked child</li>
+     *         <li>this item does not denote a folder</li>
+     *         <li>this folder contains at least one locked child that need to be updated</li>
      *         </ul>
      * @throws ConflictException
      *         if {@code overwrite} is {@code false} and any item in zipped content causes name conflict
@@ -397,13 +580,9 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *
      * @param timeout
      *         lock timeout in milliseconds, pass {@code 0} to create lock without timeout
-     * @return lock token. User should pass this token when tries update, delete or unlock locked file
+     * @return lock token. User should pass this token when tries update, delete, rename or unlock locked file
      * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this VirtualFile doesn't denote a regular file</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
-     *         </ul>
+     *         if this VirtualFile does not denote a regular file
      * @throws ConflictException
      *         if this file already locked
      * @throws ServerException
@@ -418,13 +597,9 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         lock token
      * @return VirtualFile after unlock
      * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>{@code lockToken} is {@code null} or does not match</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
-     *         </ul>
+     *         if {@code lockToken} is {@code null} or does not match
      * @throws ConflictException
-     *         if this item isn't locked
+     *         if this item is not locked
      * @throws ServerException
      *         if any other errors occur
      */
@@ -439,75 +614,22 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     boolean isLocked() throws ServerException;
 
     /**
-     * Gets permissions of this VirtualFile.
+     * Creates new VirtualFile which denotes regular file and use this one as parent folder.
      *
-     * @throws ServerException
-     *         if an error occurs
-     */
-    Map<Principal, Set<String>> getPermissions() throws ServerException;
-
-    /**
-     * Gets ACL.
-     *
-     * @return ACL
-     * @throws ServerException
-     *         if an error occurs
-     */
-    List<AccessControlEntry> getACL() throws ServerException;
-
-    /**
-     * Updates ACL.
-     *
-     * @param acl
-     *         ACL
-     * @param override
-     *         if {@code true} clear old ACL and apply new ACL, otherwise merge existed ACL and new one
-     * @param lockToken
-     *         lock token. This parameter is required if the file is locked
-     * @return VirtualFile after updating ACL
+     * @param name
+     *         name
+     * @param content
+     *         content. In case of {@code null} empty file is created
+     * @return newly create VirtualFile
      * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>{@code lockToken} is {@code null} or doesn't match</li>
-     *         <li>user which perform operation doesn't have update_acl permissions</li>
-     *         </ul>
+     *         if this VirtualFile does not denote a folder
+     * @throws ConflictException
+     *         if parent already contains item with specified {@code name}
      * @throws ServerException
      *         if other error occurs
      */
-    VirtualFile updateACL(List<AccessControlEntry> acl, boolean override, String lockToken) throws ForbiddenException, ServerException;
-
-    /**
-     * Get all versions of this VirtualFile. If versioning isn't supported this iterator always contains just one item which denotes this
-     * VirtualFile.
-     *
-     * @param filter
-     *         virtual files filter
-     * @return iterator over all versions
-     * @throws ForbiddenException
-     *         if this VirtualFile isn't regular file
-     * @throws ServerException
-     *         if other error occurs
-     * @see #isFile()
-     */
-    LazyIterator<VirtualFile> getVersions(VirtualFileFilter filter) throws ForbiddenException, ServerException;
-
-    /**
-     * Gets single version of VirtualFile. If versioning isn't supported this method should return {@code this} instance if specified
-     * {@code versionId} equals to the value returned by method {@link #getVersionId()}. If versioning isn't supported and
-     * {@code versionId} isn't equals to the version id of this file {@link org.eclipse.che.api.core.NotFoundException} should be thrown.
-     *
-     * @param versionId
-     *         id of version
-     * @return single version of VirtualFile
-     * @throws NotFoundException
-     *         if there is no version with {@code versionId}
-     * @throws ForbiddenException
-     *         if this VirtualFile isn't regular file
-     * @throws ServerException
-     *         if other error occurs
-     * @see #isFile()
-     */
-    VirtualFile getVersion(String versionId) throws NotFoundException, ForbiddenException, ServerException;
+    VirtualFile createFile(String name, InputStream content)
+            throws ForbiddenException, ConflictException, ServerException;
 
     /**
      * Creates new VirtualFile which denotes regular file and use this one as parent folder.
@@ -518,17 +640,31 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         content. In case of {@code null} empty file is created
      * @return newly create VirtualFile
      * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this VirtualFile does not denote a folder</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
-     *         </ul>
+     *         if this VirtualFile does not denote a folder
      * @throws ConflictException
      *         if parent already contains item with specified {@code name}
      * @throws ServerException
      *         if other error occurs
      */
-    VirtualFile createFile(String name, InputStream content)
+    VirtualFile createFile(String name, byte[] content)
+            throws ForbiddenException, ConflictException, ServerException;
+
+    /**
+     * Creates new VirtualFile which denotes regular file and use this one as parent folder.
+     *
+     * @param name
+     *         name
+     * @param content
+     *         content. In case of {@code null} empty file is created
+     * @return newly create VirtualFile
+     * @throws ForbiddenException
+     *         if this VirtualFile does not denote a folder
+     * @throws ConflictException
+     *         if parent already contains item with specified {@code name}
+     * @throws ServerException
+     *         if other error occurs
+     */
+    VirtualFile createFile(String name, String content)
             throws ForbiddenException, ConflictException, ServerException;
 
     /**
@@ -538,11 +674,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         name. If name is string separated by '/' all nonexistent parent folders must be created.
      * @return newly create VirtualFile that denotes folder
      * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this VirtualFile doesn't denote a folder</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
-     *         </ul>
+     *         if this VirtualFile does not denote a folder
      * @throws ConflictException
      *         if item with specified {@code name} already exists
      * @throws ServerException
@@ -575,15 +707,18 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *     pair.first // md5sum of file represented as HEX String
      *     pair.second // Path of file that is relative to this file
      * </pre>
-     * If this VirtualFile isn't a folder this method returns empty iterator. Note: any order of items in the returned iterator isn't
+     * If this VirtualFile is not a folder this method returns empty list. Note: any order of items in the returned list is not
      * guaranteed.
      *
      * @throws ServerException
      *         if any error occurs
      */
-    LazyIterator<Pair<String, String>> countMd5Sums() throws ServerException;
+    List<Pair<String, String>> countMd5Sums() throws ServerException;
 
-    /** Returns instance of {@link java.io.File} */
-    @Beta
-    File getIoFile();
+    /**
+     * Gets java.io.File if implementation uses java.io.File as backend.
+     *
+     * @return java.io.File or {@code null} is java.io.File is not available
+     */
+    java.io.File toIoFile();
 }

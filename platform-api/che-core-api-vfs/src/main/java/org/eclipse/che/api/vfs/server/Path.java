@@ -67,6 +67,10 @@ public final class Path {
         return isRoot() ? null : elements.length == 1 ? ROOT : subPath(0, elements.length - 1);
     }
 
+    public Path subPath(Path parent) {
+        return subPath(parent.length(), elements.length);
+    }
+
     public Path subPath(int beginIndex) {
         return subPath(beginIndex, elements.length);
     }

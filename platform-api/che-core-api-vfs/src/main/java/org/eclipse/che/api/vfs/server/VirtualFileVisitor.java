@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
+import org.eclipse.che.api.core.ServerException;
+
 /**
  * This interface defines the visit method. When an implementation of this interface is passed to {@link
  * VirtualFile#accept(VirtualFileVisitor)} the <code>visit</code> method is called.
  *
- * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
+ * @author andrew00x
  */
 public interface VirtualFileVisitor {
     /**
@@ -24,5 +26,5 @@ public interface VirtualFileVisitor {
      * @param virtualFile
      *         VirtualFile which is accepting this visitor
      */
-    void visit(VirtualFile virtualFile);
+    void visit(VirtualFile virtualFile) throws ServerException;
 }
