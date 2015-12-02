@@ -21,6 +21,7 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
+import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocket;
@@ -84,8 +85,9 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
     @Override
     public void onClose(WebSocketClosedEvent event) {
         if (state == ExtServerState.STARTED) {
-            state = ExtServerState.STOPPED;
-            eventBus.fireEvent(ExtServerStateEvent.createExtServerStoppedEvent());
+            Log.debug(getClass(), "WebSocket connection to Extension Server closed going to reconnect");
+            countRetry = 2; //try to reconnect few times in case some problem with network and ext server still running
+            retryConnectionTimer.schedule(1000);
         }
     }
 

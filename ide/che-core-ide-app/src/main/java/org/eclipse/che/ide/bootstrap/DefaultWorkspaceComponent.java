@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.bootstrap;
 
+import com.google.common.base.Strings;
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.machine.gwt.client.MachineManager;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
@@ -101,29 +101,21 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
         workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
             @Override
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
-                String wsNameFromBrowser = browserQueryFieldRenderer.getWorkspaceName();
-
-                for (UsersWorkspaceDto workspace : workspaces) {
-                    boolean isWorkspaceExist = wsNameFromBrowser.equals(workspace.getName());
-
+                if (workspaces.isEmpty()) {
+                    createWorkspacePresenter.show(workspaces, callback);
+                } else {
+                    String wsNameFromBrowser = browserQueryFieldRenderer.getWorkspaceName();
                     if (wsNameFromBrowser.isEmpty()) {
-                        tryStartWorkspace();
-                        return;
-                    }
-
-                    if (isWorkspaceExist && RUNNING.equals(workspace.getStatus())) {
-                        setCurrentWorkspace(workspace);
-                        startWorkspaceById(workspace);
-                        return;
-                    }
-
-                    if (isWorkspaceExist) {
-                        startWorkspaceById(workspace);
-                        return;
+                        tryStartRecentWorkspaceIfExist(workspaces);
+                    } else {
+                        for (UsersWorkspaceDto workspace : workspaces) {
+                            if (wsNameFromBrowser.equals(workspace.getName())) {
+                                startWorkspaceById(workspace);
+                                return;
+                            }
+                        }
                     }
                 }
-
-                createWorkspacePresenter.show(workspaces, callback);
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -139,8 +131,22 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
         });
     }
 
-    @Override
-    public void tryStartWorkspace() {
+
+    private void tryStartRecentWorkspaceIfExist(List<UsersWorkspaceDto> workspaces) {
+        final String recentWorkspaceId = getRecentWorkspaceId();
+        if (Strings.isNullOrEmpty(recentWorkspaceId)) {
+            startWorkspacePresenter.show(workspaces, callback);
+        } else {
+            for(UsersWorkspaceDto workspace : workspaces) {
+                if (workspace.getId().equals(recentWorkspaceId)) {
+                    startWorkspaceById(workspace);
+                    return;
+                }
+            }
+        }
+    }
+
+    private String getRecentWorkspaceId() {
         String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
 
         AppState appState = null;
@@ -152,21 +158,12 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
         }
 
         if (appState != null) {
-            String recentWorkspaceId = appState.getRecentWorkspaceId();
-
-            if (recentWorkspaceId != null) {
-                workspaceServiceClient.getWorkspaceById(recentWorkspaceId)
-                                      .then(startWorkspace())
-                                      .catchError(new Operation<PromiseError>() {
-                                          @Override
-                                          public void apply(PromiseError promiseError) throws OperationException {
-                                              showWorkspaceDialog();
-                                          }
-                                      });
-                return;
-            }
+            return appState.getRecentWorkspaceId();
         }
+        return null;
+    }
 
-        showWorkspaceDialog();
+    @Override
+    public void tryStartWorkspace() {
     }
 }
