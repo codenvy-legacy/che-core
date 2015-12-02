@@ -15,6 +15,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.multibindings.Multibinder;
 
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.server.FolderEntry;
 import org.eclipse.che.api.project.server.InvalidValueException;
 import org.eclipse.che.api.project.server.ProjectApiModule;
@@ -94,7 +95,7 @@ public class ProjectTypeTest {
 
     @Test
     public void testInvalidPTDefinition() throws Exception {
-        ProjectType pt = new ProjectType("my", "second", true, false) {
+        AbstractProjectType pt = new AbstractProjectType("my", "second", true, false) {
         };
 
         Set<ProjectType> pts = new HashSet<>();
@@ -107,24 +108,24 @@ public class ProjectTypeTest {
 
         // Invalid names
         pts.clear();
-        pts.add(new ProjectType(null, "null id", true, false) {
+        pts.add(new AbstractProjectType(null, "null id", true, false) {
         });
-        pts.add(new ProjectType("", "empty id", true, false) {
+        pts.add(new AbstractProjectType("", "empty id", true, false) {
         });
-        pts.add(new ProjectType("invalid id", "invalid id", true, false) {
+        pts.add(new AbstractProjectType("invalid id", "invalid id", true, false) {
         });
-        pts.add(new ProjectType("id1", null, true, false) {
+        pts.add(new AbstractProjectType("id1", null, true, false) {
         });
-        pts.add(new ProjectType("id2", "", true, false) {
+        pts.add(new AbstractProjectType("id2", "", true, false) {
         });
         reg = new ProjectTypeRegistry(pts);
         // BASE only
         assertEquals(1, reg.getProjectTypes().size());
 
         // Invalid parent
-        final ProjectType invalidParent = new ProjectType("parent", "parent", true, false) {
+        final AbstractProjectType invalidParent = new AbstractProjectType("parent", "parent", true, false) {
         };
-        pts.add(new ProjectType("notRegParent", "not reg parent", true, false) {
+        pts.add(new AbstractProjectType("notRegParent", "not reg parent", true, false) {
             {
                 addParent(invalidParent);
             }
@@ -137,13 +138,13 @@ public class ProjectTypeTest {
     @Test
     public void testPTInheritance() throws Exception {
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType parent = new ProjectType("parent", "parent", true, false) {
+        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final ProjectType child = new ProjectType("child", "child", true, false) {
+        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
             {
                 addParent(parent);
                 addConstantDefinition("child_const", "Constant", "const_value");
@@ -164,13 +165,13 @@ public class ProjectTypeTest {
     @Test
     public void testAttributeNameConflict() throws Exception {
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType parent = new ProjectType("parent", "parent", true, false) {
+        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final ProjectType child = new ProjectType("child", "child", true, false) {
+        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
             {
                 addParent(parent);
                 addConstantDefinition("parent_const", "Constant", "const_value");
@@ -190,19 +191,19 @@ public class ProjectTypeTest {
     @Test
     public void testMultiInheritance() throws Exception {
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType parent1 = new ProjectType("parent1", "parent", true, false) {
+        final AbstractProjectType parent1 = new AbstractProjectType("parent1", "parent", true, false) {
             {
                 addConstantDefinition("parent1_const", "Constant", "const_value");
             }
 
         };
-        final ProjectType parent2 = new ProjectType("parent2", "parent", true, false) {
+        final AbstractProjectType parent2 = new AbstractProjectType("parent2", "parent", true, false) {
             {
                 addConstantDefinition("parent2_const", "Constant", "const_value");
             }
 
         };
-        final ProjectType child = new ProjectType("child", "child", true, false) {
+        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
             {
                 addParent(parent1);
                 addParent(parent2);
@@ -223,19 +224,19 @@ public class ProjectTypeTest {
     @Test
     public void testMultiInheritanceAttributeConflict() throws Exception {
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType parent1 = new ProjectType("parent1", "parent", true, false) {
+        final AbstractProjectType parent1 = new AbstractProjectType("parent1", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final ProjectType parent2 = new ProjectType("parent2", "parent", true, false) {
+        final AbstractProjectType parent2 = new AbstractProjectType("parent2", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final ProjectType child = new ProjectType("child", "child", true, false) {
+        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
             {
                 addParent(parent1);
                 addParent(parent2);
@@ -257,23 +258,23 @@ public class ProjectTypeTest {
     @Test
     public void testTypeOf() throws Exception {
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType parent = new ProjectType("parent", "parent", true, false) {
+        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
         };
 
-        final ProjectType parent1 = new ProjectType("parent1", "parent", true, false) {
+        final AbstractProjectType parent1 = new AbstractProjectType("parent1", "parent", true, false) {
         };
 
-        final ProjectType parent2 = new ProjectType("parent2", "parent", true, false) {
+        final AbstractProjectType parent2 = new AbstractProjectType("parent2", "parent", true, false) {
         };
 
-        final ProjectType child = new ProjectType("child", "child", true, false) {
+        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
             {
                 addParent(parent);
                 addParent(parent2);
             }
         };
 
-        final ProjectType child2 = new ProjectType("child2", "child2", true, false) {
+        final AbstractProjectType child2 = new AbstractProjectType("child2", "child2", true, false) {
             {
                 addParent(child);
             }
@@ -298,16 +299,16 @@ public class ProjectTypeTest {
     @Test
     public void testSortPTs() throws Exception {
         Set<ProjectType> pts = new HashSet<>();
-        final ProjectType parent = new ProjectType("parent", "parent", true, false) {
+        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
         };
 
-        final ProjectType child = new ProjectType("child", "child", true, false) {
+        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
             {
                 addParent(parent);
             }
         };
 
-        final ProjectType child2 = new ProjectType("child2", "child2", true, false) {
+        final AbstractProjectType child2 = new AbstractProjectType("child2", "child2", true, false) {
             {
                 addParent(child);
             }
@@ -348,7 +349,7 @@ public class ProjectTypeTest {
     }
 
     @Singleton
-    public static class MyProjectType extends ProjectType {
+    public static class MyProjectType extends AbstractProjectType {
 
         @Inject
         public MyProjectType(MyVPFactory myVPFactory) {

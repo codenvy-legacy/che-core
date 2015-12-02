@@ -13,7 +13,6 @@ package org.eclipse.che.ide.project.node;
 import com.google.gwt.core.client.Scheduler;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Operation;
@@ -22,6 +21,7 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.resource.DeleteProcessor;
 import org.eclipse.che.ide.api.project.node.resource.RenameProcessor;
@@ -46,11 +46,11 @@ public abstract class ResourceBasedNode<DataObject> extends AbstractProjectBased
     protected NodeManager nodeManager;
 
     public ResourceBasedNode(@NotNull DataObject dataObject,
-                             @NotNull ProjectDescriptor projectDescriptor,
+                             @NotNull ProjectConfigDto projectConfig,
                              @NotNull NodeSettings nodeSettings,
                              @NotNull EventBus eventBus,
                              @NotNull NodeManager nodeManager) {
-        super(dataObject, projectDescriptor, nodeSettings);
+        super(dataObject, projectConfig, nodeSettings);
         this.eventBus = eventBus;
         this.nodeManager = nodeManager;
     }

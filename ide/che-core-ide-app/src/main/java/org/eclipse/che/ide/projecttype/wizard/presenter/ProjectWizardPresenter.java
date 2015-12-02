@@ -15,11 +15,11 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
@@ -32,7 +32,6 @@ import org.eclipse.che.ide.projecttype.wizard.categoriespage.CategoriesPagePrese
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,15 +141,15 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Open the project wizard for updating the given {@code project}. */
-    public void show(@NotNull ProjectDescriptor project) {
+    public void show(@NotNull ProjectConfigDto project) {
         resetState();
         wizardMode = UPDATE;
         projectPath = project.getPath();
         final ProjectConfigDto dataObject = dtoFactory.createDto(ProjectConfigDto.class)
-                                                                          .withType(project.getType())
-                                                                          .withName(project.getName())
-                                                                          .withDescription(project.getDescription())
-                                                                          .withAttributes(new HashMap<>(project.getAttributes()));
+                                                      .withType(project.getType())
+                                                      .withName(project.getName())
+                                                      .withDescription(project.getDescription())
+                                                      .withAttributes(new HashMap<>(project.getAttributes()));
         dataObject.setMixins(project.getMixins());
         showDialog(dataObject);
     }
@@ -161,7 +160,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         wizardMode = CREATE_MODULE;
         projectPath = folder.getPath();
         final ProjectConfigDto dataObject = dtoFactory.createDto(ProjectConfigDto.class)
-                                                                          .withName(folder.getName());
+                                                      .withName(folder.getName());
 
         showDialog(dataObject);
     }

@@ -10,10 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import org.eclipse.che.api.project.server.type.BaseProjectType;
-import org.eclipse.che.api.project.server.type.ProjectType;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
+
+import org.eclipse.che.api.core.model.project.type.ProjectType;
+import org.eclipse.che.api.project.server.type.BaseProjectType;
 
 /**
  * @author gazarenkov

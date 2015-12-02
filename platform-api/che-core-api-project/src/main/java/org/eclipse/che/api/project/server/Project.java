@@ -91,7 +91,7 @@ public class Project {
         manager.saveProjectMisc(this, misc);
     }
 
-    public ProjectConfig getConfig() throws ServerException, ValueStorageException, ProjectTypeConstraintException, InvalidValueException {
+    public ProjectConfig getConfig() throws ServerException, ValueStorageException, ProjectTypeConstraintException, ForbiddenException {
         return manager.getProjectConfig(this);
     }
 
@@ -107,7 +107,7 @@ public class Project {
     public final void updateConfig(ProjectConfig config) throws ServerException,
                                                                 ValueStorageException,
                                                                 ProjectTypeConstraintException,
-                                                                InvalidValueException {
+                                                                ForbiddenException {
         manager.updateProjectConfig(this, config);
     }
 

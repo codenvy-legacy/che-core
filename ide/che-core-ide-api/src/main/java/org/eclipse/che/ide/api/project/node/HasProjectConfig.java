@@ -10,30 +10,28 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.node;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 import javax.validation.constraints.NotNull;
 
 /**
  * @author Vlad Zhukovskiy
  */
-public interface HasProjectDescriptor {
+public interface HasProjectConfig {
 
-    HasProjectDescriptor EMPTY = new HasProjectDescriptor() {
-        @NotNull
+    HasProjectConfig EMPTY = new HasProjectConfig() {
         @Override
-        public ProjectDescriptor getProjectDescriptor() {
+        public ProjectConfigDto getProjectConfig() {
             return null;
         }
 
         @Override
-        public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
+        public void setProjectConfig(@NotNull ProjectConfigDto projectConfig) {
 
         }
     };
 
-    @NotNull
-    ProjectDescriptor getProjectDescriptor();
+    ProjectConfigDto getProjectConfig();
 
-    void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor);
+    void setProjectConfig(ProjectConfigDto projectConfig);
 }

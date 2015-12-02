@@ -27,5 +27,5 @@ public interface Attribute {
 
     String getName();
 
-    Value getValue() /*throws ValueStorageException*/;
+    Value getValue();
 }

@@ -11,15 +11,12 @@
 package org.eclipse.che.ide.project.node;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -27,8 +24,9 @@ import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.api.promises.client.js.Promises;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
@@ -66,8 +64,9 @@ public class NodeManager {
     protected final SettingsProvider       nodeSettingsProvider;
     protected final DtoFactory             dtoFactory;
     protected final Set<NodeIconProvider>  nodeIconProvider;
+    protected final AppContext             appContext;
 
-    private ModuleDescriptorNode moduleNode;
+    private ModuleNode moduleNode;
 
     @Inject
     public NodeManager(NodeFactory nodeFactory,
@@ -76,7 +75,8 @@ public class NodeManager {
                        NodesResources nodesResources,
                        SettingsProvider nodeSettingsProvider,
                        DtoFactory dtoFactory,
-                       Set<NodeIconProvider> nodeIconProvider) {
+                       Set<NodeIconProvider> nodeIconProvider,
+                       AppContext appContext) {
         this.nodeFactory = nodeFactory;
         this.projectService = projectService;
         this.dtoUnmarshaller = dtoUnmarshaller;
@@ -84,33 +84,34 @@ public class NodeManager {
         this.nodeSettingsProvider = nodeSettingsProvider;
         this.dtoFactory = dtoFactory;
         this.nodeIconProvider = nodeIconProvider;
+        this.appContext = appContext;
     }
 
-    /** ********** Children operations ********************* */
+    /** Children operations ********************* */
     @NotNull
-    public Promise<List<Node>> getChildren(@NotNull ItemReference itemReference,
-                                           @NotNull ProjectDescriptor relProjectDescriptor,
-                                           @NotNull NodeSettings nodeSettings) {
-        return getChildren(itemReference.getPath(), relProjectDescriptor, nodeSettings);
-    }
-
-    @NotNull
-    public Promise<List<Node>> getChildren(@NotNull ProjectDescriptor projectDescriptor,
-                                           @NotNull NodeSettings nodeSettings) {
-        return getChildren(projectDescriptor.getPath(), projectDescriptor, nodeSettings);
+    public Promise<List<Node>> getChildren(ItemReference itemReference,
+                                           ProjectConfigDto projectConfigDto,
+                                           NodeSettings nodeSettings) {
+        return getChildren(itemReference.getPath(), projectConfigDto, nodeSettings);
     }
 
     @NotNull
-    public Promise<List<Node>> getChildren(final @NotNull String path,
-                                           @NotNull ProjectDescriptor relProjectDescriptor,
-                                           @NotNull NodeSettings nodeSettings) {
+    public Promise<List<Node>> getChildren(ProjectConfigDto projectConfigDto,
+                                           NodeSettings nodeSettings) {
+        return getChildren(projectConfigDto.getPath(), projectConfigDto, nodeSettings);
+    }
+
+    @NotNull
+    public Promise<List<Node>> getChildren(final String path,
+                                           ProjectConfigDto projectConfigDto,
+                                           NodeSettings nodeSettings) {
         return newPromise(new RequestCall<List<ItemReference>>() {
             @Override
             public void makeCall(AsyncCallback<List<ItemReference>> callback) {
                 projectService.getChildren(path, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ItemReference.class)));
             }
         }).thenPromise(filterItemReference())
-          .thenPromise(createItemReferenceNodes(relProjectDescriptor, nodeSettings))
+          .thenPromise(createItemReferenceNodes(projectConfigDto, nodeSettings))
           .catchError(handleError());
     }
 
@@ -139,10 +140,8 @@ public class NodeManager {
         return self();
     }
 
-    @NotNull
-    private Function<List<ItemReference>, Promise<List<Node>>> createItemReferenceNodes(
-            @NotNull final ProjectDescriptor relProjectDescriptor,
-            @NotNull final NodeSettings nodeSettings) {
+    private Function<List<ItemReference>, Promise<List<Node>>> createItemReferenceNodes(final ProjectConfigDto projectConfigDto,
+                                                                                        final NodeSettings nodeSettings) {
         return new Function<List<ItemReference>, Promise<List<Node>>>() {
             @Override
             public Promise<List<Node>> apply(List<ItemReference> itemRefList) throws FunctionException {
@@ -158,7 +157,7 @@ public class NodeManager {
                         continue;
                     }
 
-                    Node node = createNodeByType(itemReference, relProjectDescriptor, nodeSettings);
+                    Node node = createNodeByType(itemReference, projectConfigDto, nodeSettings);
                     if (node != null) {
                         nodes.add(node);
                     }
@@ -170,22 +169,22 @@ public class NodeManager {
         };
     }
 
-    public Node createNodeByType(ItemReference itemReference, ProjectDescriptor descriptor, NodeSettings settings) {
+    public Node createNodeByType(ItemReference itemReference, ProjectConfigDto configDto, NodeSettings settings) {
         String itemType = itemReference.getType();
 
         if ("file".equals(itemType)) {
-            return nodeFactory.newFileReferenceNode(itemReference, descriptor, settings);
+            return nodeFactory.newFileReferenceNode(itemReference, configDto, settings);
         }
 
         if ("folder".equals(itemType)) {
-            return nodeFactory.newFolderReferenceNode(itemReference, descriptor, settings);
+            return nodeFactory.newFolderReferenceNode(itemReference, configDto, settings);
         }
 
         if ("module".equals(itemType)) {
             moduleNode = null;
 
-            for (ModuleConfigDto moduleConfigDto : descriptor.getModules()) {
-                createModuleNode(itemReference, moduleConfigDto, descriptor, settings);
+            for (ProjectConfigDto moduleConfigDto : configDto.getModules()) {
+                createModuleNode(itemReference, moduleConfigDto, settings);
 
                 if (moduleNode != null) {
                     return moduleNode;
@@ -196,19 +195,18 @@ public class NodeManager {
         return null;
     }
 
-    public void createModuleNode(ItemReference itemReference,
-                                 ModuleConfigDto moduleConfigDto,
-                                 ProjectDescriptor descriptor,
-                                 NodeSettings settings) {
+    private void createModuleNode(ItemReference itemReference,
+                                  ProjectConfigDto moduleConfig,
+                                  NodeSettings settings) {
 
-        if (itemReference.getName().equals(moduleConfigDto.getName())) {
-            moduleNode = nodeFactory.newModuleNode(moduleConfigDto, descriptor, settings);
+        if (itemReference.getName().equals(moduleConfig.getName())) {
+            moduleNode = nodeFactory.newModuleNode(moduleConfig, settings);
 
             return;
         }
 
-        for (ModuleConfigDto moduleConfig : moduleConfigDto.getModules()) {
-            createModuleNode(itemReference, moduleConfig, descriptor, settings);
+        for (ProjectConfigDto configDto : moduleConfig.getModules()) {
+            createModuleNode(itemReference, configDto, settings);
         }
     }
 
@@ -222,16 +220,16 @@ public class NodeManager {
         };
     }
 
-    /** ********** Project Reference operations ********************* */
-    public Promise<ProjectDescriptor> getProjectDescriptor(String path) {
+    /** Project Reference operations ********************* */
+    public Promise<ProjectConfigDto> getProjectDescriptor(String path) {
         return AsyncPromiseHelper.createFromAsyncRequest(getProjectDescriptoRC(path));
     }
 
-    private RequestCall<ProjectDescriptor> getProjectDescriptoRC(final String path) {
-        return new RequestCall<ProjectDescriptor>() {
+    private RequestCall<ProjectConfigDto> getProjectDescriptoRC(final String path) {
+        return new RequestCall<ProjectConfigDto>() {
             @Override
-            public void makeCall(AsyncCallback<ProjectDescriptor> callback) {
-                projectService.getProject(path, _callback(callback, dtoUnmarshaller.newUnmarshaller(ProjectDescriptor.class)));
+            public void makeCall(AsyncCallback<ProjectConfigDto> callback) {
+                projectService.getProject(path, _callback(callback, dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class)));
             }
         };
     }
@@ -239,36 +237,36 @@ public class NodeManager {
     /**
      * Get project list and construct project nodes for the tree.
      *
-     * @return list of the {@link ProjectDescriptorNode} nodes.
+     * @return list of the {@link ProjectNode} nodes.
      */
     @NotNull
     public Promise<List<Node>> getProjectNodes() {
-        return newPromise(new RequestCall<List<ProjectDescriptor>>() {
+        return newPromise(new RequestCall<List<ProjectConfigDto>>() {
             @Override
-            public void makeCall(AsyncCallback<List<ProjectDescriptor>> callback) {
-                projectService.getProjects(true, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectDescriptor.class)));
+            public void makeCall(AsyncCallback<List<ProjectConfigDto>> callback) {
+                projectService.getProjects(true, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectConfigDto.class)));
             }
-        }).then(new Function<List<ProjectDescriptor>, List<Node>>() {
+        }).then(new Function<List<ProjectConfigDto>, List<Node>>() {
             @Override
-            public List<Node> apply(List<ProjectDescriptor> projects) throws FunctionException {
+            public List<Node> apply(List<ProjectConfigDto> projects) throws FunctionException {
                 if (projects == null) {
                     return Collections.emptyList();
                 }
 
                 final NodeSettings settings = nodeSettingsProvider.getSettings();
 
-                return Lists.transform(projects, new com.google.common.base.Function<ProjectDescriptor, Node>() {
+                return Lists.transform(projects, new com.google.common.base.Function<ProjectConfigDto, Node>() {
                     @org.eclipse.che.commons.annotation.Nullable
                     @Override
-                    public Node apply(@Nullable ProjectDescriptor project) {
-                        return nodeFactory.newProjectDescriptorNode(project, settings == null ? NodeSettings.DEFAULT_SETTINGS : settings);
+                    public Node apply(@Nullable ProjectConfigDto project) {
+                        return nodeFactory.newProjectNode(project, settings == null ? NodeSettings.DEFAULT_SETTINGS : settings);
                     }
                 });
             }
         });
     }
 
-    /** ********** Content methods ********************* */
+    /** Content methods ********************* */
 
     @NotNull
     public Promise<String> getContent(@NotNull final VirtualFile virtualFile) {
@@ -303,7 +301,7 @@ public class NodeManager {
         };
     }
 
-    /** ********** Common methods ********************* */
+    /** Common methods ********************* */
 
     @NotNull
     protected <T> AsyncRequestCallback<T> _callback(@NotNull final AsyncCallback<T> callback, @NotNull Unmarshallable<T> u) {
@@ -321,39 +319,18 @@ public class NodeManager {
     }
 
     @NotNull
-    public ProjectDescriptor convert(@NotNull ProjectReference reference) {
-        ProjectDescriptor descriptor = dtoFactory.createDto(ProjectDescriptor.class);
-
-        descriptor.setName(reference.getName());
-        descriptor.setPath(reference.getPath());
-        descriptor.setType(reference.getType());
-        descriptor.setTypeName(reference.getTypeName());
-        descriptor.setBaseUrl(reference.getUrl());
-        descriptor.setIdeUrl(reference.getIdeUrl());
-        descriptor.setWorkspaceId(reference.getWorkspaceId());
-        descriptor.setWorkspaceName(reference.getWorkspaceName());
-        descriptor.setVisibility(reference.getVisibility());
-        descriptor.setCreationDate(reference.getCreationDate());
-        descriptor.setModificationDate(reference.getModificationDate());
-        descriptor.setDescription(reference.getDescription());
-        descriptor.setProblems(reference.getProblems());
-
-        return descriptor;
-    }
-
-    @NotNull
     public NodesResources getNodesResources() {
         return nodesResources;
     }
 
     @NotNull
-    public ProjectDescriptorNode wrap(@NotNull ProjectDescriptor projectDescriptor) {
+    public ProjectNode wrap(ProjectConfigDto projectConfig) {
         NodeSettings nodeSettings = nodeSettingsProvider.getSettings();
-        return nodeFactory.newProjectDescriptorNode(projectDescriptor, nodeSettings == null ? NodeSettings.DEFAULT_SETTINGS : nodeSettings);
+        return nodeFactory.newProjectNode(projectConfig, nodeSettings == null ? NodeSettings.DEFAULT_SETTINGS : nodeSettings);
     }
 
     @Nullable
-    public ItemReferenceBasedNode wrap(@NotNull ItemReference itemReference, @NotNull ProjectDescriptor relProjectDescriptor) {
+    public ItemReferenceBasedNode wrap(ItemReference itemReference, ProjectConfigDto projectConfig) {
         NodeSettings nodeSettings = nodeSettingsProvider.getSettings();
         if (nodeSettings == null) {
             nodeSettings = NodeSettings.DEFAULT_SETTINGS;
@@ -362,16 +339,16 @@ public class NodeManager {
         ItemReferenceBasedNode node = null;
 
         if ("file".equals(itemReference.getType())) {
-            node = nodeFactory.newFileReferenceNode(itemReference, relProjectDescriptor, nodeSettings);
+            node = nodeFactory.newFileReferenceNode(itemReference, projectConfig, nodeSettings);
         } else if ("folder".equals(itemReference.getType())) {
-            node = nodeFactory.newFolderReferenceNode(itemReference, relProjectDescriptor, nodeSettings);
+            node = nodeFactory.newFolderReferenceNode(itemReference, projectConfig, nodeSettings);
         }
 
         return node;
     }
 
     public static boolean isProjectOrModuleNode(Node node) {
-        return node instanceof ProjectDescriptorNode || node instanceof ModuleDescriptorNode;
+        return node instanceof ProjectNode || node instanceof ModuleNode;
     }
 
     protected <T> Function<T, Promise<T>> self() {

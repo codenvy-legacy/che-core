@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.project.tree;
 
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,7 +41,7 @@ public interface VirtualFile {
     boolean isReadOnly();
 
     @Nullable
-    HasProjectDescriptor getProject();
+    HasProjectConfig getProject();
 
     /**
      * Some file type can't represent their content as string.
@@ -60,8 +60,6 @@ public interface VirtualFile {
      * Note: this method is optional, some implementations may not support updating their content
      * @param content
      *         new content of the file
-     * @param callback
-     *         callback to return retrieved content
      */
     Promise<Void> updateContent(String content);
 

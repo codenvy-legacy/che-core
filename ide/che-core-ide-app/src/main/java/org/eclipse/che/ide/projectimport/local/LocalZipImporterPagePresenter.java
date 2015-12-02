@@ -16,9 +16,9 @@ import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
@@ -102,22 +102,22 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
                 return;
             }
 
-            ProjectDescriptor projectDescriptor = dtoFactory.createDtoFromJson(result, ProjectDescriptor.class);
-            if (projectDescriptor == null) {
+            ProjectConfigDto projectConfig = dtoFactory.createDtoFromJson(result, ProjectConfigDto.class);
+            if (projectConfig == null) {
                 importFailure(JsonHelper.parseJsonMessage(result));
                 return;
             }
-            importSuccess(projectDescriptor);
+            importSuccess(projectConfig);
         } catch (Exception e) {
             importFailure(result);
         }
     }
 
-    private void importSuccess(ProjectDescriptor projectDescriptor) {
+    private void importSuccess(ProjectConfigDto projectConfig) {
         view.closeDialog();
         importProjectNotificationSubscriber.onSuccess();
 
-        eventBus.fireEvent(new CreateProjectEvent(projectDescriptor));
+        eventBus.fireEvent(new CreateProjectEvent(projectConfig));
     }
 
     @Override

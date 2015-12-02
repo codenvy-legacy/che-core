@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.event;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 /**
  * Event fires when project state has been restored.
@@ -34,14 +34,14 @@ public class ProjectStateRestoredEvent extends GwtEvent<ProjectStateRestoredEven
         return TYPE;
     }
 
-    private ProjectDescriptor descriptor;
+    private ProjectConfigDto projectConfig;
 
-    public ProjectStateRestoredEvent(ProjectDescriptor descriptor) {
-        this.descriptor = descriptor;
+    public ProjectStateRestoredEvent(ProjectConfigDto projectConfig) {
+        this.projectConfig = projectConfig;
     }
 
-    public ProjectDescriptor getDescriptor() {
-        return descriptor;
+    public ProjectConfigDto getProjectConfig() {
+        return projectConfig;
     }
 
     @Override

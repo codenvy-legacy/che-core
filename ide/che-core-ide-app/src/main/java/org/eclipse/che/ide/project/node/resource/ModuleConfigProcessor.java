@@ -19,22 +19,19 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
-import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
+import org.eclipse.che.ide.project.node.ModuleNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * @author Dmitry Shnurenko
  */
-public class ModuleConfigProcessor extends AbstractResourceProcessor<ModuleConfigDto> {
+public class ModuleConfigProcessor extends AbstractResourceProcessor<ProjectConfigDto> {
 
     @Inject
     public ModuleConfigProcessor(EventBus eventBus, ProjectServiceClient projectService, DtoUnmarshallerFactory unmarshallerFactory) {
@@ -42,25 +39,23 @@ public class ModuleConfigProcessor extends AbstractResourceProcessor<ModuleConfi
     }
 
     @Override
-    public Promise<ModuleConfigDto> delete(final HasDataObject<ModuleConfigDto> node) {
-        if (node instanceof ModuleDescriptorNode) {
-            Node parent = ((ModuleDescriptorNode)node).getParent();
-            if (!(parent instanceof HasProjectDescriptor)) {
+    public Promise<ProjectConfigDto> delete(final HasDataObject<ProjectConfigDto> node) {
+        if (node instanceof ModuleNode) {
+            Node parent = ((ModuleNode)node).getParent();
+            if (!(parent instanceof HasProjectConfig)) {
                 return Promises.reject(JsPromiseError.create("Failed to search parent project descriptor"));
             }
 
-            final String parentPath = ((HasProjectDescriptor)parent).getProjectDescriptor().getPath();
+            final String parentPath = ((HasProjectConfig)parent).getProjectConfig().getPath();
             final String modulePath = node.getData().getPath();
 
-            final String relPath = modulePath.substring(parentPath.length() + 1);
-
-            return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ModuleConfigDto>() {
+            return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectConfigDto>() {
                 @Override
-                public void makeCall(final AsyncCallback<ModuleConfigDto> callback) {
-                    projectService.deleteModule(parentPath, relPath, new AsyncRequestCallback<Void>() {
+                public void makeCall(final AsyncCallback<ProjectConfigDto> callback) {
+                    projectService.deleteModule(parentPath, modulePath, new AsyncRequestCallback<Void>() {
                         @Override
                         protected void onSuccess(Void result) {
-                            deleteFolder(node, modulePath, callback);
+                            callback.onSuccess(node.getData());
                         }
 
                         @Override
@@ -74,23 +69,10 @@ public class ModuleConfigProcessor extends AbstractResourceProcessor<ModuleConfi
         return Promises.reject(JsPromiseError.create("Internal error"));
     }
 
-    private void deleteFolder(final HasDataObject<ModuleConfigDto> node, String path, final AsyncCallback<ModuleConfigDto> callback) {
-        projectService.delete(path, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                callback.onSuccess(node.getData());
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                callback.onFailure(exception);
-            }
-        });
-    }
-
     @Override
-    public Promise<ModuleConfigDto> rename(@Nullable HasStorablePath parent, @NotNull HasDataObject<ModuleConfigDto> node,
-                                           @NotNull String newName) {
+    public Promise<ProjectConfigDto> rename(HasStorablePath parent,
+                                            HasDataObject<ProjectConfigDto> node,
+                                            String newName) {
         return Promises.reject(JsPromiseError.create(""));
     }
 }

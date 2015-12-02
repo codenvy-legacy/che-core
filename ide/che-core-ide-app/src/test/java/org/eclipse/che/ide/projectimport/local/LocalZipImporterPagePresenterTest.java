@@ -15,15 +15,14 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.message.MessageDialog;
 import org.eclipse.che.test.GwtReflectionUtils;
@@ -55,9 +54,20 @@ import static org.mockito.Mockito.when;
 public class LocalZipImporterPagePresenterTest {
     private static final String PROJECT_NAME    = "test";
     private static final String FILE_NAME       = "test.zip";
-    private static final String RESPONSE        =
-            "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">{\"projectDescriptor\":{}}</pre>";
-    private static final String PARSED_RESPONSE = "{\"projectDescriptor\":{}}";
+    private static final String PARSED_RESPONSE = "{\"name\": \"test-project-name\",\n" +
+                                                  "        \"path\": \"/path/to/project\",\n" +
+                                                  "        \"description\": \"This is test project\",\n" +
+                                                  "        \"type\": \"maven\",\n" +
+                                                  "        \"mixins\": [],\n" +
+                                                  "        \"attributes\": {\n" +
+                                                  "          \"project.attribute2\": [],\n" +
+                                                  "          \"project.attribute1\": []\n" +
+                                                  "        },\n" +
+                                                  "        \"modules\": [],\n" +
+                                                  "        \"storage\": {}\n" +
+                                                  "        }}";
+
+    private static final String RESPONSE = "<pre style=\"word-wrap: break-word; white-space: pre-wrap;\">" + PARSED_RESPONSE + "</pre>";
 
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Item>> callbackCaptorForItem;
@@ -175,14 +185,14 @@ public class LocalZipImporterPagePresenterTest {
     @Test
     public void submitCompleteWhenImportIsSuccessTest() {
         reset(view);
-        ProjectDescriptor projectDescriptor = mock(ProjectDescriptor.class);
-        when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<ProjectDescriptor>>anyObject())).thenReturn(projectDescriptor);
+        ProjectConfigDto projectConfigDto = mock(ProjectConfigDto.class);
+        when(dtoFactory.createDtoFromJson(anyString(), Matchers.<Class<ProjectConfigDto>>anyObject())).thenReturn(projectConfigDto);
 
         presenter.onSubmitComplete(RESPONSE);
 
         verify(view).setLoaderVisibility(eq(false));
         verify(view).setInputsEnableState(eq(true));
-        verify(dtoFactory).createDtoFromJson(PARSED_RESPONSE, ProjectDescriptor.class);
+        verify(dtoFactory).createDtoFromJson(PARSED_RESPONSE, ProjectConfigDto.class);
         verify(view).closeDialog();
         verify(importProjectNotificationSubscriber).onSuccess();
         verify(eventBus).fireEvent(Matchers.<Event<OpenProjectEvent>>anyObject());

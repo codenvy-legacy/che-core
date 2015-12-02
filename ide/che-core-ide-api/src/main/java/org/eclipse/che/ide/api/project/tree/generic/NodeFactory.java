@@ -11,12 +11,12 @@
 package org.eclipse.che.ide.api.project.tree.generic;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.project.tree.TreeStructure;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.TreeStructure;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Factory that helps to create nodes for {@link GenericTreeStructure}.
@@ -63,12 +63,12 @@ public interface NodeFactory {
      * @param parent
      *         the parent node
      * @param data
-     *         the associated {@link ProjectDescriptor}
+     *         the associated {@link ProjectConfigDto}
      * @param treeStructure
      *         the {@link GenericTreeStructure} to create the node for
      * @return a new {@link ProjectNode}
      */
     ProjectNode newProjectNode(@Nullable TreeNode<?> parent,
-                               @NotNull ProjectDescriptor data,
+                               @NotNull ProjectConfigDto data,
                                @NotNull GenericTreeStructure treeStructure);
 }

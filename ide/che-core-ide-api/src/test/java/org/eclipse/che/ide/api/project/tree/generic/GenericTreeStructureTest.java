@@ -10,17 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree.generic;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.project.tree.TreeNode;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-
-import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.web.bindery.event.shared.EventBus;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,9 +33,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Collections.addAll;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
@@ -45,7 +45,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static java.util.Collections.addAll;
 
 /**
  * @author Artem Zatsarynnyy
@@ -91,9 +90,9 @@ public class GenericTreeStructureTest {
     private DtoUnmarshallerFactory dtoUnmarshallerFactory;
 
     @Mock
-    private CurrentProject                    currentProject;
+    private CurrentProject                   currentProject;
     @Mock
-    private ProjectDescriptor                 projectDescriptor;
+    private ProjectConfigDto                 projectConfig;
     @Mock
     private AsyncCallback<List<TreeNode<?>>> callback;
 
@@ -159,8 +158,8 @@ public class GenericTreeStructureTest {
     @Before
     public void setUp() {
         when(appContext.getCurrentProject()).thenReturn(currentProject);
-        when(currentProject.getRootProject()).thenReturn(projectDescriptor);
-        when(nodeFactory.newProjectNode(null, projectDescriptor, treeStructure)).thenReturn(projectNode);
+        when(currentProject.getRootProject()).thenReturn(projectConfig);
+        when(nodeFactory.newProjectNode(null, projectConfig, treeStructure)).thenReturn(projectNode);
 
         generateDifficultTree();
     }
@@ -268,7 +267,7 @@ public class GenericTreeStructureTest {
 
     @Test
     public void testNewProjectNode() throws Exception {
-        ProjectDescriptor data = mock(ProjectDescriptor.class);
+        ProjectConfigDto data = mock(ProjectConfigDto.class);
 
         treeStructure.newProjectNode(data);
 
@@ -281,7 +280,7 @@ public class GenericTreeStructureTest {
 
         verify(appContext).getCurrentProject();
         verify(currentProject).getRootProject();
-        verify(nodeFactory).newProjectNode(null, projectDescriptor, treeStructure);
+        verify(nodeFactory).newProjectNode(null, projectConfig, treeStructure);
         verify(callback).onSuccess(Matchers.<List<TreeNode<?>>>anyObject());
     }
 
@@ -292,7 +291,7 @@ public class GenericTreeStructureTest {
 
         verify(appContext).getCurrentProject();
         verify(currentProject).getRootProject();
-        verify(nodeFactory).newProjectNode(null, projectDescriptor, treeStructure);
+        verify(nodeFactory).newProjectNode(null, projectConfig, treeStructure);
 
         verify(callback, times(2)).onSuccess(Matchers.<List<TreeNode<?>>>anyObject());
     }
@@ -309,9 +308,9 @@ public class GenericTreeStructureTest {
 
     @Test
     public void newProjectNodeShouldBeReturned() {
-        assertThat(treeStructure.newProjectNode(projectDescriptor), is(projectNode));
+        assertThat(treeStructure.newProjectNode(projectConfig), is(projectNode));
 
-        verify(nodeFactory).newProjectNode(null, projectDescriptor, treeStructure);
+        verify(nodeFactory).newProjectNode(null, projectConfig, treeStructure);
     }
 
     @Test
@@ -349,7 +348,7 @@ public class GenericTreeStructureTest {
     private void rootNodeShouldBeReturned() {
         verify(appContext).getCurrentProject();
         verify(currentProject).getRootProject();
-        verify(nodeFactory).newProjectNode(null, projectDescriptor, treeStructure);
+        verify(nodeFactory).newProjectNode(null, projectConfig, treeStructure);
 
         verify(asyncCallback, never()).onSuccess(null);
     }
@@ -995,7 +994,7 @@ public class GenericTreeStructureTest {
 
     @Test
     public void nodeShouldNotBeReturnedBecauseThisNodeIsAbsent() {
-        when(nodeFactory.newProjectNode(null, projectDescriptor, treeStructure)).thenReturn(null);
+        when(nodeFactory.newProjectNode(null, projectConfig, treeStructure)).thenReturn(null);
         String path = "/" + SPRING + "/" + SRC + "/" + MAIN;
 
         treeStructure.getNodeByPath(path, asyncCallback);

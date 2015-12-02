@@ -12,7 +12,7 @@ package org.eclipse.che.api.project.server;
 
 import com.google.common.io.Resources;
 
-import org.eclipse.che.api.project.server.type.ProjectType;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.lang.NameGenerator;

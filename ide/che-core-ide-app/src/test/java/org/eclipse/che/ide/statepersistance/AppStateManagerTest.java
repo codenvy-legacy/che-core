@@ -10,19 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.ide.statepersistance;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
@@ -91,7 +89,7 @@ public class AppStateManagerTest {
     @Mock
     private UsersWorkspaceDto    workspace;
     @Mock
-    private ProjectDescriptor    projectDescriptor;
+    private ProjectConfigDto     projectConfig;
     @Mock
     private ProjectState         projectState;
     @Mock
@@ -101,7 +99,7 @@ public class AppStateManagerTest {
     @Mock
     private Promise<Void>        voidPromise;
     @Mock
-    private ProjectDescriptor    currentProject;
+    private ProjectConfigDto     currentProjectConfig;
     @Mock
     private PersistenceComponent persistenceComponent;
 
@@ -109,13 +107,14 @@ public class AppStateManagerTest {
 
     @Before
     public void setUp() {
+        when(appContext.getWorkspace()).thenReturn(workspace);
+        when(workspace.getId()).thenReturn(NAME);
         when(preferencesManager.getValue(PREFERENCE_PROPERTY_NAME)).thenReturn(JSON);
         when(dtoFactory.createDtoFromJson(JSON, AppState.class)).thenReturn(appState);
 
         when(dtoFactory.createDto(RecentProject.class)).thenReturn(recentProject);
 
-        when(projectDescriptor.getWorkspaceId()).thenReturn(NAME);
-        when(projectDescriptor.getPath()).thenReturn(PATH);
+        when(projectConfig.getPath()).thenReturn(PATH);
 
         Map<String, ProjectState> projectStates = new HashMap<>();
 
@@ -153,7 +152,7 @@ public class AppStateManagerTest {
     @Test
     public void projectStateShouldNotBeRestoredWhenProjectStateIsNull() {
         OpenProjectEvent openProjectEvent = mock(OpenProjectEvent.class);
-        when(openProjectEvent.getDescriptor()).thenReturn(projectDescriptor);
+        when(openProjectEvent.getProjectConfig()).thenReturn(projectConfig);
 
         when(appState.getProjects()).thenReturn(new HashMap<>());
 
@@ -165,7 +164,7 @@ public class AppStateManagerTest {
     @Test
     public void projectStateShouldBeRestored() {
         OpenProjectEvent openProjectEvent = mock(OpenProjectEvent.class);
-        when(openProjectEvent.getDescriptor()).thenReturn(projectDescriptor);
+        when(openProjectEvent.getProjectConfig()).thenReturn(projectConfig);
 
         when(projectState.getActions()).thenReturn(Arrays.asList(actionDescriptor));
         when(actionDescriptor.getId()).thenReturn(SOME_TEXT);
@@ -174,8 +173,7 @@ public class AppStateManagerTest {
 
         appStateManager.onProjectOpened(openProjectEvent);
 
-        verify(projectDescriptor).getWorkspaceId();
-        verify(projectDescriptor).getPath();
+        verify(projectConfig).getPath();
         verify(appState).getProjects();
 
         verify(projectState).getActions();

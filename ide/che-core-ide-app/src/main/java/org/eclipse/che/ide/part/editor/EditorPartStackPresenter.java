@@ -92,7 +92,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     @Override
     public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
-        String closedProjectPath = event.getDescriptor().getPath() + "/";
+        String closedProjectPath = event.getProjectConfig().getPath() + "/";
 
         List<TabItem> deleteTabItemList = new ArrayList<>();
 

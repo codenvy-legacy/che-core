@@ -23,13 +23,12 @@ import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
@@ -57,7 +56,7 @@ import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
@@ -69,9 +68,9 @@ import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDe
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent.ResourceNodeRenamedHandler;
 import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
-import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
+import org.eclipse.che.ide.project.node.ModuleNode;
 import org.eclipse.che.ide.project.node.NodeManager;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
@@ -121,6 +120,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     private final DtoUnmarshallerFactory       dtoUnmarshaller;
     private final ProjectServiceClient         projectService;
     private final NotificationManager          notificationManager;
+    private final CurrentProject               currentProject;
 
     public static final int PART_SIZE = 250;
 
@@ -153,6 +153,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         this.dtoUnmarshaller = dtoUnmarshaller;
         this.projectService = projectService;
         this.notificationManager = notificationManager;
+        this.currentProject = new CurrentProject();
 
         eventBus.addHandler(CreateProjectEvent.TYPE, this);
         eventBus.addHandler(DeleteProjectEvent.TYPE, this);
@@ -167,15 +168,15 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
-       reloadProjectTree();
+        reloadProjectTree();
     }
 
     /** {@inheritDoc} */
     @Override
     public void onProjectCreated(CreateProjectEvent event) {
-        final ProjectDescriptor descriptor = event.getDescriptor();
+        final ProjectConfigDto projectConfig = event.getProjectConfig();
 
-        if (descriptor == null) {
+        if (projectConfig == null) {
             return;
         }
 
@@ -183,15 +184,14 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             view.resetGoIntoMode();
         }
 
-        final ProjectDescriptorNode node = nodeManager.wrap(descriptor);
+        final ProjectNode node = nodeManager.wrap(projectConfig);
 
         view.addNode(null, node);
         view.select(node, false);
 
-        if (!descriptor.getProblems().isEmpty()) {
+        if (!projectConfig.getProblems().isEmpty()) {
             notificationManager.showInfo(locale.projectExplorerDetectedUnconfiguredProject());
-            askUserToSetUpProject(descriptor);
-            return;
+            askUserToSetUpProject(projectConfig);
         }
 
     }
@@ -218,7 +218,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         });
     }
 
-    private void askUserToSetUpProject(final ProjectDescriptor descriptor) {
+    private void askUserToSetUpProject(final ProjectConfigDto descriptor) {
         ProjectProblemDialog.AskHandler askHandler = new ProjectProblemDialog.AskHandler() {
             @Override
             public void onConfigure() {
@@ -229,10 +229,10 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             public void onKeepBlank() {
                 descriptor.setType(Constants.BLANK_ID);
 
-                updateProject(descriptor).then(new Operation<ProjectDescriptor>() {
+                updateProject(descriptor).then(new Operation<ProjectConfigDto>() {
                     @Override
-                    public void apply(ProjectDescriptor updatedDescriptor) throws OperationException {
-                        eventBus.fireEvent(new ProjectUpdatedEvent(updatedDescriptor.getPath(), updatedDescriptor));
+                    public void apply(ProjectConfigDto updatedConfig) throws OperationException {
+                        eventBus.fireEvent(new ProjectUpdatedEvent(updatedConfig.getPath(), updatedConfig));
                     }
                 }).catchError(new Operation<PromiseError>() {
                     @Override
@@ -252,12 +252,12 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     /** {@inheritDoc} */
     @Override
     public void onProjectUpdated(ProjectUpdatedEvent event) {
-        ProjectDescriptorNode node = null;
+        ProjectNode node = null;
 
         for (Node seekNode : view.getAllNodes()) {
-            if (seekNode instanceof ProjectDescriptorNode &&
-                ((ProjectDescriptorNode)seekNode).getData().getPath().equals(event.getPath())) {
-                node = (ProjectDescriptorNode)seekNode;
+            if (seekNode instanceof ProjectNode &&
+                ((ProjectNode)seekNode).getData().getPath().equals(event.getPath())) {
+                node = (ProjectNode)seekNode;
                 break;
             }
         }
@@ -273,10 +273,10 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             oldIdToNode.put(view.getNodeIdProvider().getKey(n), n);
         }
 
-        final ProjectDescriptor updatedDescriptor = event.getUpdatedProjectDescriptor();
+        final ProjectConfigDto updatedDescriptor = event.getUpdatedProjectDescriptor();
 
         node.setData(updatedDescriptor);
-        node.setProjectDescriptor(updatedDescriptor);
+        node.setProjectConfig(updatedDescriptor);
 
         if (!view.reIndex(oldNodeId, node)) {
             Log.info(getClass(), "Node wasn't re-indexed");
@@ -298,12 +298,12 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     /** {@inheritDoc} */
     @Override
     public void onProjectDeleted(DeleteProjectEvent event) {
-        ProjectDescriptorNode toDelete = null;
+        ProjectNode toDelete = null;
 
         for (Node node : view.getRootNodes()) {
-            if (node instanceof ProjectDescriptorNode &&
-                ((ProjectDescriptorNode)node).getData().getPath().equals(event.getDescriptor().getPath())) {
-                toDelete = (ProjectDescriptorNode)node;
+            if (node instanceof ProjectNode &&
+                ((ProjectNode)node).getData().getPath().equals(event.getProjectConfig().getPath())) {
+                toDelete = (ProjectNode)node;
             }
         }
 
@@ -335,9 +335,9 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             ItemReferenceBasedNode node = (ItemReferenceBasedNode)event.getNode();
 
             node.setData(newDTO);
-        } else if (event.getNode() instanceof ModuleDescriptorNode) {
-            ModuleConfigDto newDTO = (ModuleConfigDto)event.getNewDataObject();
-            ModuleDescriptorNode node = (ModuleDescriptorNode)event.getNode();
+        } else if (event.getNode() instanceof ModuleNode) {
+            ProjectConfigDto newDTO = (ProjectConfigDto)event.getNewDataObject();
+            ModuleNode node = (ModuleNode)event.getNode();
             node.setData(newDTO);
         }
 
@@ -384,69 +384,37 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             resetGoIntoMode();
         }
 
-        ModuleConfigDto createdModule = event.getModule();
+        ProjectConfigDto createdModule = event.getModule();
 
         String pathToModule = createdModule.getPath();
 
         String pathToParent = pathToModule.substring(0, pathToModule.lastIndexOf("/"));
 
-        ProjectDescriptor projectDescription = appContext.getCurrentProject().getProjectDescription();
+        ProjectConfigDto projectConfig = appContext.getCurrentProject().getProjectConfig();
 
-        boolean parentIsProjectFolder = pathToParent.split("/").length <= 2;
+        ProjectConfigDto parentModule = projectConfig.findModule(pathToParent);
 
-        if (parentIsProjectFolder) {
-            projectDescription.getModules().add(createdModule);
-        } else {
-            for (ModuleConfigDto configDto : projectDescription.getModules()) {
-                ModuleConfigDto foundNode = findModuleRecursive(configDto, pathToParent);
-
-                if (foundNode != null) {
-                    configDto.getModules().add(createdModule);
-
-                    break;
-                }
-            }
-        }
+        parentModule.getModules().add(createdModule);
 
         reloadChildren();
-    }
-
-    private ModuleConfigDto findModuleRecursive(ModuleConfigDto moduleConfig, String pathToParent) {
-        if (pathToParent.equals(moduleConfig.getPath())) {
-            return moduleConfig;
-        }
-
-        for (ModuleConfigDto configDto : moduleConfig.getModules()) {
-            if (pathToParent.equals(configDto.getPath())) {
-                return configDto;
-            }
-
-            ModuleConfigDto foundConfig = findModuleRecursive(configDto, pathToParent);
-
-            if (foundConfig != null) {
-                return foundConfig;
-            }
-        }
-
-        return null;
     }
 
     /** {@inheritDoc} */
     @Override
     public void onConfigureProject(ConfigureProjectEvent event) {
-        final ProjectDescriptor toConfigure = event.getProject();
+        final ProjectConfigDto toConfigure = event.getProject();
         if (toConfigure != null) {
             projectConfigWizard.show(toConfigure);
         }
     }
 
-    private Promise<ProjectDescriptor> updateProject(final ProjectDescriptor project) {
-        return newPromise(new AsyncPromiseHelper.RequestCall<ProjectDescriptor>() {
+    private Promise<ProjectConfigDto> updateProject(final ProjectConfigDto project) {
+        return newPromise(new AsyncPromiseHelper.RequestCall<ProjectConfigDto>() {
             @Override
-            public void makeCall(AsyncCallback<ProjectDescriptor> callback) {
+            public void makeCall(AsyncCallback<ProjectConfigDto> callback) {
                 projectService.updateProject(project.getName(),
                                              project,
-                                             newCallback(callback, dtoUnmarshaller.newUnmarshaller(ProjectDescriptor.class)));
+                                             newCallback(callback, dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class)));
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -517,32 +485,35 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
         Node selectedNode = nodes.get(0);
 
-        if (selectedNode != null && selectedNode instanceof HasProjectDescriptor) {
-            HasProjectDescriptor projectDescriptor = (HasProjectDescriptor)selectedNode;
+        if (selectedNode != null && selectedNode instanceof HasProjectConfig) {
+            ProjectConfigDto selectedProjectConfig = ((HasProjectConfig)selectedNode).getProjectConfig();
 
-            HasProjectDescriptor rootProjectDescriptor = null;
+            ProjectConfigDto rootProjectConfig = getRootConfig(selectedNode);
 
-            Node parent = selectedNode.getParent();
-            while (parent != null) {
-                if (parent instanceof HasProjectDescriptor) {
-                    rootProjectDescriptor = (HasProjectDescriptor)parent;
-                }
+            if (rootProjectConfig == null) {
+                Log.error(ProjectExplorerPresenter.class, "Can't set root project config. App context contains not valid project configs.");
 
-                parent = parent.getParent();
+                return;
             }
 
-            if (rootProjectDescriptor == null) {
-                rootProjectDescriptor = projectDescriptor;
-            }
+            currentProject.setRootProject(rootProjectConfig);
+            currentProject.setProjectConfig(selectedProjectConfig);
 
-            //set new app context
-            appContext.setCurrentProject(new CurrentProject(rootProjectDescriptor.getProjectDescriptor()));
-            appContext.getCurrentProject().setProjectDescription(projectDescriptor.getProjectDescriptor());
+            appContext.setCurrentProject(currentProject);
 
-            eventBus.fireEvent(new CurrentProjectChangedEvent(projectDescriptor.getProjectDescriptor()));
+            eventBus.fireEvent(new CurrentProjectChangedEvent(selectedProjectConfig));
 
-            queryFieldViewer.setProjectName(rootProjectDescriptor.getProjectDescriptor().getName());
+            queryFieldViewer.setProjectName(rootProjectConfig.getName());
         }
+    }
+
+    private ProjectConfigDto getRootConfig(Node selectedNode) {
+        Node parent = selectedNode.getParent();
+        if (parent == null && selectedNode instanceof ProjectNode) {
+            return ((ProjectNode)selectedNode).getData();
+        }
+
+        return getRootConfig(parent);
     }
 
     /** {@inheritDoc} */

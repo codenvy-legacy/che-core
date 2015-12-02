@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.event.project;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 /**
  * Event fires when project is updated or configured.
@@ -34,16 +34,16 @@ public class ProjectUpdatedEvent extends GwtEvent<ProjectUpdatedEvent.ProjectUpd
         return TYPE;
     }
 
-    private ProjectDescriptor updatedProjectDescriptor;
-    private String            path;
+    private ProjectConfigDto updatedProjectConfig;
+    private String           path;
 
-    public ProjectUpdatedEvent(String path, ProjectDescriptor updatedProjectDescriptor) {
+    public ProjectUpdatedEvent(String path, ProjectConfigDto updatedProjectConfig) {
         this.path = path;
-        this.updatedProjectDescriptor = updatedProjectDescriptor;
+        this.updatedProjectConfig = updatedProjectConfig;
     }
 
-    public ProjectDescriptor getUpdatedProjectDescriptor() {
-        return updatedProjectDescriptor;
+    public ProjectConfigDto getUpdatedProjectDescriptor() {
+        return updatedProjectConfig;
     }
 
     public String getPath() {

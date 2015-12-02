@@ -10,13 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
+import org.eclipse.che.api.core.model.project.type.Value;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author gazarenkov
  */
-public class AttributeValue {
+public class AttributeValue implements Value {
 
     private final List<String> values = new ArrayList<>();
 
@@ -29,7 +31,7 @@ public class AttributeValue {
     }
 
     public String getString() {
-        return values.isEmpty()?null:values.get(0);
+        return values.isEmpty() ? null : values.get(0);
     }
 
     public void setString(String str) {
@@ -49,12 +51,9 @@ public class AttributeValue {
     @Override
     public boolean equals(Object obj) {
 
-        if(obj instanceof AttributeValue) {
+        if (obj instanceof AttributeValue) {
             return this.values.equals(((AttributeValue)obj).getList());
         }
         return false;
     }
-
-    //ValueType getType();
-
 }

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
+import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.server.ValueProviderFactory;
 
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ import java.util.Map;
 /**
  * @author gazarenkov
  */
-public abstract class ProjectType {
+public abstract class AbstractProjectType implements ProjectType {
 
     protected final boolean                persisted;
     private final   String                 id;
@@ -30,7 +32,7 @@ public abstract class ProjectType {
     private final   boolean                mixable;
     private final   boolean                primaryable;
 
-    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted) {
+    protected AbstractProjectType(String id, String displayName, boolean primaryable, boolean mixable, boolean persisted) {
         this.id = id;
         this.displayName = displayName;
         this.attributes = new HashMap<>();
@@ -48,7 +50,7 @@ public abstract class ProjectType {
      * @param mixable
      *         - whether the projectType can be used as Mixin
      */
-    protected ProjectType(String id, String displayName, boolean primaryable, boolean mixable) {
+    protected AbstractProjectType(String id, String displayName, boolean primaryable, boolean mixable) {
         this(id, displayName, primaryable, mixable, true);
     }
 
@@ -92,10 +94,6 @@ public abstract class ProjectType {
         return primaryable;
     }
 
-//    public Set<ValueProviderFactory> getProvidedFactories() {
-//        return providedFactories;
-//    }
-
     protected void addConstantDefinition(String name, String description, AttributeValue value) {
         attributes.put(name, new Constant(id, name, description, value));
     }
@@ -114,14 +112,13 @@ public abstract class ProjectType {
 
     protected void addVariableDefinition(String name, String description, boolean required, ValueProviderFactory factory) {
         attributes.put(name, new Variable(id, name, description, required, factory));
-//        this.providedFactories.add(factory);
     }
 
     protected void addAttributeDefinition(Attribute attr) {
         attributes.put(attr.getName(), attr);
     }
 
-    protected void addParent(ProjectType parent) {
+    protected void addParent(AbstractProjectType parent) {
         parents.add(parent);
     }
 
@@ -137,5 +134,10 @@ public abstract class ProjectType {
         }
 
         return false;
+    }
+
+    @Override
+    public String getDefaultRecipe() {
+        return "";
     }
 }

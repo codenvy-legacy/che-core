@@ -13,8 +13,8 @@ package org.eclipse.che.ide.project.node;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -33,12 +33,12 @@ public abstract class ItemReferenceBasedNode extends ResourceBasedNode<ItemRefer
     protected final ItemReferenceProcessor resourceProcessor;
 
     public ItemReferenceBasedNode(@NotNull ItemReference itemReference,
-                                  @NotNull ProjectDescriptor projectDescriptor,
+                                  @NotNull ProjectConfigDto projectConfig,
                                   @NotNull NodeSettings nodeSettings,
                                   @NotNull EventBus eventBus,
                                   @NotNull NodeManager nodeManager,
                                   @NotNull ItemReferenceProcessor resourceProcessor) {
-        super(itemReference, projectDescriptor, nodeSettings, eventBus, nodeManager);
+        super(itemReference, projectConfig, nodeSettings, eventBus, nodeManager);
         this.resourceProcessor = resourceProcessor;
     }
 
@@ -68,7 +68,7 @@ public abstract class ItemReferenceBasedNode extends ResourceBasedNode<ItemRefer
     @NotNull
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
-        return nodeManager.getChildren(getStorablePath(), getProjectDescriptor(), getSettings());
+        return nodeManager.getChildren(getStorablePath(), getProjectConfig(), getSettings());
     }
 
     @NotNull

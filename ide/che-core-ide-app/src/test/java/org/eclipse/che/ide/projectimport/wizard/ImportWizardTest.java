@@ -15,8 +15,6 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectProblem;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.promises.client.Operation;
@@ -24,6 +22,7 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
@@ -75,7 +74,7 @@ public class ImportWizardTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Item>>                   callbackCaptorForItemReference;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<ProjectDescriptor>>      asyncDescriptorCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<ProjectConfigDto>>       asyncDescriptorCaptor;
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<List<SourceEstimation>>> estimationCaptor;
     @Captor
@@ -90,7 +89,7 @@ public class ImportWizardTest {
     @Mock
     private ProjectTypeDefinition               projectTypeDefinition;
     @Mock
-    private ProjectDescriptor                   descriptor;
+    private ProjectConfigDto                    projectConfig;
     @Mock
     private ProjectTypeServiceClient            projectTypeServiceClient;
     @Mock
@@ -120,6 +119,8 @@ public class ImportWizardTest {
 
     @Before
     public void setUp() {
+        when(projectConfig.getName()).thenReturn(PROJECT_NAME);
+        when(projectConfig.getSource()).thenReturn(source);
         when(dataObject.getName()).thenReturn(PROJECT_NAME);
         when(dataObject.getSource()).thenReturn(source);
     }
@@ -145,7 +146,7 @@ public class ImportWizardTest {
 
         verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
 
-        callOnSuccessUpdateProject(descriptor);
+        callOnSuccessUpdateProject(projectConfig);
 
         verify(eventBus).fireEvent(Matchers.<Event<Object>>anyObject());
         verify(completeCallback).onCompleted();
@@ -156,20 +157,20 @@ public class ImportWizardTest {
         ProjectProblem problem = mock(ProjectProblem.class);
 
         when(projectTypeDefinition.getPrimaryable()).thenReturn(true);
-        when(descriptor.getProblems()).thenReturn(Arrays.asList(problem));
+        when(projectConfig.getProblems()).thenReturn(Arrays.asList(problem));
         when(projectTypeServiceClient.getProjectType(anyString())).thenReturn(definitionPromise);
 
         wizard.complete(completeCallback);
 
         verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
 
-        callOnSuccessUpdateProject(descriptor);
+        callOnSuccessUpdateProject(projectConfig);
 
         //first time method is called for creat project
         verify(eventBus, times(2)).fireEvent(Matchers.<ConfigureProjectEvent>anyObject());
     }
 
-    private void callOnSuccessUpdateProject(ProjectDescriptor descriptor) throws Exception {
+    private void callOnSuccessUpdateProject(ProjectConfigDto projectConfig) throws Exception {
         ServerException throwable = mock(ServerException.class);
 
         when(throwable.getHTTPStatus()).thenReturn(404);
@@ -187,6 +188,6 @@ public class ImportWizardTest {
         typeDefinitionCaptor.getValue().apply(projectTypeDefinition);
 
         verify(projectServiceClient).updateProject(anyString(), Matchers.<ProjectConfigDto>anyObject(), asyncDescriptorCaptor.capture());
-        GwtReflectionUtils.callOnSuccess(asyncDescriptorCaptor.getValue(), descriptor);
+        GwtReflectionUtils.callOnSuccess(asyncDescriptorCaptor.getValue(), projectConfig);
     }
 }

@@ -10,13 +10,23 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
+import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.server.ProjectTypeConstraintException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -35,18 +45,18 @@ public class ProjectTypeRegistry {
 
     private final Map<String, ProjectType> projectTypes = new HashMap<>();
 
-    private Set <String> allIds = new HashSet<>();
+    private Set<String> allIds = new HashSet<>();
 
     @Inject
     public ProjectTypeRegistry(Set<ProjectType> projTypes) {
 
-        if(!projTypes.contains(BASE_TYPE)) {
+        if (!projTypes.contains(BASE_TYPE)) {
             allIds.add(BASE_TYPE.getId());
             projectTypes.put(BASE_TYPE.getId(), BASE_TYPE);
         }
 
-        for(ProjectType pt : projTypes) {
-            if(pt.getId() != null && !pt.getId().isEmpty()) {
+        for (ProjectType pt : projTypes) {
+            if (pt.getId() != null && !pt.getId().isEmpty()) {
                 allIds.add(pt.getId());
 
                 // add Base Type as a parent if not pointed
@@ -57,8 +67,8 @@ public class ProjectTypeRegistry {
             }
         }
 
-        for(ProjectType pt : projTypes) {
-            if(pt.getId() != null && !pt.getId().isEmpty()) {
+        for (ProjectType pt : projTypes) {
+            if (pt.getId() != null && !pt.getId().isEmpty()) {
                 try {
                     init(pt);
                     this.projectTypes.put(pt.getId(), pt);
@@ -78,17 +88,16 @@ public class ProjectTypeRegistry {
         return pt;
     }
 
-    public Collection <ProjectType> getProjectTypes() {
+    public Collection<ProjectType> getProjectTypes() {
         return projectTypes.values();
     }
 
 
-
-    public List <ProjectType> getProjectTypes(Comparator<ProjectType> comparator) {
+    public List<ProjectType> getProjectTypes(Comparator<ProjectType> comparator) {
 
         List<ProjectType> list = new ArrayList<>();
 
-        for(ProjectType pt : projectTypes.values()) {
+        for (ProjectType pt : projectTypes.values()) {
             list.add(pt);
         }
 
@@ -99,7 +108,7 @@ public class ProjectTypeRegistry {
     }
 
     // maybe for test only?
-    public void registerProjectType(ProjectType projectType) throws ProjectTypeConstraintException {
+    public void registerProjectType(AbstractProjectType projectType) throws ProjectTypeConstraintException {
 
         init(projectType);
         this.projectTypes.put(projectType.getId(), projectType);
@@ -109,31 +118,36 @@ public class ProjectTypeRegistry {
 
     private void init(ProjectType pt) throws ProjectTypeConstraintException {
 
-        if(pt.getId() == null || pt.getId().isEmpty()) {
+        if (pt.getId() == null || pt.getId().isEmpty()) {
             throw new ProjectTypeConstraintException("Could not register Project Type with null or empty ID: " + pt.getClass().getName());
         }
 
         // ID spelling (no spaces, only alphanumeric)
-        if(NAME_PATTERN.matcher(pt.getId()).find()) {
-            throw new ProjectTypeConstraintException("Could not register Project Type with invalid ID (only Alphanumeric, dash, point and underscore allowed): " +pt.getClass().getName()+ " ID: '"+pt.getId()+"'");
+        if (NAME_PATTERN.matcher(pt.getId()).find()) {
+            throw new ProjectTypeConstraintException(
+                    "Could not register Project Type with invalid ID (only Alphanumeric, dash, point and underscore allowed): " +
+                    pt.getClass().getName() + " ID: '" + pt.getId() + "'");
         }
 
-        if(pt.getDisplayName() == null || pt.getDisplayName().isEmpty()) {
-            throw new ProjectTypeConstraintException("Could not register Project Type with null or empty display name: " +pt.getId());
+        if (pt.getDisplayName() == null || pt.getDisplayName().isEmpty()) {
+            throw new ProjectTypeConstraintException("Could not register Project Type with null or empty display name: " + pt.getId());
         }
 
         for (Attribute attr : pt.getAttributes()) {
 
             // ID spelling (no spaces, only alphanumeric)
-            if(NAME_PATTERN.matcher(attr.getName()).find()) {
-                throw new ProjectTypeConstraintException("Could not register Project Type with invalid attribute Name (only Alphanumeric, dash and underscore allowed): " +attr.getClass().getName()+ " ID: '"+attr.getId()+"'");
+            if (NAME_PATTERN.matcher(attr.getName()).find()) {
+                throw new ProjectTypeConstraintException(
+                        "Could not register Project Type with invalid attribute Name (only Alphanumeric, dash and underscore allowed): " +
+                        attr.getClass().getName() + " ID: '" + attr.getId() + "'");
             }
         }
 
         // look for parents
-        for(ProjectType parent : pt.getParents()) {
-            if(!allIds.contains(parent.getId())) {
-                throw new ProjectTypeConstraintException("Could not register Project Type: "+pt.getId()+" : Unregistered parent Type: "+parent.getId());
+        for (ProjectType parent : pt.getParents()) {
+            if (!allIds.contains(parent.getId())) {
+                throw new ProjectTypeConstraintException(
+                        "Could not register Project Type: " + pt.getId() + " : Unregistered parent Type: " + parent.getId());
             }
         }
 
@@ -147,19 +161,20 @@ public class ProjectTypeRegistry {
     private void initAttributesRecursively(ProjectType myType, ProjectType type)
             throws ProjectTypeConstraintException {
 
-        for(ProjectType supertype : type.getParents()) {
+        for (ProjectType supertype : type.getParents()) {
 
-            for(Attribute attr : supertype.getAttributes()) {
+            for (Attribute attr : supertype.getAttributes()) {
 
                 // check attribute names
-                for(Attribute attr2 : myType.getAttributes()) {
-                    if(attr.getName().equals(attr2.getName()) && !attr.getProjectType().equals(attr2.getProjectType())) {
-                        throw new ProjectTypeConstraintException("Attribute name conflict. Project type "+
-                                myType.getId() + " could not be registered as attribute declaration "+ attr.getName()+
-                                " is duplicated in its ancestor(s).");
+                for (Attribute attr2 : myType.getAttributes()) {
+                    if (attr.getName().equals(attr2.getName()) && !attr.getProjectType().equals(attr2.getProjectType())) {
+                        throw new ProjectTypeConstraintException("Attribute name conflict. Project type " +
+                                                                 myType.getId() + " could not be registered as attribute declaration " +
+                                                                 attr.getName() +
+                                                                 " is duplicated in its ancestor(s).");
                     }
                 }
-                ((ProjectType)myType).addAttributeDefinition(attr);
+                ((AbstractProjectType)myType).addAttributeDefinition(attr);
             }
             //myType.addParent(supertype);
             initAttributesRecursively(myType, supertype);
@@ -171,10 +186,10 @@ public class ProjectTypeRegistry {
     public static class ChildToParentComparator implements Comparator<ProjectType> {
         @Override
         public int compare(ProjectType o1, ProjectType o2) {
-            if(o1.isTypeOf(o2.getId())) {
+            if (o1.isTypeOf(o2.getId())) {
                 return -1;
             }
-            if(o2.isTypeOf(o1.getId())) {
+            if (o2.isTypeOf(o1.getId())) {
                 return 1;
             }
             return 0;

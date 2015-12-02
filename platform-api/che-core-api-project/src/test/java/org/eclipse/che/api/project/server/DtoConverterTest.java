@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.core.model.project.SourceStorage;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.User;
 import org.junit.Assert;
@@ -23,6 +25,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vitaly Parfonov
@@ -31,7 +34,9 @@ public class DtoConverterTest {
 
     /**
      * Check user permission is based on userID and not username.
-     * @throws Exception if something is going wrong
+     *
+     * @throws Exception
+     *         if something is going wrong
      */
     @Test
     public void toProjectsDescriptorUserPermissionID() throws Exception {
@@ -48,6 +53,9 @@ public class DtoConverterTest {
         AccessControlEntry accessControlEntry = mock(AccessControlEntry.class);
         List<AccessControlEntry> acl = Arrays.asList(accessControlEntry);
         doReturn(acl).when(project).getPermissions();
+        ProjectConfig projectConfig = mock(ProjectConfig.class);
+        when(project.getConfig()).thenReturn(projectConfig);
+        when(projectConfig.getSource()).thenReturn(mock(SourceStorage.class));
         Principal principal = mock(Principal.class);
         doReturn(principal).when(accessControlEntry).getPrincipal();
         doReturn(permissions).when(accessControlEntry).getPermissions();
@@ -66,16 +74,15 @@ public class DtoConverterTest {
 
         // launch convert and before set env context
         EnvironmentContext old = EnvironmentContext.getCurrent();
-        ProjectDescriptor projectDescriptor;
+        ProjectConfigDto projectConfigDto;
         try {
             EnvironmentContext.setCurrent(customEnvironment);
-             projectDescriptor = DtoConverter.toProjectDescriptor(project, null, null, "workspace");
+            projectConfigDto = DtoConverter.toProjectConfig(project, null);
         } finally {
             // reset
             EnvironmentContext.setCurrent(old);
         }
 
-        Assert.assertNotNull(projectDescriptor);
-        Assert.assertEquals(permissions, projectDescriptor.getPermissions());
+        Assert.assertNotNull(projectConfigDto);
     }
 }

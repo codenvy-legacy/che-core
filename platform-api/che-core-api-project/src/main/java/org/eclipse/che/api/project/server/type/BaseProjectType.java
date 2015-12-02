@@ -16,7 +16,7 @@ import javax.inject.Singleton;
  * @author gazarenkov
  */
 @Singleton
-public class BaseProjectType extends ProjectType {
+public class BaseProjectType extends AbstractProjectType {
 
     public static final String ID = "blank";
 

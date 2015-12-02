@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
-import org.eclipse.che.ide.api.app.AppContext;
 import com.google.inject.Inject;
 
+import org.eclipse.che.ide.api.app.AppContext;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
@@ -47,11 +47,6 @@ public abstract class ProjectAction extends Action {
             return;
         }
 
-        if (appContext.getCurrentProject().isReadOnly()) {
-            e.getPresentation().setVisible(true);
-            e.getPresentation().setEnabled(false);
-            return;
-        }
         updateProjectAction(e);
     }
 

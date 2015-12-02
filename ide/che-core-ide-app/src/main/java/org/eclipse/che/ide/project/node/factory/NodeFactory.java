@@ -11,15 +11,12 @@
 package org.eclipse.che.ide.project.node.factory;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
-import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-
-import javax.validation.constraints.NotNull;
+import org.eclipse.che.ide.project.node.ModuleNode;
+import org.eclipse.che.ide.project.node.ProjectNode;
 
 /**
  * Factory that helps to create nodes.
@@ -30,55 +27,52 @@ public interface NodeFactory {
     /**
      * Creates project node that represent opened project.
      *
-     * @param projectDescriptor
-     *         instance of {@link org.eclipse.che.api.project.shared.dto.ProjectDescriptor} related to this node
+     * @param projectConfig
+     *         instance of {@link ProjectConfigDto} related to this node
      * @param nodeSettings
      *         node view settings
-     * @return instance of {@link ProjectDescriptorNode}
+     * @return instance of {@link org.eclipse.che.ide.project.node.ProjectNode}
      */
-    ProjectDescriptorNode newProjectDescriptorNode(@NotNull ProjectDescriptor projectDescriptor,
-                                                   @NotNull NodeSettings nodeSettings);
+    ProjectNode newProjectNode(ProjectConfigDto projectConfig, NodeSettings nodeSettings);
 
     /**
      * Creates module node that represent project module.
      *
-     * @param projectDescriptor
-     *         instance of {@link org.eclipse.che.api.project.shared.dto.ProjectDescriptor} related to this node
+     * @param projectConfig
+     *         instance of {@link ProjectConfigDto} related to this node
      * @param nodeSettings
      *         node view settings
-     * @return instance of {@link org.eclipse.che.ide.project.node.ModuleDescriptorNode}
+     * @return instance of {@link org.eclipse.che.ide.project.node.ModuleNode}
      */
-    ModuleDescriptorNode newModuleNode(@NotNull ModuleConfigDto moduleConfigDto,
-                                       @NotNull ProjectDescriptor projectDescriptor,
-                                       @NotNull NodeSettings nodeSettings);
+    ModuleNode newModuleNode(ProjectConfigDto projectConfig, NodeSettings nodeSettings);
 
     /**
      * Creates folder referenced node.
      *
      * @param itemReference
      *         instance of {@link org.eclipse.che.api.project.shared.dto.ItemReference} related to this node
-     * @param projectDescriptor
-     *         instance of {@link org.eclipse.che.api.project.shared.dto.ProjectDescriptor} related to this node
+     * @param projectConfig
+     *         instance of {@link ProjectConfigDto} related to this node
      * @param nodeSettings
      *         node view settings
      * @return instance of {@link FolderReferenceNode}
      */
-    FolderReferenceNode newFolderReferenceNode(@NotNull ItemReference itemReference,
-                                               @NotNull ProjectDescriptor projectDescriptor,
-                                               @NotNull NodeSettings nodeSettings);
+    FolderReferenceNode newFolderReferenceNode(ItemReference itemReference,
+                                               ProjectConfigDto projectConfig,
+                                               NodeSettings nodeSettings);
 
     /**
      * Creates file referenced node.
      *
      * @param itemReference
      *         instance of {@link org.eclipse.che.api.project.shared.dto.ItemReference} related to this node
-     * @param projectDescriptor
-     *         instance of {@link org.eclipse.che.api.project.shared.dto.ProjectDescriptor} related to this node
+     * @param projectConfig
+     *         instance of {@link ProjectConfigDto} related to this node
      * @param nodeSettings
      *         node view settings
      * @return instance of {@link FileReferenceNode}
      */
-    FileReferenceNode newFileReferenceNode(@NotNull ItemReference itemReference,
-                                           @NotNull ProjectDescriptor projectDescriptor,
-                                           @NotNull NodeSettings nodeSettings);
+    FileReferenceNode newFileReferenceNode(ItemReference itemReference,
+                                           ProjectConfigDto projectConfig,
+                                           NodeSettings nodeSettings);
 }

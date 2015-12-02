@@ -67,8 +67,6 @@ public class ImportLocalProjectAction extends AbstractPerspectiveAction {
     public void updateInPerspective(@NotNull ActionEvent event) {
         if (appContext.getCurrentProject() == null) {
             event.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
-        } else {
-            event.getPresentation().setEnabled(!appContext.getCurrentProject().isReadOnly());
         }
     }
 }

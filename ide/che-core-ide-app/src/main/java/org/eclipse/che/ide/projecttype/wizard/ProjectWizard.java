@@ -18,8 +18,6 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
@@ -113,15 +111,15 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
 
         updateAfterImportCallback = new UpdateProjectCallBack() {
             @Override
-            public void onProjectUpdated(ProjectDescriptor descriptor) {
-                eventBus.fireEvent(new CreateProjectEvent(descriptor));
+            public void onProjectUpdated(ProjectConfigDto projectConfig) {
+                eventBus.fireEvent(new CreateProjectEvent(projectConfig));
             }
         };
 
         projectChangedCallBack = new UpdateProjectCallBack() {
             @Override
-            public void onProjectUpdated(ProjectDescriptor descriptor) {
-                eventBus.fireEvent(new ProjectUpdatedEvent(context.get(PROJECT_PATH_KEY), descriptor));
+            public void onProjectUpdated(ProjectConfigDto projectConfig) {
+                eventBus.fireEvent(new ProjectUpdatedEvent(context.get(PROJECT_PATH_KEY), projectConfig));
             }
         };
     }
@@ -142,10 +140,10 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
 
     private void doSaveAsBlank(final CompleteCallback callback) {
         dataObject.setType(Constants.BLANK_ID);
-        final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        final Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
+        projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
             @Override
-            protected void onSuccess(ProjectDescriptor result) {
+            protected void onSuccess(ProjectConfigDto result) {
                 // just re-open project if it's already opened
                 ProjectWizard.this.eventBus.fireEvent(new OpenProjectEvent(result));
                 callback.onCompleted();
@@ -161,10 +159,10 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private void createProject(final CompleteCallback callback) {
-        final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.createProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        final Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
+        projectServiceClient.createProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
             @Override
-            protected void onSuccess(ProjectDescriptor result) {
+            protected void onSuccess(ProjectConfigDto result) {
                 eventBus.fireEvent(new CreateProjectEvent(result));
 
                 callback.onCompleted();
@@ -181,10 +179,10 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     private void createModule(final CompleteCallback callback) {
         final String pathToSelectedNodeParent = getPathToSelectedNodeParent();
 
-        final Unmarshallable<ModuleConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ModuleConfigDto.class);
-        projectServiceClient.createModule(pathToSelectedNodeParent, dataObject, new AsyncRequestCallback<ModuleConfigDto>(unmarshaller) {
+        final Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
+        projectServiceClient.createModule(pathToSelectedNodeParent, dataObject, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
             @Override
-            protected void onSuccess(ModuleConfigDto result) {
+            protected void onSuccess(ProjectConfigDto result) {
                 eventBus.fireEvent(new ModuleCreatedEvent(result));
                 callback.onCompleted();
             }
@@ -258,11 +256,11 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private void doUpdateProject(final CompleteCallback callback, final UpdateProjectCallBack updateProjectCallBack) {
-        //final NewProject project = dataObject.getProject();
-        final Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        //final NewProject project = dataObject.getProjectConfig();
+        final Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
+        projectServiceClient.updateProject(dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
             @Override
-            protected void onSuccess(ProjectDescriptor result) {
+            protected void onSuccess(ProjectConfigDto result) {
                 updateProjectCallBack.onProjectUpdated(result);
 
                 callback.onCompleted();
@@ -327,9 +325,9 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
         /**
          * The method is called when project was changed or after project import at once.
          *
-         * @param descriptor
-         *         description of project
+         * @param projectConfig
+         *         configuration of project
          */
-        void onProjectUpdated(ProjectDescriptor descriptor);
+        void onProjectUpdated(ProjectConfigDto projectConfig);
     }
 }

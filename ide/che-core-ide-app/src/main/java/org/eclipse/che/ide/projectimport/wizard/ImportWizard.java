@@ -17,7 +17,6 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.promises.client.Operation;
@@ -29,7 +28,6 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
-import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.commons.exception.JobNotFoundException;
@@ -59,7 +57,6 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     private final EventBus                            eventBus;
     private final CoreLocalizationConstant            localizationConstant;
     private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
-    private final NotificationManager                 notificationManager;
 
     /**
      * Creates project wizard.
@@ -86,8 +83,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
                         VfsServiceClient vfsServiceClient,
                         EventBus eventBus,
                         CoreLocalizationConstant localizationConstant,
-                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber,
-                        NotificationManager notificationManager) {
+                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber) {
         super(dataObject);
         this.projectServiceClient = projectServiceClient;
         this.projectTypeServiceClient = projectTypeServiceClient;
@@ -97,7 +93,6 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         this.eventBus = eventBus;
         this.localizationConstant = localizationConstant;
         this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
-        this.notificationManager = notificationManager;
     }
 
     /** {@inheritDoc} */
@@ -156,9 +151,9 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
                     final Promise<ProjectTypeDefinition> projectTypePromise = projectTypeServiceClient.getProjectType(estimation.getType());
                     projectTypePromise.then(new Operation<ProjectTypeDefinition>() {
                         @Override
-                        public void apply(ProjectTypeDefinition arg) throws OperationException {
-                            if (arg.getPrimaryable()) {
-                                createProject(callback, dataObject.withType(arg.getId()));
+                        public void apply(ProjectTypeDefinition typeDefinition) throws OperationException {
+                            if (typeDefinition.getPrimaryable()) {
+                                createProject(callback, dataObject.withType(typeDefinition.getId()));
                             }
                         }
                     });
@@ -176,11 +171,11 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 
     private void createProject(final CompleteCallback callback, ProjectConfigDto projectConfig) {
         final String projectName = dataObject.getName();
-        Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.updateProject(projectName, projectConfig, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
+        projectServiceClient.updateProject(projectName, projectConfig, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
 
             @Override
-            protected void onSuccess(ProjectDescriptor result) {
+            protected void onSuccess(ProjectConfigDto result) {
                 eventBus.fireEvent(new CreateProjectEvent(result));
                 if (!result.getProblems().isEmpty()) {
                     eventBus.fireEvent(new ConfigureProjectEvent(result));

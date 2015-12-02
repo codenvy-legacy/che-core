@@ -11,14 +11,11 @@
 package org.eclipse.che.api.project.gwt.client;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
-import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
@@ -39,12 +36,12 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectDescriptor>> callback);
+    void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectConfigDto>> callback);
 
     /**
      * Get all projects in current workspace.
      */
-    Promise<List<ProjectDescriptor>> getProjects(boolean includeAttributes);
+    Promise<List<ProjectConfigDto>> getProjects(boolean includeAttributes);
 
     /**
      * Get all projects in specific workspace.
@@ -52,7 +49,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<List<ProjectReference>> callback);
+    void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<List<ProjectConfigDto>> callback);
 
     /**
      * Clone project from some workspace.
@@ -73,7 +70,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getProject(String path, AsyncRequestCallback<ProjectDescriptor> callback);
+    void getProject(String path, AsyncRequestCallback<ProjectConfigDto> callback);
 
     /**
      * Get item.
@@ -95,7 +92,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback);
+    void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback);
 
 
     /**
@@ -130,7 +127,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getModules(String path, AsyncRequestCallback<List<ProjectDescriptor>> callback);
+    void getModules(String path, AsyncRequestCallback<List<ProjectConfigDto>> callback);
 
     /**
      * Create sub-project.
@@ -142,7 +139,7 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void createModule(String parentProjectPath, ProjectConfigDto projectConfig, AsyncRequestCallback<ModuleConfigDto> callback);
+    void createModule(String parentProjectPath, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback);
 
     /**
      * Update project.
@@ -155,20 +152,7 @@ public interface ProjectServiceClient {
      *         the callback to use for the response
      * @deprecated use {@link #updateProject(String, ProjectConfigDto, AsyncRequestCallback)} instead.
      */
-    @Deprecated
-    void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback);
-
-    /**
-     * Update project.
-     *
-     * @param path
-     *         path to the project to get
-     * @param projectConfig
-     *         descriptor of the project to update
-     * @param callback
-     *         the callback to use for the response
-     */
-    void updateProject(String path, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback);
+    void updateProject(String path, ProjectConfigDto descriptor, AsyncRequestCallback<ProjectConfigDto> callback);
 
     /**
      * Create new file in the specified folder.
@@ -233,14 +217,14 @@ public interface ProjectServiceClient {
     /**
      * Delete module.
      *
-     * @param path
+     * @param pathToParent
      *         path to module's parent
      * @param modulePath
      *         path to module to delete
      * @param callback
      *         the callback to use for the response
      */
-    void deleteModule(String path, String modulePath, AsyncRequestCallback<Void> callback);
+    void deleteModule(String pathToParent, String modulePath, AsyncRequestCallback<Void> callback);
 
     /**
      * Copy an item with new name to the specified target path. Original item name is used if new name isn't set.

@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.event.project;
 
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 /**
  * This event should be fired when we select different projects.
@@ -24,16 +24,16 @@ public class CurrentProjectChangedEvent extends GwtEvent<CurrentProjectChangedHa
     /** Type class used to register this event. */
     public static Type<CurrentProjectChangedHandler> TYPE = new Type<>();
 
-    private final ProjectDescriptor descriptor;
+    private final ProjectConfigDto configDto;
 
     /**
      * Creates an event to initiate changing of current project.
      *
-     * @param descriptor
+     * @param configDto
      *         selected project
      */
-    public CurrentProjectChangedEvent(ProjectDescriptor descriptor) {
-        this.descriptor = descriptor;
+    public CurrentProjectChangedEvent(ProjectConfigDto configDto) {
+        this.configDto = configDto;
     }
 
     @Override
@@ -42,8 +42,8 @@ public class CurrentProjectChangedEvent extends GwtEvent<CurrentProjectChangedHa
     }
 
     /** Returns descriptor of the project. */
-    public ProjectDescriptor getDescriptor() {
-        return descriptor;
+    public ProjectConfigDto getProjectConfig() {
+        return configDto;
     }
 
     @Override

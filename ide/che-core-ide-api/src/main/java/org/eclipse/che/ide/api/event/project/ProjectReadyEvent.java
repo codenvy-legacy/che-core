@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.event.project;
 
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 /**
  * Event that describes the fact that Project Action (opened/closing/closed) has been performed.
@@ -24,7 +24,7 @@ public class ProjectReadyEvent extends GwtEvent<ProjectReadyHandler> {
     /** Type class used to register this event. */
     public static Type<ProjectReadyHandler> TYPE = new Type<>();
 
-    private final ProjectDescriptor project;
+    private final ProjectConfigDto project;
 
     /**
      * Create new {@link ProjectReadyEvent}.
@@ -32,7 +32,7 @@ public class ProjectReadyEvent extends GwtEvent<ProjectReadyHandler> {
      * @param project
      *         an instance of affected project
      */
-    protected ProjectReadyEvent(ProjectDescriptor project) {
+    protected ProjectReadyEvent(ProjectConfigDto project) {
         this.project = project;
     }
 
@@ -42,7 +42,7 @@ public class ProjectReadyEvent extends GwtEvent<ProjectReadyHandler> {
      * @param project
      *         opened project
      */
-    public static ProjectReadyEvent createReadyEvent(ProjectDescriptor project) {
+    public static ProjectReadyEvent createReadyEvent(ProjectConfigDto project) {
         return new ProjectReadyEvent(project);
     }
 
@@ -52,7 +52,7 @@ public class ProjectReadyEvent extends GwtEvent<ProjectReadyHandler> {
     }
 
     /** @return the instance of affected project */
-    public ProjectDescriptor getProject() {
+    public ProjectConfigDto getProjectConfig() {
         return project;
     }
 

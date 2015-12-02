@@ -12,7 +12,7 @@ package org.eclipse.che.ide.api.event.project;
 
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 /**
  * An event that should be fired in order to open a project.
@@ -24,16 +24,16 @@ public class OpenProjectEvent extends GwtEvent<OpenProjectHandler> {
     /** Type class used to register this event. */
     public static Type<OpenProjectHandler> TYPE = new Type<>();
 
-    private final ProjectDescriptor descriptor;
+    private final ProjectConfigDto projectConfig;
 
     /**
      * Creates an event to initiate opening the specified project.
      *
-     * @param descriptor
+     * @param projectConfig
      *         name of the project to open
      */
-    public OpenProjectEvent(ProjectDescriptor descriptor) {
-        this.descriptor = descriptor;
+    public OpenProjectEvent(ProjectConfigDto projectConfig) {
+        this.projectConfig = projectConfig;
     }
 
     @Override
@@ -46,8 +46,8 @@ public class OpenProjectEvent extends GwtEvent<OpenProjectHandler> {
      *
      * @return descriptor of the project to open
      */
-    public ProjectDescriptor getDescriptor() {
-        return descriptor;
+    public ProjectConfigDto getProjectConfig() {
+        return projectConfig;
     }
 
     @Override
