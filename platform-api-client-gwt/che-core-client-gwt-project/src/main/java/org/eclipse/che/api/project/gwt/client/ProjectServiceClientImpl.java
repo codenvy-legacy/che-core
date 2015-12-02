@@ -22,10 +22,12 @@ import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
+import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.promises.client.callback.PromiseHelper;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -85,7 +87,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoFactory = dtoFactory;
-        this.dtoUnmarshaller = dtoUnmarshaller;
+        this.dtoUnmarshaller= dtoUnmarshaller;
 
         baseHttpUrl = extPath + projectServicePath;
     }
@@ -324,6 +326,52 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         sendMessageToWS(message, callback);
     }
 
+    /**
+     * Imports sources project.
+     */
+    @Override
+    public Promise<Void> importProject(final String path, final boolean force, final SourceStorageDto sourceStorage) {
+        return PromiseHelper.newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
+            @Override
+            public void makeCall(final AsyncCallback<Void> callback) {
+                final StringBuilder requestUrl = new StringBuilder(projectServicePath);
+                requestUrl.append("/import").append(normalizePath(path));
+                if (force) {
+                    requestUrl.append("?force=true");
+                }
+
+                MessageBuilder builder = new MessageBuilder(POST, requestUrl.toString());
+                builder.data(dtoFactory.toJson(sourceStorage)).header(CONTENTTYPE, APPLICATION_JSON);
+                final Message message =  builder.build();
+                extServerStateController.getMessageBus().then(new Operation<MessageBus>() {
+                    @Override
+                    public void apply(MessageBus messageBus) throws OperationException {
+                        try {
+                            messageBus.send(message, new RequestCallback<Void>() {
+                                @Override
+                                protected void onSuccess(Void result) {
+                                    callback.onSuccess(result);
+                                }
+
+                                @Override
+                                protected void onFailure(Throwable exception) {
+                                    callback.onFailure(exception);
+                                }
+                            });
+                        } catch (WebSocketException e) {
+                            callback.onFailure(e);
+                        }
+                    }
+                })
+                .catchError(new Operation<PromiseError>() {
+                    @Override
+                    public void apply(PromiseError arg) throws OperationException {
+                        callback.onFailure(arg.getCause());
+                    }
+                });
+            }
+        });
+    }
 
     private void sendMessageToWS(final @NotNull Message message, final @NotNull RequestCallback<?> callback) {
         extServerStateController.getMessageBus().then(new Operation<MessageBus>() {

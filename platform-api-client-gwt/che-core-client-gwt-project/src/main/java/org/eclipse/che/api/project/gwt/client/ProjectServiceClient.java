@@ -283,6 +283,18 @@ public interface ProjectServiceClient {
     void importProject(String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback);
 
     /**
+     * Import sources into project.
+     *
+     * @param path
+     *         path to the project to import sources
+     * @param force
+     *         if it's true then rewrites existing project
+     * @param sourceStorage
+     *         {@link SourceStorageDto}
+     */
+    Promise<Void> importProject(String path, boolean force, SourceStorageDto sourceStorage);
+
+    /**
      * Get children for the specified path.
      *
      * @param path

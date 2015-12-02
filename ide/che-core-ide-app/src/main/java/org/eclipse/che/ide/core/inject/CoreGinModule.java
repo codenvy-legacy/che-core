@@ -86,6 +86,7 @@ import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriberFactory;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
@@ -401,6 +402,9 @@ public class CoreGinModule extends AbstractGinModule {
                                              .build(DialogFactory.class));
         install(new GinFactoryModuleBuilder().implement(ConsoleButton.class, ConsoleButtonImpl.class)
                                              .build(ConsoleButtonFactory.class));
+        install(new GinFactoryModuleBuilder().implement(ImportProjectNotificationSubscriber.class,
+                                                        ImportProjectNotificationSubscriberImpl.class)
+                                             .build(ImportProjectNotificationSubscriberFactory.class));
 
         bind(UploadFileView.class).to(UploadFileViewImpl.class);
         bind(UploadFolderFromZipView.class).to(UploadFolderFromZipViewImpl.class);
