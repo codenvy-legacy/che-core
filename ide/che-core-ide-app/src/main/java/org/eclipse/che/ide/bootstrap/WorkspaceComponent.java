@@ -86,7 +86,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
     protected final DtoFactory                dtoFactory;
     protected final NotificationManager      notificationManager;
 
-    private final StartWorkspacePresenter  startWorkspacePresenter;
+    protected final StartWorkspacePresenter  startWorkspacePresenter;
     private final EventBus                 eventBus;
     private final LoaderPresenter          loader;
     private final Provider<MachineManager> machineManagerProvider;
@@ -159,7 +159,6 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
             public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
                 if (workspaces.isEmpty()) {
                     createWorkspacePresenter.show(workspaces, callback);
-
                     return;
                 }
 
@@ -214,6 +213,8 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                             }
                         }
                     });
+                } else {
+                    setCurrentWorkspace(workspace);
                 }
             }
         });
