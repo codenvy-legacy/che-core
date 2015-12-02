@@ -10,9 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto;
 
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
 import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectProblem;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.workspace.shared.dto.util.ProjectConfigUtil;
 import org.eclipse.che.dto.shared.DTO;
+import org.eclipse.che.dto.shared.DelegateRule;
+import org.eclipse.che.dto.shared.DelegateTo;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +31,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  * @author Alexander Garagatyi
  */
 @DTO
-public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
+public interface ProjectConfigDto extends ProjectConfig {
     @Override
     @FactoryParameter(obligation = MANDATORY)
     String getName();
@@ -74,11 +81,11 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
     ProjectConfigDto withAttributes(Map<String, List<String>> attributes);
 
     @Override
-    List<ModuleConfigDto> getModules();
+    List<ProjectConfigDto> getModules();
 
-    void setModules(List<ModuleConfigDto> modules);
+    void setModules(List<ProjectConfigDto> modules);
 
-    ProjectConfigDto withModules(List<ModuleConfigDto> modules);
+    ProjectConfigDto withModules(List<ProjectConfigDto> modules);
 
     @Override
     @FactoryParameter(obligation = MANDATORY)
@@ -87,4 +94,34 @@ public interface ProjectConfigDto extends ModuleConfigDto, ProjectConfig {
     void setSource(SourceStorageDto source);
 
     ProjectConfigDto withSource(SourceStorageDto source);
+
+    @Override
+    @FactoryParameter(obligation = OPTIONAL)
+    List<Link> getLinks();
+
+    void setLinks(List<Link> links);
+
+    ProjectConfigDto withLinks(List<Link> links);
+
+    /** Provides information about project errors. If project doesn't have any error this field is empty. */
+    @ApiModelProperty(value = "Optional information about project errors. If project doesn't have any error this field is empty",
+                      position = 17)
+    List<ProjectProblem> getProblems();
+
+    /** @see #getProblems */
+    void setProblems(List<ProjectProblem> problems);
+
+    ProjectConfigDto withProblems(List<ProjectProblem> problems);
+
+    @Override
+    @FactoryParameter(obligation = OPTIONAL)
+    String getContentRoot();
+
+    void setContentRoot(String contentRoot);
+
+    ProjectConfigDto withContentRoot(String contentRoot);
+
+    @DelegateTo(client = @DelegateRule(type = ProjectConfigUtil.class, method = "findModule"),
+                server = @DelegateRule(type = ProjectConfigUtil.class, method = "findModule"))
+    ProjectConfigDto findModule(String pathToModule);
 }

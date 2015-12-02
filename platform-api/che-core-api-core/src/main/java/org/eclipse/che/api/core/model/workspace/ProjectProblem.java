@@ -10,25 +10,22 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.workspace;
 
-import java.util.List;
-import java.util.Map;
+import org.eclipse.che.dto.shared.DTO;
 
 /**
- * @author  Vitalii Parfonov
+ * @author andrew00x
  */
-public interface ModuleConfig {
+@DTO
+public interface ProjectProblem {
+    int getCode();
 
-    String getName();
+    void setCode(int status);
 
-    String getPath();
+    ProjectProblem withCode(int status);
 
-    String getDescription();
+    String getMessage();
 
-    String getType();
+    void setMessage(String message);
 
-    List<String> getMixins();
-
-    Map<String, List<String>> getAttributes();
-
-    List<? extends ModuleConfig> getModules();
+    ProjectProblem withMessage(String message);
 }

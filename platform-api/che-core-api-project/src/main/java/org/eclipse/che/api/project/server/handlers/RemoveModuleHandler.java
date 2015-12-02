@@ -13,7 +13,7 @@ package org.eclipse.che.api.project.server.handlers;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.workspace.ModuleConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.project.server.FolderEntry;
 
 /**
@@ -28,8 +28,6 @@ public interface RemoveModuleHandler extends ProjectHandler {
      *
      * @param parentFolder
      *         parent folder
-     * @param modulePath
-     *         path to the module
      * @param moduleConfig
      *         module configuration
      * @throws ServerException
@@ -39,6 +37,7 @@ public interface RemoveModuleHandler extends ProjectHandler {
      * @throws ForbiddenException
      *         if user which perform operation doesn't have required permissions
      */
-    void onRemoveModule(FolderEntry parentFolder, String modulePath, ModuleConfig moduleConfig)
-            throws ForbiddenException, ConflictException, ServerException;
+    void onRemoveModule(FolderEntry parentFolder, ProjectConfig moduleConfig) throws ForbiddenException,
+                                                                                     ConflictException,
+                                                                                     ServerException;
 }

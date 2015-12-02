@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
-import org.eclipse.che.api.project.server.*;
-
 import org.eclipse.che.api.project.server.FolderEntry;
 import org.eclipse.che.api.project.server.InvalidValueException;
 import org.eclipse.che.api.project.server.ValueProviderFactory;
@@ -21,7 +19,7 @@ import org.eclipse.che.api.project.server.ValueStorageException;
 /**
  * @author gazarenkov
  */
-public class Variable extends Attribute {
+public class Variable extends AbstractAttribute {
 
     protected ValueProviderFactory valueProviderFactory = null;
     protected AttributeValue       value                = null;
@@ -44,7 +42,7 @@ public class Variable extends Attribute {
     }
 
     @Override
-    public AttributeValue getValue() throws ValueStorageException {
+    public AttributeValue getValue() {
         return value;
     }
 
@@ -58,7 +56,7 @@ public class Variable extends Attribute {
     }
 
     public final void setValue(AttributeValue value, FolderEntry projectFolder) throws InvalidValueException, ValueStorageException {
-        if(valueProviderFactory != null) {
+        if (valueProviderFactory != null) {
             this.valueProviderFactory.newInstance(projectFolder).setValues(getName(), value.getList());
         } else
             this.value = value;
@@ -67,7 +65,6 @@ public class Variable extends Attribute {
     public final ValueProviderFactory getValueProviderFactory() {
         return valueProviderFactory;
     }
-
 
 
 }

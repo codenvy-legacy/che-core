@@ -247,7 +247,7 @@ public class CreateWorkspacePresenterTest {
 
         verify(view).showValidationNameError("");
 
-        verify(view).setVisibleUrlError(true);
+        verify(view).setVisibleUrlError(anyBoolean());
     }
 
     @Test

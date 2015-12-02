@@ -13,33 +13,142 @@ package org.eclipse.che.api.workspace.server.model.impl;
 
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectProblem;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.toMap;
-
-//TODO move?
 
 /**
  * Data object for {@link ProjectConfig}.
  *
  * @author Eugene Voevodin
+ * @author Dmitry Shnurenko
  */
-public class ProjectConfigImpl extends ModuleConfigImpl implements ProjectConfig {
+public class ProjectConfigImpl implements ProjectConfig {
 
-
+    private String                    name;
+    private String                    path;
+    private String                    description;
+    private String                    type;
+    private List<String>              mixins;
+    private Map<String, List<String>> attributes;
+    private List<ProjectConfig>       modules;
+    private List<Link>                links;
     private SourceStorageImpl         storage;
+    private String                    contentRoot;
+    private List<ProjectProblem>      problems;
 
     public ProjectConfigImpl() {
     }
 
-    public ProjectConfigImpl(ProjectConfig projectCfg) {
-        super(projectCfg);
-        if (projectCfg.getSource() != null) {
-            storage = new SourceStorageImpl(projectCfg.getSource().getType(),
-                                            projectCfg.getSource().getLocation(),
-                                            projectCfg.getSource().getParameters());
+    public ProjectConfigImpl(ProjectConfig projectConfig) {
+        name = projectConfig.getName();
+        path = projectConfig.getPath();
+        description = projectConfig.getDescription();
+        type = projectConfig.getType();
+        mixins = new ArrayList<>(projectConfig.getMixins());
+        modules = new ArrayList<>(projectConfig.getModules() != null ? projectConfig.getModules() : Collections.<ProjectConfig>emptyList());
+        attributes = projectConfig.getAttributes()
+                                  .entrySet()
+                                  .stream()
+                                  .collect(toMap(Map.Entry::getKey, e -> new ArrayList<>(e.getValue())));
+
+        SourceStorage sourceStorage = projectConfig.getSource();
+
+        if (sourceStorage != null) {
+            storage = new SourceStorageImpl(sourceStorage.getType(), sourceStorage.getLocation(), sourceStorage.getParameters());
         }
+
+        links = projectConfig.getLinks();
+        contentRoot = projectConfig.getContentRoot();
+        problems = projectConfig.getProblems();
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @Override
+    public List<String> getMixins() {
+        if (mixins == null) {
+            mixins = new ArrayList<>();
+        }
+        return mixins;
+    }
+
+    public void setMixins(List<String> mixins) {
+        this.mixins = mixins;
+    }
+
+    @Override
+    public Map<String, List<String>> getAttributes() {
+        if (attributes == null) {
+            attributes = new HashMap<>();
+        }
+        return attributes;
+    }
+
+    @Override
+    public List<ProjectConfig> getModules() {
+        if (modules == null) {
+            modules = new ArrayList<>();
+        }
+        return modules;
+    }
+
+    @Override
+    public List<ProjectProblem> getProblems() {
+        if (problems == null) {
+            problems = new ArrayList<>();
+        }
+        return problems;
+    }
+
+    public void setModules(List<ProjectConfig> modules) {
+        this.modules = modules;
+    }
+
+    public void setAttributes(Map<String, List<String>> attributes) {
+        this.attributes = attributes;
     }
 
     @Override
@@ -47,36 +156,83 @@ public class ProjectConfigImpl extends ModuleConfigImpl implements ProjectConfig
         return storage;
     }
 
-    public void setStorage(SourceStorageImpl sourceStorage) {
+    @Override
+    public List<Link> getLinks() {
+        if (links == null) {
+            links = new ArrayList<>();
+        }
+        return links;
+    }
+
+    @Override
+    public String getContentRoot() {
+        return contentRoot;
+    }
+
+    public void setContentRoot(String contentRoot) {
+        this.contentRoot = contentRoot;
+    }
+
+    public void setLinks(List<Link> links) {
+        this.links = links;
+    }
+
+    public void setSource(SourceStorageImpl sourceStorage) {
         this.storage = sourceStorage;
+    }
+
+    public void setProblems(List<ProjectProblem> problems) {
+        this.problems = problems;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ProjectConfigImpl)) return false;
-        if (!super.equals(o)) return false;
         final ProjectConfigImpl other = (ProjectConfigImpl)o;
-        return Objects.equals(storage, other.storage);
+        return Objects.equals(name, other.name)
+               && Objects.equals(path, other.path)
+               && Objects.equals(description, other.description)
+               && Objects.equals(type, other.type)
+               && getMixins().equals(other.getMixins())
+               && getAttributes().equals(other.getAttributes())
+               && getModules().equals(other.getModules())
+               && getLinks().equals(other.getLinks())
+               && getProblems().equals(other.getProblems())
+               && Objects.equals(storage, other.getSource())
+               && Objects.equals(contentRoot, other.getContentRoot());
     }
 
     @Override
     public int hashCode() {
-        int hash = super.hashCode();
+        int hash = 7;
+        hash = hash * 31 + Objects.hashCode(name);
+        hash = hash * 31 + Objects.hashCode(path);
+        hash = hash * 31 + Objects.hashCode(description);
+        hash = hash * 31 + Objects.hashCode(type);
+        hash = hash * 31 + getMixins().hashCode();
+        hash = hash * 31 + getAttributes().hashCode();
+        hash = hash * 31 + getModules().hashCode();
+        hash = hash * 31 + getLinks().hashCode();
+        hash = hash * 31 + getProblems().hashCode();
         hash = hash * 31 + Objects.hashCode(storage);
+        hash = hash * 31 + Objects.hashCode(contentRoot);
         return hash;
     }
 
     @Override
     public String toString() {
         return "ProjectConfigImpl{" +
-               "name='" + super.getName() + '\'' +
-               ", path='" + super.getPath() + '\'' +
-               ", description='" + super.getDescription() + '\'' +
-               ", type='" + super.getType() + '\'' +
-               ", mixins=" + super.getMixins() +
-               ", attributes=" + super.getAttributes() +
+               "name='" + name + '\'' +
+               ", path='" + path + '\'' +
+               ", description='" + description + '\'' +
+               ", type='" + type + '\'' +
+               ", mixins=" + mixins +
+               ", attributes=" + attributes +
+               ", modules=" + modules +
+               ", links=" + links +
                ", storage=" + storage +
+               ", contentRoot='" + contentRoot + '\'' +
                '}';
     }
 }

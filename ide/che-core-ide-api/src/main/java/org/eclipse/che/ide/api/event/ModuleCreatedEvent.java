@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.event;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 /**
  * @author Vlad Zhukovskiy
@@ -33,13 +33,13 @@ public class ModuleCreatedEvent extends GwtEvent<ModuleCreatedEvent.ModuleCreate
         return TYPE;
     }
 
-    private ModuleConfigDto module;
+    private ProjectConfigDto module;
 
-    public ModuleCreatedEvent(ModuleConfigDto module) {
+    public ModuleCreatedEvent(ProjectConfigDto module) {
         this.module = module;
     }
 
-    public ModuleConfigDto getModule() {
+    public ProjectConfigDto getModule() {
         return module;
     }
 

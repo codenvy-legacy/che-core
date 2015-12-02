@@ -17,7 +17,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.machine.Recipe;
-import org.eclipse.che.api.core.model.workspace.ModuleConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.local.storage.LocalStorage;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.recipe.adapters.RecipeTypeAdapter;
@@ -58,7 +58,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
     @Inject
     public LocalWorkspaceDaoImpl(LocalStorageFactory factory) throws IOException {
         final Map<Class<?>, Object> adapters = ImmutableMap.of(Recipe.class, new RecipeTypeAdapter(),
-                                                               ModuleConfig.class, new ModuleConfigAdapter());
+                                                               ProjectConfig.class, new ProjectConfigAdapter());
         this.localStorage = factory.create("workspaces.json", adapters);
         this.workspaces = new HashMap<>();
     }

@@ -25,7 +25,7 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
@@ -93,8 +93,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent e) {
-        if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent()) ||
-            (appContext.getCurrentProject() != null && appContext.getCurrentProject().isReadOnly())) {
+        if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent())) {
             e.getPresentation().setVisible(true);
             e.getPresentation().setEnabled(false);
             return;
@@ -115,7 +114,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
         final Object possibleNode = selection.getHeadElement();
 
-        boolean enable = !(possibleNode instanceof ProjectDescriptorNode)
+        boolean enable = !(possibleNode instanceof ProjectNode)
                          && possibleNode instanceof SupportRename
                          && ((SupportRename)possibleNode).getRenameProcessor() != null;
 
@@ -161,7 +160,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
             inputDialog.withValidator(new FileNameValidator(node.getName()));
         } else if (node instanceof FolderReferenceNode) {
             inputDialog.withValidator(new FolderNameValidator(node.getName()));
-        } else if (node instanceof ProjectDescriptorNode) {
+        } else if (node instanceof ProjectNode) {
             inputDialog.withValidator(new ProjectNameValidator(node.getName()));
         }
         inputDialog.show();
@@ -172,7 +171,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
             return localization.renameFileDialogTitle();
         } else if (node instanceof FolderReferenceNode) {
             return localization.renameFolderDialogTitle();
-        } else if (node instanceof ProjectDescriptorNode) {
+        } else if (node instanceof ProjectNode) {
             return localization.renameProjectDialogTitle();
         }
         return localization.renameNodeDialogTitle();

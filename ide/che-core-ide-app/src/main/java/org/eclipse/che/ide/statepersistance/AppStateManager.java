@@ -16,11 +16,11 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -133,9 +133,9 @@ public class AppStateManager implements WindowActionHandler,
 
     }
 
-    private void persistCurrentProjectState(ProjectDescriptor projectDescriptor) {
-        String projectPath = projectDescriptor.getPath();
-        String fullProjectPath = "/" + projectDescriptor.getWorkspaceId() + projectPath;
+    private void persistCurrentProjectState(ProjectConfigDto projectConfig) {
+        String projectPath = projectConfig.getPath();
+        String fullProjectPath = "/" + appContext.getWorkspace().getId() + projectPath;
 
         ProjectState projectState = dtoFactory.createDto(ProjectState.class);
 
@@ -187,19 +187,17 @@ public class AppStateManager implements WindowActionHandler,
 
     @Override
     public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
-        persistCurrentProjectState(event.getDescriptor());
+        persistCurrentProjectState(event.getProjectConfig());
     }
 
     @Override
     public void onProjectOpened(OpenProjectEvent event) {
-        ProjectDescriptor projectDescriptor = event.getDescriptor();
+        ProjectConfigDto projectConfig = event.getProjectConfig();
 
-        String workspaceId = projectDescriptor.getWorkspaceId();
-        String projectPath = projectDescriptor.getPath();
+        String projectPath = projectConfig.getPath();
+        String fullProjectPath = "/" + appContext.getWorkspace().getId() + projectPath;
 
-        String fullPath = "/" + workspaceId + projectPath;
-
-        ProjectState projectState = appState.getProjects().get(fullPath);
+        ProjectState projectState = appState.getProjects().get(fullProjectPath);
 
         if (projectState == null) {
             return;

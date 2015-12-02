@@ -192,7 +192,6 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
         final ProjectConfigDto prevData = wizard.getDataObject();
         wizard = getWizardForImporter(importer);
         final ProjectConfigDto dataObject = wizard.getDataObject();
-        //final NewProject newProject = dataObject.getProject();
 
         dataObject.getSource().setType(importer.getId());
 

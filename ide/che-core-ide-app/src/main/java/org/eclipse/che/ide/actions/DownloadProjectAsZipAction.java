@@ -25,7 +25,7 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.download.DownloadContainer;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.project.node.ProjectNode;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -86,7 +86,7 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
         Selection<?> selection = projectExplorer.getSelection();
         boolean enabled = appContext.getCurrentProject() != null || (selection != null &&
                                                                      (!selection.isEmpty() &&
-                                                                      selection.getHeadElement() instanceof ProjectDescriptorNode));
+                                                                      selection.getHeadElement() instanceof ProjectNode));
 
         event.getPresentation().setVisible(true);
         event.getPresentation().setEnabled(enabled);
@@ -103,10 +103,10 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
             selectedNode = (HasStorablePath)selection.get(0);
         }
 
-        if (selectedNode != null && selectedNode instanceof ProjectDescriptorNode) {
+        if (selectedNode != null && selectedNode instanceof ProjectNode) {
             path = selectedNode.getStorablePath();
         } else if (currentProject != null) {
-            path = currentProject.getProjectDescription().getPath();
+            path = currentProject.getProjectConfig().getPath();
         }
 
         if (path.startsWith("/")) {

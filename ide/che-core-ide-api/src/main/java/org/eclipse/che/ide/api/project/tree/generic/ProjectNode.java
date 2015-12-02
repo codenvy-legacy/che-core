@@ -10,24 +10,25 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree.generic;
 
-import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
-import org.eclipse.che.ide.api.event.RenameNodeEvent;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
-import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.rest.Unmarshallable;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.validation.constraints.NotNull;
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.event.RenameNodeEvent;
+import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
+import org.eclipse.che.ide.api.project.tree.AbstractTreeNode;
+import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.Unmarshallable;
+
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +38,8 @@ import java.util.List;
  * @author Artem Zatsarynnyy
  */
 @Deprecated
-public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements StorableNode<ProjectDescriptor>, Openable,
-                                                                                /*ProjectDescriptorChangedHandler,*/
-                                                                                UpdateTreeNodeDataIterable {
+public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements StorableNode<ProjectConfigDto>, Openable,
+                                                                               UpdateTreeNodeDataIterable {
     protected final ProjectServiceClient   projectServiceClient;
     protected final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     protected final EventBus               eventBus;
@@ -48,13 +48,12 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
 
     @Inject
     public ProjectNode(@Assisted TreeNode<?> parent,
-                       @Assisted ProjectDescriptor data,
+                       @Assisted ProjectConfigDto data,
                        @Assisted GenericTreeStructure treeStructure,
                        EventBus eventBus,
                        ProjectServiceClient projectServiceClient,
                        DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus);
-//        eventBus.addHandler(ProjectDescriptorChangedEvent.TYPE, this);
 
         this.treeStructure = treeStructure;
         this.eventBus = eventBus;
@@ -90,16 +89,16 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     /** {@inheritDoc} */
     @NotNull
     @Override
-    public HasProjectDescriptor getProject() {
-        return new HasProjectDescriptor() {
+    public HasProjectConfig getProject() {
+        return new HasProjectConfig() {
             @NotNull
             @Override
-            public ProjectDescriptor getProjectDescriptor() {
+            public ProjectConfigDto getProjectConfig() {
                 return getData();
             }
 
             @Override
-            public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
+            public void setProjectConfig(@NotNull ProjectConfigDto projectConfig) {
                 //stub
             }
         };
@@ -144,10 +143,10 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
 
     /** {@inheritDoc} */
     public void updateData(final AsyncCallback<Void> asyncCallback, String newPath) {
-        Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.getProject(newPath, new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+        Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
+        projectServiceClient.getProject(newPath, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
             @Override
-            protected void onSuccess(ProjectDescriptor result) {
+            protected void onSuccess(ProjectConfigDto result) {
                 setData(result);
                 asyncCallback.onSuccess(null);
             }
@@ -162,9 +161,9 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     /** {@inheritDoc} */
     @Override
     public void refreshChildren(final AsyncCallback<TreeNode<?>> callback) {
-        getModules(getData(), new AsyncCallback<List<ProjectDescriptor>>() {
+        getModules(getData(), new AsyncCallback<List<ProjectConfigDto>>() {
             @Override
-            public void onSuccess(final List<ProjectDescriptor> modules) {
+            public void onSuccess(final List<ProjectConfigDto> modules) {
                 getChildren(getData().getPath(), new AsyncCallback<List<ItemReference>>() {
                     @Override
                     public void onSuccess(List<ItemReference> childItems) {
@@ -198,11 +197,11 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
         });
     }
 
-    protected void getModules(ProjectDescriptor project, final AsyncCallback<List<ProjectDescriptor>> callback) {
-        final Unmarshallable<List<ProjectDescriptor>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.getModules(project.getPath(), new AsyncRequestCallback<List<ProjectDescriptor>>(unmarshaller) {
+    protected void getModules(ProjectConfigDto project, final AsyncCallback<List<ProjectConfigDto>> callback) {
+        final Unmarshallable<List<ProjectConfigDto>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ProjectConfigDto.class);
+        projectServiceClient.getModules(project.getPath(), new AsyncRequestCallback<List<ProjectConfigDto>>(unmarshaller) {
             @Override
-            protected void onSuccess(List<ProjectDescriptor> result) {
+            protected void onSuccess(List<ProjectConfigDto> result) {
                 callback.onSuccess(result);
             }
 
@@ -213,7 +212,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
         });
     }
 
-    private List<TreeNode<?>> getChildNodesForItems(List<ItemReference> childItems, List<ProjectDescriptor> modules) {
+    private List<TreeNode<?>> getChildNodesForItems(List<ItemReference> childItems, List<ProjectConfigDto> modules) {
         List<TreeNode<?>> oldChildren = getChildren();
         List<TreeNode<?>> newChildren = new ArrayList<>();
         for (ItemReference item : childItems) {
@@ -314,13 +313,8 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
      * @return new node instance or {@code null} if the specified item is not supported
      */
     @Nullable
-    protected AbstractTreeNode<?> createChildNode(ItemReference item, List<ProjectDescriptor> modules) {
+    protected AbstractTreeNode<?> createChildNode(ItemReference item, List<ProjectConfigDto> modules) {
         if ("project".equals(item.getType())) {
-            ProjectDescriptor module = getModule(item, modules);
-//            if (module != null) {
-//                return getTreeStructure().newModuleNode(this, module);
-//            }
-            // if project isn't a module - show it as folder
             return getTreeStructure().newFolderNode(this, item);
         } else if ("folder".equals(item.getType())) {
             return getTreeStructure().newFolderNode(this, item);
@@ -328,18 +322,6 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
             return getTreeStructure().newFileNode(this, item);
         }
 
-        return null;
-    }
-
-    @Nullable
-    private ProjectDescriptor getModule(ItemReference folderItem, List<ProjectDescriptor> modules) {
-        if ("project".equals(folderItem.getType())) {
-            for (ProjectDescriptor module : modules) {
-                if (folderItem.getName().equals(module.getName())) {
-                    return module;
-                }
-            }
-        }
         return null;
     }
 
@@ -388,14 +370,6 @@ public class ProjectNode extends AbstractTreeNode<ProjectDescriptor> implements 
     public void open() {
         opened = true;
     }
-
-//    @Override
-//    public void onProjectDescriptorChanged(ProjectDescriptorChangedEvent event) {
-//        String path = event.getProjectDescriptor().getPath();
-//        if (getPath().equals(path)) {
-//            setData(event.getProjectDescriptor());
-//        }
-//    }
 
     private boolean isRootProject() {
         return getParent().getParent() == null;

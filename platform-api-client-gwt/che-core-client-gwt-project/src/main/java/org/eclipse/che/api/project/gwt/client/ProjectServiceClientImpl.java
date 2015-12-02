@@ -18,17 +18,14 @@ import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectReference;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
-import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
-import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -88,13 +85,13 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoFactory = dtoFactory;
-        this.dtoUnmarshaller= dtoUnmarshaller;
+        this.dtoUnmarshaller = dtoUnmarshaller;
 
         baseHttpUrl = extPath + projectServicePath;
     }
 
     @Override
-    public void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectDescriptor>> callback) {
+    public void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
         asyncRequestFactory.createGetRequest(baseHttpUrl + "?includeAttributes=" + includeAttributes)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
@@ -102,17 +99,17 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public Promise<List<ProjectDescriptor>> getProjects(boolean includeAttributes) {
-        return newPromise(new AsyncPromiseHelper.RequestCall<List<ProjectDescriptor>>() {
+    public Promise<List<ProjectConfigDto>> getProjects(boolean includeAttributes) {
+        return newPromise(new AsyncPromiseHelper.RequestCall<List<ProjectConfigDto>>() {
             @Override
-            public void makeCall(AsyncCallback<List<ProjectDescriptor>> callback) {
-                        getProjects(false, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectDescriptor.class)));
+            public void makeCall(AsyncCallback<List<ProjectConfigDto>> callback) {
+                getProjects(false, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectConfigDto.class)));
             }
         });
     }
 
     @Override
-    public void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<List<ProjectReference>> callback) {
+    public void getProjectsInSpecificWorkspace(String wsId, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
         final String requestUrl = extPath + "/project/" + wsId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -121,7 +118,9 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void cloneProjectToCurrentWorkspace(String srcWorkspaceId, String srcProjectPath, String newNameForProject,
+    public void cloneProjectToCurrentWorkspace(String srcWorkspaceId,
+                                               String srcProjectPath,
+                                               String newNameForProject,
                                                AsyncRequestCallback<String> callback) {
         final String requestUrl = extPath + "/vfs/" + workspaceId + "/v2/clone" + "?srcVfsId=" + srcWorkspaceId +
                                   "&srcPath=" + srcProjectPath +
@@ -135,7 +134,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getProject(String path, AsyncRequestCallback<ProjectDescriptor> callback) {
+    public void getProject(String path, AsyncRequestCallback<ProjectConfigDto> callback) {
         final String requestUrl = baseHttpUrl + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -153,7 +152,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback) {
+    public void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback) {
         final String requestUrl = baseHttpUrl + "?name=" + name;
         asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -181,7 +180,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
 
     @Override
-    public void getModules(String path, AsyncRequestCallback<List<ProjectDescriptor>> callback) {
+    public void getModules(String path, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
         final String requestUrl = baseHttpUrl + "/modules" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -189,7 +188,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void createModule(String parentProjectPath, ProjectConfigDto projectConfig, AsyncRequestCallback<ModuleConfigDto> callback) {
+    public void createModule(String parentProjectPath, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback) {
         final String requestUrl = baseHttpUrl + normalizePath(parentProjectPath);
         asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -198,18 +197,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    @Deprecated
-    public void updateProject(String path, ProjectDescriptor descriptor, AsyncRequestCallback<ProjectDescriptor> callback) {
-        final String requestUrl = baseHttpUrl + normalizePath(path);
-        asyncRequestFactory.createRequest(PUT, requestUrl, descriptor, false)
-                           .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
-                           .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Updating project...")
-                           .send(callback);
-    }
-
-    @Override
-    public void updateProject(String path, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectDescriptor> callback) {
+    public void updateProject(String path, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback) {
         final String requestUrl = baseHttpUrl + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, projectConfig, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
@@ -277,8 +265,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void deleteModule(String path, String modulePath, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = baseHttpUrl + normalizePath(path) + "?module=" + modulePath;
+    public void deleteModule(String pathToParent, String modulePath, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = baseHttpUrl + "/module" + normalizePath(pathToParent) + "?module=" + modulePath;
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
                            .loader(loader, "Deleting module...")
                            .send(callback);

@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.node.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.settings.HasSettings;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.ui.smartTree.presentation.HasPresentation;
@@ -28,41 +28,40 @@ import javax.validation.constraints.NotNull;
  */
 public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeNode implements HasDataObject<DataObject>,
                                                                                                HasPresentation,
-                                                                                               HasProjectDescriptor,
+                                                                                               HasProjectConfig,
                                                                                                HasSettings {
-    private DataObject        dataObject;
-    private ProjectDescriptor projectDescriptor;
-    private NodeSettings      nodeSettings;
-    private NodePresentation  nodePresentation;
+    private DataObject       dataObject;
+    private ProjectConfigDto projectConfig;
+    private NodeSettings     nodeSettings;
+    private NodePresentation nodePresentation;
 
-    public AbstractProjectBasedNode(@NotNull DataObject dataObject,
-                                    @NotNull ProjectDescriptor projectDescriptor,
-                                    @NotNull NodeSettings nodeSettings) {
+    public AbstractProjectBasedNode(DataObject dataObject,
+                                    ProjectConfigDto projectConfig,
+                                    NodeSettings nodeSettings) {
         this.dataObject = dataObject;
-        this.projectDescriptor = projectDescriptor;
+        this.projectConfig = projectConfig;
         this.nodeSettings = nodeSettings;
     }
 
-    @NotNull
     @Override
-    public ProjectDescriptor getProjectDescriptor() {
+    public ProjectConfigDto getProjectConfig() {
         if (getParent() != null
-            && getParent() instanceof HasProjectDescriptor
-            && ((HasProjectDescriptor)getParent()).getProjectDescriptor().equals(projectDescriptor)) {
-            return ((HasProjectDescriptor)getParent()).getProjectDescriptor();
+            && getParent() instanceof HasProjectConfig
+            && ((HasProjectConfig)getParent()).getProjectConfig().equals(projectConfig)) {
+            return ((HasProjectConfig)getParent()).getProjectConfig();
         }
 
-        return projectDescriptor;
+        return projectConfig;
     }
 
     @Override
-    public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
-        if (getParent() != null && getParent() instanceof HasProjectDescriptor) {
-            ((HasProjectDescriptor)getParent()).setProjectDescriptor(projectDescriptor);
+    public void setProjectConfig(ProjectConfigDto projectConfig) {
+        if (getParent() != null && getParent() instanceof HasProjectConfig) {
+            ((HasProjectConfig)getParent()).setProjectConfig(projectConfig);
             return;
         }
 
-        this.projectDescriptor = projectDescriptor;
+        this.projectConfig = projectConfig;
     }
 
     @Override

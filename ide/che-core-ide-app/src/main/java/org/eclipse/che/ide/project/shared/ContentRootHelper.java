@@ -12,12 +12,10 @@ package org.eclipse.che.ide.project.shared;
 
 import com.google.common.base.Strings;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
-
-import javax.validation.constraints.NotNull;
+import org.eclipse.che.ide.project.node.ProjectNode;
 
 /**
  * Helper methods for Content Root manipulations.
@@ -43,21 +41,21 @@ public class ContentRootHelper {
      * in Eclipse IDE.
      *
      * @param node
-     *         node to process, should be {@link ProjectDescriptorNode}
+     *         node to process, should be {@link ProjectNode}
      * @return content root path or null
      */
     public static String getRootOrNull(Node node) {
-        if (node instanceof ProjectDescriptorNode && isValidContentRoot((HasProjectDescriptor)node)) {
-            ProjectDescriptor descriptor = ((HasProjectDescriptor)node).getProjectDescriptor();
-            String rawContentRoot = descriptor.getContentRoot();
+        if (node instanceof ProjectNode && isValidContentRoot((HasProjectConfig)node)) {
+            ProjectConfigDto projectConfig = ((HasProjectConfig)node).getProjectConfig();
+            String rawContentRoot = projectConfig.getContentRoot();
 
-            return descriptor.getPath() + (rawContentRoot.startsWith("/") ? rawContentRoot : "/" + rawContentRoot);
+            return projectConfig.getPath() + (rawContentRoot.startsWith("/") ? rawContentRoot : "/" + rawContentRoot);
         }
 
         return null;
     }
 
-    private static boolean isValidContentRoot(@NotNull HasProjectDescriptor node) {
-        return !Strings.isNullOrEmpty(node.getProjectDescriptor().getContentRoot()); //TODO maybe add more checks
+    private static boolean isValidContentRoot(HasProjectConfig node) {
+        return !Strings.isNullOrEmpty(node.getProjectConfig().getContentRoot()); //TODO maybe add more checks
     }
 }

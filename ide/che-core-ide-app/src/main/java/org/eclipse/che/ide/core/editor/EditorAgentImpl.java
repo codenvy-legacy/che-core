@@ -17,13 +17,13 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
-import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
 import org.eclipse.che.ide.api.editor.EditorInput;
+import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter.EditorPartCloseHandler;
 import org.eclipse.che.ide.api.editor.EditorProvider;
@@ -53,7 +53,7 @@ import org.eclipse.che.ide.project.event.ResourceNodeRenamedEvent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
-import org.eclipse.che.ide.project.node.ModuleDescriptorNode;
+import org.eclipse.che.ide.project.node.ModuleNode;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -178,10 +178,10 @@ public class EditorAgentImpl implements EditorAgent {
                             eventBus.fireEvent(new FileEvent(editor.getEditorInput().getFile(), CLOSE));
                         }
                     }
-                } else if (node instanceof ModuleDescriptorNode) {
+                } else if (node instanceof ModuleNode) {
                     for (EditorPartPresenter editor : editors) {
                         VirtualFile virtualFile = editor.getEditorInput().getFile();
-                        if (moduleHasFile(node.getProjectDescriptor(), virtualFile)) {
+                        if (moduleHasFile(node.getProjectConfig(), virtualFile)) {
                             eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
                         }
                         if (node.getParent() == null || !(node.getParent() instanceof HasStorablePath)) {
@@ -201,11 +201,11 @@ public class EditorAgentImpl implements EditorAgent {
         eventBus.addHandler(DeleteProjectEvent.TYPE, new DeleteProjectHandler() {
             @Override
             public void onProjectDeleted(DeleteProjectEvent event) {
-                ProjectDescriptor descriptor = event.getDescriptor();
+                ProjectConfigDto configDto = event.getProjectConfig();
                 List<EditorPartPresenter> editors = new ArrayList<>(openedEditors.values());
                 for (EditorPartPresenter editor : editors) {
                     VirtualFile virtualFile = editor.getEditorInput().getFile();
-                    if (moduleHasFile(descriptor, virtualFile)) {
+                    if (moduleHasFile(configDto, virtualFile)) {
                         eventBus.fireEvent(new FileEvent(virtualFile, CLOSE));
                     }
                 }
@@ -223,19 +223,19 @@ public class EditorAgentImpl implements EditorAgent {
 
                     if (event.getNewDataObject() instanceof ItemReference) {
                         ItemReferenceBasedNode wrapped =
-                                nodeManager.wrap((ItemReference)event.getNewDataObject(), fileReferenceNode.getProjectDescriptor());
+                                nodeManager.wrap((ItemReference)event.getNewDataObject(), fileReferenceNode.getProjectConfig());
                         if (wrapped instanceof FileReferenceNode) {
                             updateEditorNode(oldPath, (FileReferenceNode)wrapped);
                         }
                     }
-                } else if (resourceBaseNode instanceof FolderReferenceNode || resourceBaseNode instanceof ModuleDescriptorNode) {
+                } else if (resourceBaseNode instanceof FolderReferenceNode || resourceBaseNode instanceof ModuleNode) {
                     HasStorablePath renamedTargetStoragePath = ((HasStorablePath)resourceBaseNode);
                     final String oldTargetPath = renamedTargetStoragePath.getStorablePath();
                     final String newTargetPath;
                     if (resourceBaseNode instanceof FolderReferenceNode) {
                         newTargetPath = ((ItemReference)event.getNewDataObject()).getPath();
                     } else {
-                        newTargetPath = ((ProjectDescriptor)event.getNewDataObject()).getPath();
+                        newTargetPath = ((ProjectConfigDto)event.getNewDataObject()).getPath();
                     }
                     final Unmarshallable<ItemReference> unmarshaller = unmarshallerFactory.newUnmarshaller(ItemReference.class);
                     updateEditorPartsAfterRename(new LinkedList<EditorPartPresenter>(openedEditors.values()),
@@ -250,7 +250,9 @@ public class EditorAgentImpl implements EditorAgent {
     //todo Warning: this code should be reworked or deleted when folders and maven modules won't being closed after rename
     /**
      * Recursive update opened editor parts after renaming their parent folder or parent module
-     * @param editorParts list opened editor parts
+     *
+     * @param editorParts
+     *         list opened editor parts
      */
     private void updateEditorPartsAfterRename(final LinkedList<EditorPartPresenter> editorParts,
                                               final String oldTargetPath,
@@ -272,8 +274,8 @@ public class EditorAgentImpl implements EditorAgent {
             @Override
             protected void onSuccess(ItemReference result) {
                 FileReferenceNode fileReferenceNode = ((FileReferenceNode)editorPart.getEditorInput().getFile());
-                ProjectDescriptor projectDescriptor = fileReferenceNode.getProjectDescriptor();
-                final ItemReferenceBasedNode wrappedNode = nodeManager.wrap(result, projectDescriptor);
+                ProjectConfigDto configDto = fileReferenceNode.getProjectConfig();
+                final ItemReferenceBasedNode wrappedNode = nodeManager.wrap(result, configDto);
 
                 if (wrappedNode instanceof FileReferenceNode) {
                     updateEditorNode(oldFilePath, (FileReferenceNode)wrappedNode);
@@ -288,9 +290,9 @@ public class EditorAgentImpl implements EditorAgent {
         });
     }
 
-    private boolean moduleHasFile(ProjectDescriptor descriptor, VirtualFile virtualFile) {
-        String descriptorPath = descriptor.getPath();
-        String descriptorPathOfFile = virtualFile.getProject().getProjectDescriptor().getPath();
+    private boolean moduleHasFile(ProjectConfigDto configDto, VirtualFile virtualFile) {
+        String descriptorPath = configDto.getPath();
+        String descriptorPathOfFile = virtualFile.getProject().getProjectConfig().getPath();
         return descriptorPathOfFile.equals(descriptorPath) || descriptorPathOfFile.startsWith(descriptorPath + "/");
     }
 

@@ -11,8 +11,7 @@
 package org.eclipse.che.ide.project;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectReference;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.HasStorablePath.StorablePath;
 
@@ -23,10 +22,8 @@ public class StorablePathResolver {
     public static HasStorablePath resolve(Object possibleDto) {
         if (possibleDto instanceof ItemReference) {
             return new StorablePath(((ItemReference)possibleDto).getPath());
-        } else if (possibleDto instanceof ProjectDescriptor) {
-            return new StorablePath(((ProjectDescriptor)possibleDto).getPath());
-        } else if (possibleDto instanceof ProjectReference) {
-            return new StorablePath(((ProjectReference)possibleDto).getPath());
+        } else if (possibleDto instanceof ProjectConfigDto) {
+            return new StorablePath(((ProjectConfigDto)possibleDto).getPath());
         } else {
             return null;
         }

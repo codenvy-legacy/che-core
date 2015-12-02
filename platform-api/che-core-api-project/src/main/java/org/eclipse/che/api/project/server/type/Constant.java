@@ -14,8 +14,7 @@ package org.eclipse.che.api.project.server.type;
  * @author gazarenkov
  */
 
-public final class Constant extends Attribute {
-
+public final class Constant extends AbstractAttribute {
 
     private final AttributeValue value;
 
@@ -29,7 +28,6 @@ public final class Constant extends Attribute {
         super(projectType, name, description, true, false);
         this.value = new AttributeValue(str);
     }
-
 
     public AttributeValue getValue() {
         return value;

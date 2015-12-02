@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 
 import javax.validation.constraints.NotNull;
@@ -23,9 +23,9 @@ import javax.validation.constraints.NotNull;
 public abstract class SyntheticBasedNode<DataObject> extends AbstractProjectBasedNode<DataObject> {
 
     public SyntheticBasedNode(@NotNull DataObject dataObject,
-                              @NotNull ProjectDescriptor projectDescriptor,
+                              @NotNull ProjectConfigDto projectConfig,
                               @NotNull NodeSettings nodeSettings) {
-        super(dataObject, projectDescriptor, nodeSettings);
+        super(dataObject, projectConfig, nodeSettings);
     }
 
 }

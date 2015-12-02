@@ -14,9 +14,8 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -31,28 +30,28 @@ import java.util.List;
 
 /**
  * @author Vlad Zhukovskiy
+ * @author Dmitry Shnurenko
  */
-public class ModuleDescriptorNode extends ResourceBasedNode<ModuleConfigDto> implements HasStorablePath {
+public class ModuleNode extends ResourceBasedNode<ProjectConfigDto> implements HasStorablePath {
 
     private final ModuleConfigProcessor resourceProcessor;
-    private final ModuleConfigDto       moduleConfigDto;
+    private final ProjectConfigDto      projectConfigDto;
 
     @Inject
-    public ModuleDescriptorNode(@Assisted ModuleConfigDto moduleConfigDto,
-                                @Assisted ProjectDescriptor projectDescriptor,
-                                @Assisted NodeSettings nodeSettings,
-                                @NotNull EventBus eventBus,
-                                @NotNull NodeManager nodeManager,
-                                @NotNull ModuleConfigProcessor resourceProcessor) {
-        super(moduleConfigDto, projectDescriptor, nodeSettings, eventBus, nodeManager);
+    public ModuleNode(@Assisted ProjectConfigDto projectConfigDto,
+                      @Assisted NodeSettings nodeSettings,
+                      EventBus eventBus,
+                      NodeManager nodeManager,
+                      ModuleConfigProcessor resourceProcessor) {
+        super(projectConfigDto, projectConfigDto, nodeSettings, eventBus, nodeManager);
         this.resourceProcessor = resourceProcessor;
-        this.moduleConfigDto = moduleConfigDto;
+        this.projectConfigDto = projectConfigDto;
     }
 
     @NotNull
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
-        return nodeManager.getChildren(moduleConfigDto.getPath(), getProjectDescriptor(), getSettings());
+        return nodeManager.getChildren(projectConfigDto.getPath(), getProjectConfig(), getSettings());
     }
 
     @Override
@@ -75,13 +74,13 @@ public class ModuleDescriptorNode extends ResourceBasedNode<ModuleConfigDto> imp
 
     @Nullable
     @Override
-    public DeleteProcessor<ModuleConfigDto> getDeleteProcessor() {
+    public DeleteProcessor<ProjectConfigDto> getDeleteProcessor() {
         return resourceProcessor;
     }
 
     @Nullable
     @Override
-    public RenameProcessor<ModuleConfigDto> getRenameProcessor() {
+    public RenameProcessor<ProjectConfigDto> getRenameProcessor() {
         return resourceProcessor;
     }
 

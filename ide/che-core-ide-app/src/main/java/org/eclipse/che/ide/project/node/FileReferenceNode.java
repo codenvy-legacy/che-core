@@ -17,13 +17,13 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.project.node.HasAction;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
@@ -46,12 +46,12 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Inject
     public FileReferenceNode(@Assisted ItemReference itemReference,
-                             @Assisted ProjectDescriptor projectDescriptor,
+                             @Assisted ProjectConfigDto projectConfig,
                              @Assisted NodeSettings nodeSettings,
-                             @NotNull EventBus eventBus,
-                             @NotNull NodeManager nodeManager,
-                             @NotNull ItemReferenceProcessor resourceProcessor) {
-        super(itemReference, projectDescriptor, nodeSettings, eventBus, nodeManager, resourceProcessor);
+                             EventBus eventBus,
+                             NodeManager nodeManager,
+                             ItemReferenceProcessor resourceProcessor) {
+        super(itemReference, projectConfig, nodeSettings, eventBus, nodeManager, resourceProcessor);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Nullable
     @Override
-    public HasProjectDescriptor getProject() {
+    public HasProjectConfig getProject() {
         return this;
     }
 

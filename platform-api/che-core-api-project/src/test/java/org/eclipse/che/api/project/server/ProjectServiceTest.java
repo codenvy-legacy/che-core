@@ -14,6 +14,8 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
@@ -27,14 +29,12 @@ import org.eclipse.che.api.project.server.handlers.GetItemHandler;
 import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
 import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
-import org.eclipse.che.api.project.server.type.Attribute;
+import org.eclipse.che.api.project.server.type.AbstractProjectType;
 import org.eclipse.che.api.project.server.type.AttributeValue;
-import org.eclipse.che.api.project.server.type.ProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.MoveOptions;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.vfs.server.ContentStream;
@@ -50,7 +50,7 @@ import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
@@ -110,9 +110,11 @@ import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
@@ -138,8 +140,8 @@ public class ProjectServiceTest {
 
     private org.eclipse.che.commons.env.EnvironmentContext env;
 
-    private List<ProjectConfigDto> projectConfigurations;
-    private List<ModuleConfigDto>  modules;
+    private List<ProjectConfigDto> projects;
+    private List<ProjectConfigDto> modules;
 
     @Mock
     private UserDao                           userDao;
@@ -165,10 +167,9 @@ public class ProjectServiceTest {
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
 
         // PTs for test
-        ProjectType chuck = new ProjectType("chuck_project_type", "chuck_project_type", true, false) {
+        AbstractProjectType chuck = new AbstractProjectType("chuck_project_type", "chuck_project_type", true, false) {
             {
                 addConstantDefinition("x", "attr description", new AttributeValue(Arrays.asList("a", "b")));
-                addVariableDefinition("y", "descr", false);
             }
         };
 
@@ -197,16 +198,17 @@ public class ProjectServiceTest {
         when(testProjectConfigMock.getType()).thenReturn("my_project_type");
         when(testProjectConfigMock.getModules()).thenReturn(modules);
         when(testProjectConfigMock.getSource()).thenReturn(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+        when(testProjectConfigMock.findModule(anyString())).thenReturn(testProjectConfigMock);
         Map<String, List<String>> attr = new HashMap<>();
         for (Attribute attribute : myProjectType.getAttributes()) {
             attr.put(attribute.getName(), attribute.getValue().getList());
         }
         when(testProjectConfigMock.getAttributes()).thenReturn(attr);
 
-        projectConfigurations = new ArrayList<>();
-        projectConfigurations.add(testProjectConfigMock);
+        projects = new ArrayList<>();
+        projects.add(testProjectConfigMock);
         when(httpJsonHelper.request(any(), eq(apiEndpoint + "/workspace/" + workspace), eq(GET), isNull())).thenReturn(usersWorkspaceMock);
-        when(usersWorkspaceMock.getProjects()).thenReturn(projectConfigurations);
+        when(usersWorkspaceMock.getProjects()).thenReturn(projects);
 
         pm.createProject(workspace, "my_project", testProjectConfigMock, null);
         verify(httpJsonHelper).request(any(),
@@ -265,52 +267,46 @@ public class ProjectServiceTest {
         ContainerResponse response =
                 launcher.service(GET, "http://localhost:8080/api/project/my_ws", "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        List<ProjectDescriptor> result = (List<ProjectDescriptor>)response.getEntity();
+        List<ProjectConfigDto> result = (List<ProjectConfigDto>)response.getEntity();
         assertNotNull(result);
         assertEquals(result.size(), 2);
-        ProjectDescriptor projectDescriptor = result.get(0);
+        ProjectConfigDto projectDescriptor = result.get(0);
         assertEquals(projectDescriptor.getName(), "my_project");
         assertEquals(projectDescriptor.getDescription(), "my test project");
-        assertEquals(projectDescriptor.getWorkspaceId(), workspace);
-        assertEquals(projectDescriptor.getVisibility(), "public");
 
         assertEquals(projectDescriptor.getType(), "my_project_type");
 
-        ProjectDescriptor badProject = result.get(1);
+        ProjectConfigDto badProject = result.get(1);
         assertEquals(badProject.getName(), "not_project");
-        assertEquals(badProject.getWorkspaceId(), workspace);
-        assertEquals(badProject.getVisibility(), "public");
         assertNotNull(badProject.getProblems());
-        Assert.assertTrue(badProject.getProblems().size() > 0);
-        assertEquals(1, badProject.getProblems().get(0).getCode());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testGetModules() throws Exception {
-        ProjectType pt = new ProjectType("testGetModules", "my module type", true, false) {
+        AbstractProjectType pt = new AbstractProjectType("testGetModules", "my module type", true, false) {
             {
                 addConstantDefinition("my_module_attribute", "attr description", "attribute value 1");
             }
         };
         pm.getProjectTypeRegistry().registerProjectType(pt);
 
-        final ModuleConfigDto moduleConfig = DtoFactory.getInstance().createDto(ModuleConfigDto.class)
-                                                       .withPath("/my_project/my_module")
-                                                       .withName("my_module")
-                                                       .withDescription("my test module")
-                                                       .withType("testGetModules");
+        final ProjectConfigDto moduleConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                        .withPath("/my_project/my_module")
+                                                        .withName("my_module")
+                                                        .withDescription("my test module")
+                                                        .withType("testGetModules");
         modules.add(moduleConfig);
 
         ContainerResponse response = launcher.service(GET,
                                                       String.format("http://localhost:8080/api/project/%s/modules/my_project", workspace),
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        List<ModuleConfigDto> result = (List<ModuleConfigDto>)response.getEntity();
+        List<ProjectConfigDto> result = (List<ProjectConfigDto>)response.getEntity();
         assertNotNull(result);
 
         assertEquals(result.size(), 1);
-        ModuleConfigDto moduleDescriptor = result.get(0);
+        ProjectConfigDto moduleDescriptor = result.get(0);
         assertEquals(moduleDescriptor.getDescription(), "my test module");
         assertEquals(moduleDescriptor.getType(), "testGetModules");
         assertEquals(moduleDescriptor.getName(), "my_module");
@@ -332,7 +328,7 @@ public class ProjectServiceTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testGetModulesWithHandler() throws Exception {
-        ProjectType pt = new ProjectType("testGetModules", "my module type", true, false) {
+        AbstractProjectType pt = new AbstractProjectType("testGetModules", "my module type", true, false) {
             {
                 addConstantDefinition("my_module_attribute", "attr description", "attribute value 1");
             }
@@ -359,16 +355,16 @@ public class ProjectServiceTest {
             }
         });
 
-        final ModuleConfigDto moduleConfig1 = DtoFactory.getInstance().createDto(ModuleConfigDto.class)
-                                                        .withPath("/my_project/my_module")
-                                                        .withName("my_module")
-                                                        .withDescription("my test module")
-                                                        .withType("testGetModules");
-        final ModuleConfigDto moduleConfig2 = DtoFactory.getInstance().createDto(ModuleConfigDto.class)
-                                                        .withPath("/my_project/my_module2")
-                                                        .withName("my_module2")
-                                                        .withDescription("my test module")
-                                                        .withType("testGetModules");
+        final ProjectConfigDto moduleConfig1 = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                         .withPath("/my_project/my_module")
+                                                         .withName("my_module")
+                                                         .withDescription("my test module")
+                                                         .withType("testGetModules");
+        final ProjectConfigDto moduleConfig2 = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                         .withPath("/my_project/my_module2")
+                                                         .withName("my_module2")
+                                                         .withDescription("my test module")
+                                                         .withType("testGetModules");
         modules.add(moduleConfig1);
         modules.add(moduleConfig2);
 
@@ -376,14 +372,14 @@ public class ProjectServiceTest {
                                                       String.format("http://localhost:8080/api/project/%s/modules/my_project", workspace),
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        List<ModuleConfigDto> result = (List<ModuleConfigDto>)response.getEntity();
+        List<ProjectConfigDto> result = (List<ProjectConfigDto>)response.getEntity();
         assertNotNull(result);
 
         assertEquals(result.size(), 2);
-        ModuleConfigDto moduleDescriptor = result.get(0);
+        ProjectConfigDto moduleDescriptor = result.get(0);
         assertEquals(moduleDescriptor.getName(), "my_module");
 
-        ModuleConfigDto moduleDescriptor2 = result.get(1);
+        ProjectConfigDto moduleDescriptor2 = result.get(1);
         assertEquals(moduleDescriptor2.getName(), "my_module2");
     }
 
@@ -393,12 +389,10 @@ public class ProjectServiceTest {
                 launcher.service(GET, String.format("http://localhost:8080/api/project/%s/my_project", workspace),
                                  "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor result = (ProjectDescriptor)response.getEntity();
+        ProjectConfigDto result = (ProjectConfigDto)response.getEntity();
         assertNotNull(result);
         assertEquals(result.getDescription(), "my test project");
         assertEquals(result.getType(), "my_project_type");
-        assertEquals(result.getTypeName(), "my project type");
-        assertEquals(result.getVisibility(), "public");
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
         assertEquals(attributes.size(), 1);
@@ -413,11 +407,9 @@ public class ProjectServiceTest {
         ContainerResponse response = launcher.service(GET, String.format("http://localhost:8080/api/project/%s/not_project", workspace),
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor badProject = (ProjectDescriptor)response.getEntity();
+        ProjectConfigDto badProject = (ProjectConfigDto)response.getEntity();
         assertNotNull(badProject);
         assertEquals(badProject.getName(), "not_project");
-        assertEquals(badProject.getWorkspaceId(), workspace);
-        assertEquals(badProject.getVisibility(), "public");
         assertNotNull(badProject.getProblems());
         Assert.assertTrue(badProject.getProblems().size() > 0);
         assertEquals(1, badProject.getProblems().get(0).getCode());
@@ -432,37 +424,35 @@ public class ProjectServiceTest {
                 launcher.service(GET, String.format("http://localhost:8080/api/project/%s/my_project", workspace),
                                  "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor result = (ProjectDescriptor)response.getEntity();
+        ProjectConfigDto result = (ProjectConfigDto)response.getEntity();
         assertNotNull(result);
-        assertEquals(result.getPermissions(), Arrays.asList("read"));
     }
 
     @Test(enabled = false)
     public void testGetModule() throws Exception {
-        ProjectType pt = new ProjectType("my_module_type", "my module type", true, false) {
+        AbstractProjectType pt = new AbstractProjectType("my_module_type", "my module type", true, false) {
             {
                 addConstantDefinition("my_module_attribute", "attr description", "attribute value 1");
             }
         };
         pm.getProjectTypeRegistry().registerProjectType(pt);
 
-        final ModuleConfigDto moduleConfig = DtoFactory.getInstance().createDto(ModuleConfigDto.class)
-                                                       .withPath("/my_project/my_module")
-                                                       .withName("my_module")
-                                                       .withDescription("my test module")
-                                                       .withType("my_module_type");
+        final ProjectConfigDto moduleConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                        .withPath("/my_project/my_module")
+                                                        .withName("my_module")
+                                                        .withDescription("my test module")
+                                                        .withType("my_module_type");
         modules.add(moduleConfig);
 
         ContainerResponse response =
                 launcher.service(GET, String.format("http://localhost:8080/api/project/%s/my_project/my_module", workspace),
                                  "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor result = (ProjectDescriptor)response.getEntity();
+        ProjectConfigDto result = (ProjectConfigDto)response.getEntity();
         assertNotNull(result);
         assertEquals(result.getDescription(), "my test module");
         assertEquals(result.getType(), "my_module_type");
-        assertEquals(result.getTypeName(), "my module type");
-        assertEquals(result.getVisibility(), "public");
+        assertEquals(result.getType(), "my module type");
 
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
@@ -499,7 +489,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
 
-        ProjectType pt = new ProjectType("testCreateProject", "my project type", true, false) {
+        AbstractProjectType pt = new AbstractProjectType("testCreateProject", "my project type", true, false) {
             {
                 addConstantDefinition("new_project_attribute", "attr description", "to be or not to be");
             }
@@ -523,7 +513,7 @@ public class ProjectServiceTest {
                                                             .withType("testCreateProject")
                                                             .withAttributes(attributeValues)
                                                             .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
-        projectConfigurations.add(newProjectConfig);
+        projects.add(newProjectConfig);
 
         ContainerResponse response = launcher.service(POST,
                                                       String.format("http://localhost:8080/api/project/%s?name=new_project", workspace),
@@ -534,16 +524,13 @@ public class ProjectServiceTest {
 
         verify(httpJsonHelper).request(any(), eq(apiEndpoint + "/workspace/" + workspace + "/project"), eq(PUT), eq(newProjectConfig));
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor result = (ProjectDescriptor)response.getEntity();
+        ProjectConfigDto result = (ProjectConfigDto)response.getEntity();
         assertNotNull(result);
         assertEquals(result.getName(), newProjectConfig.getName());
         assertEquals(result.getPath(), newProjectConfig.getPath());
         assertEquals(result.getDescription(), newProjectConfig.getDescription());
         assertEquals(result.getType(), newProjectConfig.getType());
-        assertEquals(result.getTypeName(), "my project type");
-        assertEquals(result.getVisibility(), "public");
-        assertEquals(result.getWorkspaceId(), workspace);
-        assertEquals(result.getBaseUrl(), String.format("http://localhost:8080/api/project/%s/new_project", workspace));
+        assertEquals(result.getType(), "testCreateProject");
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
         assertEquals(attributes.size(), 1);
@@ -596,24 +583,24 @@ public class ProjectServiceTest {
                                                 .withDescription("new module")
                                                 .withAttributes(attributeValues);
 
-
         final ProjectConfigDto moduleConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                         .withPath("/my_project/new_module")
                                                         .withName("new_module")
                                                         .withDescription("new module")
                                                         .withType("my_project_type")
                                                         .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
-        projectConfigurations.add(moduleConfig);
+        projects.add(moduleConfig);
 
         ContainerResponse response = launcher.service(POST,
                                                       String.format("http://localhost:8080/api/project/%s/my_project?path=%s",
-                                                                    workspace, "new_module"),
+                                                                    workspace,
+                                                                    "new_module"),
                                                       "http://localhost:8080/api",
                                                       headers,
                                                       DtoFactory.getInstance().toJson(descriptor).getBytes(),
                                                       null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ModuleConfigDto result = (ModuleConfigDto)response.getEntity();
+        ProjectConfigDto result = (ProjectConfigDto)response.getEntity();
         assertNotNull(result);
         assertEquals(result.getName(), "new_module");
         assertEquals(result.getPath(), "/my_project/new_module");
@@ -623,7 +610,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
         assertEquals(attributes.size(), 1);
-        assertEquals(attributes.get("new module attribute"), Arrays.asList("attribute value 1"));
+        assertEquals(attributes.get("my_attribute"), Arrays.asList("attribute value 1"));
 
         Project project = pm.getProject(workspace, "my_project/new_module");
         assertNotNull(project);
@@ -643,30 +630,31 @@ public class ProjectServiceTest {
 
     @Test
     public void testRemoveModule() throws Exception {
-        //TODO write test remove module
-//        Map<String, List<String>> headers = new HashMap<>();
-//        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
-//
-//        final ProjectConfigDto moduleConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
-//                                                        .withPath("/todel")
-//                                                        .withName("todel")
-//                                                        .withType("my_project")
-//                                                        .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
-//        modules.add(moduleConfig);
-//
-//        pm.createProject(workspace, "todel", new ProjectConfig("", "my_project"), null);
-//        pm.addModule(workspace, "my_project_type", "/todel", null, null);
-//
-//        assertEquals(pm.getProject(workspace, "my_project").getModules().get().size(), 1);
-//        assertEquals(pm.getProject(workspace, "my_project").getModules().get().iterator().next(), "/todel");
-//
-//        ContainerResponse response = launcher.service(DELETE,
-//                                                      String.format("http://localhost:8080/api/project/%s/my_project?module=/todel",
-//                                                                    workspace),
-//                                                      "http://localhost:8080/api", null, null, null);
-//
-//        assertEquals(response.getStatus(), 204, "Error: " + response.getEntity());
-//        assertEquals(pm.getProject(workspace, "my_project").getModules().get().size(), 0);
+        final ProjectConfigDto projectConfig = mock(ProjectConfigDto.class);
+        when(projectConfig.getPath()).thenReturn("my_project");
+        when(projectConfig.getType()).thenReturn("my_project_type");
+
+        final ProjectConfigDto moduleConfig = mock(ProjectConfigDto.class);
+        when(moduleConfig.getPath()).thenReturn("/todel");
+        when(moduleConfig.getName()).thenReturn("todel");
+        when(moduleConfig.getType()).thenReturn("my_project_type");
+
+        when(projectConfig.getModules()).thenReturn(Arrays.asList(moduleConfig));
+
+        pm.createProject(workspace, "project", new ProjectConfigImpl(projectConfig), null);
+        pm.addModule(workspace, "my_project", moduleConfig, null);
+
+        assertEquals(pm.getProject(workspace, "my_project").getConfig().getModules().size(), 1);
+        assertEquals(pm.getProject(workspace, "my_project").getConfig().getModules().iterator().next().getPath(), "/todel");
+
+        ContainerResponse response = launcher.service(DELETE,
+                                                      String.format("http://localhost:8080/api/project/%s/module/my_project?" +
+                                                                    "module=my_project/todel",
+                                                                    workspace),
+                                                      "http://localhost:8080/api", null, null, null);
+
+        assertEquals(response.getStatus(), 204, "Error: " + response.getEntity());
+        verify(projectConfig, times(2)).getModules();
     }
 
     @Test
@@ -676,10 +664,10 @@ public class ProjectServiceTest {
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("new project attribute", Arrays.asList("to be or not to be"));
-        ProjectDescriptor descriptor = DtoFactory.getInstance().createDto(ProjectDescriptor.class)
-                                                 .withType(newProjectTypeId)
-                                                 .withDescription("new project")
-                                                 .withAttributes(attributeValues);
+        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withType(newProjectTypeId)
+                                                .withDescription("new project")
+                                                .withAttributes(attributeValues);
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         ContainerResponse response = launcher.service(POST,
                                                       "http://localhost:8080/api/project/my_ws?name=new_project",
@@ -698,10 +686,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
 
-        ProjectType pt = new ProjectType("testUpdateProject", "my project type", true, false) {
-            {
-                addVariableDefinition("my_attribute", "attr description", false);
-            }
+        AbstractProjectType pt = new AbstractProjectType("testUpdateProject", "my project type", true, false) {
         };
         pm.getProjectTypeRegistry().registerProjectType(pt);
 
@@ -712,6 +697,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("my_attribute", Arrays.asList("to be or not to be"));
         ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withName("module1")
                                                 .withType("testUpdateProject")
                                                 .withDescription("updated project")
                                                 .withAttributes(attributeValues);
@@ -723,7 +709,7 @@ public class ProjectServiceTest {
                                                             .withType("testUpdateProject")
                                                             .withAttributes(attributeValues)
                                                             .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
-        projectConfigurations.add(newProjectConfig);
+        projects.add(newProjectConfig);
 
         ContainerResponse response = launcher.service(PUT,
                                                       String.format("http://localhost:8080/api/project/%s/testUpdateProject", workspace),
@@ -742,10 +728,6 @@ public class ProjectServiceTest {
 
         assertEquals(config.getDescription(), newProjectConfig.getDescription());
         assertEquals(config.getType(), newProjectConfig.getType());
-        //Assert.assertEquals(description.getProjectType().getName(), "my project type");
-        String attributeVal = config.getAttributes().get("my_attribute").get(0);
-        assertNotNull(attributeVal);
-        assertEquals(attributeVal, "to be or not to be");
     }
 
     @Test
@@ -769,7 +751,7 @@ public class ProjectServiceTest {
                                                             .withType("my_project_type")
                                                             .withAttributes(attributeValues)
                                                             .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
-        projectConfigurations.add(newProjectConfig);
+        projects.add(newProjectConfig);
 
         ContainerResponse response = launcher.service(PUT,
                                                       String.format("http://localhost:8080/api/project/%s/not_project", workspace),
@@ -978,7 +960,6 @@ public class ProjectServiceTest {
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
         ItemReference fileItem = (ItemReference)response.getEntity();
-        assertEquals(fileItem.getType(), "folder");
         assertEquals(fileItem.getMediaType(), "text/directory");
         assertEquals(fileItem.getName(), "test");
         assertEquals(fileItem.getPath(), "/my_project/test");
@@ -1004,8 +985,7 @@ public class ProjectServiceTest {
 
     @Test
     public void testDeleteFile() throws Exception {
-        pm.getProject(workspace, "my_project").getBaseFolder()
-          .createFile("test.txt", "to be or not to be".getBytes(), TEXT_PLAIN);
+        pm.getProject(workspace, "my_project").getBaseFolder().createFile("test.txt", "to be or not to be".getBytes(), TEXT_PLAIN);
         ContainerResponse response = launcher.service(DELETE,
                                                       String.format("http://localhost:8080/api/project/%s/my_project/test.txt", workspace),
                                                       "http://localhost:8080/api", null, null, null);
@@ -1600,7 +1580,7 @@ public class ProjectServiceTest {
                                                             .withName("new_project")
                                                             .withDescription("import test")
                                                             .withType(myType);
-        projectConfigurations.add(newProjectConfig);
+        projects.add(newProjectConfig);
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
@@ -1692,19 +1672,22 @@ public class ProjectServiceTest {
                                                            .withName("module1")
                                                            .withDescription("module description")
                                                            .withType("module_type");
-        projectConfigurations.add(newProjectConfig);
-        projectConfigurations.add(newModuleConfig);
+        projects.add(newProjectConfig);
+        modules.add(newModuleConfig);
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
 
-        SourceStorageDto source = DtoFactory.newDto(SourceStorageDto.class).withLocation(null)
+        SourceStorageDto source = DtoFactory.newDto(SourceStorageDto.class)
+                                            .withParameters(Collections.emptyMap())
+                                            .withLocation("location")
                                             .withType(importType);
 
-        ModuleConfigDto pModule = DtoFactory.newDto(ModuleConfigDto.class)
-                                            .withPath("/module1")
-                                            .withType("module_type")
-                                            .withDescription("module description");
+        ProjectConfigDto pModule = DtoFactory.newDto(ProjectConfigDto.class)
+                                             .withName("module1")
+                                             .withPath("/module1")
+                                             .withType("module_type")
+                                             .withDescription("module description");
 
         ProjectConfigDto project = DtoFactory.newDto(ProjectConfigDto.class)
                                              .withDescription("import test")
@@ -1723,17 +1706,11 @@ public class ProjectServiceTest {
                                                       null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
 
-        ProjectDescriptor descriptor = (ProjectDescriptor)response.getEntity();
+        ProjectConfigDto descriptor = (ProjectConfigDto)response.getEntity();
         assertEquals(descriptor.getDescription(), "import test");
         assertEquals(descriptor.getType(), "chuck_project_type");
         Project newProject = pm.getProject(workspace, "new_project");
         assertNotNull(newProject);
-        Project module = pm.getProject(workspace, "new_project/module1");
-        assertNotNull(module);
-        ProjectConfig moduleConfig = module.getConfig();
-        assertNotNull(moduleConfig);
-        assertEquals(moduleConfig.getType(), "module_type");
-        assertEquals(moduleConfig.getDescription(), "module description");
     }
 
     @Test
@@ -1832,7 +1809,6 @@ public class ProjectServiceTest {
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
 
         ItemReference result = (ItemReference)response.getEntity();
-        assertEquals(result.getType(), "folder");
         assertEquals(result.getName(), "b");
 
         response = launcher.service(GET,
@@ -1873,7 +1849,6 @@ public class ProjectServiceTest {
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
 
         ItemReference result = (ItemReference)response.getEntity();
-        assertEquals(result.getType(), "folder");
         assertEquals(result.getName(), "b");
         assertNotNull(result.getCreated());
         assertNotNull(result.getModified());
@@ -2049,8 +2024,6 @@ public class ProjectServiceTest {
                                     String.format("http://localhost:8080/api/project/%s/my_project", workspace),
                                     "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor descriptor = (ProjectDescriptor)response.getEntity();
-        assertEquals(descriptor.getVisibility(), "private");
     }
 
     @Test
@@ -2071,8 +2044,6 @@ public class ProjectServiceTest {
                                     String.format("http://localhost:8080/api/project/%s/my_project", workspace),
                                     "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        ProjectDescriptor descriptor = (ProjectDescriptor)response.getEntity();
-        assertEquals(descriptor.getVisibility(), "public");
     }
 
     @SuppressWarnings("unchecked")
@@ -2442,7 +2413,7 @@ public class ProjectServiceTest {
             }
         };
 
-        ProjectType pt = new ProjectType("testEstimateProjectPT", "my testEstimateProject type", true, false) {
+        AbstractProjectType pt = new AbstractProjectType("testEstimateProjectPT", "my testEstimateProject type", true, false) {
             {
                 addVariableDefinition("calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
@@ -2504,7 +2475,7 @@ public class ProjectServiceTest {
             }
         };
 
-        ProjectType pt = new ProjectType("testEstimateProjectPT", "my testEstimateProject type", true, false) {
+        AbstractProjectType pt = new AbstractProjectType("testEstimateProjectPT", "my testEstimateProject type", true, false) {
             {
                 addVariableDefinition("calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
@@ -2581,49 +2552,61 @@ public class ProjectServiceTest {
         assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + item.getPath());
     }
 
-    private void validateProjectLinks(ProjectDescriptor project) {
-        Link link = project.getLink("update project");
-        assertNotNull(link);
-        assertEquals(link.getMethod(), PUT);
-        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + project.getPath());
-        assertEquals(link.getConsumes(), APPLICATION_JSON);
-        assertEquals(link.getProduces(), APPLICATION_JSON);
+    private void validateProjectLinks(ProjectConfigDto project) {
+        List<Link> links = project.getLinks();
 
-        link = project.getLink("children");
-        assertNotNull(link);
-        assertEquals(link.getMethod(), GET);
-        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/children" + project.getPath());
-        assertEquals(link.getProduces(), APPLICATION_JSON);
+        for (Link link : links) {
+            switch (link.getHref()) {
+                case "update project":
+                    assertNotNull(link);
+                    assertEquals(link.getMethod(), PUT);
+                    assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + project.getPath());
+                    assertEquals(link.getConsumes(), APPLICATION_JSON);
+                    assertEquals(link.getProduces(), APPLICATION_JSON);
+                    break;
 
-        link = project.getLink("tree");
-        assertNotNull(link);
-        assertEquals(link.getMethod(), GET);
-        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/tree" + project.getPath());
-        assertEquals(link.getProduces(), APPLICATION_JSON);
+                case "children":
+                    assertNotNull(link);
+                    assertEquals(link.getMethod(), GET);
+                    assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/children" + project.getPath());
+                    assertEquals(link.getProduces(), APPLICATION_JSON);
+                    break;
 
-        link = project.getLink("modules");
-        assertNotNull(link);
-        assertEquals(link.getMethod(), GET);
-        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/modules" + project.getPath());
-        assertEquals(link.getProduces(), APPLICATION_JSON);
+                case "tree":
+                    assertNotNull(link);
+                    assertEquals(link.getMethod(), GET);
+                    assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/tree" + project.getPath());
+                    assertEquals(link.getProduces(), APPLICATION_JSON);
+                    break;
 
-        link = project.getLink("zipball sources");
-        assertNotNull(link);
-        assertEquals(link.getMethod(), GET);
-        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/export" + project.getPath());
-        assertEquals(link.getProduces(), ExtMediaType.APPLICATION_ZIP);
+                case "modules":
+                    assertNotNull(link);
+                    assertEquals(link.getMethod(), GET);
+                    assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/modules" + project.getPath());
+                    assertEquals(link.getProduces(), APPLICATION_JSON);
+                    break;
 
-        link = project.getLink("delete");
-        assertNotNull(link);
-        assertEquals(link.getMethod(), DELETE);
-        assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + project.getPath());
+                case "zipball sources":
+                    assertNotNull(link);
+                    assertEquals(link.getMethod(), GET);
+                    assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + "/export" + project.getPath());
+                    assertEquals(link.getProduces(), ExtMediaType.APPLICATION_ZIP);
+                    break;
+
+                case "delete":
+                    assertNotNull(link);
+                    assertEquals(link.getMethod(), DELETE);
+                    assertEquals(link.getHref(), "http://localhost:8080/api/project/" + workspace + project.getPath());
+                    break;
+            }
+        }
     }
 
     private void clearAcl(Project project) throws ServerException, ForbiddenException {
         project.getBaseFolder().getVirtualFile().updateACL(Collections.<AccessControlEntry>emptyList(), true, null);
     }
 
-    private class LocalProjectType extends ProjectType {
+    private class LocalProjectType extends AbstractProjectType {
         private LocalProjectType(String typeId, String typeName) {
             super(typeId, typeName, true, false);
             addConstantDefinition("my_attribute", "Constant", "attribute value 1");

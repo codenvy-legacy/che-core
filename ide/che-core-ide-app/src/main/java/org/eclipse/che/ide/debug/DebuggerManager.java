@@ -55,7 +55,7 @@ public class DebuggerManager {
     public Debugger getDebugger() {
         CurrentProject currentProject = appContext.getCurrentProject();
         if (currentProject != null) {
-            String projectTypeId = currentProject.getProjectDescription().getType();
+            String projectTypeId = currentProject.getProjectConfig().getType();
             return debuggers.get(projectTypeId);
         }
 

@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.event;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import com.google.gwt.event.shared.GwtEvent;
+
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 /**
  * An event that should be fired in order to configure the currently opened project.
@@ -21,10 +22,10 @@ import com.google.gwt.event.shared.GwtEvent;
 public class ConfigureProjectEvent extends GwtEvent<ConfigureProjectHandler> {
     public static Type<ConfigureProjectHandler> TYPE = new Type<>();
 
-    private final ProjectDescriptor project;
+    private final ProjectConfigDto projectConfig;
 
-    public ConfigureProjectEvent(ProjectDescriptor project) {
-        this.project = project;
+    public ConfigureProjectEvent(ProjectConfigDto projectConfig) {
+        this.projectConfig = projectConfig;
     }
 
     @Override
@@ -37,7 +38,7 @@ public class ConfigureProjectEvent extends GwtEvent<ConfigureProjectHandler> {
         handler.onConfigureProject(this);
     }
 
-    public ProjectDescriptor getProject() {
-        return project;
+    public ProjectConfigDto getProject() {
+        return projectConfig;
     }
 }

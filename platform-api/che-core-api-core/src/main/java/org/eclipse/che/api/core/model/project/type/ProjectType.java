@@ -25,7 +25,7 @@ public interface ProjectType {
 
     List<? extends Attribute> getAttributes();
 
-    List<? extends ProjectType> getParents();
+    List<ProjectType> getParents();
 
     String getDefaultRecipe();
 
@@ -33,7 +33,7 @@ public interface ProjectType {
 
     Attribute getAttribute(String name);
 
-    boolean getCanBeMixin();
+    boolean canBeMixin();
 
-    boolean getCanBePrimary();
+    boolean canBePrimary();
 }

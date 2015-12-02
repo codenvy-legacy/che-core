@@ -15,7 +15,7 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
@@ -96,7 +96,7 @@ public class EditorPartStackPresenterTest {
     @Mock
     private CloseCurrentProjectEvent closeProjectEvent;
     @Mock
-    private ProjectDescriptor        descriptor;
+    private ProjectConfigDto         descriptor;
     @Mock
     private EditorPartPresenter      editorPartPresenter;
 
@@ -141,7 +141,7 @@ public class EditorPartStackPresenterTest {
     public void allTabsShouldBeClosedForParticularProject() {
         EditorInput editorInput = mock(EditorInput.class);
         VirtualFile file = mock(VirtualFile.class);
-        when(closeProjectEvent.getDescriptor()).thenReturn(descriptor);
+        when(closeProjectEvent.getProjectConfig()).thenReturn(descriptor);
         when(descriptor.getPath()).thenReturn("/test");
         when(editorPartPresenter.getTitle()).thenReturn("title");
         when(editorPartPresenter.getTitleSVGImage()).thenReturn(resource1);

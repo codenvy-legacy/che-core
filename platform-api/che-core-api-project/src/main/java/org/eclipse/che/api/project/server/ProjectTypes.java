@@ -11,8 +11,8 @@
 package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.project.server.type.Attribute;
-import org.eclipse.che.api.project.server.type.ProjectType;
+import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 
 import java.util.ArrayList;

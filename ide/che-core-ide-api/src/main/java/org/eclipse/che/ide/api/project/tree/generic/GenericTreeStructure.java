@@ -10,18 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.tree.generic;
 
-import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.project.tree.TreeStructure;
-import org.eclipse.che.ide.api.project.tree.TreeNode;
-import org.eclipse.che.ide.api.project.tree.TreeSettings;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
+
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.app.CurrentProject;
+import org.eclipse.che.ide.api.project.tree.TreeNode;
+import org.eclipse.che.ide.api.project.tree.TreeSettings;
+import org.eclipse.che.ide.api.project.tree.TreeStructure;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -149,10 +149,10 @@ public class GenericTreeStructure implements TreeStructure {
      * Creates a new {@link ProjectNode} owned by this tree with the specified associated {@code data}.
      *
      * @param data
-     *         the associated {@link ProjectDescriptor}
+     *         the associated {@link ProjectConfigDto}
      * @return a new {@link ProjectNode}
      */
-    public ProjectNode newProjectNode(@NotNull ProjectDescriptor data) {
+    public ProjectNode newProjectNode(@NotNull ProjectConfigDto data) {
         return getNodeFactory().newProjectNode(null, data, this);
     }
 

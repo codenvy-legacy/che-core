@@ -12,9 +12,9 @@ package org.eclipse.che.ide.api.project.tree;
 
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.event.NodeChangedEvent;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.ui.tree.TreeNodeElement;
 import org.vectomatic.dom.svg.ui.SVGImage;
@@ -96,11 +96,11 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     /** {@inheritDoc} */
     @Nullable
     @Override
-    public HasProjectDescriptor getProject() {
-        return new HasProjectDescriptor() {
+    public HasProjectConfig getProject() {
+        return new HasProjectConfig() {
             @NotNull
             @Override
-            public ProjectDescriptor getProjectDescriptor() {
+            public ProjectConfigDto getProjectConfig() {
                 TreeNode<?> candidate = getParent();
                 while (candidate != null) {
                     if (candidate instanceof ProjectNode) {
@@ -112,7 +112,7 @@ public abstract class AbstractTreeNode<T> implements TreeNode<T> {
             }
 
             @Override
-            public void setProjectDescriptor(@NotNull ProjectDescriptor projectDescriptor) {
+            public void setProjectConfig(@NotNull ProjectConfigDto projectConfig) {
                 //stub
             }
         };

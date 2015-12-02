@@ -10,20 +10,20 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
-import org.eclipse.che.api.project.server.ValueStorageException;
+import org.eclipse.che.api.core.model.project.type.Attribute;
 
 /**
  * @author gazarenkov
  */
-public abstract class Attribute {
+public abstract class AbstractAttribute implements Attribute {
 
-    protected String projectType;
-    protected String name;
-    protected String description;
+    protected String  projectType;
+    protected String  name;
+    protected String  description;
     protected boolean required;
     protected boolean variable;
 
-    protected Attribute(String projectType, String name, String description, boolean required, boolean variable) {
+    protected AbstractAttribute(String projectType, String name, String description, boolean required, boolean variable) {
         this.projectType = projectType;
         this.name = name;
         this.description = description;
@@ -33,7 +33,7 @@ public abstract class Attribute {
 
 
     public String getId() {
-        return projectType+":"+name;
+        return projectType + ':' + name;
     }
 
 
@@ -61,5 +61,5 @@ public abstract class Attribute {
         return name;
     }
 
-    public abstract AttributeValue getValue() throws ValueStorageException;
+    public abstract AttributeValue getValue();
 }

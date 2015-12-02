@@ -26,10 +26,10 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -41,14 +41,14 @@ import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.parts.base.BaseView;
 import org.eclipse.che.ide.api.parts.base.ToolButton;
 import org.eclipse.che.ide.api.project.node.HasAction;
-import org.eclipse.che.ide.api.project.node.HasProjectDescriptor;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.api.project.node.settings.HasSettings;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.menu.ContextMenu;
-import org.eclipse.che.ide.project.node.ProjectDescriptorNode;
+import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.project.node.SyntheticBasedNode;
 import org.eclipse.che.ide.ui.Tooltip;
 import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
@@ -498,10 +498,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             }
         }
 
-        ProjectDescriptor openedProjectDescriptor = appContext.getCurrentProject().getProjectDescription();
+        ProjectConfigDto openedProjectDescriptor = appContext.getCurrentProject().getProjectConfig();
 
         for (Node node : tree.getRootNodes()) {
-            if (node instanceof ProjectDescriptorNode && openedProjectDescriptor.equals(((ProjectDescriptorNode)node).getData())) {
+            if (node instanceof ProjectNode && openedProjectDescriptor.equals(((ProjectNode)node).getData())) {
                 reloadChildren(node);
             }
         }
@@ -670,8 +670,8 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                 element.setAttribute("actionable", "true");
             }
 
-            if (node instanceof HasProjectDescriptor) {
-                element.setAttribute("project", ((HasProjectDescriptor)node).getProjectDescriptor().getPath());
+            if (node instanceof HasProjectConfig) {
+                element.setAttribute("project", ((HasProjectConfig)node).getProjectConfig().getPath());
             }
 
             if (node instanceof SyntheticBasedNode<?>) {

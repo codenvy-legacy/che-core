@@ -16,14 +16,13 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.workspace.ModuleConfig;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
-import org.eclipse.che.api.workspace.shared.dto.ModuleConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
 import java.io.IOException;
 import java.util.List;
@@ -78,8 +77,12 @@ public interface ProjectManager {
      * @throws ServerException
      *         if other error occurs
      */
-    Project createProject(String workspace, String name, ProjectConfig projectConfig, Map<String, String> options)
-            throws ConflictException, ForbiddenException, ServerException, ProjectTypeConstraintException, NotFoundException;
+    Project createProject(String workspace, String name,
+                          ProjectConfig projectConfig,
+                          Map<String, String> options) throws ConflictException,
+                                                              ForbiddenException,
+                                                              ServerException,
+                                                              NotFoundException;
 
     /**
      * Update the given project
@@ -116,7 +119,8 @@ public interface ProjectManager {
      *         if an error occurs
      * @see ProjectConfig
      */
-    ProjectConfig getProjectConfig(Project project) throws ServerException, ProjectTypeConstraintException, ValueStorageException;
+    ProjectConfig getProjectConfig(Project project)
+            throws ServerException, ProjectTypeConstraintException, ValueStorageException, ForbiddenException;
 
     /**
      * Updates project meta-information making all necessary validations.
@@ -133,7 +137,7 @@ public interface ProjectManager {
     void updateProjectConfig(Project project, ProjectConfig config) throws ServerException,
                                                                            ValueStorageException,
                                                                            ProjectTypeConstraintException,
-                                                                           InvalidValueException;
+                                                                           ForbiddenException;
 
     /**
      * Gets ProjectMisc.
@@ -173,8 +177,11 @@ public interface ProjectManager {
      * @throws ForbiddenException
      *         if user which perform operation doesn't have required permissions
      */
-    List<? extends ModuleConfig> getProjectModules(Project project)
-            throws ServerException, ForbiddenException, ConflictException, IOException, NotFoundException;
+    List<? extends ProjectConfig> getProjectModules(Project project) throws ServerException,
+                                                                            ForbiddenException,
+                                                                            ConflictException,
+                                                                            IOException,
+                                                                            NotFoundException;
 
     /**
      * @return VirtualFileSystemRegistry
@@ -213,10 +220,13 @@ public interface ProjectManager {
      * @throws ServerException
      * @throws NotFoundException
      */
-    ModuleConfigDto addModule(String workspace,
-                              String projectPath,
-                              ModuleConfigDto moduleConfig,
-                              Map<String, String> options) throws ConflictException, ForbiddenException, ServerException, NotFoundException;
+    ProjectConfigDto addModule(String workspace,
+                               String projectPath,
+                               ProjectConfigDto moduleConfig,
+                               Map<String, String> options) throws ConflictException,
+                                                                   ForbiddenException,
+                                                                   ServerException,
+                                                                   NotFoundException;
 
 
     List<SourceEstimation> resolveSources(String workspace, String path, boolean transientOnly) throws ServerException, ForbiddenException,
@@ -256,14 +266,35 @@ public interface ProjectManager {
     /**
      * Delete the given item from the workspace.
      *
-     * @param workspace
+     * @param workspaceId
      *         The workspace to delete from.
      * @param path
      *         In case a module is being deleted, the module's path relative to the provided path.
-     * @return True if the path was found and deleted, false if the path was not found.
      */
-    boolean delete(String workspace, String path)
-            throws ServerException, ForbiddenException, NotFoundException, ConflictException;
+    void delete(String workspaceId, String path) throws ServerException, ForbiddenException, NotFoundException, ConflictException;
+
+    /**
+     * Deletes module from project and updates project in workspace.
+     *
+     * @param workspaceId
+     *         workspace id to get project from workspace
+     * @param pathToParent
+     *         path to parent of deleted module
+     * @param pathToModule
+     *         path to module which will be deleted
+     * @throws ServerException
+     *         error occurs during we get project from workspace, or update project in workspace after module removing
+     * @throws NotFoundException
+     *         when module which we want to delete not found
+     * @throws ConflictException
+     *         if operation causes conflict
+     * @throws ForbiddenException
+     *         if user which perform operation doesn't have required permissions
+     */
+    void deleteModule(String workspaceId, String pathToParent, String pathToModule) throws ServerException,
+                                                                                           NotFoundException,
+                                                                                           ForbiddenException,
+                                                                                           ConflictException;
 
     /**
      * Tests whether the {@code folder} contains project structure.
