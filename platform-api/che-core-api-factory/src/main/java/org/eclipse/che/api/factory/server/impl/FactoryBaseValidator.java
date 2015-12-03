@@ -19,7 +19,7 @@ import org.eclipse.che.api.factory.shared.dto.Action;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.factory.shared.dto.Ide;
 import org.eclipse.che.api.factory.shared.dto.OnAppLoaded;
-import org.eclipse.che.api.factory.shared.dto.OnProjectOpened;
+import org.eclipse.che.api.factory.shared.dto.OnProjectsLoaded;
 import org.eclipse.che.api.factory.shared.dto.Policies;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
@@ -215,7 +215,7 @@ public abstract class FactoryBaseValidator {
             return;
         }
 
-        List<Action> applicationActions = new ArrayList<>();
+        final List<Action> applicationActions = new ArrayList<>();
         if (ide.getOnAppClosed() != null) {
             applicationActions.addAll(ide.getOnAppClosed().getActions());
         }
@@ -225,7 +225,7 @@ public abstract class FactoryBaseValidator {
 
         for (Action applicationAction : applicationActions) {
             String id = applicationAction.getId();
-            if ("openFile".equals(id) || "findReplace".equals(id)) {
+            if ("openFile".equals(id) || "findReplace".equals(id) || "runCommand".equals(id)) {
                 throw new ConflictException(format(FactoryConstants.INVALID_ACTION_SECTION, id));
             }
         }
@@ -242,9 +242,9 @@ public abstract class FactoryBaseValidator {
             }
         }
 
-        OnProjectOpened onOpened = ide.getOnProjectOpened();
-        if (onOpened != null) {
-            List<Action> onProjectOpenedActions = onOpened.getActions();
+        OnProjectsLoaded onLoaded = ide.getOnProjectsLoaded();
+        if (onLoaded != null) {
+            final List<Action> onProjectOpenedActions = onLoaded.getActions();
             for (Action applicationAction : onProjectOpenedActions) {
                 final String id = applicationAction.getId();
                 final Map<String, String> properties = applicationAction.getProperties();
@@ -253,6 +253,12 @@ public abstract class FactoryBaseValidator {
                     case "openFile":
                         if (isNullOrEmpty(properties.get("file"))) {
                             throw new ConflictException(FactoryConstants.INVALID_OPENFILE_ACTION);
+                        }
+                        break;
+                        
+                    case "runCommand":
+                        if (isNullOrEmpty(properties.get("name"))) {
+                            throw new ConflictException(FactoryConstants.INVALID_RUNCOMMAND_ACTION);
                         }
                         break;
 

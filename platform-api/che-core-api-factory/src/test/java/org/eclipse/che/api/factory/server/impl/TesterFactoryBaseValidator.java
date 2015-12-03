@@ -19,8 +19,7 @@ import org.eclipse.che.api.user.server.dao.PreferenceDao;
 public class TesterFactoryBaseValidator extends FactoryBaseValidator {
 
     public TesterFactoryBaseValidator(AccountDao accountDao,
-                                      PreferenceDao preferenceDao
-                                     ) {
+                                      PreferenceDao preferenceDao) {
         super(accountDao, preferenceDao);
     }
 }

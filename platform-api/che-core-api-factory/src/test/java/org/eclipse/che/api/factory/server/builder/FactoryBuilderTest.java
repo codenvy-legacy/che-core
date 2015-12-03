@@ -23,7 +23,7 @@ import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.factory.shared.dto.Ide;
 import org.eclipse.che.api.factory.shared.dto.OnAppClosed;
 import org.eclipse.che.api.factory.shared.dto.OnAppLoaded;
-import org.eclipse.che.api.factory.shared.dto.OnProjectOpened;
+import org.eclipse.che.api.factory.shared.dto.OnProjectsLoaded;
 import org.eclipse.che.api.factory.shared.dto.Policies;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
@@ -216,8 +216,8 @@ public class FactoryBuilderTest {
                                                                     "Greeting title for authenticated users",
                                                                     "authenticatedContentUrl",
                                                                     "http://example.com/content.url")))))
-                              .withOnProjectOpened(
-                                      dto.createDto(OnProjectOpened.class)
+                              .withOnProjectsLoaded(
+                                      dto.createDto(OnProjectsLoaded.class)
                                          .withActions(Arrays.asList(
                                                  dto.createDto(Action.class)
                                                     .withId("openFile")
