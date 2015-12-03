@@ -53,6 +53,7 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
     private String                    wsUrl;
     private int                       countRetry;
     private AsyncCallback<MessageBus> messageBusCallback;
+    private WebSocket                 testConnection; //use it only for testing state of ext-service
 
     @Inject
     public ExtServerStateController(EventBus eventBus,
@@ -84,11 +85,7 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
 
     @Override
     public void onClose(WebSocketClosedEvent event) {
-        if (state == ExtServerState.STARTED) {
-            Log.debug(getClass(), "WebSocket connection to Extension Server closed going to reconnect");
-            countRetry = 2; //try to reconnect few times in case some problem with network and ext server still running
-            retryConnectionTimer.schedule(1000);
-        }
+        Log.info(getClass(), "Test WS connection closed with code " + event.getCode() + " reason: " + event.getReason() + " extension server started well ");
     }
 
     @Override
@@ -105,6 +102,7 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
 
     @Override
     public void onOpen() {
+        testConnection.close(); //close testing connection now we know ext-server already start
         state = ExtServerState.STARTED;
         initialLoadingInfo.setOperationStatus(EXTENSION_SERVER_BOOTING.getValue(), SUCCESS);
         loader.hide();
@@ -135,9 +133,9 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
     }
 
     private void connect() {
-        WebSocket socket = WebSocket.create(wsUrl);
-        socket.setOnOpenHandler(this);
-        socket.setOnCloseHandler(this);
-        socket.setOnErrorHandler(this);
+        testConnection = WebSocket.create(wsUrl);
+        testConnection.setOnOpenHandler(this);
+        testConnection.setOnCloseHandler(this);
+        testConnection.setOnErrorHandler(this);
     }
 }
