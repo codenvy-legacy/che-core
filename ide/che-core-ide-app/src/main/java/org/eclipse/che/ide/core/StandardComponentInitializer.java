@@ -70,6 +70,7 @@ import org.eclipse.che.ide.newresource.NewFileAction;
 import org.eclipse.che.ide.newresource.NewFolderAction;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
+import org.eclipse.che.ide.util.browser.UserAgent;
 import org.eclipse.che.ide.util.input.KeyCodeMap;
 import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -497,7 +498,11 @@ public class StandardComponentInitializer {
         loaderToolbarGroup.add(loaderAction);
 
         // Define hot-keys
-        keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
+        if(UserAgent.isMac()){
+            keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('N').build(), "navigateToFile");
+        } else {
+            keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
+        }
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('A').build(), "findActionAction");
         keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode('L').build(), "format");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('c').build(), "copy");
