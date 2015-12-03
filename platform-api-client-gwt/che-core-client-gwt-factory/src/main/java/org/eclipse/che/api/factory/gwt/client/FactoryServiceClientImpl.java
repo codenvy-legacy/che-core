@@ -53,7 +53,12 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
     /** {@inheritDoc} */
     @Override
     public void getFactoryJson(String workspaceId, String path, AsyncRequestCallback<Factory> callback) {
-        final String requestUrl = "/api/factory/" + workspaceId + "/" + path;
-        asyncRequestFactory.createGetRequest(requestUrl).header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON).send(callback);
+        final StringBuilder url = new StringBuilder("/api/factory/workspace/").append(workspaceId);
+        if (path != null) {
+            url.append("?path=").append(path);
+        }
+        asyncRequestFactory.createGetRequest(url.toString())
+                           .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
+                           .send(callback);
     }
 }
