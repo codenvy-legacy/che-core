@@ -200,6 +200,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
         messageBus.addOnOpenHandler(new ConnectionOpenedHandler() {
             @Override
             public void onOpen() {
+                messageBus.removeOnOpenHandler(this);
                 subscribeToWorkspaceStatusWebSocket(workspace);
 
                 if (!RUNNING.equals(workspace.getStatus())) {

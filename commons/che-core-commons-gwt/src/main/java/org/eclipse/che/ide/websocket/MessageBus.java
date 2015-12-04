@@ -108,6 +108,15 @@ public interface MessageBus extends MessageReceivedHandler {
      */
     void addOnOpenHandler(ConnectionOpenedHandler handler);
 
+
+    /**
+     * Removes the given handler.
+     *
+     * @param handler
+     *         {@link ConnectionOpenedHandler}
+     */
+    void removeOnOpenHandler(ConnectionOpenedHandler handler);
+
     /**
      * Sets the {@link ConnectionClosedHandler} to be notified when the {@link MessageBus} closed.
      *
