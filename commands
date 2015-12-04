@@ -1,2 +1,0 @@
-cp spring1/target/web-spring-java-simple-1.0-SNAPSHOT.war /home/user/tomcat7/webapps/spring.war
-
