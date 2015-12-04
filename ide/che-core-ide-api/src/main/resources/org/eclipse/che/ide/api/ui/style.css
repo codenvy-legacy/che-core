@@ -168,6 +168,7 @@
 @def splitterOverlap 4px;
 @def toolbarIconSize 16px;
 @def menuIconSize 12px;
+@def contentPadding 8px;
 
 /* Font Sizes */
 @def fontSize 11px;

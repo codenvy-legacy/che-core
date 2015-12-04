@@ -9,7 +9,8 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 @external .gwt-SplitLayoutPanel-HDragger, .gwt-SplitLayoutPanel-VDragger, .hsplitter, .hsplitter, .gwt-DialogBox, .gwt-Button, .gwt-PushButton, gwt-PushButton-up, gwt-PushButton-up-hovering, gwt-PushButton-up-disabled, gwt-PushButton-down,.gwt-PushButton-down-hovering,.gwt-PushButton-down-disabled, gwt-ToggleButton, gwt-ToggleButton-up, gwt-ToggleButton-up-hovering, gwt-ToggleButton-up-disabled, gwt-ToggleButton-down, .gwt-ToggleButton-down-hovering, .gwt-ToggleButton-down-disabled, .gwt-TextBox, .inputError, .gwt-TextArea, .gwt-ListBox, .gwt-PopupPanel, .gwt-Label;
-
+@external .gwt-TabLayoutPanel, .gwt-TabLayoutPanelTab, .gwt-TabLayoutPanelTab-selected,  .gwt-TabLayoutPanelTabInner, .gwt-TabLayoutPanelContent;
+ 
 /* Global styles and external GWT styles. */
 
 body, td {
@@ -620,6 +621,45 @@ a {
 .tagsPanel {
     width: 393px;
 }
+
+.gwt-TabLayoutPanel {
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
+    background-color: inactiveTabBackground;
+    border: 1px solid inactiveTabBorderColor;
+    margin: 0px;
+    padding: 3px 10px;
+    border-left: none;
+    border-bottom: 1px solid inactiveTabBackground;
+    color: tabTextColor;
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:first-child {
+    border-left: 1px solid inactiveTabBorderColor;
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
+    background-color: activeTabBackground;
+    color: activeTabTextColor;
+    border-bottom: 1px solid primaryHighlightColor;
+}
+
+.gwt-TabLayoutPanelTabInner {
+    font-size: fontSize;
+    font-family: mainFontFamily;
+    font-weight: normal;
+}
+
+.gwt-TabLayoutPanelContentContainer {
+    border: none;
+}
+
+.gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
+    padding: contentPadding;
+    border: 1px solid tabBorderColor;
+}
+
 
 /********************************************************************************************
  *

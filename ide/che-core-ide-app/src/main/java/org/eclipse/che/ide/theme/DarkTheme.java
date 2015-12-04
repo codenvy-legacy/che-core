@@ -60,7 +60,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String inactiveTabBackground() {
-        return "#484848";
+        return "#33373B";
     }
 
     @Override
@@ -70,7 +70,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String inactiveTabBorderColor() {
-        return "#353535";
+        return "#121416";
     }
 
     @Override
