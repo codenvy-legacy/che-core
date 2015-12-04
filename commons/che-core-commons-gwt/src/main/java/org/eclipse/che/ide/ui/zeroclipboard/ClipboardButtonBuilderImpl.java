@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.zeroClipboard;
+package org.eclipse.che.ide.ui.zeroclipboard;
 
 import org.eclipse.che.ide.MimeType;
 import com.google.gwt.dom.client.Element;
