@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.actions;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
@@ -23,9 +24,12 @@ import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
+import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.constraints.Anchor;
 import org.eclipse.che.ide.api.constraints.Constraints;
+import org.eclipse.che.ide.api.parts.PerspectiveManager;
+import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
 
@@ -39,18 +43,29 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-/** @author Evgen Vidolob */
+/**
+ * @author Evgen Vidolob
+ */
 public class ActionManagerImpl implements ActionManager {
+    public static final String[] EMPTY_ARRAY = new String[0];
 
-    public static final String[]                 EMPTY_ARRAY = new String[0];
-    private final       Map<String, Object>      myId2Action = new HashMap<>();
-    private final       Map<String, Set<String>> myPlugin2Id = new HashMap<>();
-    private final       Map<String, Integer>     myId2Index  = new HashMap<>();
-    private final       Map<Object, String>      myAction2Id = new HashMap<>();
+    private final Map<String, Object>          myId2Action;
+    private final Map<String, Set<String>>     myPlugin2Id;
+    private final Map<String, Integer>         myId2Index;
+    private final Map<Object, String>          myAction2Id;
+    private final PresentationFactory          presentationFactory;
+    private final Provider<PerspectiveManager> managerProvider;
+
     private int myRegisteredActionsCount;
 
     @Inject
-    public ActionManagerImpl() {
+    public ActionManagerImpl(PresentationFactory presentationFactory, Provider<PerspectiveManager> managerProvider) {
+        this.presentationFactory = presentationFactory;
+        this.managerProvider = managerProvider;
+        this.myId2Action = new HashMap<>();
+        this.myPlugin2Id = new HashMap<>();
+        this.myId2Index = new HashMap<>();
+        this.myAction2Id = new HashMap<>();
         registerDefaultActionGroups();
     }
 
@@ -99,7 +114,8 @@ public class ActionManagerImpl implements ActionManager {
         DefaultActionGroup rightMainMenu = new DefaultActionGroup(this);
         registerAction(IdeActions.GROUP_RIGHT_MAIN_MENU, rightMainMenu);
 
-        DefaultActionGroup projectExplorerContextMenuGroup = new DefaultActionGroup(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU, false, this);
+        DefaultActionGroup projectExplorerContextMenuGroup =
+                new DefaultActionGroup(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU, false, this);
         registerAction(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU, projectExplorerContextMenuGroup);
 
         // register default action groups for main toolbar
@@ -167,7 +183,24 @@ public class ActionManagerImpl implements ActionManager {
         return chainActionsRecursively(promise, actions.listIterator(), breakOnFail);
     }
 
-    /** Recursively chains the given promise with the promise that performs the next action from the given iterator. */
+    @Override
+    public void performAction(String actionId, Map<String, String> parameters) {
+        final Action action;
+        if (actionId != null && (action = getAction(actionId)) != null) {
+            final Presentation presentation = presentationFactory.getPresentation(action);
+            final ActionEvent actionEvent = new ActionEvent("", presentation, this, managerProvider.get(), parameters);
+
+            action.update(actionEvent);
+
+            if (presentation.isEnabled() && presentation.isVisible()) {
+                action.actionPerformed(actionEvent);
+            }
+        }
+    }
+
+    /**
+     * Recursively chains the given promise with the promise that performs the next action from the given iterator.
+     */
     private Promise<Void> chainActionsRecursively(Promise<Void> promise,
                                                   ListIterator<Pair<Action, ActionEvent>> iterator,
                                                   boolean breakOnFail) {
@@ -199,7 +232,9 @@ public class ActionManagerImpl implements ActionManager {
         return chainActionsRecursively(derivedErrorSafePromise, iterator, breakOnFail);
     }
 
-    /** Returns promise returned by PromisableAction or already resolved promise for non-PromisableAction. */
+    /**
+     * Returns promise returned by PromisableAction or already resolved promise for non-PromisableAction.
+     */
     private Promise<Void> promiseAction(final Action action, final ActionEvent event) {
         if (action instanceof PromisableAction) {
             return ((PromisableAction)action).promise(event);

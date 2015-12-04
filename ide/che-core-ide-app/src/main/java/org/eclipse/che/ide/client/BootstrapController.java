@@ -29,18 +29,13 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.DocumentTitleDecorator;
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
 import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
-import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
-import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
@@ -63,9 +58,7 @@ public class BootstrapController {
     private final ExtensionInitializer         extensionInitializer;
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
-    private final PresentationFactory          presentationFactory;
     private final DocumentTitleDecorator       documentTitleDecorator;
-    private final Provider<PerspectiveManager> managerProvider;
     private final Provider<AppStateManager>    appStateManagerProvider;
 
     @Inject
@@ -76,7 +69,6 @@ public class BootstrapController {
                                EventBus eventBus,
                                ActionManager actionManager,
                                DocumentTitleDecorator documentTitleDecorator,
-                               Provider<PerspectiveManager> managerProvider,
                                Provider<AppStateManager> appStateManagerProvider) {
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
@@ -84,10 +76,7 @@ public class BootstrapController {
         this.actionManager = actionManager;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.documentTitleDecorator = documentTitleDecorator;
-        this.managerProvider = managerProvider;
         this.appStateManagerProvider = appStateManagerProvider;
-
-        presentationFactory = new PresentationFactory();
 
         // Register DTO providers
         dtoRegistrar.registerDtoProviders();
@@ -236,7 +225,6 @@ public class BootstrapController {
         }
     }
 
-
     private void processStartupParameters() {
         final String projectNameToOpen = Config.getProjectName();
         if (projectNameToOpen != null) {
@@ -260,26 +248,7 @@ public class BootstrapController {
     private void processStartupAction() {
         final String startupAction = Config.getStartupParam("action");
         if (startupAction != null) {
-            performAction(startupAction, null);
-        }
-    }
-
-    private void performAction(String actionId, Map<String, String> parameters) {
-        Action action = actionManager.getAction(actionId);
-
-        if (action == null) {
-            return;
-        }
-
-        final Presentation presentation = presentationFactory.getPresentation(action);
-
-        final PerspectiveManager manager = managerProvider.get();
-
-        final ActionEvent e = new ActionEvent("", presentation, actionManager, manager, parameters);
-        action.update(e);
-
-        if (presentation.isEnabled() && presentation.isVisible()) {
-            action.actionPerformed(e);
+            actionManager.performAction(startupAction, null);
         }
     }
 

@@ -35,7 +35,7 @@ public class ActionManagerTest {
 
     @Before
     public void init() {
-        actionManager = new ActionManagerImpl();
+        actionManager = new ActionManagerImpl(null, null);
     }
 
     @Test

@@ -15,6 +15,7 @@ import org.eclipse.che.ide.api.extension.SDK;
 import org.eclipse.che.ide.util.Pair;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * A manager for actions. Used to register and unregister actions, also
@@ -114,4 +115,16 @@ public interface ActionManager {
      * @see PromisableAction
      */
     Promise<Void> performActions(List<Pair<Action, ActionEvent>> actions, boolean breakOnFail);
+
+    /**
+     * Performs registered action by given id.
+     *
+     * Note that if either action is not registered or actionId is null then nothing will be done
+     *
+     * @param actionId
+     *         the id of action that will be performed
+     * @param parameters
+     *         the parameters which are used for the action invocation
+     */
+    void performAction(String actionId, Map<String, String> parameters);
 }
