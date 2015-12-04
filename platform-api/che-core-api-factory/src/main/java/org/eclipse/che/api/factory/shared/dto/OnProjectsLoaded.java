@@ -23,7 +23,7 @@ import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIO
  * @author Sergii Kabashniuk
  */
 @DTO
-public interface OnProjectOpened {
+public interface OnProjectsLoaded {
     /**
      * @return actions for current event.
      */
@@ -32,5 +32,5 @@ public interface OnProjectOpened {
 
     void setActions(List<Action> actions);
 
-    OnProjectOpened withActions(List<Action> actions);
+    OnProjectsLoaded withActions(List<Action> actions);
 }

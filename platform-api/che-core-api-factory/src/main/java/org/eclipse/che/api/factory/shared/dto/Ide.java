@@ -44,13 +44,13 @@ public interface Ide {
     Ide withOnAppClosed(OnAppClosed onAppClosed);
 
     /**
-     * @return configuration of IDE on project opened event.
+     * @return configuration of IDE on projects loaded event.
      */
     @FactoryParameter(obligation = OPTIONAL)
-    OnProjectOpened getOnProjectOpened();
+    OnProjectsLoaded getOnProjectsLoaded();
 
-    void setOnProjectOpened(OnProjectOpened onProjectOpened);
+    void setOnProjectsLoaded(OnProjectsLoaded onProjectsLoaded);
 
-    Ide withOnProjectOpened(OnProjectOpened onProjectOpened);
+    Ide withOnProjectsLoaded(OnProjectsLoaded onProjectsLoaded);
 
 }

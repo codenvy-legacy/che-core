@@ -26,7 +26,7 @@ import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.factory.shared.dto.Ide;
 import org.eclipse.che.api.factory.shared.dto.OnAppClosed;
 import org.eclipse.che.api.factory.shared.dto.OnAppLoaded;
-import org.eclipse.che.api.factory.shared.dto.OnProjectOpened;
+import org.eclipse.che.api.factory.shared.dto.OnProjectsLoaded;
 import org.eclipse.che.api.factory.shared.dto.Policies;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
@@ -43,6 +43,7 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -84,16 +86,13 @@ public class FactoryBaseValidatorTest {
 
     private Factory factory;
 
-    private DtoFactory dto = DtoFactory.getInstance();
-
-
     @BeforeMethod
     public void setUp() throws ParseException, NotFoundException, ServerException {
-        factory = dto.createDto(Factory.class)
-                     .withV("4.0")
-                     .withCreator(dto.createDto(Author.class)
-                                     .withAccountId(ID)
-                                     .withUserId("userid"));
+        factory = newDto(Factory.class)
+                          .withV("4.0")
+                          .withCreator(newDto(Author.class)
+                                               .withAccountId(ID)
+                                               .withUserId("userid"));
 
         User user = new User().withId("userid");
 
@@ -176,11 +175,10 @@ public class FactoryBaseValidatorTest {
                                               " -._.")
     public void shouldThrowFactoryUrlExceptionIfProjectNameInvalid(String projectName) throws Exception {
         // given
-        factory.withWorkspace(dto.createDto(WorkspaceConfigDto.class)
-                                 .withProjects(Collections.singletonList(dto.createDto(
-                                         ProjectConfigDto.class)
-                                                                            .withType("type")
-                                                                            .withName(projectName))));
+        factory.withWorkspace(newDto(WorkspaceConfigDto.class)
+                                      .withProjects(Collections.singletonList(newDto(ProjectConfigDto.class)
+                                                                                      .withType("type")
+                                                                                      .withName(projectName))));
         // when, then
         validator.validateProjectNames(factory);
     }
@@ -188,11 +186,10 @@ public class FactoryBaseValidatorTest {
     @Test(dataProvider = "validProjectNamesProvider")
     public void shouldBeAbleToValidateValidProjectName(String projectName) throws Exception {
         // given
-        factory.withWorkspace(dto.createDto(WorkspaceConfigDto.class)
-                                 .withProjects(Collections.singletonList(dto.createDto(
-                                         ProjectConfigDto.class)
-                                                                            .withType("type")
-                                                                            .withName(projectName))));
+        factory.withWorkspace(newDto(WorkspaceConfigDto.class)
+                                      .withProjects(Collections.singletonList(newDto(ProjectConfigDto.class)
+                                                                                      .withType("type")
+                                                                                      .withName(projectName))));
         // when, then
         validator.validateProjectNames(factory);
     }
@@ -259,38 +256,34 @@ public class FactoryBaseValidatorTest {
     public void shouldValidateIfCurrentTimeBeforeSinceUntil() throws ConflictException {
         Long currentTime = new Date().getTime();
 
-        factory.withPolicies(dto.createDto(Policies.class)
-                                .withSince(currentTime + 10000L)
-                                .withUntil(currentTime + 20000L)
-                            );
+        factory.withPolicies(newDto(Policies.class)
+                                     .withSince(currentTime + 10000L)
+                                     .withUntil(currentTime + 20000L));
         validator.validateCurrentTimeAfterSinceUntil(factory);
     }
 
     @Test(expectedExceptions = ApiException.class,
             expectedExceptionsMessageRegExp = FactoryConstants.INVALID_SINCE_MESSAGE)
     public void shouldNotValidateIfSinceBeforeCurrent() throws ApiException {
-        factory.withPolicies(dto.createDto(Policies.class)
-                                .withSince(1L)
-                            );
+        factory.withPolicies(newDto(Policies.class)
+                                     .withSince(1L));
         validator.validateCurrentTimeAfterSinceUntil(factory);
     }
 
     @Test(expectedExceptions = ApiException.class,
             expectedExceptionsMessageRegExp = FactoryConstants.INVALID_UNTIL_MESSAGE)
     public void shouldNotValidateIfUntilBeforeCurrent() throws ApiException {
-        factory.withPolicies(dto.createDto(Policies.class)
-                                .withUntil(1L)
-                            );
+        factory.withPolicies(newDto(Policies.class)
+                                     .withUntil(1L));
         validator.validateCurrentTimeAfterSinceUntil(factory);
     }
 
     @Test(expectedExceptions = ApiException.class,
             expectedExceptionsMessageRegExp = FactoryConstants.INVALID_SINCEUNTIL_MESSAGE)
     public void shouldNotValidateIfUntilBeforeSince() throws ApiException {
-        factory.withPolicies(dto.createDto(Policies.class)
-                                .withSince(2L)
-                                .withUntil(1L)
-                            );
+        factory.withPolicies(newDto(Policies.class)
+                                     .withSince(2L)
+                                     .withUntil(1L));
 
         validator.validateCurrentTimeAfterSinceUntil(factory);
     }
@@ -299,10 +292,8 @@ public class FactoryBaseValidatorTest {
             expectedExceptionsMessageRegExp = FactoryConstants.ILLEGAL_FACTORY_BY_UNTIL_MESSAGE)
     public void shouldNotValidateIfUntilBeforeCurrentTime() throws ApiException {
         Long currentTime = new Date().getTime();
-        factory.withPolicies(dto.createDto(Policies.class)
-                                .withUntil(currentTime - 10000L)
-                            );
-
+        factory.withPolicies(newDto(Policies.class)
+                                     .withUntil(currentTime - 10000L));
 
         validator.validateCurrentTimeBetweenSinceUntil(factory);
     }
@@ -311,10 +302,9 @@ public class FactoryBaseValidatorTest {
     public void shouldValidateIfCurrentTimeBetweenUntilSince() throws ApiException {
         Long currentTime = new Date().getTime();
 
-        factory.withPolicies(dto.createDto(Policies.class)
-                                .withSince(currentTime - 10000L)
-                                .withUntil(currentTime + 10000L)
-                            );
+        factory.withPolicies(newDto(Policies.class)
+                                     .withSince(currentTime - 10000L)
+                                     .withUntil(currentTime + 10000L));
 
         validator.validateCurrentTimeBetweenSinceUntil(factory);
     }
@@ -323,9 +313,8 @@ public class FactoryBaseValidatorTest {
             expectedExceptionsMessageRegExp = FactoryConstants.ILLEGAL_FACTORY_BY_SINCE_MESSAGE)
     public void shouldNotValidateIfUntilSinceAfterCurrentTime() throws ApiException {
         Long currentTime = new Date().getTime();
-        factory.withPolicies(dto.createDto(Policies.class)
-                                .withSince(currentTime + 10000L)
-                            );
+        factory.withPolicies(newDto(Policies.class)
+                                     .withSince(currentTime + 10000L));
 
         validator.validateCurrentTimeBetweenSinceUntil(factory);
     }
@@ -350,9 +339,12 @@ public class FactoryBaseValidatorTest {
     public void shouldNotValidateOpenfileActionIfInWrongSectionOnAppClosed() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
-        List<Action> actions = Arrays.asList(dto.createDto(Action.class).withId("openFile"));
-        Ide ide = dto.createDto(Ide.class).withOnAppClosed(dto.createDto(OnAppClosed.class).withActions(actions));
-        Factory factoryWithAccountId = dto.clone(factory).withIde(ide);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                     .withId("openFile"));
+        Ide ide = newDto(Ide.class)
+                .withOnAppClosed(newDto(OnAppClosed.class)
+                                         .withActions(actions));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
         //when
         validator.validateProjectActions(factoryWithAccountId);
     }
@@ -361,9 +353,12 @@ public class FactoryBaseValidatorTest {
     public void shouldNotValidateFindReplaceActionIfInWrongSectionOnAppLoaded() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
-        List<Action> actions = Arrays.asList(dto.createDto(Action.class).withId("findReplace"));
-        Ide ide = dto.createDto(Ide.class).withOnAppLoaded(dto.createDto(OnAppLoaded.class).withActions(actions));
-        Factory factoryWithAccountId = dto.clone(factory).withIde(ide);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                     .withId("findReplace"));
+        Ide ide = newDto(Ide.class)
+                .withOnAppLoaded(newDto(OnAppLoaded.class)
+                                         .withActions(actions));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
         //when
         validator.validateProjectActions(factoryWithAccountId);
     }
@@ -372,9 +367,26 @@ public class FactoryBaseValidatorTest {
     public void shouldNotValidateIfOpenfileActionInsufficientParams() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
-        List<Action> actions = Arrays.asList(dto.createDto(Action.class).withId("openFile"));
-        Ide ide = dto.createDto(Ide.class).withOnProjectOpened(dto.createDto(OnProjectOpened.class).withActions(actions));
-        Factory factoryWithAccountId = dto.clone(factory).withIde(ide);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                     .withId("openFile"));
+        Ide ide = newDto(Ide.class)
+                .withOnProjectsLoaded(newDto(OnProjectsLoaded.class)
+                                              .withActions(actions));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
+        //when
+        validator.validateProjectActions(factoryWithAccountId);
+    }
+    
+    @Test(expectedExceptions = ConflictException.class)
+    public void shouldNotValidateIfrunCommandActionInsufficientParams() throws Exception {
+        //given
+        validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                     .withId("openFile"));
+        Ide ide = newDto(Ide.class)
+                .withOnProjectsLoaded(newDto(OnProjectsLoaded.class)
+                                              .withActions(actions));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
         //when
         validator.validateProjectActions(factoryWithAccountId);
     }
@@ -383,9 +395,12 @@ public class FactoryBaseValidatorTest {
     public void shouldNotValidateIfOpenWelcomePageActionInsufficientParams() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
-        List<Action> actions = Arrays.asList(dto.createDto(Action.class).withId("openWelcomePage"));
-        Ide ide = dto.createDto(Ide.class).withOnAppLoaded((dto.createDto(OnAppLoaded.class).withActions(actions)));
-        Factory factoryWithAccountId = dto.clone(factory).withIde(ide);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                .withId("openWelcomePage"));
+        Ide ide = newDto(Ide.class)
+                     .withOnAppLoaded((newDto(OnAppLoaded.class)
+                                          .withActions(actions)));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
         //when
         validator.validateProjectActions(factoryWithAccountId);
     }
@@ -398,10 +413,13 @@ public class FactoryBaseValidatorTest {
         params.put("in", "pom.xml");
         // find is missing!
         params.put("replace", "123");
-        List<Action> actions = Arrays.asList(dto.createDto(Action.class).withId("findReplace").withProperties(params));
-        Ide ide = dto.createDto(Ide.class).withOnProjectOpened(
-                dto.createDto(OnProjectOpened.class).withActions(actions));
-        Factory factoryWithAccountId = dto.clone(factory).withIde(ide);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                     .withId("findReplace")
+                                                     .withProperties(params));
+        Ide ide = newDto(Ide.class)
+                .withOnProjectsLoaded(newDto(OnProjectsLoaded.class)
+                                              .withActions(actions));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
         //when
         validator.validateProjectActions(factoryWithAccountId);
     }
@@ -414,10 +432,13 @@ public class FactoryBaseValidatorTest {
         params.put("in", "pom.xml");
         params.put("find", "123");
         params.put("replace", "456");
-        List<Action> actions = Arrays.asList(dto.createDto(Action.class).withId("findReplace").withProperties(params));
-        Ide ide = dto.createDto(Ide.class).withOnProjectOpened(
-                dto.createDto(OnProjectOpened.class).withActions(actions));
-        Factory factoryWithAccountId = dto.clone(factory).withIde(ide);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                     .withId("findReplace")
+                                                     .withProperties(params));
+        Ide ide = newDto(Ide.class)
+                .withOnProjectsLoaded(newDto(OnProjectsLoaded.class)
+                                              .withActions(actions));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
         //when
         validator.validateProjectActions(factoryWithAccountId);
     }
@@ -428,10 +449,13 @@ public class FactoryBaseValidatorTest {
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
         Map<String, String> params = new HashMap<>();
         params.put("file", "pom.xml");
-        List<Action> actions = Arrays.asList(dto.createDto(Action.class).withId("openFile").withProperties(params));
-        Ide ide = dto.createDto(Ide.class).withOnProjectOpened(
-                dto.createDto(OnProjectOpened.class).withActions(actions));
-        Factory factoryWithAccountId = dto.clone(factory).withIde(ide);
+        List<Action> actions = Arrays.asList(newDto(Action.class)
+                                                     .withId("openFile")
+                                                     .withProperties(params));
+        Ide ide = newDto(Ide.class)
+                .withOnProjectsLoaded(newDto(OnProjectsLoaded.class)
+                                              .withActions(actions));
+        Factory factoryWithAccountId = DtoFactory.getInstance().clone(factory).withIde(ide);
         //when
         validator.validateProjectActions(factoryWithAccountId);
     }
@@ -441,11 +465,11 @@ public class FactoryBaseValidatorTest {
     public Object[][] trackedFactoryParameterWithoutValidAccountId() throws URISyntaxException, IOException, NoSuchMethodException {
         return new Object[][]{
                 {
-                        dto.createDto(Factory.class)
+                        newDto(Factory.class)
                            .withV("4.0")
-                           .withIde(dto.createDto(Ide.class)
-                                       .withOnAppLoaded(dto.createDto(OnAppLoaded.class)
-                                                           .withActions(singletonList(dto.createDto(Action.class)
+                           .withIde(newDto(Ide.class)
+                                       .withOnAppLoaded(newDto(OnAppLoaded.class)
+                                                           .withActions(singletonList(newDto(Action.class)
                                                                                          .withId("openWelcomePage")
                                                                                          .withProperties(
                                                                                                  ImmutableMap
@@ -466,19 +490,27 @@ public class FactoryBaseValidatorTest {
                                                                                                          .build()))
                                                                        )))},
 
-                {dto.createDto(Factory.class).withV("4.0").withPolicies(dto.createDto(Policies.class).withSince(10000L))},
-                {dto.createDto(Factory.class).withV("4.0").withPolicies(dto.createDto(Policies.class)
-                                                                           .withUntil(10000L))},
-                {dto.createDto(Factory.class).withV("4.0").withPolicies(dto.createDto(Policies.class).withReferer("host"))}
+                {newDto(Factory.class)
+                         .withV("4.0")
+                         .withPolicies(newDto(Policies.class)
+                                               .withSince(10000L))},
+                {newDto(Factory.class)
+                         .withV("4.0")
+                         .withPolicies(newDto(Policies.class)
+                                               .withUntil(10000L))},
+                {newDto(Factory.class)
+                         .withV("4.0")
+                         .withPolicies(newDto(Policies.class)
+                                               .withReferer("host"))}
         };
     }
 
     private Factory prepareFactoryWithGivenStorage(String type, String location) {
-        return factory.withWorkspace(dto.createDto(WorkspaceConfigDto.class)
-                                        .withProjects(Collections.singletonList(dto.createDto(
-                                                ProjectConfigDto.class)
-                                                                                   .withSource(dto.createDto(SourceStorageDto.class)
-                                                                                                   .withType(type)
-                                                                                                   .withLocation(location)))));
+        return factory.withWorkspace(newDto(WorkspaceConfigDto.class)
+                                             .withProjects(Collections.singletonList(newDto(ProjectConfigDto.class)
+                                                                                             .withSource(newDto(SourceStorageDto.class)
+                                                                                                                 .withType(type)
+                                                                                                                 .withLocation(
+                                                                                                                         location)))));
     }
 }

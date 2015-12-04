@@ -64,6 +64,8 @@ public class FactoryConstants {
     public static final String INVALID_ACTION_SECTION = "The action %s is not allowed in this IDE event section.";
 
     public static final String INVALID_OPENFILE_ACTION = "The openFile action requires 'file' property to be set.";
+    
+    public static final String INVALID_RUNCOMMAND_ACTION = "The runCommand action requires 'name' property to be set.";
 
     public static final String INVALID_FIND_REPLACE_ACTION = "The findReplace action requires 'in', " +
                                                              "'find' and 'replace' properties to be set.";
