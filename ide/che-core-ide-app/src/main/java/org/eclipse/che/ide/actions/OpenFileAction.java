@@ -27,8 +27,6 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
@@ -56,7 +54,6 @@ public class OpenFileAction extends Action implements PromisableAction {
     public static final String FILE_PARAM_ID = "file";
 
     private final EventBus                 eventBus;
-    private final AppContext               appContext;
     private final CoreLocalizationConstant localization;
     private final ProjectExplorerPresenter projectExplorer;
     private final NotificationManager      notificationManager;
@@ -65,12 +62,10 @@ public class OpenFileAction extends Action implements PromisableAction {
 
     @Inject
     public OpenFileAction(EventBus eventBus,
-                          AppContext appContext,
                           CoreLocalizationConstant localization,
                           ProjectExplorerPresenter projectExplorer,
                           NotificationManager notificationManager) {
         this.eventBus = eventBus;
-        this.appContext = appContext;
         this.localization = localization;
         this.projectExplorer = projectExplorer;
         this.notificationManager = notificationManager;
@@ -78,10 +73,6 @@ public class OpenFileAction extends Action implements PromisableAction {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        if (appContext.getCurrentProject() == null || appContext.getCurrentProject().getRootProject() == null) {
-            return;
-        }
-
         if (event.getParameters() == null) {
             Log.error(getClass(), localization.canNotOpenFileWithoutParams());
             return;
@@ -91,12 +82,6 @@ public class OpenFileAction extends Action implements PromisableAction {
         if (path == null) {
             Log.error(getClass(), localization.fileToOpenIsNotSpecified());
             return;
-        }
-
-        String rootProjectPath = appContext.getCurrentProject().getRootProject().getPath();
-
-        if (!path.startsWith(rootProjectPath)) {
-            path = rootProjectPath + (path.startsWith("/") ? path : "/" + path);
         }
 
         projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(path), true)
@@ -156,10 +141,6 @@ public class OpenFileAction extends Action implements PromisableAction {
 
     @Override
     public Promise<Void> promise(final ActionEvent actionEvent) {
-        final CurrentProject currentProject = appContext.getCurrentProject();
-        if (currentProject == null) {
-            return Promises.reject(JsPromiseError.create(localization.noOpenedProject()));
-        }
 
         if (actionEvent.getParameters() == null) {
             return Promises.reject(JsPromiseError.create(localization.canNotOpenFileWithoutParams()));
