@@ -423,6 +423,11 @@ abstract class AbstractMessageBus implements MessageBus {
         connectionOpenedHandlers.add(handler);
     }
 
+    @Override
+    public void removeOnOpenHandler(ConnectionOpenedHandler handler) {
+        connectionOpenedHandlers.remove(handler);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void addOnCloseHandler(ConnectionClosedHandler handler) {
