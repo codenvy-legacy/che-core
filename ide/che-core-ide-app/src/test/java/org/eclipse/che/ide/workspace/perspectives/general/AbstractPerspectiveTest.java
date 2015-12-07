@@ -12,6 +12,7 @@ package org.eclipse.che.ide.workspace.perspectives.general;
 
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwtmockito.GwtMockitoTestRunner;
@@ -73,6 +74,8 @@ public class AbstractPerspectiveTest {
     @Mock
     private SimplePanel             simplePanel;
     @Mock
+    private SimpleLayoutPanel       simpleLayoutPanel;
+    @Mock
     private PartStackView           partStackView;
     @Mock
     private PartStackPresenter      partStackPresenter;
@@ -96,7 +99,7 @@ public class AbstractPerspectiveTest {
         when(view.getSplitPanel()).thenReturn(layoutPanel);
 
         when(view.getNavigationPanel()).thenReturn(simplePanel);
-        when(view.getInformationPanel()).thenReturn(simplePanel);
+        when(view.getInformationPanel()).thenReturn(simpleLayoutPanel);
         when(view.getToolPanel()).thenReturn(simplePanel);
 
         when(controllerFactory.createController(Matchers.<SplitLayoutPanel>anyObject(),
@@ -130,7 +133,8 @@ public class AbstractPerspectiveTest {
 
         verify(view, times(3)).getSplitPanel();
         verify(view).getNavigationPanel();
-        verify(controllerFactory, times(3)).createController(layoutPanel, simplePanel);
+        verify(controllerFactory, times(2)).createController(layoutPanel, simplePanel);
+        verify(controllerFactory).createController(layoutPanel, simpleLayoutPanel);
         verify(stackPresenterFactory, times(3)).create(partStackView, workBenchController);
     }
 
