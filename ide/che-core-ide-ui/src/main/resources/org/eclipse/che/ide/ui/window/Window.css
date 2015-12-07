@@ -20,10 +20,10 @@
 
 .popup {
     z-index: popupZIndex;
-    -webkit-user-select: none; /* Chrome all / Safari all */
-    -moz-user-select: none; /* Firefox all */
-    -ms-user-select: none; /* IE 10+ */
-    user-select: none;
+    -webkit-user-select: text; /* Chrome all / Safari all */
+    -moz-user-select: text; /* Firefox all */
+    -ms-user-select: text; /* IE 10+ */
+    user-select: text;
 }
 
 .glass {
@@ -74,10 +74,10 @@
     -moz-transform: scale(1.0);
     -webkit-transform: scale(1.0);
     transform: scale(1.0);
-    -webkit-user-select: none; /* Chrome all / Safari all */
-    -moz-user-select: none; /* Firefox all */
-    -ms-user-select: none; /* IE 10+ */
-    user-select: none;
+    -webkit-user-select: text; /* Chrome all / Safari all */
+    -moz-user-select: text; /* Firefox all */
+    -ms-user-select: text; /* IE 10+ */
+    user-select: text;
     opacity: 1.0;
 }
 
