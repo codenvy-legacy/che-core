@@ -199,7 +199,7 @@ public class FileNode extends ItemNode implements VirtualFile {
         return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
             public void makeCall(final AsyncCallback<Void> callback) {
-                projectServiceClient.updateFile(getPath(), content, null, new AsyncRequestCallback<Void>() {
+                projectServiceClient.updateFile(getPath(), content, new AsyncRequestCallback<Void>() {
                     @Override
                     protected void onSuccess(Void result) {
                         callback.onSuccess(result);

@@ -108,10 +108,8 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
         projectServiceClient.createFile(((HasStorablePath)parent).getStorablePath(),
                                         name,
                                         getDefaultContent(),
-                                        getMimeType(),
                                         createCallback(parent));
     }
-
 
     protected AsyncRequestCallback<ItemReference> createCallback(final ResourceBasedNode<?> parent) {
         return new AsyncRequestCallback<ItemReference>(dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class)) {
@@ -174,14 +172,6 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
      */
     protected String getDefaultContent() {
         return "";
-    }
-
-    /**
-     * Returns MIME-type for a new resource.
-     * By default, returns {@code null}.
-     */
-    protected String getMimeType() {
-        return null;
     }
 
     /** Returns parent for creating new item or {@code null} if resource can not be created. */

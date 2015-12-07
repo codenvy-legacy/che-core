@@ -295,7 +295,6 @@ public class NodeManager {
             public void makeCall(AsyncCallback<Void> callback) {
                 projectService.updateFile(vFile.getPath(),
                                           content,
-                                          vFile.getMediaType(),
                                           _callback(callback, dtoUnmarshaller.newUnmarshaller(Void.class)));
             }
         };

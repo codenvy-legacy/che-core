@@ -111,7 +111,7 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
         return newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
-                nodeManager.projectService.updateFile(getStorablePath(), content, getMediaType(), newCallback(callback));
+                nodeManager.projectService.updateFile(getStorablePath(), content, newCallback(callback));
             }
         });
     }

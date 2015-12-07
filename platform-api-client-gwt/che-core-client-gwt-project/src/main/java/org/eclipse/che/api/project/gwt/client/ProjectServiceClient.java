@@ -162,12 +162,10 @@ public interface ProjectServiceClient {
      *         file name
      * @param content
      *         file content
-     * @param contentType
-     *         media type of file content
      * @param callback
      *         the callback to use for the response
      */
-    void createFile(String parentPath, String name, String content, String contentType, AsyncRequestCallback<ItemReference> callback);
+    void createFile(String parentPath, String name, String content, AsyncRequestCallback<ItemReference> callback);
 
     /**
      * Get file content.
@@ -186,12 +184,10 @@ public interface ProjectServiceClient {
      *         path to file
      * @param content
      *         new content of file
-     * @param contentType
-     *         content media type
      * @param callback
      *         the callback to use for the response
      */
-    void updateFile(String path, String content, String contentType, AsyncRequestCallback<Void> callback);
+    void updateFile(String path, String content, AsyncRequestCallback<Void> callback);
 
     /**
      * Create new folder in the specified folder.

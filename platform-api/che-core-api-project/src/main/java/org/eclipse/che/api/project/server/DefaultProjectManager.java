@@ -644,7 +644,7 @@ public final class DefaultProjectManager implements ProjectManager {
                     }
                 }
                 try {
-                    codenvy.createFile(Constants.CODENVY_MISC_FILE, bout.toByteArray(), null);
+                    codenvy.createFile(Constants.CODENVY_MISC_FILE, bout.toByteArray());
                 } catch (ConflictException e) {
                     // Not expected, existence of file already checked
                     throw new ServerException(e.getServiceError());
