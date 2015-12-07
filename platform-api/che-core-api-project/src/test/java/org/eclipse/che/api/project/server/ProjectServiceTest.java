@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import com.google.inject.Provider;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -149,9 +151,14 @@ public class ProjectServiceTest {
     private HttpJsonHelper.HttpJsonHelperImpl httpJsonHelper;
     @Mock
     private UsersWorkspaceDto                 usersWorkspaceMock;
+    @Mock
+    private Provider<AttributeFilter>         filterProvider;
+    @Mock
+    private AttributeFilter                   filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
+        when(filterProvider.get()).thenReturn(filter);
         final EventService eventService = new EventService();
         VirtualFileSystemRegistry vfsRegistry = new VirtualFileSystemRegistry();
 
@@ -183,7 +190,7 @@ public class ProjectServiceTest {
 
         phRegistry = new ProjectHandlerRegistry(new HashSet<>());
 
-        pm = new DefaultProjectManager(vfsRegistry, eventService, ptRegistry, phRegistry, apiEndpoint);
+        pm = new DefaultProjectManager(vfsRegistry, eventService, ptRegistry, phRegistry, filterProvider, apiEndpoint);
 
         Field f = HttpJsonHelper.class.getDeclaredField("httpJsonHelperImpl");
         f.setAccessible(true);
@@ -607,11 +614,6 @@ public class ProjectServiceTest {
         assertEquals(result.getDescription(), "new module");
         assertEquals(result.getType(), "my_project_type");
 
-        Map<String, List<String>> attributes = result.getAttributes();
-        assertNotNull(attributes);
-        assertEquals(attributes.size(), 1);
-        assertEquals(attributes.get("my_attribute"), Arrays.asList("attribute value 1"));
-
         Project project = pm.getProject(workspace, "my_project/new_module");
         assertNotNull(project);
 
@@ -619,9 +621,6 @@ public class ProjectServiceTest {
 
         assertEquals(config.getDescription(), "new module");
         assertEquals(config.getType(), "my_project_type");
-        String attributeVal = config.getAttributes().get("my_attribute").get(0);
-
-        assertEquals(attributeVal, "attribute value 1");
 
         assertNotNull(project.getBaseFolder().getChild("a"));
         assertNotNull(project.getBaseFolder().getChild("b"));
@@ -655,30 +654,6 @@ public class ProjectServiceTest {
 
         assertEquals(response.getStatus(), 204, "Error: " + response.getEntity());
         verify(projectConfig, times(2)).getModules();
-    }
-
-    @Test
-    public void testCreateProjectUnknownProjectType() throws Exception {
-        final String newProjectTypeId = "new_project_type";
-        Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
-        Map<String, List<String>> attributeValues = new LinkedHashMap<>();
-        attributeValues.put("new project attribute", Arrays.asList("to be or not to be"));
-        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
-                                                .withType(newProjectTypeId)
-                                                .withDescription("new project")
-                                                .withAttributes(attributeValues);
-        ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service(POST,
-                                                      "http://localhost:8080/api/project/my_ws?name=new_project",
-                                                      "http://localhost:8080/api",
-                                                      headers,
-                                                      DtoFactory.getInstance().toJson(descriptor).getBytes(),
-                                                      writer,
-                                                      null);
-
-        // PT is not registered, Unknown PT error thrown
-        assertEquals(response.getStatus(), 409);
     }
 
     @Test

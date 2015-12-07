@@ -14,6 +14,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.google.inject.Provider;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
@@ -99,6 +100,7 @@ public final class DefaultProjectManager implements ProjectManager {
     private final ProjectTypeRegistry               projectTypeRegistry;
     private final ProjectHandlerRegistry            handlers;
     private final String                            apiEndpoint;
+    private final Provider<AttributeFilter>         filterProvider;
 
     @Inject
     @SuppressWarnings("unchecked")
@@ -106,6 +108,7 @@ public final class DefaultProjectManager implements ProjectManager {
                                  EventService eventService,
                                  ProjectTypeRegistry projectTypeRegistry,
                                  ProjectHandlerRegistry handlers,
+                                 Provider<AttributeFilter> filterProvider,
                                  @Named("api.endpoint") String apiEndpoint) {
 
         this.fileSystemRegistry = fileSystemRegistry;
@@ -113,6 +116,7 @@ public final class DefaultProjectManager implements ProjectManager {
         this.projectTypeRegistry = projectTypeRegistry;
         this.handlers = handlers;
         this.apiEndpoint = apiEndpoint;
+        this.filterProvider = filterProvider;
 
         this.miscCaches = new Cache[CACHE_NUM];
         this.miscLocks = new Lock[CACHE_NUM];
@@ -340,7 +344,7 @@ public final class DefaultProjectManager implements ProjectManager {
         ProjectConfigDto parentModule = projectFromWorkspaceDto.findModule(absolutePathToParent);
 
         if (parentModule == null) {
-            throw new NotFoundException("Parent module not found for this node " + pathToParent);
+            parentModule = projectFromWorkspaceDto;
         }
 
         parentModule.getModules().add(createdModuleDto);
@@ -392,22 +396,13 @@ public final class DefaultProjectManager implements ProjectManager {
 
         createdModuleDto.setPath(createdModule.getPath());
 
-        ProjectTypes types = new ProjectTypes(createdModule, createdModuleDto.getType(), createdModuleDto.getMixins(), this);
-        types.addTransient();
+        AttributeFilter attributeFilter = filterProvider.get();
 
-        Map<String, List<String>> runtimeAttributes = new HashMap<>();
-        Map<String, List<String>> persistedAttributes = new HashMap<>();
-
-        for (ProjectType projectType : types.getAll().values()) {
-            filterAttributes(projectType, (FolderEntry)moduleFolder, createdModuleDto, runtimeAttributes, persistedAttributes);
-        }
-        createdModuleDto.setAttributes(persistedAttributes);
+        attributeFilter.addPersistedAttributesToProject(createdModuleDto, (FolderEntry)moduleFolder);
 
         updateProjectInWorkspace(workspaceId, projectFromWorkspaceDto);
 
-        runtimeAttributes.putAll(persistedAttributes);
-
-        createdModuleDto.setAttributes(runtimeAttributes);
+        attributeFilter.addRuntimeAttributesToProject(createdModuleDto, (FolderEntry)moduleFolder);
 
         return createdModuleDto;
     }
@@ -427,100 +422,14 @@ public final class DefaultProjectManager implements ProjectManager {
             projectConfigDto = newDto(ProjectConfigDto.class);
         }
 
-        ProjectTypes types = new ProjectTypes(project, projectConfigDto.getType(), projectConfigDto.getMixins(), this);
-        types.addTransient();
-
         FolderEntry projectFolder = project.getBaseFolder();
 
-        addAllAttributesRecursive(projectConfigDto, projectFolder, types);
+        AttributeFilter attributeFilter = filterProvider.get();
+
+        attributeFilter.addPersistedAttributesToProject(projectConfigDto, projectFolder);
+        attributeFilter.addRuntimeAttributesToProject(projectConfigDto, projectFolder);
 
         return projectConfigDto;
-    }
-
-    private void addAllAttributesRecursive(ProjectConfigDto moduleConfig,
-                                           FolderEntry projectFolder,
-                                           ProjectTypes types) throws ValueStorageException,
-                                                                      ProjectTypeConstraintException,
-                                                                      ServerException,
-                                                                      ForbiddenException {
-        moduleConfig.setType(types.getPrimary().getId());
-        moduleConfig.setMixins(types.mixinIds());
-
-        FolderEntry module = (FolderEntry)projectFolder.getChild(moduleConfig.getName());
-
-        module = module == null ? projectFolder : module;
-
-        final Map<String, List<String>> runtimeAttributes = new HashMap<>();
-        final Map<String, List<String>> persistentAttributes = new HashMap<>();
-
-        for (ProjectType projectType : types.getAll().values()) {
-            filterAttributes(projectType, module, moduleConfig, runtimeAttributes, persistentAttributes);
-        }
-        runtimeAttributes.putAll(persistentAttributes);
-        moduleConfig.setAttributes(runtimeAttributes);
-
-        SourceStorageDto storageDto = newDto(SourceStorageDto.class);
-        if (moduleConfig.getSource() != null) {
-            storageDto.withType(moduleConfig.getSource().getType())
-                      .withLocation(moduleConfig.getSource().getLocation())
-                      .withParameters(moduleConfig.getSource().getParameters());
-        }
-        moduleConfig.setSource(storageDto);
-
-        for (ProjectConfigDto configDto : moduleConfig.getModules()) {
-            addAllAttributesRecursive(configDto, module, types);
-        }
-    }
-
-    /**
-     * Filters attributes in two different maps. The first one contains attributes which exist in runtime and the second one
-     * contains attributes which exist in persisted state.
-     *
-     * @param projectType
-     *         type of project
-     * @param folderEntry
-     *         folder which represents module or project for which attributes will be filtered
-     * @param projectConfig
-     *         config which contains project or module configuration
-     * @param runtimeAttributes
-     *         map with runtime attributes
-     * @param persistentAttributes
-     *         map with persisted attributes
-     * @throws ProjectTypeConstraintException
-     * @throws ValueStorageException
-     */
-    private void filterAttributes(ProjectType projectType,
-                                  FolderEntry folderEntry,
-                                  ProjectConfig projectConfig,
-                                  Map<String, List<String>> runtimeAttributes,
-                                  Map<String, List<String>> persistentAttributes) throws ProjectTypeConstraintException,
-                                                                                         ValueStorageException {
-        for (Attribute attribute : projectType.getAttributes()) {
-            if (attribute.isVariable()) {
-                Variable variable = (Variable)attribute;
-                final ValueProviderFactory factory = variable.getValueProviderFactory();
-
-                List<String> value;
-                if (factory != null) {
-                    value = factory.newInstance(folderEntry).getValues(variable.getName());
-
-                    if (value == null) {
-                        throw new ProjectTypeConstraintException("Value Provider must not produce NULL value of variable " +
-                                                                 variable.getId());
-                    }
-                } else {
-                    value = projectConfig.getAttributes().get(attribute.getName());
-                }
-
-                if ((value == null || value.isEmpty()) && variable.isRequired()) {
-                    throw new ProjectTypeConstraintException("No Value for provider defined for required variable " + variable.getId());
-                } else {
-                    runtimeAttributes.put(variable.getName(), value);
-                }
-            } else {
-                persistentAttributes.put(attribute.getName(), attribute.getValue().getList());
-            }
-        }
     }
 
     @Override
@@ -537,53 +446,18 @@ public final class DefaultProjectManager implements ProjectManager {
         final ProjectConfigDto projectConfigDto = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                             .withPath(project.getPath())
                                                             .withName(project.getName())
+                                                            .withType(projectConfig.getType())
+                                                            .withMixins(projectConfig.getMixins())
+                                                            .withAttributes(projectConfig.getAttributes())
+                                                            .withDescription(projectConfig.getDescription())
                                                             .withModules(modules)
-                                                            .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
+                                                            .withSource(getSourceStorageDto(projectConfig));
 
-        ProjectTypes types = new ProjectTypes(project, projectConfig.getType(), projectConfig.getMixins(), this);
-        types.removeTransient();
+        createCodenvyFolder(project);
 
-        projectConfigDto.setType(types.getPrimary().getId());
-        projectConfigDto.setDescription(projectConfig.getDescription());
-
-        projectConfigDto.setMixins(new ArrayList<>(types.getMixins().keySet()));
-        projectConfigDto.setAttributes(projectConfig.getAttributes());
-
-        // TODO: .codenvy folder creation should be removed when all project's meta-info will be stored on Workspace API
-        try {
-            final VirtualFileEntry codenvyDir = project.getBaseFolder().getChild(CODENVY_DIR);
-            if (codenvyDir == null || !codenvyDir.isFolder()) {
-                project.getBaseFolder().createFolder(CODENVY_DIR);
-            }
-        } catch (ForbiddenException | ConflictException e) {
-            throw new ServerException(e.getServiceError());
-        }
-
-        filterAttributesRecursive(projectConfigDto, types, project.getBaseFolder());
+        filterProvider.get().addPersistedAttributesToProject(projectConfigDto, project.getBaseFolder());
 
         updateProjectInWorkspace(project.getWorkspace(), projectConfigDto);
-    }
-
-    private void filterAttributesRecursive(ProjectConfigDto projectConfig,
-                                           ProjectTypes projectTypes,
-                                           FolderEntry folderEntry) throws ValueStorageException,
-                                                                           ProjectTypeConstraintException,
-                                                                           ServerException,
-                                                                           ForbiddenException {
-        Map<String, List<String>> runtimeAttributes = new HashMap<>();
-        Map<String, List<String>> persistentAttributes = new HashMap<>();
-
-        for (ProjectType type : projectTypes.getAll().values()) {
-            filterAttributes(type, folderEntry, projectConfig, runtimeAttributes, persistentAttributes);
-        }
-
-        projectConfig.setAttributes(persistentAttributes);
-
-        for (ProjectConfigDto config : projectConfig.getModules()) {
-            FolderEntry module = (FolderEntry)folderEntry.getChild(config.getName());
-
-            filterAttributesRecursive(config, projectTypes, module);
-        }
     }
 
     private void getModulesRecursive(ProjectConfig module, List<ProjectConfigDto> projectModules) {
@@ -604,6 +478,29 @@ public final class DefaultProjectManager implements ProjectManager {
                                                                    .withContentRoot(module.getContentRoot())
                                                                    .withMixins(module.getMixins());
         projectModules.add(moduleDto);
+    }
+
+    private SourceStorageDto getSourceStorageDto(ProjectConfig moduleConfig) {
+        SourceStorageDto storageDto = newDto(SourceStorageDto.class);
+        if (moduleConfig.getSource() != null) {
+            storageDto.withType(moduleConfig.getSource().getType())
+                      .withLocation(moduleConfig.getSource().getLocation())
+                      .withParameters(moduleConfig.getSource().getParameters());
+        }
+
+        return storageDto;
+    }
+
+    private void createCodenvyFolder(Project project) throws ServerException {
+        // TODO: .codenvy folder creation should be removed when all project's meta-info will be stored on Workspace API
+        try {
+            final VirtualFileEntry codenvyDir = project.getBaseFolder().getChild(CODENVY_DIR);
+            if (codenvyDir == null || !codenvyDir.isFolder()) {
+                project.getBaseFolder().createFolder(CODENVY_DIR);
+            }
+        } catch (ForbiddenException | ConflictException e) {
+            throw new ServerException(e.getServiceError());
+        }
     }
 
     private UsersWorkspaceDto getWorkspace(String wsId) throws ServerException {
