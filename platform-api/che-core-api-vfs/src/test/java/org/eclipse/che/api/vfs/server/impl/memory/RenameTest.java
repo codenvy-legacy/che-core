@@ -12,21 +12,13 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class RenameTest extends MemoryFileSystemTest {
@@ -45,7 +37,7 @@ public class RenameTest extends MemoryFileSystemTest {
         folder = renameTestFolder.createFolder("RenameFileTest_FOLDER");
         folderId = folder.getId();
 
-        file = renameTestFolder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        file = renameTestFolder.createFile("file", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileId = file.getId();
     }
 
@@ -71,7 +63,7 @@ public class RenameTest extends MemoryFileSystemTest {
     }
 
     public void testRenameFileAlreadyExists() throws Exception {
-        renameTestFolder.createFile("_FILE_NEW_NAME_", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        renameTestFolder.createFile("_FILE_NEW_NAME_", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String path = SERVICE_URI + "rename/" + fileId + '?' + "newname=" + "_FILE_NEW_NAME_" + '&' + "mediaType=" +
                       "text/*;charset=ISO-8859-1";
         ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
@@ -139,7 +131,7 @@ public class RenameTest extends MemoryFileSystemTest {
     }
 
     public void testRenameFolderWithLockedFile() throws Exception {
-        folder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes())).lock(0);
+        folder.createFile("file", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes())).lock(0);
         String path = SERVICE_URI + "rename/" + folderId + '?' + "newname=" + "_FOLDER_NEW_NAME_";
         String originPath = folder.getPath();
         ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);

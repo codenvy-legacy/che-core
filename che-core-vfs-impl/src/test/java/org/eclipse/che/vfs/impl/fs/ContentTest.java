@@ -10,21 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.vfs.impl.fs;
 
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.dto.server.DtoFactory;
-
 import com.google.common.collect.Sets;
 
+import org.eclipse.che.api.vfs.shared.dto.Principal;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -110,14 +107,9 @@ public class ContentTest extends LocalFileSystemTest {
 
     public void testUpdateContent() throws Exception {
         String requestPath = SERVICE_URI + "content/" + fileId;
-        Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, updateContent, null);
         assertEquals(204, response.getStatus());
         assertTrue(Arrays.equals(updateContent, readFile(filePath)));
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
-        validateProperties(filePath, expectedProperties);
     }
 
     public void testUpdateContentFolder() throws Exception {
@@ -129,25 +121,17 @@ public class ContentTest extends LocalFileSystemTest {
     }
 
     public void testUpdateContentLocked() throws Exception {
-        Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
         String requestPath = SERVICE_URI + "content/" + lockedFileId + '?' + "lockToken=" + lockToken;
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, updateContent, null);
         // File is locked.
         assertEquals(204, response.getStatus());
         assertTrue(Arrays.equals(updateContent, readFile(lockedFilePath))); // content updated
-        // media type is set
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
-        validateProperties(lockedFilePath, expectedProperties);
     }
 
     public void testUpdateContentLockedNoLockToken() throws Exception {
-        Map<String, List<String>> headers = new HashMap<>(1);
-        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.TEXT_PLAIN));
         String requestPath = SERVICE_URI + "content/" + lockedFileId;
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, updateContent, writer, null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, updateContent, writer, null);
         // File is locked.
         assertEquals(403, response.getStatus());
         log.info(new String(writer.getBody()));

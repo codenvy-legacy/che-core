@@ -21,7 +21,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -51,7 +50,7 @@ public class FileEntryTest {
         });
         VirtualFile myVfRoot = mmp.getRoot();
         myVfProject = myVfRoot.createFolder("my_project");
-        myVfFile = myVfProject.createFile("test", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()));
+        myVfFile = myVfProject.createFile("test", new ByteArrayInputStream("to be or not to be".getBytes()));
         myFile = new FileEntry(workspace, myVfFile);
         Assert.assertTrue(myFile.isFile());
     }
@@ -106,15 +105,6 @@ public class FileEntryTest {
     }
 
     @Test
-    public void testUpdateContentAndMediaType() throws Exception {
-        String mediaType = "text/foo";
-        byte[] b = "test update content and media type".getBytes();
-        myFile.updateContent(b, mediaType);
-        Assert.assertEquals(myFile.contentAsBytes(), b);
-        Assert.assertEquals(myFile.getMediaType(), mediaType);
-    }
-
-    @Test
     public void testRename() throws Exception {
         String name = myFile.getName();
         String newName = name + "_renamed";
@@ -134,7 +124,7 @@ public class FileEntryTest {
     @Test
     public void testMove() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null);
         String name = myFile.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
         byte[] b = myFile.contentAsBytes();
@@ -152,7 +142,7 @@ public class FileEntryTest {
     @Test
     public void testCopy() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null);
         String name = myFile.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
         byte[] b = myFile.contentAsBytes();

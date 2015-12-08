@@ -17,8 +17,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
-import javax.ws.rs.core.MediaType;
-
 /** @author andrew00x */
 public class ResourceLoaderTest extends MemoryFileSystemTest {
     private String folderId;
@@ -35,12 +33,12 @@ public class ResourceLoaderTest extends MemoryFileSystemTest {
         VirtualFile resourceLoaderTestFolder = mountPoint.getRoot().createFolder(name);
 
         VirtualFile folder = resourceLoaderTestFolder.createFolder("GetResourceTest_FOLDER");
-        folder.createFile("file1", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        folder.createFile("file1", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         folderId = folder.getId();
         folderPath = folder.getPath();
 
-        VirtualFile file = resourceLoaderTestFolder.createFile("GetResourceTest_FILE", MediaType.TEXT_PLAIN,
-                                                                new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile file = resourceLoaderTestFolder.createFile("GetResourceTest_FILE",
+                                                               new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileId = file.getId();
         filePath = file.getPath();
     }

@@ -23,7 +23,6 @@ import java.util.zip.ZipInputStream;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class ExportTest extends MemoryFileSystemTest {
@@ -58,17 +57,17 @@ public class ExportTest extends MemoryFileSystemTest {
         VirtualFile folder2 = exportTestFolder.createFolder("folder2");
         VirtualFile folder3 = exportTestFolder.createFolder("folder3");
 
-        VirtualFile file1 = folder1.createFile("file1.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file2 = folder2.createFile("file2.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file3 = folder3.createFile("file3.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file1 = folder1.createFile("file1.txt", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file2 = folder2.createFile("file2.txt", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file3 = folder3.createFile("file3.txt", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
 
         VirtualFile folder12 = folder1.createFolder("folder12");
         VirtualFile folder22 = folder2.createFolder("folder22");
         VirtualFile folder32 = folder3.createFolder("folder32");
 
-        VirtualFile file12 = folder12.createFile("file12.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file22 = folder22.createFile("file22.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        VirtualFile file32 = folder32.createFile("file32.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file12 = folder12.createFile("file12.txt", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file22 = folder22.createFile("file22.txt", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        VirtualFile file32 = folder32.createFile("file32.txt", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
 
         expectedExportFolderZipItems.add("folder1/");
         expectedExportFolderZipItems.add("folder2/");
@@ -111,7 +110,7 @@ public class ExportTest extends MemoryFileSystemTest {
 
     public void testExportFile() throws Exception {
         VirtualFile file = mountPoint.getVirtualFileById(exportFolderId)
-                                     .createFile("export_test_file.txt", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+                                     .createFile("export_test_file.txt", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         String path = SERVICE_URI + "export/" + file.getId();
         ContainerResponse response = launcher.service(HttpMethod.GET, path, BASE_URI, null, null, writer, null);

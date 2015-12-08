@@ -169,7 +169,7 @@ public class FolderEntry extends VirtualFileEntry {
      *         if operation causes conflict, e.g. name conflict
      * @throws ServerException
      *         if other error occurs
-     * @see org.eclipse.che.api.vfs.server.VirtualFile#createFile(String, String, java.io.InputStream)
+     * @see VirtualFile#createFile(String, InputStream)
      */
     public FileEntry createFile(String name, byte[] content)
             throws ForbiddenException, ConflictException, ServerException {
@@ -193,14 +193,14 @@ public class FolderEntry extends VirtualFileEntry {
      *         if operation causes conflict, e.g. name conflict
      * @throws ServerException
      *         if other error occurs
-     * @see org.eclipse.che.api.vfs.server.VirtualFile#createFile(String, String, java.io.InputStream)
+     * @see VirtualFile#createFile(String, InputStream)
      */
     public FileEntry createFile(String name, InputStream content)
             throws ForbiddenException, ConflictException, ServerException {
         if (isRoot(getVirtualFile())) {
             throw new ForbiddenException("Can't create file in root folder.");
         }
-        return new FileEntry(getWorkspace(), getVirtualFile().createFile(name, null, content));
+        return new FileEntry(getWorkspace(), getVirtualFile().createFile(name, content));
     }
 
     /**

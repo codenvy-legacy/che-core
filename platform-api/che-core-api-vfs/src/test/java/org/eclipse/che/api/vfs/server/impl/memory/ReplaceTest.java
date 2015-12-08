@@ -50,7 +50,7 @@ public class ReplaceTest extends MemoryFileSystemTest {
     public void testSimpleReplaceVar() throws Exception {
         final String fileName = "test_file.txt";
         VirtualFile file = replaceTestFolder
-                .createFile(fileName, MediaType.TEXT_PLAIN,
+                .createFile(fileName,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));
@@ -79,11 +79,11 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName3 = "test_file.class";
 
         VirtualFile file1 = replaceTestFolder
-                .createFile(fileName1, MediaType.TEXT_PLAIN, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
+                .createFile(fileName1, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file2 = replaceTestFolder
-                .createFile(fileName2, MediaType.TEXT_PLAIN, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
+                .createFile(fileName2, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file3 = replaceTestFolder
-                .createFile(fileName3, MediaType.TEXT_PLAIN, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
+                .createFile(fileName3, new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
 
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));
@@ -109,7 +109,7 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String template_local = "some super content\n with ${%s} and another variable %s";
         final String fileName = "test_file.txt";
         VirtualFile file = replaceTestFolder
-                .createFile(fileName, MediaType.TEXT_PLAIN,
+                .createFile(fileName,
                             new ByteArrayInputStream(String.format(template_local, find1, find2).getBytes()));
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));
@@ -139,13 +139,13 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName3 = "test_file.class";
 
         VirtualFile file1 = replaceTestFolder
-                .createFile(fileName1, MediaType.TEXT_PLAIN,
+                .createFile(fileName1,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file2 = replaceTestFolder
-                .createFile(fileName2, MediaType.TEXT_PLAIN,
+                .createFile(fileName2,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file3 = replaceTestFolder
-                .createFile(fileName3, MediaType.TEXT_PLAIN,
+                .createFile(fileName3,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
 
         List<Variable> variables = new ArrayList<>(2);
@@ -178,10 +178,10 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName2 = "test_Mile.bat";
 
         VirtualFile file1 = replaceTestFolder
-                .createFile(fileName1, MediaType.TEXT_PLAIN,
+                .createFile(fileName1,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         VirtualFile file2 = replaceTestFolder
-                .createFile(fileName2, MediaType.TEXT_PLAIN,
+                .createFile(fileName2,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
 
         List<Variable> variables = new ArrayList<>(2);
@@ -212,7 +212,7 @@ public class ReplaceTest extends MemoryFileSystemTest {
         final String fileName = "test_file.txt";
         VirtualFile src = replaceTestFolder.createFolder("src/main/java");
         VirtualFile file = src
-                .createFile(fileName, MediaType.TEXT_PLAIN,
+                .createFile(fileName,
                             new ByteArrayInputStream(String.format(template, find1, find2).getBytes()));
         List<Variable> variables = new ArrayList<>(2);
         variables.add(DtoFactory.getInstance().createDto(Variable.class).withFind(find1).withReplace(replace1));

@@ -19,8 +19,6 @@ import org.eclipse.che.api.vfs.shared.dto.Item;
 
 import java.io.ByteArrayInputStream;
 
-import javax.ws.rs.core.MediaType;
-
 /** @author Vitaliy Guliy */
 public class CloneTest extends MemoryFileSystemTest {
 
@@ -48,7 +46,7 @@ public class CloneTest extends MemoryFileSystemTest {
     public void testCloneFile() throws Exception {
         // create file in 'my-ws'
         VirtualFile rootFolder = srcMountPoint.getRoot();
-        VirtualFile sourceFile = rootFolder.createFile("file-to-clone", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile sourceFile = rootFolder.createFile("file-to-clone", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
 
         // clone it to 'next-ws'
         VirtualFileSystem sourceVFS = fileSystemProvider.newInstance(null);
@@ -80,14 +78,14 @@ public class CloneTest extends MemoryFileSystemTest {
 
         VirtualFile folder1 = rootFolder.createFolder("folder1");
             VirtualFile folder2 = folder1.createFolder("folder2");
-                VirtualFile file1 = folder2.createFile("file1", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file1 text".getBytes()));
+                VirtualFile file1 = folder2.createFile("file1", new ByteArrayInputStream("file1 text".getBytes()));
             VirtualFile folder3 = folder1.createFolder("folder3");
                 VirtualFile folder4 = folder3.createFolder("folder4");
-                VirtualFile file2 = folder3.createFile("file2", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file2 text".getBytes()));
-                VirtualFile file3 = folder3.createFile("file3", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file3 text".getBytes()));
+                VirtualFile file2 = folder3.createFile("file2", new ByteArrayInputStream("file2 text".getBytes()));
+                VirtualFile file3 = folder3.createFile("file3", new ByteArrayInputStream("file3 text".getBytes()));
             VirtualFile folder5 = folder1.createFolder("folder5");
-            VirtualFile file4 = folder1.createFile("file4", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file4 text".getBytes()));
-            VirtualFile file5 = folder1.createFile("file5", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file5 text".getBytes()));
+            VirtualFile file4 = folder1.createFile("file4", new ByteArrayInputStream("file4 text".getBytes()));
+            VirtualFile file5 = folder1.createFile("file5", new ByteArrayInputStream("file5 text".getBytes()));
 
         // clone it to 'next-ws'
         VirtualFileSystem sourceVFS = fileSystemProvider.newInstance(null);
@@ -129,14 +127,14 @@ public class CloneTest extends MemoryFileSystemTest {
 
         VirtualFile folder1 = rootFolder.createFolder("folder1");
         VirtualFile folder2 = folder1.createFolder("folder2");
-        VirtualFile file1 = folder2.createFile("file1", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file1 text".getBytes()));
+        VirtualFile file1 = folder2.createFile("file1", new ByteArrayInputStream("file1 text".getBytes()));
         VirtualFile folder3 = folder1.createFolder("folder3");
         VirtualFile folder4 = folder3.createFolder("folder4");
-        VirtualFile file2 = folder3.createFile("file2", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file2 text".getBytes()));
-        VirtualFile file3 = folder3.createFile("file3", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file3 text".getBytes()));
+        VirtualFile file2 = folder3.createFile("file2", new ByteArrayInputStream("file2 text".getBytes()));
+        VirtualFile file3 = folder3.createFile("file3", new ByteArrayInputStream("file3 text".getBytes()));
         VirtualFile folder5 = folder1.createFolder("folder5");
-        VirtualFile file4 = folder1.createFile("file4", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file4 text".getBytes()));
-        VirtualFile file5 = folder1.createFile("file5", MediaType.TEXT_PLAIN, new ByteArrayInputStream("file5 text".getBytes()));
+        VirtualFile file4 = folder1.createFile("file4", new ByteArrayInputStream("file4 text".getBytes()));
+        VirtualFile file5 = folder1.createFile("file5", new ByteArrayInputStream("file5 text".getBytes()));
 
         VirtualFile destination = mountPoint.getRoot().createFolder("a/b");
         // clone it to 'next-ws'

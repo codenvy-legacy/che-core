@@ -12,21 +12,13 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class MoveTest extends MemoryFileSystemTest {
@@ -43,9 +35,9 @@ public class MoveTest extends MemoryFileSystemTest {
         moveTestDestinationFolder = mountPoint.getRoot().createFolder(name + "_MoveTest_DESTINATION");
 
         folderForMove = moveTestFolder.createFolder("MoveTest_FOLDER");
-        folderForMove.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        folderForMove.createFile("file", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
 
-        fileForMove = moveTestFolder.createFile("MoveTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        fileForMove = moveTestFolder.createFile("MoveTest_FILE", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
     }
 
     public void testMoveFile() throws Exception {
@@ -67,7 +59,7 @@ public class MoveTest extends MemoryFileSystemTest {
     }
 
     public void testMoveFileAlreadyExist() throws Exception {
-        moveTestDestinationFolder.createFile(fileForMove.getName(), MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        moveTestDestinationFolder.createFile(fileForMove.getName(), new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String originPath = fileForMove.getPath();
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + moveTestDestinationFolder.getId();
         ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
@@ -82,7 +74,7 @@ public class MoveTest extends MemoryFileSystemTest {
     public void testCopyFileWrongParent() throws Exception {
         final String originPath = fileForMove.getPath();
         VirtualFile destination =
-                mountPoint.getRoot().createFile("destination", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+                mountPoint.getRoot().createFile("destination", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         String path = SERVICE_URI + "move/" + fileForMove.getId() + '?' + "parentId=" + destination.getId();
         ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, null, null);
         assertEquals(403, response.getStatus());

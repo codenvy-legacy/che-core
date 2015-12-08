@@ -113,12 +113,6 @@ public class VirtualFileImpl implements VirtualFile {
     }
 
     @Override
-    public VirtualFile updateContent(String mediaType, InputStream content, String lockToken) throws ForbiddenException, ServerException {
-        mountPoint.updateContent(this, mediaType, content, lockToken);
-        return this;
-    }
-
-    @Override
     public VirtualFile updateContent(InputStream content, String lockToken) throws ForbiddenException, ServerException {
         mountPoint.updateContent(this, content, lockToken);
         return this;
@@ -282,9 +276,9 @@ public class VirtualFileImpl implements VirtualFile {
     //
 
     @Override
-    public VirtualFile createFile(String name, String mediaType, InputStream content)
+    public VirtualFile createFile(String name, InputStream content)
             throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.createFile(this, name, mediaType, content);
+        return mountPoint.createFile(this, name, content);
     }
 
     @Override

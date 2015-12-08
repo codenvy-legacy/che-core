@@ -41,7 +41,7 @@ public class UpdateACLTest extends MemoryFileSystemTest {
         String name = getClass().getName();
         VirtualFile updateAclTestFolder = mountPoint.getRoot().createFolder(name);
 
-        VirtualFile file = updateAclTestFolder.createFile("UpdateACLTest_FILE", MediaType.TEXT_PLAIN,
+        VirtualFile file = updateAclTestFolder.createFile("UpdateACLTest_FILE",
                                                           new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         objectId = file.getId();
     }
