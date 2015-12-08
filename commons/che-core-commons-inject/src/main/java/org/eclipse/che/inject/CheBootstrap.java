@@ -97,7 +97,7 @@ public class CheBootstrap extends EverrestGuiceContextListener {
     /**
      * Environment variable that is used to override some Che settings properties.
      */
-    private static final String CHE_LOCAL_CONF_DIR = "CHE_LOCAL_CONF_DIR";
+    public static final String CHE_LOCAL_CONF_DIR = "CHE_LOCAL_CONF_DIR";
 
 
     private final List<Module> modules = new ArrayList<>();
