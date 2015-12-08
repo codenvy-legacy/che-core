@@ -98,7 +98,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
 
             result = extractFromHtmlFormat(result);
             if (result.isEmpty()) {
-                importFailure(locale.importProjectMessageFailure());
+                importFailure(locale.importProjectMessageFailure(extractProjectName(view.getFileName())));
                 return;
             }
 

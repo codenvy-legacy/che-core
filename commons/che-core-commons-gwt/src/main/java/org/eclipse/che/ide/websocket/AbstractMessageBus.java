@@ -480,11 +480,8 @@ abstract class AbstractMessageBus implements MessageBus {
     /** {@inheritDoc} */
     @Override
     public boolean isHandlerSubscribed(MessageHandler handler, String channel) {
-        List<MessageHandler> set = channelToSubscribersMap.get(channel);
-        if (set == null) {
-            return false;
-        }
-        return set.contains(handler);
+        List<MessageHandler> messageHandlers = channelToSubscribersMap.get(channel);
+        return messageHandlers != null && messageHandlers.contains(handler);
     }
 
     /**

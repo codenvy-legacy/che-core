@@ -13,117 +13,141 @@ package org.eclipse.che.ide.projectimport.wizard;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.inject.Inject;
-import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
-import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
+import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.commons.exception.UnmarshallerException;
-import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBus;
-import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
 
+/**
+ * Subscribes on import project notifications.
+ * It can be produced by {@code ImportProjectNotificationSubscriberFactory}
+ *
+ * @author Anton Korneta
+ */
 public class ImportProjectNotificationSubscriberImpl implements ImportProjectNotificationSubscriber {
-    private CoreLocalizationConstant    locale;
-    private NotificationManager         notificationManager;
-    private String                      workspaceId;
-    private MessageBus                  messageBus;
+
+    private final Operation<PromiseError>  logErrorHandler;
+    private final CoreLocalizationConstant locale;
+    private final NotificationManager      notificationManager;
+    private final String                   workspaceId;
+    private final Promise<MessageBus>      messageBusPromise;
+
     private String                      wsChannel;
+    private String                      projectName;
     private Notification                notification;
-    private SubscriptionHandler<String> importProjectOutputWShandler;
+    private SubscriptionHandler<String> subscriptionHandler;
 
     @Inject
     public ImportProjectNotificationSubscriberImpl(CoreLocalizationConstant locale,
-                                                   final MessageBusProvider messageBusProvider,
-                                                   EventBus eventBus,
                                                    AppContext appContext,
-                                                   NotificationManager notificationManager) {
+                                                   NotificationManager notificationManager,
+                                                   ExtServerStateController extServerStateController) {
         this.locale = locale;
         this.notificationManager = notificationManager;
         this.workspaceId = appContext.getWorkspace().getId();
-
-        messageBus = messageBusProvider.getMachineMessageBus();
-        eventBus.addHandler(ExtServerStateEvent.TYPE, new ExtServerStateHandler() {
+        this.messageBusPromise = extServerStateController.getMessageBus();
+        this.logErrorHandler = new Operation<PromiseError>() {
             @Override
-            public void onExtServerStarted(ExtServerStateEvent event) {
-                messageBus = messageBusProvider.getMachineMessageBus();
+            public void apply(PromiseError error) throws OperationException {
+                Log.error(ImportProjectNotificationSubscriberImpl.class, error);
             }
-
-            @Override
-            public void onExtServerStopped(ExtServerStateEvent event) {
-            }
-        });
+        };
     }
 
     @Override
-    public void subscribe(String projectName) {
-        notification = new Notification(locale.importingProject(), Notification.Status.PROGRESS, true);
+    public void subscribe(final String projectName) {
+        this.notification = new Notification(locale.importingProject(projectName), Notification.Status.PROGRESS, true);
         subscribe(projectName, notification);
         notificationManager.showNotification(notification);
     }
 
     @Override
-    public void subscribe(String projectName, Notification existingNotification) {
-        notification = existingNotification;
-        wsChannel = "importProject:output:" + workspaceId + ":" + projectName;
-        importProjectOutputWShandler = new SubscriptionHandler<String>(new LineUnmarshaller()) {
-
+    public void subscribe(final String projectName, final Notification existingNotification) {
+        this.projectName = projectName;
+        this.wsChannel = "importProject:output:" + workspaceId + ":" + projectName;
+        this.notification = existingNotification;
+        this.subscriptionHandler = new SubscriptionHandler<String>(new LineUnmarshaller()) {
             @Override
             protected void onMessageReceived(String result) {
-                notification.setMessage(locale.importingProject() + " " + result);
+                notification.setMessage(locale.importingProject(projectName) + " " + result);
             }
 
             @Override
-            protected void onErrorReceived(Throwable throwable) {
-                try {
-                    messageBus.unsubscribe(wsChannel, this);
-                    notification.setType(Notification.Type.ERROR);
-                    notification.setImportant(true);
-                    notification.setMessage(locale.importProjectMessageFailure() + " " + throwable.getMessage());
-                    Log.error(getClass(), throwable);
-                } catch (WebSocketException e) {
-                    Log.error(getClass(), e);
-                }
+            protected void onErrorReceived(final Throwable throwable) {
+                messageBusPromise.then(new Operation<MessageBus>() {
+                    @Override
+                    public void apply(MessageBus messageBus) throws OperationException {
+                        try {
+                            messageBus.unsubscribe(wsChannel, subscriptionHandler);
+                        } catch (WebSocketException e) {
+                            Log.error(getClass(), e);
+                        }
+                        notification.setType(Notification.Type.ERROR);
+                        notification.setImportant(true);
+                        notification.setMessage(locale.importProjectMessageFailure(projectName) + " " + throwable.getMessage());
+                        Log.error(getClass(), throwable);
+                    }
+                }).catchError(logErrorHandler);
             }
         };
 
-        try {
-            messageBus.subscribe(wsChannel, importProjectOutputWShandler);
-        } catch (WebSocketException e1) {
-            Log.error(ImportProjectWizardPresenter.class, e1);
-        }
+        messageBusPromise.then(new Operation<MessageBus>() {
+            @Override
+            public void apply(final MessageBus messageBus) throws OperationException {
+                try {
+                    messageBus.subscribe(wsChannel, subscriptionHandler);
+                } catch (WebSocketException wsEx) {
+                    Log.error(ImportProjectNotificationSubscriberImpl.class, wsEx);
+                }
+            }
+        }).catchError(logErrorHandler);
     }
 
     @Override
     public void onSuccess() {
-        try {
-            messageBus.unsubscribe(wsChannel, importProjectOutputWShandler);
-        } catch (WebSocketException e) {
-            Log.error(getClass(), e);
-        }
-        notification.setStatus(Notification.Status.FINISHED);
-        notification.setMessage(locale.importProjectMessageSuccess());
+        messageBusPromise.then(new Operation<MessageBus>() {
+            @Override
+            public void apply(MessageBus messageBus) throws OperationException {
+                try {
+                    messageBus.unsubscribe(wsChannel, subscriptionHandler);
+                } catch (WebSocketException e) {
+                    Log.error(getClass(), e);
+                }
+                notification.setStatus(Notification.Status.FINISHED);
+                notification.setMessage(locale.importProjectMessageSuccess(projectName));
+            }
+        }).catchError(logErrorHandler);
     }
 
     @Override
-    public void onFailure(String errorMessage) {
-        try {
-            messageBus.unsubscribe(wsChannel, importProjectOutputWShandler);
-        } catch (WebSocketException e) {
-            Log.error(getClass(), e);
-        }
-        notification.setStatus(Notification.Status.FINISHED);
-        notification.setType(Notification.Type.ERROR);
-        notification.setImportant(true);
-        notification.setMessage(errorMessage);
+    public void onFailure(final String errorMessage) {
+        messageBusPromise.then(new Operation<MessageBus>() {
+            @Override
+            public void apply(MessageBus messageBus) throws OperationException {
+                try {
+                    messageBus.unsubscribe(wsChannel, subscriptionHandler);
+                } catch (WebSocketException e) {
+                    Log.error(getClass(), e);
+                }
+                notification.setType(Notification.Type.ERROR);
+                notification.setStatus(Notification.Status.FINISHED);
+                notification.setImportant(true);
+                notification.setMessage(errorMessage);
+            }
+        }).catchError(logErrorHandler);
     }
 
     static class LineUnmarshaller implements org.eclipse.che.ide.websocket.rest.Unmarshallable<String> {
