@@ -76,6 +76,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.eclipse.che.api.vfs.server.search.SearchResult;
+import org.eclipse.che.api.vfs.server.search.SearcherWithMetadata;
 
 
 /**
@@ -92,6 +94,8 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
     protected final MountPoint                   mountPoint;
     protected final SearcherProvider             searcherProvider;
     protected final VirtualFileSystemRegistry    vfsRegistry;
+    protected final String DEFAULT_MAX_ITEMS = "-1";
+    protected final String DEFAULT_SKIP_COUNT = "0";
 
     public VirtualFileSystemImpl(String vfsId,
                                  URI baseUri,
@@ -532,38 +536,51 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
     @Override
     public ItemList search(MultivaluedMap<String, String> query,
-                           @DefaultValue("-1") @QueryParam("maxItems") int maxItems,
-                           @QueryParam("skipCount") int skipCount,
+        @DefaultValue(DEFAULT_MAX_ITEMS) @QueryParam("maxItems") int maxItems,
+        @DefaultValue(DEFAULT_SKIP_COUNT) @QueryParam("skipCount") int skipCount,
                            @DefaultValue(PropertyFilter.ALL) @QueryParam("propertyFilter") PropertyFilter propertyFilter)
             throws ConflictException, ServerException {
         if (searcherProvider != null) {
             if (skipCount < 0) {
                 throw new ConflictException("'skipCount' parameter is negative. ");
             }
-            final QueryExpression expr = new QueryExpression()
-                    .setPath(query.getFirst("path"))
-                    .setName(query.getFirst("name"))
-                    .setMediaType(query.getFirst("mediaType"))
-                    .setText(query.getFirst("text"));
+            final QueryExpression theQueryExpression =
+                new QueryExpression().setPath(query.getFirst("path")).setName(query.getFirst("name"))
+                    .setMediaType(query.getFirst("mediaType")).setText(query.getFirst("text")).setMaxItems(maxItems);
 
-            final String[] result = searcherProvider.getSearcher(mountPoint, true).search(expr);
+            SearchResult<String> theSearchResult =
+                ((SearcherWithMetadata<String>) searcherProvider.getSearcher(mountPoint, true))
+                    .searchWithMetadata(theQueryExpression);
+            final String[] result = (String[]) theSearchResult.getResult().toArray();
+
+            final int length = result.length;
+
             if (skipCount > 0) {
-                if (skipCount > result.length) {
+                if (skipCount > length) {
                     throw new ConflictException("'skipCount' parameter is greater then total number of items. ");
                 }
             }
-            final int length = maxItems > 0 ? Math.min(result.length, maxItems) : result.length;
+
             final List<Item> items = new ArrayList<>(length);
-            for (int i = skipCount; i < length; i++) {
+            for (int i = skipCount; i < length; ++i) {
                 String path = result[i];
                 try {
                     items.add(fromVirtualFile(mountPoint.getVirtualFile(path), false, propertyFilter));
                 } catch (NotFoundException | ForbiddenException ignored) {
+                    LOG.error(ignored.getMessage());
                 }
             }
 
-            return DtoFactory.getInstance().createDto(ItemList.class).withItems(items).withNumItems(result.length)
-                             .withHasMoreItems(length < result.length);
+            boolean hasMoreResults = false;
+            try {
+                hasMoreResults =
+                    theSearchResult.getMetadata().containsKey(SearchResult.TOTAL_HITS) ? Integer
+                        .parseInt(theSearchResult.getMetadata().get(SearchResult.TOTAL_HITS)) > result.length : false;
+            } catch (NumberFormatException ex) {
+                LOG.error(ex.getMessage());
+        }
+            return DtoFactory.getInstance().createDto(ItemList.class).withItems(items).withNumItems(length)
+                .withHasMoreItems(hasMoreResults);
         }
         throw new ServerException("Not supported. ");
     }
