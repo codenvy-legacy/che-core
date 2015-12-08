@@ -108,7 +108,13 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
         loader.hide();
 
         messageBus = messageBusProvider.createMachineMessageBus(wsUrl);
-        eventBus.fireEvent(ExtServerStateEvent.createExtServerStartedEvent());
+        messageBus.addOnOpenHandler(new ConnectionOpenedHandler() {
+            @Override
+            public void onOpen() {
+                messageBus.removeOnOpenHandler(this);
+                eventBus.fireEvent(ExtServerStateEvent.createExtServerStartedEvent());
+            }
+        });
 
         if (messageBusCallback != null) {
             messageBusCallback.onSuccess(messageBus);

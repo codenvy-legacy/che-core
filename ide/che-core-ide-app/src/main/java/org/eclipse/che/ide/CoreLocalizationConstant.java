@@ -206,10 +206,10 @@ public interface CoreLocalizationConstant extends Messages {
     String projectExplorerTitleBarText();
 
     @Key("importProject.message.success")
-    String importProjectMessageSuccess();
+    String importProjectMessageSuccess(String projectName);
 
     @Key("importProject.message.failure")
-    String importProjectMessageFailure();
+    String importProjectMessageFailure(String projectName);
 
     @Key("importProject.message.startWithWhiteSpace")
     String importProjectMessageStartWithWhiteSpace();
@@ -239,7 +239,7 @@ public interface CoreLocalizationConstant extends Messages {
     String importProjectButton();
 
     @Key("importProject.importing")
-    String importingProject();
+    String importingProject(String projectName);
 
     @Key("importProject.uriFieldTitle")
     String importProjectUriFieldTitle();
