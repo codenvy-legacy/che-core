@@ -10,7 +10,9 @@
  *******************************************************************************/
 /* Default annotated CSS for Tree.java */
 /* @def treeIndent 14px; */
-@url oldExpansionIcon oldExpansionIcon;
+@eval hoverRowBackground org.eclipse.che.ide.api.theme.Style.getProjectExplorerHoverRowBackground();
+@url expansionIcon expansionIcon;
+@url collapseIcon collapseIcon;
 
 .treeRoot {
     font-family: alternativeFontFamily;
@@ -69,19 +71,15 @@
      * right now it looks like files have the expandControl rule also.
      * I'm doing the least amount of change for the demo, so
      * don't want to refactor anything. */
-    background-image: oldExpansionIcon;
+    background-image: expansionIcon;
     background-repeat: no-repeat;
     background-position: 3px;
-    -moz-transform: rotate(90deg);
-    -webkit-transform: rotate(90deg);
 }
 
 .closedIcon {
-    background-image: oldExpansionIcon;
+    background-image: collapseIcon;
     background-repeat: no-repeat;
     background-position: 3px;
-    -moz-transform: rotate(0);
-    -webkit-transform: rotate(0);
 }
 
 .openedIcon,
@@ -109,6 +107,11 @@
 .active,
 .selected {
     background-color: selectionBackground ! important;
+}
+
+.active,
+.selected:hover {
+    background-color: hoverRowBackground ! important;
 }
 
 .selectedInactive {
