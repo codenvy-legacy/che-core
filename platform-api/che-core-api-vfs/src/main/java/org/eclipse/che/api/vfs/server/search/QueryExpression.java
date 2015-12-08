@@ -16,6 +16,7 @@ public class QueryExpression {
     private String path;
     private String mediaType;
     private String text;
+    private int maxItems;
 
     public String getPath() {
         return path;
@@ -55,11 +56,21 @@ public class QueryExpression {
 
     @Override
     public String toString() {
-        return "QueryExpression{" +
-               "name='" + name + '\'' +
-               ", path='" + path + '\'' +
-               ", mediaType='" + mediaType + '\'' +
-               ", text='" + text + '\'' +
-               '}';
+        return String.format("QueryExpression{name='%s', path='%s', mediaType='%s', text='%s',maxItems='%d'}", 
+                name, 
+                path,
+                mediaType,
+                text,
+                maxItems
+        );
+    }
+
+    public int getMaxItems() {
+        return maxItems;
+}
+
+    public QueryExpression setMaxItems(int maxItems) {
+        this.maxItems = maxItems;
+        return this;
     }
 }

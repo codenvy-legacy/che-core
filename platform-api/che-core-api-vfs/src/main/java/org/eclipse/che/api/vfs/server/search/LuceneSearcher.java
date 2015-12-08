@@ -10,17 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.search;
 
-import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.server.LazyIterator;
-import org.eclipse.che.api.vfs.server.MountPoint;
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.VirtualFileFilter;
-import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Set;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.document.Document;
@@ -43,22 +42,22 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.IOUtils;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.vfs.server.LazyIterator;
+import org.eclipse.che.api.vfs.server.MountPoint;
+import org.eclipse.che.api.vfs.server.VirtualFile;
+import org.eclipse.che.api.vfs.server.VirtualFileFilter;
+import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * Lucene based searcher.
  *
  * @author andrew00x
  */
-public abstract class LuceneSearcher implements Searcher {
+public abstract class LuceneSearcher implements SearcherWithMetadata<String> {
     private static final Logger LOG          = LoggerFactory.getLogger(LuceneSearcher.class);
     private static final int    RESULT_LIMIT = 1000;
 
@@ -66,7 +65,7 @@ public abstract class LuceneSearcher implements Searcher {
 
     private IndexWriter     luceneIndexWriter;
     private SearcherManager searcherManager;
-    private boolean         closed;
+    private boolean isClosed;
 
     public LuceneSearcher(Set<String> indexedMediaTypes) {
         this(new MediaTypeFilter(indexedMediaTypes));
@@ -112,13 +111,13 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     public synchronized void close() {
-        if (!closed) {
+        if (!isClosed) {
             try {
                 IOUtils.close(getIndexWriter(), getIndexWriter().getDirectory(), searcherManager);
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             }
-            closed = true;
+            isClosed = true;
         }
     }
 
@@ -128,11 +127,24 @@ public abstract class LuceneSearcher implements Searcher {
 
     @Override
     public String[] search(QueryExpression query) throws ServerException {
+        String[] theResult = (String[]) searchWithMetadata(query).getResult().toArray();
+        return theResult;
+    }
+
+    @Override
+    public SearchResult<String> searchWithMetadata(QueryExpression query) throws ServerException {
         final BooleanQuery luceneQuery = new BooleanQuery();
         final String name = query.getName();
         final String path = query.getPath();
         final String mediaType = query.getMediaType();
         final String text = query.getText();
+        final int maxItems = query.getMaxItems();
+        
+        if (maxItems < -1) {
+            throw new ServerException(String.format("Query parameter 'maxItems' =%d should be a natural number or have value of -1 to indicate maximum result count.",
+                maxItems));
+        }
+
         if (path != null) {
             luceneQuery.add(new PrefixQuery(new Term("path", path)), BooleanClause.Occur.MUST);
         }
@@ -154,15 +166,25 @@ public abstract class LuceneSearcher implements Searcher {
         try {
             searcherManager.maybeRefresh();
             luceneSearcher = searcherManager.acquire();
-            final TopDocs topDocs = luceneSearcher.search(luceneQuery, RESULT_LIMIT);
-            if (topDocs.totalHits > RESULT_LIMIT) {
-                throw new ServerException(String.format("Too many (%d) matched results found. ", topDocs.totalHits));
-            }
+            // search result is capped to at most RESULT_LIMIT in case maxItems is set to -1 or higher then RESULT_LIMIT
+            int resultLimit = maxItems == -1 ? RESULT_LIMIT : Math.min(maxItems, RESULT_LIMIT);
+            // setting start time
+            long startTime = System.currentTimeMillis();
+            // conducting search
+            final TopDocs topDocs = luceneSearcher.search(luceneQuery, resultLimit);
+            // setting end time
+            long endTime = System.currentTimeMillis();
+            // calculating elapsed time for search operation
+            double totalTime = (double)(endTime - startTime)/1000;
+            final int totalHits = topDocs.totalHits;
             final String[] result = new String[topDocs.scoreDocs.length];
-            for (int i = 0, length = result.length; i < length; i++) {
+            for (int i = 0; i < result.length; ++i) {
                 result[i] = luceneSearcher.doc(topDocs.scoreDocs[i].doc).getField("path").stringValue();
             }
-            return result;
+            LinkedHashMap<String, String> metadata = new LinkedHashMap<>();
+            metadata.put(SearchResult.TOTAL_HITS, Integer.toString(totalHits));
+            metadata.put(SearchResult.TIME, Double.toString(totalTime));
+            return new DefaultSearchResult<>(result, metadata);
         } catch (IOException e) {
             throw new ServerException(e.getMessage(), e);
         } finally {
@@ -283,6 +305,18 @@ public abstract class LuceneSearcher implements Searcher {
             mediaType = mediaType.substring(0, paramStartIndex).trim();
         }
         return mediaType;
+    }
+
+    private void validateParameters(Integer maxItems, Integer skipCount) throws ServerException {
+        if (maxItems < -1) {
+            throw new ServerException(String.format("Query parameter 'maxItems' =%d should be a natural number or have value of -1 to indicate maximum result count.",
+                maxItems));
+}
+        if (skipCount > maxItems) {
+            throw new ServerException(String.format(
+                "Query parameter 'skipCount' contins value =%d larger then value of query parameter 'maxItems' =%d",
+                skipCount, maxItems));
+        }
     }
 
 }
