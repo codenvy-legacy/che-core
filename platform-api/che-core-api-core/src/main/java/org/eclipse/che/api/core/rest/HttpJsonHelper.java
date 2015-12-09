@@ -24,19 +24,21 @@ import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -339,6 +341,9 @@ public class HttpJsonHelper {
      */
     public static class HttpJsonHelperImpl {
 
+        @Inject
+        static HttpHelper httpHelper;
+
         public <DTO> DTO request(Class<DTO> dtoInterface,
                                  String url,
                                  String method,
@@ -407,52 +412,36 @@ public class HttpJsonHelper {
                                     Object body,
                                     Pair<String, ?>... parameters)
                 throws IOException, ServerException, ForbiddenException, NotFoundException, UnauthorizedException, ConflictException {
-            final String authToken = getAuthenticationToken();
-            if ((parameters != null && parameters.length > 0) || authToken != null) {
-                final UriBuilder ub = UriBuilder.fromUri(url);
-                //remove sensitive information from url.
-                ub.replaceQueryParam("token", null);
 
-                if (parameters != null && parameters.length > 0) {
-                    for (Pair<String, ?> parameter : parameters) {
-                        String name = URLEncoder.encode(parameter.first, "UTF-8");
-                        String value = parameter.second == null ? null : URLEncoder
-                                .encode(String.valueOf(parameter.second), "UTF-8");
-                        ub.replaceQueryParam(name, value);
-                    }
-                }
-                url = ub.build().toString();
+            // Pick the HTTP helper to use
+            // TODO inject DefaultHttpHelper in assembly?
+            HttpHelper helper = httpHelper;
+            if (helper == null) {
+                helper = new DefaultHttpHelper();
             }
-            final HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
-            conn.setConnectTimeout(timeout > 0 ? timeout : 60000);
-            conn.setReadTimeout(timeout > 0 ? timeout : 60000);
-            try {
-                conn.setRequestMethod(method);
-                //drop a hint for server side that we want to receive application/json
-                conn.addRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-                if (authToken != null) {
-                    conn.setRequestProperty(HttpHeaders.AUTHORIZATION, authToken);
-                }
-                if (body != null) {
-                    conn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-                    conn.setDoOutput(true);
 
-                    if (HttpMethod.DELETE.equals(method)) { //to avoid jdk bug described here http://bugs.java.com/view_bug.do?bug_id=7157360
-                        conn.setRequestMethod(HttpMethod.POST);
-                        conn.setRequestProperty("X-HTTP-Method-Override", HttpMethod.DELETE);
-                    }
+            // Build request parameters
+            final List<Pair<String, ?>> headers;
+            if (parameters == null) {
+                headers = new ArrayList<>();
+            } else {
+                headers = Arrays.asList(parameters);
+            }
+            final InputStream bodyStream;
+            if (body != null) {
+                headers.add(new Pair<String, Object>(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON));
+                byte[] bytes = DtoFactory.getInstance().toJson(body).getBytes();
+                bodyStream = new ByteArrayInputStream(bytes);
+            } else {
+                bodyStream = null;
+            }
 
-                    try (OutputStream output = conn.getOutputStream()) {
-                        output.write(DtoFactory.getInstance().toJson(body).getBytes());
-                    }
-                }
+            // Issue the request
+            try (HttpHelper.HttpResponse conn = httpHelper.request(timeout, URI.create(url), method, bodyStream, headers)) {
 
-                final int responseCode = conn.getResponseCode();
+                final int responseCode = conn.getStatusCode();
                 if ((responseCode / 100) != 2) {
-                    InputStream in = conn.getErrorStream();
-                    if (in == null) {
-                        in = conn.getInputStream();
-                    }
+                    InputStream in = conn.getInputStream();
                     final String str;
                     try (Reader reader = new InputStreamReader(in)) {
                         str = CharStreams.toString(reader);
@@ -488,8 +477,6 @@ public class HttpJsonHelper {
                 try (Reader reader = new InputStreamReader(conn.getInputStream())) {
                     return CharStreams.toString(reader);
                 }
-            } finally {
-                conn.disconnect();
             }
         }
     }
