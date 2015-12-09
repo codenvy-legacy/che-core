@@ -41,7 +41,7 @@ public class ProjectConfigImpl implements ProjectConfig {
     private Map<String, List<String>> attributes;
     private List<ProjectConfig>       modules;
     private List<Link>                links;
-    private SourceStorage             storage;
+    private SourceStorageImpl         storage;
     private String                    contentRoot;
     private List<ProjectProblem>      problems;
 
@@ -177,7 +177,7 @@ public class ProjectConfigImpl implements ProjectConfig {
         this.links = links;
     }
 
-    public void setSource(SourceStorage sourceStorage) {
+    public void setSource(SourceStorageImpl sourceStorage) {
         this.storage = sourceStorage;
     }
 
