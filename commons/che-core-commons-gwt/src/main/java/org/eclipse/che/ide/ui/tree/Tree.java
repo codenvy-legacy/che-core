@@ -40,8 +40,6 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.DataResource;
-import com.google.gwt.resources.client.DataResource.MimeType;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -229,12 +227,11 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      * {@link Tree.Resources#treeCss()}.
      */
     public interface Resources extends ClientBundle {
-        @MimeType("image/svg+xml")
-        @Source("expansionIcon.svg")
-        DataResource oldExpansionIcon();
-
-        @Source("expansionIcon.svg")
+        @Source("iconExpanded.svg")
         SVGResource expansionIcon();
+
+        @Source("iconCollapsed.svg")
+        SVGResource collapseIcon();
 
         // Default Stylesheet.
         @Source({"org/eclipse/che/ide/ui/constants.css", "Tree.css", "org/eclipse/che/ide/api/ui/style.css"})
