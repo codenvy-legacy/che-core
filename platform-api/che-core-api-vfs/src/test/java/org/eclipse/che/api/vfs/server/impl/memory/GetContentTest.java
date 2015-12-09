@@ -11,10 +11,6 @@
 package org.eclipse.che.api.vfs.server.impl.memory;
 
 import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
@@ -24,9 +20,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /** @author andrew00x */
 public class GetContentTest extends MemoryFileSystemTest {
@@ -43,7 +36,7 @@ public class GetContentTest extends MemoryFileSystemTest {
         VirtualFile getContentTestFolder = mountPoint.getRoot().createFolder(name);
 
         VirtualFile file =
-                getContentTestFolder.createFile("GetContentTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(content.getBytes()));
+                getContentTestFolder.createFile("GetContentTest_FILE.txt", new ByteArrayInputStream(content.getBytes()));
         fileId = file.getId();
         fileName = file.getName();
         filePath = file.getPath();

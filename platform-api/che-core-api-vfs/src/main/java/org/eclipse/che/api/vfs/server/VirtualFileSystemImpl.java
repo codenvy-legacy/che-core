@@ -46,7 +46,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -144,7 +143,7 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
             InputStream input = null;
             try {
                 input = item.getContent().getStream();
-                return destination.createFile(name != null ? name : item.getName(), item.getMediaType(), input);
+                return destination.createFile(name != null ? name : item.getName(), input);
             } finally {
                 if (input != null) {
                     try {
@@ -167,16 +166,9 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
     @Override
     public File createFile(@PathParam("parentId") String parentId,
                            @QueryParam("name") String name,
-                           @HeaderParam(HttpHeaders.CONTENT_TYPE) MediaType mediaType,
                            InputStream content) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
         final VirtualFile parent = mountPoint.getVirtualFileById(parentId);
-        // Have issue with client side. Always have Content-type header is set even if client doesn't set it.
-        // In this case have Content-type is set with "text/plain; charset=UTF-8" which isn't acceptable.
-        // Have agreement with client to send Content-type header with "application/unknown" value if client doesn't want to specify media
-        // type of new file. In this case server takes care about resolving media type of file.
-        final String mt = mediaType == null || ("application".equals(mediaType.getType()) && "unknown".equals(mediaType.getSubtype()))
-                          ? null : mediaType.getType() + '/' + mediaType.getSubtype();
-        final VirtualFile newVirtualFile = parent.createFile(name, mt, content);
+        final VirtualFile newVirtualFile = parent.createFile(name, content);
         return (File)fromVirtualFile(newVirtualFile, false, PropertyFilter.ALL_FILTER);
     }
 
@@ -612,16 +604,9 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
     @Override
     public void updateContent(
             @PathParam("id") String id,
-            @DefaultValue(MediaType.APPLICATION_OCTET_STREAM) @HeaderParam(HttpHeaders.CONTENT_TYPE) MediaType mediaType,
             InputStream newContent,
             @QueryParam("lockToken") String lockToken) throws NotFoundException, ForbiddenException, ServerException {
-        // Have issue with client side. Always have Content-type header is set even if client doesn't set it.
-        // In this case have Content-type is set with "text/plain; charset=UTF-8" which isn't acceptable.
-        // Have agreement with client to send Content-type header with "application/unknown" value if client doesn't want to specify media
-        // type of new file. In this case server takes care about resolving media type of file.
-        final String mt = mediaType == null || ("application".equals(mediaType.getType()) && "unknown".equals(mediaType.getSubtype()))
-                          ? null : mediaType.getType() + '/' + mediaType.getSubtype();
-        mountPoint.getVirtualFileById(id).updateContent(mt, newContent, lockToken);
+        mountPoint.getVirtualFileById(id).updateContent(newContent, lockToken);
     }
 
     @Path("item/{id}")
@@ -850,7 +835,6 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
             throws ForbiddenException, ConflictException, ServerException {
         try {
             FileItem contentItem = null;
-            String mediaType = null;
             String name = null;
             boolean overwrite = false;
 
@@ -862,8 +846,6 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
                     } else {
                         throw new ServerException("More then one upload file is found but only one should be. ");
                     }
-                } else if ("mimeType".equals(item.getFieldName())) {
-                    mediaType = item.getString().trim();
                 } else if ("name".equals(item.getFieldName())) {
                     name = item.getString().trim();
                 } else if ("overwrite".equals(item.getFieldName())) {
@@ -877,23 +859,15 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
             if (name == null || name.isEmpty()) {
                 name = contentItem.getName();
             }
-            if (mediaType == null || mediaType.isEmpty()) {
-                mediaType = contentItem.getContentType();
-            }
-
-            if (mediaType != null) {
-                final MediaType mediaTypeType = MediaType.valueOf(mediaType);
-                mediaType = mediaTypeType.getType() + '/' + mediaTypeType.getSubtype();
-            }
 
             try {
                 try {
-                    parent.createFile(name, mediaType, contentItem.getInputStream());
+                    parent.createFile(name, contentItem.getInputStream());
                 } catch (ConflictException e) {
                     if (!overwrite) {
                         throw new ConflictException("Unable upload file. Item with the same name exists. ");
                     }
-                    parent.getChild(name).updateContent(mediaType, contentItem.getInputStream(), null);
+                    parent.getChild(name).updateContent(contentItem.getInputStream(), null);
                 }
             } catch (IOException ioe) {
                 throw new ServerException(ioe.getMessage(), ioe);

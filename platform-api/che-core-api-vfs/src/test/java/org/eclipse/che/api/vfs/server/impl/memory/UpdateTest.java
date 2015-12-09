@@ -11,10 +11,6 @@
 package org.eclipse.che.api.vfs.server.impl.memory;
 
 import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 
@@ -23,7 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
@@ -39,7 +34,7 @@ public class UpdateTest extends MemoryFileSystemTest {
         String name = getClass().getName();
         VirtualFile updateTestFolder = mountPoint.getRoot().createFolder(name);
         VirtualFile file =
-                updateTestFolder.createFile("UpdateTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+                updateTestFolder.createFile("UpdateTest_FILE", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileId = file.getId();
     }
 

@@ -209,18 +209,10 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void createFile(String parentPath, String name, String content, String contentType,
+    public void createFile(String parentPath, String name, String content,
                            AsyncRequestCallback<ItemReference> callback) {
         final String requestUrl = baseHttpUrl + "/file" + normalizePath(parentPath) + "?name=" + name;
-        // com.google.gwt.http.client.RequestBuilder doesn't allow to send requests without "Content-type" header. If header isn't set then
-        // RequestBuilder adds "text/plain; charset=utf-8", seen javadocs for method send(). Let server resolve media type.
-        // Agreement with server side: send "application/unknown" means we not set mime-type on client side in this case mime-type will be
-        // resolved on server side
-        if (contentType == null) {
-            contentType = "application/unknown";
-        }
         asyncRequestFactory.createPostRequest(requestUrl, null)
-                           .header(CONTENT_TYPE, contentType)
                            .data(content)
                            .loader(loader, "Creating file...")
                            .send(callback);
@@ -235,17 +227,9 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void updateFile(String path, String content, String contentType, AsyncRequestCallback<Void> callback) {
+    public void updateFile(String path, String content, AsyncRequestCallback<Void> callback) {
         final String requestUrl = baseHttpUrl + "/file" + normalizePath(path);
-        // com.google.gwt.http.client.RequestBuilder doesn't allow to send requests without "Content-type" header. If header isn't set then
-        // RequestBuilder adds "text/plain; charset=utf-8", seen javadocs for method send(). Let server resolve media type.
-        // Agreement with server side: send "application/unknown" means we not set mime-type on client side in this case mime-type will be
-        // resolved on server side
-        if (contentType == null) {
-            contentType = "application/unknown";
-        }
         asyncRequestFactory.createRequest(PUT, requestUrl, null, false)
-                           .header(CONTENT_TYPE, contentType)
                            .data(content)
                            .send(callback);
     }

@@ -17,7 +17,6 @@ import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 import java.io.ByteArrayInputStream;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class UnlockTest extends MemoryFileSystemTest {
@@ -31,12 +30,12 @@ public class UnlockTest extends MemoryFileSystemTest {
         String name = getClass().getName();
         VirtualFile unlockTestFolder = mountPoint.getRoot().createFolder(name);
 
-        VirtualFile lockedFile = unlockTestFolder.createFile("UnlockTest_LOCKED", MediaType.TEXT_PLAIN,
+        VirtualFile lockedFile = unlockTestFolder.createFile("UnlockTest_LOCKED",
                                                              new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileLockToken = lockedFile.lock(0);
         lockedFileId = lockedFile.getId();
 
-        VirtualFile notLockedFile = unlockTestFolder.createFile("UnlockTest_NOTLOCKED", MediaType.TEXT_PLAIN,
+        VirtualFile notLockedFile = unlockTestFolder.createFile("UnlockTest_NOTLOCKED",
                                                                 new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         notLockedFileId = notLockedFile.getId();
     }

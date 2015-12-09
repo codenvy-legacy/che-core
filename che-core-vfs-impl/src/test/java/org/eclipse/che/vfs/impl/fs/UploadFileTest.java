@@ -63,77 +63,58 @@ public class UploadFileTest extends LocalFileSystemTest {
     public void testUploadNewFile() throws Exception {
         final String fileName = "testUploadNewFile";
         final String fileContent = "test upload file";
-        final String fileMediaType = MediaType.TEXT_PLAIN;
-        ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, fileContent, "", "", false);
+        ContainerResponse response = doUploadFile(folderId, fileName, fileContent, "", "", false);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertTrue(((String)response.getEntity()).isEmpty()); // empty if successful
         String expectedPath = folderPath + '/' + fileName;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(fileContent, new String(readFile(expectedPath)));
-
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{fileMediaType});
-        validateProperties(expectedPath, expectedProperties);
     }
 
     public void testUploadNewFileInRootFolder() throws Exception {
         final String fileName = "testUploadNewFile";
         final String fileContent = "test upload file";
-        final String fileMediaType = MediaType.TEXT_PLAIN;
         folderId = ROOT_ID;
-        ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, fileContent, "", "", false);
+        ContainerResponse response = doUploadFile(folderId, fileName, fileContent, "", "", false);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertTrue(((String)response.getEntity()).isEmpty()); // empty if successful
         String expectedPath = '/' + fileName;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(fileContent, new String(readFile(expectedPath)));
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{fileMediaType});
-        validateProperties(expectedPath, expectedProperties);
     }
 
     public void testUploadNewFileCustomizeName() throws Exception {
         final String fileName = "testUploadNewFileCustomizeName";
         final String fileContent = "test upload file with custom name";
-        final String fileMediaType = MediaType.TEXT_PLAIN;
         // Name of file passed in HTML form. If present it should be used instead of original file name.
         final String formFileName = fileName + ".txt";
-        ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, fileContent, "", formFileName, false);
+        ContainerResponse response = doUploadFile(folderId, fileName, fileContent, "", formFileName, false);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertTrue(((String)response.getEntity()).isEmpty()); // empty if successful
         String expectedPath = folderPath + '/' + formFileName;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(fileContent, new String(readFile(expectedPath)));
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{fileMediaType});
-        validateProperties(expectedPath, expectedProperties);
     }
 
     public void testUploadNewFileCustomizeMediaType() throws Exception {
         final String fileName = "testUploadNewFileCustomizeMediaType";
         final String fileContent = "test upload file with custom media type";
-        final String fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
         final String formFileName = fileName + ".txt";
         final String formMediaType = MediaType.TEXT_PLAIN; // should be used instead of fileMediaType
         ContainerResponse response =
-                doUploadFile(folderId, fileName, fileMediaType, fileContent, formMediaType, formFileName, false);
+                doUploadFile(folderId, fileName, fileContent, formMediaType, formFileName, false);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertTrue(((String)response.getEntity()).isEmpty()); // empty if successful
         String expectedPath = folderPath + '/' + formFileName;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(fileContent, new String(readFile(expectedPath)));
-
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{formMediaType});
-        validateProperties(expectedPath, expectedProperties);
     }
 
     public void testUploadFileAlreadyExists() throws Exception {
         final String fileName = "existedFile";
-        final String fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
         final String fileContent = "existed file";
         createFile(folderPath, fileName, fileContent.getBytes());
-        ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, DEFAULT_CONTENT, "", "", false);
+        ContainerResponse response = doUploadFile(folderId, fileName, DEFAULT_CONTENT, "", "", false);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus()); // always 200 even for errors
         assertTrue(((String)response.getEntity()).startsWith("<pre>message: "));
         assertEquals(fileContent, new String(readFile(folderPath + '/' + fileName)));
@@ -141,12 +122,11 @@ public class UploadFileTest extends LocalFileSystemTest {
 
     public void testUploadFileAlreadyExistsAndLocked() throws Exception {
         final String fileName = "existedLockedFile";
-        final String fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
         final String fileContent = "existed locked file";
         String path = createFile(folderPath, fileName, fileContent.getBytes());
         createLock(path, "1234567890", Long.MAX_VALUE);
         // File is locked and may not be overwritten even if 'overwrite' parameter is 'true'
-        ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, DEFAULT_CONTENT, "", "", true);
+        ContainerResponse response = doUploadFile(folderId, fileName, DEFAULT_CONTENT, "", "", true);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus()); // always 200 even for errors
         assertTrue(((String)response.getEntity()).startsWith("<pre>message: "));
         assertEquals(fileContent, new String(readFile(folderPath + '/' + fileName)));
@@ -157,22 +137,16 @@ public class UploadFileTest extends LocalFileSystemTest {
         final String fileContent = "existed file overwrite";
         createFile(folderPath, fileName, fileContent.getBytes());
         final String newFileContent = "test upload and overwrite existed file";
-        final String fileMediaType = MediaType.TEXT_PLAIN;
-        ContainerResponse response = doUploadFile(folderId, fileName, fileMediaType, newFileContent, "", "", true);
+        ContainerResponse response = doUploadFile(folderId, fileName, newFileContent, "", "", true);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         assertTrue(((String)response.getEntity()).isEmpty()); // empty if successful
         String expectedPath = folderPath + '/' + fileName;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(newFileContent, new String(readFile(expectedPath)));
-
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{fileMediaType});
-        validateProperties(expectedPath, expectedProperties);
     }
 
     private ContainerResponse doUploadFile(String parentId,
                                            String fileName,
-                                           String fileMediaType,
                                            String fileContent,
                                            String formMediaType,
                                            String formFileName,
@@ -181,7 +155,7 @@ public class UploadFileTest extends LocalFileSystemTest {
         Map<String, List<String>> headers = new HashMap<>(1);
         headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList("multipart/form-data; boundary=abcdef"));
         byte[] formData = String.format(uploadBodyPattern,
-                                        fileName, fileMediaType, fileContent, formMediaType, formFileName, formOverwrite)
+                                        fileName, fileContent, formMediaType, formFileName, formOverwrite)
                                 .getBytes();
         EnvironmentContext env = new EnvironmentContext();
         env.put(HttpServletRequest.class, new MockHttpServletRequest("", new ByteArrayInputStream(formData),
@@ -195,9 +169,9 @@ public class UploadFileTest extends LocalFileSystemTest {
     }
 
     private static final String uploadBodyPattern =
-            "--abcdef\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%1$s\"\r\nContent-Type: %2$s\r\n\r\n%3$s\r\n" +
-            "--abcdef\r\nContent-Disposition: form-data; name=\"mimeType\"\r\n\r\n%4$s\r\n" +
-            "--abcdef\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n%5$s\r\n" +
-            "--abcdef\r\nContent-Disposition: form-data; name=\"overwrite\"\r\n\r\n%6$b\r\n" +
+            "--abcdef\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%1$s\"\r\n\r\n%2$s\r\n" +
+            "--abcdef\r\nContent-Disposition: form-data; name=\"mimeType\"\r\n\r\n%3$s\r\n" +
+            "--abcdef\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n%4$s\r\n" +
+            "--abcdef\r\nContent-Disposition: form-data; name=\"overwrite\"\r\n\r\n%5$b\r\n" +
             "--abcdef--\r\n";
 }

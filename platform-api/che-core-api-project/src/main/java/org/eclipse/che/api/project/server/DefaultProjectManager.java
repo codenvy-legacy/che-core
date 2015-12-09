@@ -632,7 +632,7 @@ public final class DefaultProjectManager implements ProjectManager {
             }
             FileEntry miscFile = (FileEntry)project.getBaseFolder().getChild(Constants.CODENVY_MISC_FILE_RELATIVE_PATH);
             if (miscFile != null) {
-                miscFile.updateContent(bout.toByteArray(), null);
+                miscFile.updateContent(bout.toByteArray());
             } else {
                 FolderEntry codenvy = (FolderEntry)project.getBaseFolder().getChild(CODENVY_DIR);
                 if (codenvy == null) {
@@ -644,7 +644,7 @@ public final class DefaultProjectManager implements ProjectManager {
                     }
                 }
                 try {
-                    codenvy.createFile(Constants.CODENVY_MISC_FILE, bout.toByteArray(), null);
+                    codenvy.createFile(Constants.CODENVY_MISC_FILE, bout.toByteArray());
                 } catch (ConflictException e) {
                     // Not expected, existence of file already checked
                     throw new ServerException(e.getServiceError());

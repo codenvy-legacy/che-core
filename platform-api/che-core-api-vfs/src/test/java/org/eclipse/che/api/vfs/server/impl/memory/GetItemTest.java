@@ -13,11 +13,7 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.ItemType;
 import org.eclipse.che.api.vfs.shared.dto.Item;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
@@ -27,10 +23,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 
 /** @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a> */
 public class GetItemTest extends MemoryFileSystemTest {
@@ -49,7 +43,7 @@ public class GetItemTest extends MemoryFileSystemTest {
         folderPath = folder.getPath();
 
         VirtualFile file =
-                parentFolder.createFile("GetObjectTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+                parentFolder.createFile("GetObjectTest_FILE.txt", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         file.updateProperties(Arrays.asList(
                 createProperty("MyProperty01", "hello world"),
                 createProperty("MyProperty02", "to be or not to be"),
@@ -100,7 +94,7 @@ public class GetItemTest extends MemoryFileSystemTest {
         for (Property p : properties) {
             m.put(p.getName(), p.getValue());
         }
-        assertTrue(m.size() >= 6);
+        assertTrue(m.size() >= 5);
         assertTrue(m.containsKey("MyProperty01"));
         assertTrue(m.containsKey("MyProperty02"));
         assertTrue(m.containsKey("MyProperty03"));

@@ -85,13 +85,13 @@ public class MemoryVirtualFile implements VirtualFile {
     private static final boolean FILE   = false;
     private static final boolean FOLDER = true;
 
-    private static MemoryVirtualFile newFile(MemoryVirtualFile parent, String name, InputStream content, String mediaType)
+    private static MemoryVirtualFile newFile(MemoryVirtualFile parent, String name, InputStream content)
             throws IOException {
-        return new MemoryVirtualFile(parent, ObjectIdGenerator.generateId(), name, content, mediaType);
+        return new MemoryVirtualFile(parent, ObjectIdGenerator.generateId(), name, content);
     }
 
-    private static MemoryVirtualFile newFile(MemoryVirtualFile parent, String name, byte[] content, String mediaType) {
-        return new MemoryVirtualFile(parent, ObjectIdGenerator.generateId(), name, content, mediaType);
+    private static MemoryVirtualFile newFile(MemoryVirtualFile parent, String name, byte[] content) {
+        return new MemoryVirtualFile(parent, ObjectIdGenerator.generateId(), name, content);
     }
 
     private static MemoryVirtualFile newFolder(MemoryVirtualFile parent, String name) {
@@ -117,12 +117,12 @@ public class MemoryVirtualFile implements VirtualFile {
     private boolean exists = true;
 
     // --- File ---
-    private MemoryVirtualFile(MemoryVirtualFile parent, String id, String name, InputStream content, String mediaType)
+    private MemoryVirtualFile(MemoryVirtualFile parent, String id, String name, InputStream content)
             throws IOException {
-        this(parent, id, name, content == null ? null : ByteStreams.toByteArray(content), mediaType);
+        this(parent, id, name, content == null ? null : ByteStreams.toByteArray(content));
     }
 
-    private MemoryVirtualFile(MemoryVirtualFile parent, String id, String name, byte[] content, String mediaType) {
+    private MemoryVirtualFile(MemoryVirtualFile parent, String id, String name, byte[] content) {
         this.mountPoint = (MemoryMountPoint)parent.getMountPoint();
         this.parent = parent;
         this.type = FILE;
@@ -132,9 +132,6 @@ public class MemoryVirtualFile implements VirtualFile {
         this.properties = new HashMap<>();
         this.creationDate = this.lastModificationDate = System.currentTimeMillis();
         this.content = content == null ? new byte[0] : content;
-        if (mediaType != null) {
-            setMediaType(mediaType);
-        }
         children = Collections.emptyMap();
     }
 
@@ -526,11 +523,6 @@ public class MemoryVirtualFile implements VirtualFile {
     }
 
     @Override
-    public VirtualFile updateContent(String mediaType, InputStream content, String lockToken) throws ForbiddenException, ServerException {
-        return updateContent(mediaType, content, lockToken, true);
-    }
-
-    @Override
     public VirtualFile updateContent(InputStream content, String lockToken) throws ForbiddenException, ServerException {
         return updateContent(null, content, lockToken, false);
     }
@@ -667,7 +659,7 @@ public class MemoryVirtualFile implements VirtualFile {
 
         VirtualFile virtualFile;
         if (isFile()) {
-            virtualFile = newFile((MemoryVirtualFile) parent, nameToCopy, Arrays.copyOf(content, content.length), getMediaType());
+            virtualFile = newFile((MemoryVirtualFile) parent, nameToCopy, Arrays.copyOf(content, content.length));
         } else {
             virtualFile = newFolder((MemoryVirtualFile) parent, nameToCopy);
             LazyIterator<VirtualFile> children = getChildren(VirtualFileFilter.ALL);
@@ -1100,7 +1092,7 @@ public class MemoryVirtualFile implements VirtualFile {
                         file.updateContent(noCloseZip, null);
                         mountPoint.getEventService().publish(new UpdateContentEvent(mountPoint.getWorkspaceId(), file.getPath()));
                     } else {
-                        file = newFile((MemoryVirtualFile)current, name, noCloseZip, ContentTypeGuesser.guessContentType(name));
+                        file = newFile((MemoryVirtualFile)current, name, noCloseZip);
                         ((MemoryVirtualFile)current).addChild(file);
                         mountPoint.putItem((MemoryVirtualFile)file);
                         mountPoint.getEventService().publish(new CreateEvent(mountPoint.getWorkspaceId(), file.getPath(), false));
@@ -1188,7 +1180,7 @@ public class MemoryVirtualFile implements VirtualFile {
     }
 
     @Override
-    public VirtualFile createFile(String name, String mediaType, InputStream content)
+    public VirtualFile createFile(String name, InputStream content)
             throws ForbiddenException, ConflictException, ServerException {
         checkExist();
         checkName(name);
@@ -1204,7 +1196,7 @@ public class MemoryVirtualFile implements VirtualFile {
         }
         final MemoryVirtualFile newFile;
         try {
-            newFile = newFile(this, name, content, mediaType);
+            newFile = newFile(this, name, content);
         } catch (IOException e) {
             throw new ServerException(String.format("Unable set content of '%s'. ", getPath() + e.getMessage()));
         }

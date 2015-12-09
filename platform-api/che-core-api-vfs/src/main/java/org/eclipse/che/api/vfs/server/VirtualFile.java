@@ -153,29 +153,6 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     /**
      * Updates content of the file.
      *
-     * @param mediaType
-     *         media type of content
-     * @param content
-     *         content
-     * @param lockToken
-     *         lock token. This parameter is required if the file is locked
-     * @return VirtualFile after updating content
-     * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this item isn't a file</li>
-     *         <li>this file is locked and {@code lockToken} is {@code null} or doesn't match</li>
-     *         <li>user which perform operation doesn't have write permissions</li>
-     *         </ul>
-     * @throws ServerException
-     *         if other error occurs
-     * @see #isFile()
-     */
-    VirtualFile updateContent(String mediaType, InputStream content, String lockToken) throws ForbiddenException, ServerException;
-
-    /**
-     * Updates content of the file.
-     *
      * @param content
      *         content
      * @param lockToken
@@ -537,8 +514,6 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *
      * @param name
      *         name
-     * @param mediaType
-     *         media type of content, may be {@code null}
      * @param content
      *         content. In case of {@code null} empty file is created
      * @return newly create VirtualFile
@@ -553,7 +528,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ServerException
      *         if other error occurs
      */
-    VirtualFile createFile(String name, String mediaType, InputStream content)
+    VirtualFile createFile(String name, InputStream content)
             throws ForbiddenException, ConflictException, ServerException;
 
     /**

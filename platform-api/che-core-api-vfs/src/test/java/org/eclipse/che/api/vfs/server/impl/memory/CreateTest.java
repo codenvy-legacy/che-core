@@ -14,23 +14,11 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.vfs.server.ContentStream;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.Item;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
-
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /** @author andrew00x */
 public class CreateTest extends MemoryFileSystemTest {
@@ -48,15 +36,11 @@ public class CreateTest extends MemoryFileSystemTest {
     }
 
     public void testCreateFile() throws Exception {
-        String name = "testCreateFile";
+        String name = "testCreateFile.txt";
         String content = "test create file";
         String path = SERVICE_URI + "file/" + createTestFolderId + '?' + "name=" + name; //
-        Map<String, List<String>> headers = new HashMap<>();
-        List<String> contentType = new ArrayList<>();
-        contentType.add(MediaType.TEXT_PLAIN);
-        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, content.getBytes(), null);
         assertEquals(200, response.getStatus());
         String expectedPath = createTestFolderPath + "/" + name;
         try {
@@ -74,15 +58,11 @@ public class CreateTest extends MemoryFileSystemTest {
     }
 
     public void testCreateFileInRoot() throws Exception {
-        String name = "testCreateFileInRoot";
+        String name = "testCreateFileInRoot.txt";
         String content = "test create file";
         String path = SERVICE_URI + "file/" + mountPoint.getRoot().getId() + '?' + "name=" + name;
-        Map<String, List<String>> headers = new HashMap<>();
-        List<String> contentType = new ArrayList<>();
-        contentType.add(MediaType.TEXT_PLAIN);
-        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
-        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, path, BASE_URI, null, content.getBytes(), null);
         assertEquals(200, response.getStatus());
         String expectedPath = "/" + name;
         try {

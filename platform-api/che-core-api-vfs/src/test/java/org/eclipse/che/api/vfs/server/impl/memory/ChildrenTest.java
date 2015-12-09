@@ -14,11 +14,7 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.ItemType;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ItemList;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
@@ -26,14 +22,10 @@ import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class ChildrenTest extends MemoryFileSystemTest {
@@ -47,7 +39,7 @@ public class ChildrenTest extends MemoryFileSystemTest {
 
         VirtualFile folder = parentFolder.createFolder("ChildrenTest_FOLDER");
 
-        VirtualFile file = folder.createFile("ChildrenTest_FILE01", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile file = folder.createFile("ChildrenTest_FILE01", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         file.updateProperties(Arrays.asList(createProperty("PropertyA", "A"), createProperty("PropertyB", "B")), null);
 
         VirtualFile folder1 = folder.createFolder("ChildrenTest_FOLDER01");

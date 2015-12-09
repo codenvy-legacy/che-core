@@ -10,27 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.vfs.impl.fs;
 
+import com.google.common.collect.Sets;
+
 import org.eclipse.che.api.vfs.shared.dto.Folder;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.UserImpl;
 import org.eclipse.che.dto.server.DtoFactory;
-
-import com.google.common.collect.Sets;
-
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
-import java.util.ArrayList;
+import javax.ws.rs.HttpMethod;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 
 import static org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
 
@@ -66,19 +60,12 @@ public class CreateTest extends LocalFileSystemTest {
         String name = "testCreateFile";
         String content = "test create file";
         String requestPath = SERVICE_URI + "file/" + folderId + '?' + "name=" + name;
-        Map<String, List<String>> headers = new HashMap<>();
-        List<String> contentType = new ArrayList<>();
-        contentType.add(MediaType.TEXT_PLAIN);
-        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
-        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, content.getBytes(), null);
+        ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, content.getBytes(), null);
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = folderPath + '/' + name;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(content, new String(readFile(expectedPath)));
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
-        validateProperties(expectedPath, expectedProperties);
     }
 
     public void testCreateFileAlreadyExists() throws Exception {
@@ -96,22 +83,15 @@ public class CreateTest extends LocalFileSystemTest {
         String name = "FileInRoot";
         String content = "test create file";
         String requestPath = SERVICE_URI + "file/" + ROOT_ID + '?' + "name=" + name;
-        Map<String, List<String>> headers = new HashMap<>();
-        List<String> contentType = new ArrayList<>();
-        contentType.add(MediaType.TEXT_PLAIN);
-        headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
         ContainerResponse response =
-                launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, content.getBytes(), writer, null);
+                launcher.service(HttpMethod.POST, requestPath, BASE_URI, null, content.getBytes(), writer, null);
         log.info(new String(writer.getBody()));
         assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
         String expectedPath = '/' + name;
         assertTrue("File was not created in expected location. ", exists(expectedPath));
         assertEquals(content, new String(readFile(expectedPath)));
-        Map<String, String[]> expectedProperties = new HashMap<>(1);
-        expectedProperties.put("vfs:mimeType", new String[]{MediaType.TEXT_PLAIN});
-        validateProperties(expectedPath, expectedProperties);
     }
 
     public void testCreateFileNoContent() throws Exception {

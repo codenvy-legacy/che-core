@@ -54,7 +54,7 @@ public class EventsTest extends MemoryFileSystemTest {
         testFolderPath = testEventsFolder.getPath();
         destinationFolderID = destinationFolder.getId();
         destinationFolderPath = destinationFolder.getPath();
-        VirtualFile testFile = testEventsFolder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile testFile = testEventsFolder.createFile("file", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         testFileId = testFile.getId();
         testFilePath = testFile.getPath();
         events = new ArrayList<>();

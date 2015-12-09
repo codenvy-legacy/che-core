@@ -162,8 +162,6 @@ public class FolderEntry extends VirtualFileEntry {
      *         name
      * @param content
      *         content. In case of {@code null} empty file is created
-     * @param mediaType
-     *         media type of content, may be {@code null}
      * @return newly create VirtualFile
      * @throws ForbiddenException
      *         if copy operation is forbidden
@@ -171,14 +169,14 @@ public class FolderEntry extends VirtualFileEntry {
      *         if operation causes conflict, e.g. name conflict
      * @throws ServerException
      *         if other error occurs
-     * @see org.eclipse.che.api.vfs.server.VirtualFile#createFile(String, String, java.io.InputStream)
+     * @see VirtualFile#createFile(String, InputStream)
      */
-    public FileEntry createFile(String name, byte[] content, String mediaType)
+    public FileEntry createFile(String name, byte[] content)
             throws ForbiddenException, ConflictException, ServerException {
         if (isRoot(getVirtualFile())) {
             throw new ForbiddenException("Can't create file in root folder.");
         }
-        return createFile(name, content == null ? null : new ByteArrayInputStream(content), mediaType);
+        return createFile(name, content == null ? null : new ByteArrayInputStream(content));
     }
 
     /**
@@ -188,8 +186,6 @@ public class FolderEntry extends VirtualFileEntry {
      *         name
      * @param content
      *         content. In case of {@code null} empty file is created
-     * @param mediaType
-     *         media type of content, may be {@code null}
      * @return newly create VirtualFile
      * @throws ForbiddenException
      *         if copy operation is forbidden
@@ -197,14 +193,14 @@ public class FolderEntry extends VirtualFileEntry {
      *         if operation causes conflict, e.g. name conflict
      * @throws ServerException
      *         if other error occurs
-     * @see org.eclipse.che.api.vfs.server.VirtualFile#createFile(String, String, java.io.InputStream)
+     * @see VirtualFile#createFile(String, InputStream)
      */
-    public FileEntry createFile(String name, InputStream content, String mediaType)
+    public FileEntry createFile(String name, InputStream content)
             throws ForbiddenException, ConflictException, ServerException {
         if (isRoot(getVirtualFile())) {
             throw new ForbiddenException("Can't create file in root folder.");
         }
-        return new FileEntry(getWorkspace(), getVirtualFile().createFile(name, mediaType, content));
+        return new FileEntry(getWorkspace(), getVirtualFile().createFile(name, content));
     }
 
     /**

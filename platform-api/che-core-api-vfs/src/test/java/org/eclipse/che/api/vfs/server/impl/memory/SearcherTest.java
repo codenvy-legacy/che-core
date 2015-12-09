@@ -63,18 +63,18 @@ public class SearcherTest extends MemoryFileSystemTest {
         VirtualFile searchTestFolder = this.searchTestFolder.createFolder("SearcherTest_Folder");
         searchTestPath = searchTestFolder.getPath();
 
-        file1 = searchTestFolder.createFile("SearcherTest_File01", "text/xml", new ByteArrayInputStream("to be or not to be".getBytes()))
+        file1 = searchTestFolder.createFile("SearcherTest_File01.xml", new ByteArrayInputStream("to be or not to be".getBytes()))
                                 .getPath();
 
-        file2 = searchTestFolder.createFile("SearcherTest_File02", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()))
+        file2 = searchTestFolder.createFile("SearcherTest_File02.txt", new ByteArrayInputStream("to be or not to be".getBytes()))
                                 .getPath();
 
         VirtualFile folder = searchTestFolder.createFolder("folder01");
         String folder1 = folder.getPath();
-        file3 = folder.createFile("SearcherTest_File03", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes())).getPath();
+        file3 = folder.createFile("SearcherTest_File03.txt", new ByteArrayInputStream("to be or not to be".getBytes())).getPath();
         
-        String file4 = searchTestFolder.createFile("SearcherTest_File04", MediaType.TEXT_PLAIN, new ByteArrayInputStream("(1+1):2=1 is right".getBytes())).getPath();
-        String file5 = searchTestFolder.createFile("SearcherTest_File05", MediaType.TEXT_PLAIN, new ByteArrayInputStream("Copyright (c) 2012-2015 * All rights reserved".getBytes())).getPath();
+        String file4 = searchTestFolder.createFile("SearcherTest_File04.txt", new ByteArrayInputStream("(1+1):2=1 is right".getBytes())).getPath();
+        String file5 = searchTestFolder.createFile("SearcherTest_File05.txt", new ByteArrayInputStream("Copyright (c) 2012-2015 * All rights reserved".getBytes())).getPath();
 
         queryToResult = new Pair[16];
         // text
@@ -84,7 +84,7 @@ public class SearcherTest extends MemoryFileSystemTest {
         queryToResult[2] = new Pair<>(new String[]{file2, file3}, "text=to%20be%20or&mediaType=text/plain");
         queryToResult[3] = new Pair<>(new String[]{file1}, "text=to%20be%20or&mediaType=text/xml");
         // text + name
-        queryToResult[4] = new Pair<>(new String[]{file2}, "text=to%20be%20or&name=*File02");
+        queryToResult[4] = new Pair<>(new String[]{file2}, "text=to%20be%20or&name=*File02.txt");
         queryToResult[5] = new Pair<>(new String[]{file1, file2, file3}, "text=to%20be%20or&name=SearcherTest*");
         // text + path
         queryToResult[6] = new Pair<>(new String[]{file3}, "text=to%20be%20or&path=" + folder1);
@@ -165,7 +165,7 @@ public class SearcherTest extends MemoryFileSystemTest {
         TopDocs topDocs = luceneSearcher.search(new PrefixQuery(new Term("path", searchTestPath)), 10);
         assertEquals(5, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
-        mountPoint.getVirtualFile(searchTestPath).createFile("new_file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        mountPoint.getVirtualFile(searchTestPath).createFile("new_file", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
 
         searcherManager.maybeRefresh();
         luceneSearcher = searcherManager.acquire();
@@ -181,7 +181,7 @@ public class SearcherTest extends MemoryFileSystemTest {
                 new QueryParser("text", new SimpleAnalyzer()).parse("updated"), 10);
         assertEquals(0, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
-        mountPoint.getVirtualFile(file2).updateContent(MediaType.TEXT_PLAIN, new ByteArrayInputStream("updated content".getBytes()), null);
+        mountPoint.getVirtualFile(file2).updateContent(new ByteArrayInputStream("updated content".getBytes()), null);
 
         searcherManager.maybeRefresh();
         luceneSearcher = searcherManager.acquire();

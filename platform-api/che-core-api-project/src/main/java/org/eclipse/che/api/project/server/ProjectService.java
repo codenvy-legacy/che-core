@@ -427,22 +427,11 @@ public class ProjectService extends Service {
                                @PathParam("parent") String parentPath,
                                @ApiParam(value = "New file name", required = true)
                                @QueryParam("name") String fileName,
-                               @ApiParam(value = "New file content type")
-                               @HeaderParam("content-type") MediaType contentType,
                                InputStream content) throws NotFoundException, ConflictException, ForbiddenException, ServerException {
         filesBuffer.addToBuffer(parentPath + '/' + fileName);
 
         final FolderEntry parent = asFolder(workspace, parentPath);
-        // Have issue with client side. Always have Content-type header is set even if client doesn't set it.
-        // In this case have Content-type is set with "text/plain; charset=UTF-8" which isn't acceptable.
-        // Have agreement with client to send Content-type header with "application/unknown" value if client doesn't want to specify media
-        // type of new file. In this case server takes care about resolving media type of file.
-        final FileEntry newFile;
-        if (contentType == null || ("application".equals(contentType.getType()) && "unknown".equals(contentType.getSubtype()))) {
-            newFile = parent.createFile(fileName, content, null);
-        } else {
-            newFile = parent.createFile(fileName, content, (contentType.getType() + '/' + contentType.getSubtype()));
-        }
+        final FileEntry newFile = parent.createFile(fileName, content);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final ItemReference fileReference = DtoConverter.toItemReference(newFile, uriBuilder.clone());
         final URI location = uriBuilder.clone().path(getClass(), "getFile").build(workspace, newFile.getPath().substring(1));
@@ -570,19 +559,9 @@ public class ProjectService extends Service {
                                @PathParam("ws-id") String workspace,
                                @ApiParam(value = "Full path to a file", required = true)
                                @PathParam("path") String path,
-                               @ApiParam(value = "Media Type")
-                               @HeaderParam("content-type") MediaType contentType,
                                InputStream content) throws NotFoundException, ForbiddenException, ServerException {
         final FileEntry file = asFile(workspace, path);
-        // Have issue with client side. Always have Content-type header is set even if client doesn't set it.
-        // In this case have Content-type is set with "text/plain; charset=UTF-8" which isn't acceptable.
-        // Have agreement with client to send Content-type header with "application/unknown" value if client doesn't want to specify media
-        // type of new file. In this case server takes care about resolving media type of file.
-        if (contentType == null || ("application".equals(contentType.getType()) && "unknown".equals(contentType.getSubtype()))) {
-            file.updateContent(content);
-        } else {
-            file.updateContent(content, contentType.getType() + '/' + contentType.getSubtype());
-        }
+        file.updateContent(content);
 
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.UPDATED,
                                                           workspace, projectPath(file.getPath()), file.getPath(), false));

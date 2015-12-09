@@ -12,21 +12,13 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.shared.dto.Principal;
-import org.eclipse.che.api.vfs.shared.dto.VirtualFileSystemInfo.BasicPermissions;
-
-import com.google.common.collect.Sets;
 
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 
 /** @author andrew00x */
 public class DeleteTest extends MemoryFileSystemTest {
@@ -46,13 +38,13 @@ public class DeleteTest extends MemoryFileSystemTest {
 
         VirtualFile folder = deleteTestFolder.createFolder("DeleteTest_FOLDER");
         // add child in folder
-        VirtualFile childFile = folder.createFile("file", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        VirtualFile childFile = folder.createFile("file", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         folderId = folder.getId();
         folderChildId = childFile.getId();
         folderPath = folder.getPath();
         folderChildPath = childFile.getPath();
 
-        file = deleteTestFolder.createFile("DeleteTest_FILE", MediaType.TEXT_PLAIN, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        file = deleteTestFolder.createFile("DeleteTest_FILE", new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
         fileId = file.getId();
         filePath = file.getPath();
     }

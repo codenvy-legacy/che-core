@@ -139,29 +139,13 @@ public class FileEntry extends VirtualFileEntry {
      *
      * @param content
      *         new content
-     * @param mediaType
-     *         new media type
-     * @throws ForbiddenException
-     *         if update operation is forbidden
-     * @throws ServerException
-     *         if other error occurs
-     */
-    public void updateContent(byte[] content, String mediaType) throws ForbiddenException, ServerException {
-        updateContent(new ByteArrayInputStream(content), mediaType);
-    }
-
-    /**
-     * Updates content of file.
-     *
-     * @param content
-     *         new content
      * @throws ForbiddenException
      *         if update operation is forbidden
      * @throws ServerException
      *         if other error occurs
      */
     public void updateContent(byte[] content) throws ForbiddenException, ServerException {
-        updateContent(content, getMediaType());
+        updateContent(new ByteArrayInputStream(content));
     }
 
     /**
@@ -176,22 +160,6 @@ public class FileEntry extends VirtualFileEntry {
      */
     public void updateContent(InputStream content) throws ForbiddenException, ServerException {
         getVirtualFile().updateContent(content, null);
-    }
-
-    /**
-     * Updates content of file.
-     *
-     * @param content
-     *         new content
-     * @param mediaType
-     *         new media type
-     * @throws ForbiddenException
-     *         if update operation is forbidden
-     * @throws ServerException
-     *         if other error occurs
-     */
-    public void updateContent(InputStream content, String mediaType) throws ForbiddenException, ServerException {
-        getVirtualFile().updateContent(mediaType, content, null);
     }
 
     /**

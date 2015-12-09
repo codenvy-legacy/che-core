@@ -42,12 +42,10 @@ public class UploadFileTest extends MemoryFileSystemTest {
 
     public void testUploadNewFile() throws Exception {
         // Passed by browser.
-        String fileName = "testUploadNewFile";
+        String fileName = "testUploadNewFile.txt";
         // File content.
         String fileContent = "test upload file";
-        // Passed by browser.
-        String fileMediaType = MediaType.TEXT_PLAIN;
-        ContainerResponse response = doUploadFile(fileName, fileMediaType, fileContent, "", "", false);
+        ContainerResponse response = doUploadFile(fileName, fileContent, "", "", false);
         assertEquals(200, response.getStatus());
         String expectedPath = uploadTestFolderPath + '/' + fileName;
         VirtualFile file = mountPoint.getVirtualFile(expectedPath);
@@ -57,13 +55,11 @@ public class UploadFileTest extends MemoryFileSystemTest {
 
     public void testUploadNewFileInRootFolder() throws Exception {
         // Passed by browser.
-        String fileName = "testUploadNewFile";
+        String fileName = "testUploadNewFile.txt";
         // File content.
         String fileContent = "test upload file";
-        // Passed by browser.
-        String fileMediaType = MediaType.TEXT_PLAIN;
         uploadTestFolderId = mountPoint.getRoot().getId();
-        ContainerResponse response = doUploadFile(fileName, fileMediaType, fileContent, "", "", false);
+        ContainerResponse response = doUploadFile(fileName, fileContent, "", "", false);
         assertEquals(200, response.getStatus());
         String expectedPath = "/" + fileName;
         VirtualFile file = mountPoint.getVirtualFile(expectedPath);
@@ -76,11 +72,9 @@ public class UploadFileTest extends MemoryFileSystemTest {
         String fileName = "testUploadNewFileCustomizeName";
         // File content.
         String fileContent = "test upload file with custom name";
-        // Passed by browser.
-        String fileMediaType = MediaType.TEXT_PLAIN;
         // Name of file passed in HTML form. If present it should be used instead of original file name.
         String formFileName = fileName + ".txt";
-        ContainerResponse response = doUploadFile(fileName, fileMediaType, fileContent, "", formFileName, false);
+        ContainerResponse response = doUploadFile(fileName, fileContent, "", formFileName, false);
         assertEquals(200, response.getStatus());
         String expectedPath = uploadTestFolderPath + '/' + formFileName;
         VirtualFile file = mountPoint.getVirtualFile(expectedPath);
@@ -93,14 +87,12 @@ public class UploadFileTest extends MemoryFileSystemTest {
         String fileName = "testUploadNewFileCustomizeMediaType";
         // File content.
         String fileContent = "test upload file with custom media type";
-        // Passed by browser.
-        String fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
         // Name of file passed in HTML form. If present it should be used instead of original file name.
         String formFileName = fileName + ".txt";
         // Media type of file passed in HTML form. If present it should be used instead of original file media type.
         String formMediaType = MediaType.TEXT_PLAIN;
         ContainerResponse response =
-                doUploadFile(fileName, fileMediaType, fileContent, formMediaType, formFileName, false);
+                doUploadFile(fileName, fileContent, formMediaType, formFileName, false);
         assertEquals(200, response.getStatus());
         String expectedPath = uploadTestFolderPath + '/' + formFileName;
         VirtualFile file = mountPoint.getVirtualFile(expectedPath);
@@ -109,11 +101,10 @@ public class UploadFileTest extends MemoryFileSystemTest {
     }
 
     public void testUploadFileAlreadyExists() throws Exception {
-        String fileName = "existedFile";
-        String fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
+        String fileName = "existedFile.txt";
         VirtualFile folder = mountPoint.getVirtualFileById(uploadTestFolderId);
-        folder.createFile(fileName, fileMediaType, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
-        ContainerResponse response = doUploadFile(fileName, fileMediaType, DEFAULT_CONTENT, "", "", false);
+        folder.createFile(fileName, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        ContainerResponse response = doUploadFile(fileName, DEFAULT_CONTENT, "", "", false);
         assertEquals(200, response.getStatus());
         String entity = (String)response.getEntity();
         assertTrue(entity.contains("Item with the same name exists"));
@@ -121,14 +112,12 @@ public class UploadFileTest extends MemoryFileSystemTest {
     }
 
     public void testUploadFileAlreadyExistsOverwrite() throws Exception {
-        String fileName = "existedFileOverwrite";
-        String fileMediaType = MediaType.APPLICATION_OCTET_STREAM;
+        String fileName = "existedFileOverwrite.txt";
         VirtualFile folder = mountPoint.getVirtualFileById(uploadTestFolderId);
-        folder.createFile(fileName, fileMediaType, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
+        folder.createFile(fileName, new ByteArrayInputStream(DEFAULT_CONTENT.getBytes()));
 
         String fileContent = "test upload and overwrite existed file";
-        fileMediaType = MediaType.TEXT_PLAIN;
-        ContainerResponse response = doUploadFile(fileName, fileMediaType, fileContent, "", "", true);
+        ContainerResponse response = doUploadFile(fileName, fileContent, "", "", true);
         assertEquals(200, response.getStatus());
         String expectedPath = uploadTestFolderPath + '/' + fileName;
         VirtualFile file = mountPoint.getVirtualFile(expectedPath);
@@ -136,8 +125,8 @@ public class UploadFileTest extends MemoryFileSystemTest {
         checkFileContext(fileContent, MediaType.TEXT_PLAIN, file);
     }
 
-    private ContainerResponse doUploadFile(String fileName, String fileMediaType, String fileContent,
-                                           String formMediaType, String formFileName, boolean formOverwrite) throws Exception {
+    private ContainerResponse doUploadFile(String fileName, String fileContent, String formMediaType, String formFileName,
+                                           boolean formOverwrite) throws Exception {
         String path = SERVICE_URI + "uploadfile/" + uploadTestFolderId; //
 
         Map<String, List<String>> headers = new HashMap<>();
@@ -146,12 +135,12 @@ public class UploadFileTest extends MemoryFileSystemTest {
         headers.put(HttpHeaders.CONTENT_TYPE, contentType);
 
         String uploadBodyPattern = "--abcdef\r\n"
-                                   + "Content-Disposition: form-data; name=\"file\"; filename=\"%1$s\"\r\nContent-Type: %2$s\r\n\r\n"
-                                   + "%3$s\r\n--abcdef\r\nContent-Disposition: form-data; name=\"mimeType\"\r\n\r\n%4$s"
-                                   + "\r\n--abcdef\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n%5$s\r\n"
-                                   + "--abcdef\r\nContent-Disposition: form-data; name=\"overwrite\"\r\n\r\n%6$b\r\n--abcdef--\r\n";
+                                   + "Content-Disposition: form-data; name=\"file\"; filename=\"%1$s\"\r\n\r\n"
+                                   + "%2$s\r\n--abcdef\r\nContent-Disposition: form-data; name=\"mimeType\"\r\n\r\n%3$s"
+                                   + "\r\n--abcdef\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\n%4$s\r\n"
+                                   + "--abcdef\r\nContent-Disposition: form-data; name=\"overwrite\"\r\n\r\n%5$b\r\n--abcdef--\r\n";
         byte[] formData =
-                String.format(uploadBodyPattern, fileName, fileMediaType, fileContent, formMediaType, formFileName,
+                String.format(uploadBodyPattern, fileName, fileContent, formMediaType, formFileName,
                               formOverwrite).getBytes();
         EnvironmentContext env = new EnvironmentContext();
         env.put(HttpServletRequest.class, new MockHttpServletRequest("", new ByteArrayInputStream(formData),

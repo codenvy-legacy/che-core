@@ -114,8 +114,6 @@ public interface VirtualFileSystem {
      *         id of parent for new File
      * @param name
      *         name of File
-     * @param mediaType
-     *         media type of content
      * @param content
      *         content of File
      * @return newly created file
@@ -135,7 +133,7 @@ public interface VirtualFileSystem {
     @POST
     @Path("file")
     @Produces({MediaType.APPLICATION_JSON})
-    File createFile(String parentId, String name, MediaType mediaType, InputStream content)
+    File createFile(String parentId, String name, InputStream content)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException;
 
     /**
@@ -810,8 +808,6 @@ public interface VirtualFileSystem {
      *
      * @param id
      *         id of File
-     * @param mediaType
-     *         media type of content
      * @param newContent
      *         new content of File
      * @param lockToken
@@ -831,7 +827,7 @@ public interface VirtualFileSystem {
      */
     @POST
     @Path("content")
-    void updateContent(String id, MediaType mediaType, InputStream newContent, String lockToken)
+    void updateContent(String id, InputStream newContent, String lockToken)
             throws NotFoundException, ForbiddenException, ServerException;
 
     /**

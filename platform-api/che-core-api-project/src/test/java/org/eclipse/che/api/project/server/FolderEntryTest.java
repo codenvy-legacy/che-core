@@ -19,7 +19,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -49,7 +48,7 @@ public class FolderEntryTest {
         VirtualFile myVfRoot = mmp.getRoot();
         myVfProject = myVfRoot.createFolder("my_project");
         myVfFolder = myVfProject.createFolder("test_folder");
-        myVfFolder.createFile("child_file", MediaType.TEXT_PLAIN, new ByteArrayInputStream("to be or not to be".getBytes()));
+        myVfFolder.createFile("child_file", new ByteArrayInputStream("to be or not to be".getBytes()));
         myVfFolder.createFolder("child_folder");
         myFolder = new FolderEntry(workspace, myVfFolder);
         Assert.assertTrue(myFolder.isFolder());
@@ -88,7 +87,7 @@ public class FolderEntryTest {
     @Test
     public void testMove() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null);
         String name = myFolder.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
 
@@ -104,7 +103,7 @@ public class FolderEntryTest {
     @Test
     public void testCopy() throws Exception {
         VirtualFile vfProject = mmp.getRoot().createFolder("my_project_2");
-        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null, null);
+        vfProject.createFolder(Constants.CODENVY_DIR).createFile("project", null);
         String name = myFolder.getName();
         String newPath = vfProject.getVirtualFilePath().newPath(name).toString();
 
