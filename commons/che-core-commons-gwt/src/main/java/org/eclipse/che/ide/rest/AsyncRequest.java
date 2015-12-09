@@ -17,9 +17,7 @@ import com.google.gwt.http.client.RequestBuilder.Method;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window.Location;
 
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
@@ -68,34 +66,12 @@ public class AsyncRequest {
             }
         }
 
-        this.requestBuilder = new RequestBuilder(method, getCheckedURL(url));
+        this.requestBuilder = new RequestBuilder(method, url);
         this.loader = new EmptyLoader();
         this.async = async;
         this.checkAsyncTaskStatusTimer = new CheckEverRestTaskStatusTimer();
         this.asyncRequestCallback = new EverRestAsyncRequestCallback();
     }
-
-    private static String getCheckedURL(String url) {
-        final String proxyServiceContext = getProxyServiceContext();
-        if (proxyServiceContext == null || "".equals(proxyServiceContext)) {
-            return url;
-        }
-
-        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-            return url;
-        }
-
-        final String currentHost = Location.getProtocol() + "//" + Location.getHost();
-        if (url.startsWith(currentHost)) {
-            return url;
-        }
-
-        return proxyServiceContext + "?url=" + URL.encodeQueryString(url);
-    }
-
-    private static native String getProxyServiceContext() /*-{
-        return $wnd.proxyServiceContext;
-    }-*/;
 
     public final AsyncRequest header(String header, String value) {
         requestBuilder.setHeader(header, value);
