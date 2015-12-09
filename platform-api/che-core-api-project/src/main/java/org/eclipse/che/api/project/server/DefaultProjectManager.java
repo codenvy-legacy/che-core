@@ -705,7 +705,11 @@ public final class DefaultProjectManager implements ProjectManager {
 
                 Variable var = (Variable)attr;
                 // getValue throws ValueStorageException if not valid
-                attributes.put(attr.getName(), var.getValue((FolderEntry)baseFolder));
+
+                AttributeValue value = var.getValue((FolderEntry)baseFolder);
+                if (value != null) {
+                    attributes.put(attr.getName(), value);
+                }
             }
         }
 

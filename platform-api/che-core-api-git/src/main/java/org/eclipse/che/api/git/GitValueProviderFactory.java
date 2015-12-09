@@ -54,7 +54,7 @@ public class GitValueProviderFactory implements ValueProviderFactory {
                              gitConnectionFactory.getConnection(resolveLocalPathByPath(folder.getPath(), folder.getWorkspace()))) {
 
                     //check whether the folder belongs to git repository
-                    return gitConnection.isInsideWorkTree() ? Arrays.asList("git") : Collections.EMPTY_LIST;
+                    return gitConnection.isInsideWorkTree() ? Arrays.asList("git") : null;
                 } catch (ApiException e) {
                     throw new ValueStorageException(e.getMessage());
                 }
