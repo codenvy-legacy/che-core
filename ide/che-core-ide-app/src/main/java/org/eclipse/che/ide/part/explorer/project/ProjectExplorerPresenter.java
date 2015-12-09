@@ -481,9 +481,11 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     }
 
     private void updateAppContext(List<Node> nodes) {
-        if (nodes.isEmpty() || nodes.size() > 1) {
+        if (nodes.isEmpty()) {
             appContext.setCurrentProject(null);
             queryFieldViewer.setProjectName("");
+            return;
+        } else if (nodes.size() > 1) {
             return;
         }
 
