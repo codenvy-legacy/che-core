@@ -88,6 +88,8 @@
     top: 100%;
     left: -1px;
     right: -1px;
+    max-height: 100px;
+    overflow-y: auto;
 }
 
 .listBox div span:hover {
