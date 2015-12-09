@@ -91,16 +91,12 @@ public class AttributeFilter {
     }
 
     private void addAttributesToProject(ProjectConfigDto projectConfig,
-                                        FolderEntry projectFolder,
+                                        FolderEntry parentFolder,
                                         AttributeType attributeType) throws ServerException,
                                                                             ForbiddenException,
                                                                             ProjectTypeConstraintException,
                                                                             ValueStorageException {
-        FolderEntry module = (FolderEntry)projectFolder.getChild(projectConfig.getName());
-
-        module = module == null ? projectFolder : module;
-
-        ProjectTypes projectTypes = getProjectTypes(module, projectConfig);
+        ProjectTypes projectTypes = getProjectTypes(parentFolder, projectConfig);
 
         projectConfig.setType(projectTypes.getPrimary().getId());
         projectConfig.setMixins(projectTypes.mixinIds());
@@ -110,13 +106,39 @@ public class AttributeFilter {
                                                                                                                            projectConfig)
                                                                                                   : getRuntimeAttributes(projectType,
                                                                                                                          projectConfig,
-                                                                                                                         module);
+                                                                                                                         parentFolder);
             projectConfig.getAttributes().putAll(attributes);
         }
 
         for (ProjectConfigDto configDto : projectConfig.getModules()) {
+            FolderEntry module = findModuleByPath(parentFolder, configDto.getPath());
+
             addAttributesToProject(configDto, module, attributeType);
         }
+    }
+
+    private FolderEntry findModuleByPath(FolderEntry parent, String path) throws ServerException, ForbiddenException {
+        if (!path.contains("/")) {
+            return parent;
+        }
+
+        //module which is located in module or project
+        FolderEntry module = (FolderEntry)parent.getChild(path.substring(path.lastIndexOf("/")));
+
+        if (module == null) {
+            //module which is located in simple folder
+            module = (FolderEntry)parent.getChild(definePathToModule(path));
+        }
+
+        return module == null ? parent : module;
+    }
+
+    private String definePathToModule(String path) {
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+
+        return path.substring(path.indexOf("/"));
     }
 
     private ProjectTypes getProjectTypes(FolderEntry module, ProjectConfig moduleConfig) throws ProjectTypeConstraintException,
