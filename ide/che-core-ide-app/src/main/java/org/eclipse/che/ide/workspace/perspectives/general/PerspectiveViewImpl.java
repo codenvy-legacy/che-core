@@ -20,6 +20,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
@@ -113,7 +114,7 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     public void tuneSplitters() {
         NodeList<Node> nodes = splitPanel.getElement().getChildNodes();
         boolean firstFound = false;
-        for(int i = 0; i < nodes.getLength(); i++) {
+        for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.getItem(i);
             if (node.hasChildNodes()) {
                 com.google.gwt.dom.client.Element el = node.getFirstChild().cast();
@@ -134,7 +135,8 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     /**
      * Tunes left splitter. Makes it wider and adds double border to seem rich.
      *
-     * @param el element to tune
+     * @param el
+     *         element to tune
      */
     private void tuneLeftSplitter(Element el) {
         /** Add Z-Index to move the splitter on the top and make content visible */
@@ -173,7 +175,8 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     /**
      * Tunes left splitter. Makes it wider and adds double border to seem rich.
      *
-     * @param el element to tune
+     * @param el
+     *         element to tune
      */
     private void tuneRightSplitter(Element el) {
         /** Add Z-Index to move the splitter on the top and make content visible */
@@ -212,7 +215,8 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     /**
      * Tunes bottom splitter. Makes it tiny but with a transparent area for easy resizing.
      *
-     * @param el element to tune
+     * @param el
+     *         element to tune
      */
     private void tuneBottomSplitter(Element el) {
         /** Add Z-Index to move the splitter on the top and make content visible */
@@ -257,6 +261,10 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     public void onResize() {
         editorPanel.onResize();
         super.onResize();
+        Widget widget = infoPanel.getWidget();
+        if (widget instanceof RequiresResize) {
+            ((RequiresResize)widget).onResize();
+        }
     }
 
 }
