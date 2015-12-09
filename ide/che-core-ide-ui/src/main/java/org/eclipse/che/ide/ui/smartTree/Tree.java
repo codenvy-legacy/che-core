@@ -1003,8 +1003,10 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
                 int index = event.getIndex();
                 int parentChildCount = parent == null ? nodeStorage.getRootCount() : nodeStorage.getChildCount(parent);
-
                 for (Node child : event.getNodes()) {
+                    if (pn != null && !pn.isExpanded() && nodeStorage.getChildCount(pn.getNode()) == 1) {
+                        setExpanded(pn.getNode(), true);
+                    }
                     if (index == 0) {
                         container.insertFirst(renderChild(child, parentDepth));
                     } else if (index == parentChildCount - event.getNodes().size()) {

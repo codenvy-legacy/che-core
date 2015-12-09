@@ -349,7 +349,7 @@ public final class DefaultProjectManager implements ProjectManager {
 
         parentModule.getModules().add(createdModuleDto);
 
-        VirtualFileEntry parentFolder = getProjectsRoot(workspaceId).getChild(parentModule.getPath());
+        VirtualFileEntry parentFolder = getProjectsRoot(workspaceId).getChild(absolutePathToParent);
 
         if (parentFolder == null) {
             throw new NotFoundException("Parent folder not found for this node " + pathToParent);
@@ -919,7 +919,11 @@ public final class DefaultProjectManager implements ProjectManager {
         ProjectConfigDto parentModule = project.findModule(pathToParentModule);
         ProjectConfigDto moduleToDelete = project.findModule(pathToModule);
 
-        if (parentModule == null || moduleToDelete == null) {
+        if (parentModule == null) {
+            parentModule = project;
+        }
+
+        if (moduleToDelete == null) {
             throw new NotFoundException("Module " + pathToModule + " not found");
         }
 
