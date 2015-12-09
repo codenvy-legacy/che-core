@@ -10,98 +10,40 @@
  *******************************************************************************/
 package org.eclipse.che.ide.rest;
 
-import org.eclipse.che.ide.commons.exception.JobNotFoundException;
-import org.eclipse.che.ide.commons.exception.ServerException;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestBuilder.Method;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window.Location;
 
-/** Wrapper under RequestBuilder to simplify the stuffs. */
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper;
+import org.eclipse.che.ide.commons.exception.JobNotFoundException;
+import org.eclipse.che.ide.commons.exception.ServerException;
+
+import static com.google.gwt.http.client.Response.SC_ACCEPTED;
+import static com.google.gwt.http.client.Response.SC_NOT_FOUND;
+
+/**
+ * Wrapper under {@link RequestBuilder} to simplify the stuffs.
+ *
+ * @author Artem Zatsarynnyi
+ */
 public class AsyncRequest {
-    protected RequestBuilder     builder;
-    protected AsyncRequestLoader loader;
-    protected boolean            async;
-    protected String             loaderMessage;
-    protected int delay = 5000;
-    protected RequestStatusHandler    handler;
-    protected String                  requestStatusUrl;
-    private   AsyncRequestCallback<?> callback;
-    private AsyncRequestCallback<String> initCallback = new AsyncRequestCallback<String>(new LocationUnmarshaller()) {
-        {
-            setSuccessCodes(new int[]{Response.SC_ACCEPTED});
-        }
+    protected RequestBuilder requestBuilder;
+    protected int asyncTaskCheckingPeriodMillis = 5000;
 
-        @Override
-        protected void onSuccess(String result) {
-            requestStatusUrl = result;
-            if (handler != null) {
-                handler.requestInProgress(requestStatusUrl);
-            }
-
-            requestTimer.schedule(delay);
-        }
-
-        @Override
-        protected void onFailure(Throwable exception) {
-            if (handler != null) {
-                handler.requestError(requestStatusUrl, exception);
-            }
-            callback.onError(null, exception);
-        }
-    };
-    private Timer requestTimer = new Timer() {
-        @Override
-        public void run() {
-            RequestBuilder request = new RequestBuilder(RequestBuilder.GET, requestStatusUrl);
-            request.setCallback(new RequestCallback() {
-
-                public void onResponseReceived(Request request, Response response) {
-                    if (Response.SC_NOT_FOUND == response.getStatusCode()) {
-                        callback.onError(request, new JobNotFoundException(response));
-                        if (handler != null) {
-                            handler.requestError(requestStatusUrl, new JobNotFoundException(response));
-                        }
-                    } else if (response.getStatusCode() != Response.SC_ACCEPTED) {
-                        callback.onResponseReceived(request, response);
-                        if (handler != null) {
-                            // check is response successful, for correct handling failed responses
-                            if (callback.isSuccessful(response))
-                                handler.requestFinished(requestStatusUrl);
-                            else
-                                handler.requestError(requestStatusUrl, new ServerException(response));
-                        }
-                    } else {
-                        if (handler != null)
-                            handler.requestInProgress(requestStatusUrl);
-
-                        requestTimer.schedule(delay);
-                    }
-                }
-
-                public void onError(Request request, Throwable exception) {
-                    if (handler != null)
-                        handler.requestError(requestStatusUrl, exception);
-
-                    callback.onError(request, exception);
-                }
-            });
-            try {
-                request.send();
-            } catch (RequestException e) {
-                e.printStackTrace();
-                if (handler != null) {
-                    handler.requestError(requestStatusUrl, e);
-                }
-                callback.onFailure(e);
-            }
-        }
-    };
+    private AsyncRequestCallback<?>      callback;
+    private boolean                      async;
+    private Timer                        checkAsyncTaskStatusTimer;
+    private AsyncRequestCallback<String> asyncRequestCallback;
+    private String                       asyncTaskStatusURL;
+    private AsyncRequestLoader           loader;
+    private String                       loaderMessage;
+    private RequestStatusHandler         asyncTaskStatusHandler;
 
     /**
      * Create new {@link AsyncRequest} instance.
@@ -111,7 +53,9 @@ public class AsyncRequest {
      * @param url
      *         request URL
      * @param async
-     *         if <b>true</b> - request will be sent in asynchronous mode
+     *         if {@code true} - request will be send in asynchronous mode (as asynchronous EverRest task).<br>
+     *         See <a href="https://github.com/codenvy/everrest/wiki/Asynchronous-Requests">
+     *         EverRest Asynchronous requests</a> for details.
      */
     protected AsyncRequest(Method method, String url, boolean async) {
         if (async) {
@@ -121,96 +65,31 @@ public class AsyncRequest {
                 url += "?async=true";
             }
         }
-        this.builder = new RequestBuilder(method, getCheckedURL(url));
+
+        this.requestBuilder = new RequestBuilder(method, url);
         this.loader = new EmptyLoader();
         this.async = async;
-    }
-
-    /** @deprecated use {@link AsyncRequestFactory} instead. */
-    @Deprecated
-    protected AsyncRequest(RequestBuilder builder) {
-        this.builder = builder;
-        this.loader = new EmptyLoader();
-        async = false;
-    }
-
-    /** @deprecated use {@link AsyncRequestFactory} instead. */
-    @Deprecated
-    protected AsyncRequest(RequestBuilder builder, boolean async) {
-        this(builder);
-        this.async = async;
-    }
-
-    private static native String getProxyServiceContext() /*-{
-        return $wnd.proxyServiceContext;
-    }-*/;
-
-    private static String getCheckedURL(String url) {
-        String proxyServiceContext = getProxyServiceContext();
-        if (proxyServiceContext == null || "".equals(proxyServiceContext)) {
-            return url;
-        }
-
-        if (!(url.startsWith("http://") || url.startsWith("https://"))) {
-            return url;
-        }
-
-        String currentHost = Location.getProtocol() + "//" + Location.getHost();
-        if (url.startsWith(currentHost)) {
-            return url;
-        }
-
-        return proxyServiceContext + "?url=" + URL.encodeQueryString(url);
-    }
-
-    /** @deprecated use {@link AsyncRequestFactory} instead. */
-    @Deprecated
-    public static final AsyncRequest build(Method method, String url) {
-        return build(method, url, false);
-    }
-
-    /**
-     * Build AsyncRequest with run REST Service in async mode.
-     *
-     * @param method
-     *         HTTP method
-     * @param url
-     *         of service
-     * @param async
-     *         is run async
-     * @return instance of {@link AsyncRequest}
-     * @deprecated use {@link AsyncRequestFactory} instead.
-     */
-    @Deprecated
-    public static final AsyncRequest build(Method method, String url, boolean async) {
-        if (async) {
-            if (url.contains("?")) {
-                url += "&async=true";
-            } else {
-                url += "?async=true";
-            }
-        }
-        String checkedURL = getCheckedURL(url);
-        return new AsyncRequest(new RequestBuilder(method, checkedURL), async);
+        this.checkAsyncTaskStatusTimer = new CheckEverRestTaskStatusTimer();
+        this.asyncRequestCallback = new EverRestAsyncRequestCallback();
     }
 
     public final AsyncRequest header(String header, String value) {
-        builder.setHeader(header, value);
+        requestBuilder.setHeader(header, value);
         return this;
     }
 
     public final AsyncRequest user(String user) {
-        builder.setUser(user);
+        requestBuilder.setUser(user);
         return this;
     }
 
     public final AsyncRequest password(String password) {
-        builder.setPassword(password);
+        requestBuilder.setPassword(password);
         return this;
     }
 
     public final AsyncRequest data(String requestData) {
-        builder.setRequestData(requestData);
+        requestBuilder.setRequestData(requestData);
         return this;
     }
 
@@ -226,41 +105,78 @@ public class AsyncRequest {
     }
 
     /**
-     * Set delay between requests to async REST Service<br>
-     * (Default: 5000 ms).
+     * Set period for checking asynchronous task status. (5000 ms by default).<br>
+     * Makes sense for request sent in async mode only.
      *
-     * @param delay
-     *         the amount of time to wait between request resending (in milliseconds)
-     * @return this {@code AsyncRequest}
+     * @param period
+     *         period of checking asynchronous task status (in milliseconds)
+     * @return this {@link AsyncRequest}
      */
-    public final AsyncRequest delay(int delay) {
-        this.delay = delay;
+    public final AsyncRequest period(int period) {
+        this.asyncTaskCheckingPeriodMillis = period;
         return this;
     }
 
     /**
-     * Set handler of async REST Service status.
+     * Set handler of async task status. Makes sense for request sent in async mode only.
      *
      * @param handler
-     * @return
+     *         handler to set
+     * @return this {@link AsyncRequest}
      */
     public final AsyncRequest requestStatusHandler(RequestStatusHandler handler) {
-        this.handler = handler;
+        this.asyncTaskStatusHandler = handler;
         return this;
     }
 
-    private void sendRequest(AsyncRequestCallback<?> callback) throws RequestException {
-        callback.setLoader(loader, loaderMessage);
-        callback.setRequest(this);
-        builder.setCallback(callback);
+    /**
+     * Sends an HTTP request based on the current {@link AsyncRequest} configuration.
+     *
+     * @return promise that may be resolved with the {@link Void} or rejected in case request error
+     */
+    public final Promise<Void> send() {
+        return CallbackPromiseHelper.createFromCallback(new CallbackPromiseHelper.Call<Void, Throwable>() {
+            @Override
+            public void makeCall(final Callback<Void, Throwable> callback) {
+                send(new AsyncRequestCallback<Void>() {
+                    @Override
+                    protected void onSuccess(Void result) {
+                        callback.onSuccess(null);
+                    }
 
-        if (loaderMessage == null) {
-            loader.show();
-        } else {
-            loader.show(loaderMessage);
-        }
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
+            }
+        });
+    }
 
-        builder.send();
+    /**
+     * Sends an HTTP request based on the current {@link AsyncRequest} configuration.
+     *
+     * @param unmarshaller
+     *         unmarshaller that should be used to deserialize a response
+     * @return promise that may be resolved with the deserialized response value or rejected in case request error
+     */
+    public final <R> Promise<R> send(final Unmarshallable<R> unmarshaller) {
+        return CallbackPromiseHelper.createFromCallback(new CallbackPromiseHelper.Call<R, Throwable>() {
+            @Override
+            public void makeCall(final Callback<R, Throwable> callback) {
+                send(new AsyncRequestCallback<R>(unmarshaller) {
+                    @Override
+                    protected void onSuccess(R result) {
+                        callback.onSuccess(result);
+                    }
+
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        callback.onFailure(exception);
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -274,13 +190,27 @@ public class AsyncRequest {
         try {
             if (async) {
                 this.callback.setRequest(this);
-                sendRequest(initCallback);
+                sendRequest(asyncRequestCallback);
             } else {
                 sendRequest(callback);
             }
         } catch (RequestException e) {
             callback.onFailure(e);
         }
+    }
+
+    private void sendRequest(AsyncRequestCallback<?> callback) throws RequestException {
+        callback.setLoader(loader, loaderMessage);
+        callback.setRequest(this);
+        requestBuilder.setCallback(callback);
+
+        if (loaderMessage == null) {
+            loader.show();
+        } else {
+            loader.show(loaderMessage);
+        }
+
+        requestBuilder.send();
     }
 
     /**
@@ -292,6 +222,10 @@ public class AsyncRequest {
         return callback;
     }
 
+    public RequestBuilder getRequestBuilder() {
+        return requestBuilder;
+    }
+
     private class EmptyLoader implements AsyncRequestLoader {
         @Override
         public void hide() {
@@ -299,7 +233,6 @@ public class AsyncRequest {
 
         @Override
         public void hide(String message) {
-
         }
 
         @Override
@@ -308,11 +241,84 @@ public class AsyncRequest {
 
         @Override
         public void show(String message) {
-
         }
     }
 
-    public RequestBuilder getRequestBuilder() {
-        return builder;
+    /** Timer that checks status of the EverRest asynchronous task caused by this request. */
+    private class CheckEverRestTaskStatusTimer extends Timer {
+        @Override
+        public void run() {
+            final RequestBuilder requestBuilder = new RequestBuilder(RequestBuilder.GET, asyncTaskStatusURL);
+            requestBuilder.setCallback(new RequestCallback() {
+                @Override
+                public void onResponseReceived(Request request, Response response) {
+                    if (SC_NOT_FOUND == response.getStatusCode()) {
+                        callback.onError(request, new JobNotFoundException(response));
+                        if (asyncTaskStatusHandler != null) {
+                            asyncTaskStatusHandler.requestError(asyncTaskStatusURL, new JobNotFoundException(response));
+                        }
+                    } else if (response.getStatusCode() != SC_ACCEPTED) {
+                        callback.onResponseReceived(request, response);
+                        if (asyncTaskStatusHandler != null) {
+                            // check is response successful, for correct handling failed responses
+                            if (callback.isSuccessful(response)) {
+                                asyncTaskStatusHandler.requestFinished(asyncTaskStatusURL);
+                            } else {
+                                asyncTaskStatusHandler.requestError(asyncTaskStatusURL, new ServerException(response));
+                            }
+                        }
+                    } else {
+                        if (asyncTaskStatusHandler != null) {
+                            asyncTaskStatusHandler.requestInProgress(asyncTaskStatusURL);
+                        }
+                        CheckEverRestTaskStatusTimer.this.schedule(asyncTaskCheckingPeriodMillis);
+                    }
+                }
+
+                @Override
+                public void onError(Request request, Throwable exception) {
+                    if (asyncTaskStatusHandler != null) {
+                        asyncTaskStatusHandler.requestError(asyncTaskStatusURL, exception);
+                    }
+
+                    callback.onError(request, exception);
+                }
+            });
+
+            try {
+                requestBuilder.send();
+            } catch (RequestException e) {
+                if (asyncTaskStatusHandler != null) {
+                    asyncTaskStatusHandler.requestError(asyncTaskStatusURL, e);
+                }
+                callback.onFailure(e);
+            }
+        }
+    }
+
+    /** Callback that will be called on response to a request that was sent in EverRest async mode. */
+    private class EverRestAsyncRequestCallback extends AsyncRequestCallback<String> {
+
+        EverRestAsyncRequestCallback() {
+            super(new LocationUnmarshaller());
+            setSuccessCodes(new int[]{SC_ACCEPTED});
+        }
+
+        @Override
+        protected void onSuccess(String result) {
+            asyncTaskStatusURL = result;
+            if (asyncTaskStatusHandler != null) {
+                asyncTaskStatusHandler.requestInProgress(asyncTaskStatusURL);
+            }
+            checkAsyncTaskStatusTimer.schedule(asyncTaskCheckingPeriodMillis);
+        }
+
+        @Override
+        protected void onFailure(Throwable exception) {
+            if (asyncTaskStatusHandler != null) {
+                asyncTaskStatusHandler.requestError(asyncTaskStatusURL, exception);
+            }
+            callback.onError(null, exception);
+        }
     }
 }

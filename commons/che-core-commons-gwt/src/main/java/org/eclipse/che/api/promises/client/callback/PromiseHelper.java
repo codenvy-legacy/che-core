@@ -26,7 +26,11 @@ import static org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.cr
  * Helps to combine promises with async requests.
  *
  * @author Artem Zatsarynnyi
+ * @see org.eclipse.che.ide.rest.AsyncRequest#send()
+ * @see org.eclipse.che.ide.rest.AsyncRequest#send(org.eclipse.che.ide.rest.Unmarshallable)
+ * @deprecated since org.eclipse.che.ide.rest.AsyncRequest#send() returns Promise
  */
+@Deprecated
 public class PromiseHelper {
 
     /** Not instantiable. */
@@ -36,7 +40,12 @@ public class PromiseHelper {
     /**
      * Creates new {@link Promise} from the given {@code requestCall}.
      * When the promise is rejected - an error will be logged to the browser's console.
+     *
+     * @see org.eclipse.che.ide.rest.AsyncRequest#send()
+     * @see org.eclipse.che.ide.rest.AsyncRequest#send(org.eclipse.che.ide.rest.Unmarshallable)
+     * @deprecated since org.eclipse.che.ide.rest.AsyncRequest#send() returns Promise
      */
+    @Deprecated
     public static <T> Promise<T> newPromise(AsyncPromiseHelper.RequestCall<T> requestCall) {
         final Promise<T> promise = createFromAsyncRequest(requestCall);
         promise.catchError(new Operation<PromiseError>() {
@@ -48,7 +57,14 @@ public class PromiseHelper {
         return promise;
     }
 
-    /** Creates new {@link AsyncRequestCallback} that returns {@code Void} value and invokes the given {@code callback}. */
+    /**
+     * Creates new {@link AsyncRequestCallback} that returns {@code Void} value and invokes the given {@code callback}.
+     *
+     * @see org.eclipse.che.ide.rest.AsyncRequest#send()
+     * @see org.eclipse.che.ide.rest.AsyncRequest#send(org.eclipse.che.ide.rest.Unmarshallable)
+     * @deprecated since org.eclipse.che.ide.rest.AsyncRequest#send() returns Promise
+     */
+    @Deprecated
     public static AsyncRequestCallback<Void> newCallback(final AsyncCallback<Void> callback) {
         return new AsyncRequestCallback<Void>() {
             @Override
@@ -63,7 +79,14 @@ public class PromiseHelper {
         };
     }
 
-    /** Creates new {@link AsyncRequestCallback} that invokes the given {@code callback}. */
+    /**
+     * Creates new {@link AsyncRequestCallback} that invokes the given {@code callback}.
+     *
+     * @see org.eclipse.che.ide.rest.AsyncRequest#send()
+     * @see org.eclipse.che.ide.rest.AsyncRequest#send(org.eclipse.che.ide.rest.Unmarshallable)
+     * @deprecated since org.eclipse.che.ide.rest.AsyncRequest#send() returns Promise
+     */
+    @Deprecated
     public static <T> AsyncRequestCallback<T> newCallback(final AsyncCallback<T> callback, Unmarshallable<T> unmarshallable) {
         return new AsyncRequestCallback<T>(unmarshallable) {
             @Override
