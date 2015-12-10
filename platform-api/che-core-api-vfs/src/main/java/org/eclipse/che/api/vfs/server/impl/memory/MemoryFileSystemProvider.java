@@ -13,6 +13,7 @@ package org.eclipse.che.api.vfs.server.impl.memory;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.vfs.server.MountPoint;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileSystem;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
@@ -47,21 +48,23 @@ public class MemoryFileSystemProvider extends VirtualFileSystemProvider {
     private final VirtualFileSystemUserContext userContext;
     private final SimpleLuceneSearcherProvider searcherProvider;
     private final VirtualFileSystemRegistry    vfsRegistry;
+    private final SystemPathsFilter            systemFilter;
 
     private MemoryMountPoint memoryMountPoint;
 
     public MemoryFileSystemProvider(String workspaceId, EventService eventService, VirtualFileSystemUserContext userContext,
-                                    VirtualFileSystemRegistry vfsRegistry) {
+                                    VirtualFileSystemRegistry vfsRegistry, SystemPathsFilter systemFilter) {
         super(workspaceId);
         this.workspaceId = workspaceId;
         this.eventService = eventService;
         this.userContext = userContext;
         searcherProvider = new SimpleLuceneSearcherProvider();
         this.vfsRegistry = vfsRegistry;
+        this.systemFilter = systemFilter;
     }
 
     public MemoryFileSystemProvider(String workspaceId, EventService eventService, VirtualFileSystemRegistry vfsRegistry) {
-        this(workspaceId, eventService, VirtualFileSystemUserContext.newInstance(), vfsRegistry);
+        this(workspaceId, eventService, VirtualFileSystemUserContext.newInstance(), vfsRegistry, SystemPathsFilter.ANY);
     }
 
     @Override
@@ -79,7 +82,7 @@ public class MemoryFileSystemProvider extends VirtualFileSystemProvider {
     @Override
     public MountPoint getMountPoint(boolean create) throws ServerException {
         if (memoryMountPoint == null && create) {
-            memoryMountPoint = new MemoryMountPoint(workspaceId, eventService, searcherProvider, userContext);
+            memoryMountPoint = new MemoryMountPoint(workspaceId, eventService, searcherProvider, userContext, systemFilter);
         }
         return memoryMountPoint;
     }
