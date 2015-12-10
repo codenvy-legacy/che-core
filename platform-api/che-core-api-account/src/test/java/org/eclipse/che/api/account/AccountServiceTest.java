@@ -135,9 +135,7 @@ public class AccountServiceTest {
         ApplicationContextImpl.setCurrent(new ApplicationContextImpl(null, null, ProviderBinder.getInstance()));
         Map<String, String> attributes = new HashMap<>();
         attributes.put("secret", "bit secret");
-        account = new Account().withId(ACCOUNT_ID)
-                               .withName(ACCOUNT_NAME)
-                               .withAttributes(attributes);
+        account = new Account(ACCOUNT_ID, ACCOUNT_NAME, null, attributes);
 
         memberships = new ArrayList<>(1);
         Member ownerMembership = new Member();
@@ -221,20 +219,6 @@ public class AccountServiceTest {
     }
 
     @Test
-    public void shouldNotBeAbleToCreateAccountWithoutName() throws Exception {
-        when(userDao.getByAlias(USER_EMAIL)).thenReturn(user);
-        when(accountDao.getByName(account.getName())).thenReturn(null);
-        when(accountDao.getByOwner(USER_ID)).thenReturn(Collections.<Account>emptyList());
-        account.setName(null);
-        String role = "user";
-        prepareSecurityContext(role);
-
-        ContainerResponse response = makeRequest(POST, SERVICE_PATH, MediaType.APPLICATION_JSON, account);
-
-        assertEquals(response.getEntity().toString(), "Account name required");
-    }
-
-    @Test
     public void shouldBeAbleToGetMemberships() throws Exception {
         when(userDao.getByAlias(USER_EMAIL)).thenReturn(user);
         when(accountDao.getByMember(USER_ID)).thenReturn(memberships);
@@ -251,7 +235,7 @@ public class AccountServiceTest {
 
     @Test
     public void shouldBeAbleToGetMembershipsOfSpecificUser() throws Exception {
-        when(accountDao.getById("fake_id")).thenReturn(new Account().withId("fake_id").withName("fake_name"));
+        when(accountDao.getById("fake_id")).thenReturn(new Account("fake_id", "fake_name"));
         User user = new User().withId("ANOTHER_USER_ID").withEmail("ANOTHER_USER_EMAIL");
         ArrayList<Member> memberships = new ArrayList<>(1);
         Member am = new Member().withAccountId("fake_id")
@@ -342,7 +326,7 @@ public class AccountServiceTest {
     @Test
     public void shouldNotBeAbleToUpdateAccountWithAlreadyExistedName() throws Exception {
         when(accountDao.getById(ACCOUNT_ID)).thenReturn(account);
-        when(accountDao.getByName("TO_UPDATE")).thenReturn(new Account().withName("TO_UPDATE"));
+        when(accountDao.getByName("TO_UPDATE")).thenReturn(new Account("id", "TO_UPDATE"));
         AccountDescriptor toUpdate = DtoFactory.getInstance().createDto(AccountDescriptor.class).withName("TO_UPDATE");
         prepareSecurityContext("account/owner");
 
@@ -368,7 +352,7 @@ public class AccountServiceTest {
     }
 
     @DataProvider(name = "roleProvider")
-    public String[][] roleProvider() {
+    public Object[][] roleProvider() {
         return new String[][]{
                 {"system/admin"},
                 {"system/manager"},
@@ -463,7 +447,7 @@ public class AccountServiceTest {
     @Test
     public void workspaceShouldBeRegistered() throws Exception {
         UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
-        Account account = new Account().withId("account123");
+        Account account = new Account("account123");
         when(workspace.getId()).thenReturn("workspace123");
         when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
         when(accountDao.getById(account.getId())).thenReturn(account);
@@ -481,7 +465,7 @@ public class AccountServiceTest {
     @Test
     public void shouldFailWorkspaceRegistrationWhenWorkspaceIsAlreadyRegistered() throws Exception {
         UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
-        Account account = new Account().withId("account123");
+        Account account = new Account("account123");
         when(workspace.getId()).thenReturn("workspace123");
         when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
         when(accountDao.getById(account.getId())).thenReturn(account);
@@ -495,7 +479,8 @@ public class AccountServiceTest {
     @Test
     public void shouldFailWorkspaceRegistrationWhenAccountAlreadyContainsGivenWorkspace() throws Exception {
         UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
-        Account account = new Account().withId("account123").withWorkspaces(singletonList(workspace));
+        Account account = new Account("account123");
+        account.setWorkspaces(singletonList(workspace));
         when(workspace.getId()).thenReturn("workspace123");
         when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
         when(accountDao.getById(account.getId())).thenReturn(account);
@@ -508,7 +493,8 @@ public class AccountServiceTest {
     @Test
     public void workspaceShouldBeUnregistered() throws Exception {
         UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
-        Account account = new Account().withId("account123").withWorkspaces(new ArrayList<>(singletonList(workspace)));
+        Account account = new Account("account123");
+        account.setWorkspaces(new ArrayList<>(singletonList(workspace)));
         when(workspace.getId()).thenReturn("workspace123");
         when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
         when(accountDao.getById(account.getId())).thenReturn(account);
@@ -524,7 +510,7 @@ public class AccountServiceTest {
     @Test
     public void shouldFailWorkspaceUnRegistrationWhenWorkspaceIsNotRegistered() throws Exception {
         UsersWorkspaceImpl workspace = mock(UsersWorkspaceImpl.class);
-        Account account = new Account().withId("account123");
+        Account account = new Account("account123");
         when(workspace.getId()).thenReturn("workspace123");
         when(workspaceManager.getWorkspace(any())).thenReturn(workspace);
         when(accountDao.getById(account.getId())).thenReturn(account);

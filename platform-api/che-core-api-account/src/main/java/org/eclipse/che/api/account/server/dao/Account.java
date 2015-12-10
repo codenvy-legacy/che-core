@@ -11,66 +11,70 @@
 package org.eclipse.che.api.account.server.dao;
 
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
-import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
+import org.eclipse.che.commons.annotation.Nullable;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
+
 /**
- * @author Eugene Voevodin
+ * Defines account data object.
+ *
+ * @author Yevhenii Voevodin
  */
 public class Account {
 
-    private String               id;
+    private final String id;
+
     private String               name;
     private List<UsersWorkspace> workspaces;
     private Map<String, String>  attributes;
 
+    public Account(@NotNull String id) {
+        this.id = requireNonNull(id, "Required non-null account id");
+    }
+
+    public Account(@NotNull Account account) {
+        this(requireNonNull(account, "Required non-null account").id,
+             account.name,
+             account.workspaces,
+             account.attributes);
+    }
+
+    public Account(@NotNull String id, @NotNull String name) {
+        this(id, name, null, null);
+    }
+
+    public Account(@NotNull String id,
+                   @NotNull String name,
+                   @Nullable List<UsersWorkspace> workspaces,
+                   @Nullable Map<String, String> attributes) {
+        this(id);
+        this.name = requireNonNull(name, "Required non-null account name");
+        this.workspaces = workspaces;
+        this.attributes = attributes;
+    }
+
+    @NotNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Account withId(String id) {
-        this.id = id;
-        return this;
-    }
-
+    @NotNull
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(@NotNull String name) {
+        this.name = requireNonNull(name, "Required non-null account name");
     }
 
-    public Account withName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public Map<String, String> getAttributes() {
-        if (attributes == null) {
-            attributes = new HashMap<>();
-        }
-        return attributes;
-    }
-
-    public void setWorkspaces(List<UsersWorkspace> workspaces) {
-        this.workspaces = workspaces;
-    }
-
-    public Account withWorkspaces(List<UsersWorkspace> workspaces) {
-        this.workspaces = workspaces;
-        return this;
-    }
-
+    @NotNull
     public List<UsersWorkspace> getWorkspaces() {
         if (workspaces == null) {
             workspaces = new ArrayList<>();
@@ -78,13 +82,20 @@ public class Account {
         return workspaces;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+    public void setWorkspaces(@Nullable List<UsersWorkspace> workspaces) {
+        this.workspaces = workspaces;
     }
 
-    public Account withAttributes(Map<String, String> attributes) {
+    @NotNull
+    public Map<String, String> getAttributes() {
+        if (attributes == null) {
+            attributes = new HashMap<>();
+        }
+        return attributes;
+    }
+
+    public void setAttributes(@Nullable Map<String, String> attributes) {
         this.attributes = attributes;
-        return this;
     }
 
     @Override

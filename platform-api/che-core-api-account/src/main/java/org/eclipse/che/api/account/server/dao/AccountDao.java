@@ -196,7 +196,7 @@ public interface AccountDao {
         try {
             getById(requireNonNull(accountId, "Required non-null account id"));
             return true;
-        } catch (NotFoundException ignored) {
+        } catch (NotFoundException nfEx) {
             return false;
         }
     }

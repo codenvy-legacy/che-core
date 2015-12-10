@@ -158,9 +158,7 @@ public class AccountService extends Service {
         } catch (NotFoundException ignored) {
         }
         final String accountId = NameGenerator.generate(Account.class.getSimpleName().toLowerCase(), Constants.ID_LENGTH);
-        final Account account = new Account().withId(accountId)
-                                             .withName(newAccount.getName())
-                                             .withAttributes(newAccount.getAttributes());
+        final Account account = new Account(accountId, newAccount.getName(), null, newAccount.getAttributes());
 
         accountDao.create(account);
         if (current != null) {
