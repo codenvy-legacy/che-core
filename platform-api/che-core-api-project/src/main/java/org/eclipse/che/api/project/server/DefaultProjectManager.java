@@ -223,27 +223,43 @@ public final class DefaultProjectManager implements ProjectManager {
                                  Map<String, String> options,
                                  String visibility) throws ConflictException, ForbiddenException, ServerException, NotFoundException {
         final FolderEntry myRoot = getProjectsRoot(workspace);
-        final FolderEntry projectFolder = myRoot.createFolder(name);
+        return createProjectInFolder(myRoot, name, projectConfig, options, visibility);
+    }
+
+    /**
+     * Create a new project inside an existing folder and initialize its meta-data.
+     * This is meant for internal use only.
+     */
+    private Project createProjectInFolder(FolderEntry parentFolder, String name, ProjectConfig projectConfig,
+            Map<String, String> options, String visibility)
+                    throws ConflictException, ForbiddenException, ServerException, NotFoundException {
+        // Create a folder for the project
+        final FolderEntry projectFolder = parentFolder.createFolder(name);
         final Project project = new Project(projectFolder, this);
-
+        // If a creation handler is defined for the project type, call it
         final CreateProjectHandler generator = handlers.getCreateProjectHandler(projectConfig.getTypeId());
-
         if (generator != null) {
-            generator.onCreateProject(project.getBaseFolder(),
-                                      projectConfig.getAttributes(), options);
+            generator.onCreateProject(project.getBaseFolder(), projectConfig.getAttributes(), options);
         }
-
+        // Save the configuration
         project.updateConfig(projectConfig);
+        finalizeProjectCreation(project, visibility);
+        return project;
+    }
 
+    /**
+     * Finalize the creation of a new project after writing its initial configuration.
+     * This is meant for internal use only.
+     */
+    private void finalizeProjectCreation(Project project, String visibility) throws ServerException, ForbiddenException {
+        // Set creation date
         final ProjectMisc misc = project.getMisc();
         misc.setCreationDate(System.currentTimeMillis());
         misc.save(); // Important to save misc!!
-
+        // Set an explicit visibility if necessary
         if (visibility != null) {
             project.setVisibility(visibility);
         }
-
-        return project;
     }
 
     /**
@@ -354,31 +370,14 @@ public final class DefaultProjectManager implements ProjectManager {
         if (moduleFolder == null) {
             if (moduleConfig == null)
                 throw new ConflictException("Module not found on " + absModulePath + " and module configuration is not defined");
-            String parentPath = Path.fromString(absModulePath).getParent().toString();
-            String name = Path.fromString(modulePath).getName();
+            Path absModulePathObj = Path.fromString(absModulePath);
+            String parentPath = absModulePathObj.getParent().toString();
+            String name = absModulePathObj.getName();
             final VirtualFileEntry parentFolder = getProjectsRoot(workspace).getChild(parentPath);
-            if (parentFolder == null || parentFolder.isFile())
+            if (parentFolder == null || !parentFolder.isFolder())
                 throw new NotFoundException("Parent Folder not found " + parentPath);
-
-            // create folder for module
-            moduleFolder = ((FolderEntry)parentFolder).createFolder(name);
-
-            module = new Project((FolderEntry)moduleFolder, this);
-
-            final CreateProjectHandler generator = this.getHandlers().getCreateProjectHandler(moduleConfig.getTypeId());
-            if (generator != null) {
-                generator.onCreateProject(module.getBaseFolder(), moduleConfig.getAttributes(), options);
-            }
-
-            module.updateConfig(moduleConfig);
-
-            final ProjectMisc misc = module.getMisc();
-            misc.setCreationDate(System.currentTimeMillis());
-            misc.save(); // Important to save misc!!
-
-            if (visibility != null) {
-                module.setVisibility(visibility);
-            }
+            // Create the new module's project
+            module = createProjectInFolder((FolderEntry)parentFolder, name, moduleConfig, options, visibility);
         } else if (!((FolderEntry)moduleFolder).isProjectFolder()) {
             //  folder exists but is not a project, just update config
             if (moduleConfig == null)
@@ -705,14 +704,7 @@ public final class DefaultProjectManager implements ProjectManager {
             project.getConfig();
         }
 
-
-        final ProjectMisc misc = project.getMisc();
-        misc.setCreationDate(System.currentTimeMillis());
-        misc.save(); // Important to save misc!!
-
-        if (visibility != null) {
-            project.setVisibility(visibility);
-        }
+        finalizeProjectCreation(project, visibility);
 
         return project;
     }
