@@ -15,7 +15,10 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * DAO interface offers means to perform CRUD operations with {@link Account} data.
@@ -146,6 +149,52 @@ public interface AccountDao {
     default boolean isWorkspaceRegistered(String workspaceId) throws ServerException {
         try {
             getByWorkspace(workspaceId);
+            return true;
+        } catch (NotFoundException ignored) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks that account with given identifier exists.
+     *
+     * <p>This method covers the use-case where only account existence is important and
+     * account object itself is not needed, this is similar to {@link #getById(String)} + {@code try catch} just
+     * more convenient.
+     *
+     * <p>Example:
+     * <pre>
+     *     boolean exists = false;
+     *     try {
+     *         accountDao.getById(id);
+     *         exists = true;
+     *     } catch (NotFoundException nfEx) {
+     *         exists = false;
+     *     }
+     *
+     *     if (exists) {
+     *         // ..
+     *     }
+     *
+     *     // VS
+     *
+     *     if (accountDao.exists(id) {
+     *         // ..
+     *     }
+     * </pre>
+     *
+     * @param accountId
+     *         identifier of the account which check
+     * @return true if account exists or false if it does not
+     * @throws NullPointerException
+     *         when {@code accountId} is null
+     * @throws ServerException
+     *         when any other error occurs
+     * @see #getById(String)
+     */
+    default boolean exist(@NotNull String accountId) throws ServerException {
+        try {
+            getById(requireNonNull(accountId, "Required non-null account id"));
             return true;
         } catch (NotFoundException ignored) {
             return false;
