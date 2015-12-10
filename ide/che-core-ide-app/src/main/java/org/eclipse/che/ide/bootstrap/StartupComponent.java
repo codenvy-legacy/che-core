@@ -11,16 +11,13 @@
 
 package org.eclipse.che.ide.bootstrap;
 
-
 import com.google.gwt.core.client.Callback;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
-
 
 /**
  * Checks startup params and calls appropriate {@link FactoryWorkspaceComponent} or {@link DefaultWorkspaceComponent}
@@ -31,16 +28,12 @@ public class StartupComponent implements Component {
 
     private final Provider<DefaultWorkspaceComponent> workspaceComponentProvider;
     private final Provider<FactoryWorkspaceComponent> factoryComponentProvider;
-    private final AppContext                          appContext;
-
 
     @Inject
     public StartupComponent(Provider<DefaultWorkspaceComponent> workspaceComponentProvider,
-                            Provider<FactoryWorkspaceComponent> factoryComponentProvider,
-                            AppContext appContext) {
+                            Provider<FactoryWorkspaceComponent> factoryComponentProvider) {
         this.workspaceComponentProvider = workspaceComponentProvider;
         this.factoryComponentProvider = factoryComponentProvider;
-        this.appContext = appContext;
     }
 
     @Override

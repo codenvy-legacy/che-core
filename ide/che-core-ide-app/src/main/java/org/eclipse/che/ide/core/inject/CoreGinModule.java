@@ -25,10 +25,10 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClient;
 import org.eclipse.che.api.account.gwt.client.AccountServiceClientImpl;
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
-import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
 import org.eclipse.che.api.auth.client.OAuthServiceClient;
 import org.eclipse.che.api.auth.client.OAuthServiceClientImpl;
+import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
+import org.eclipse.che.api.factory.gwt.client.FactoryServiceClientImpl;
 import org.eclipse.che.api.git.gwt.client.GitServiceClient;
 import org.eclipse.che.api.git.gwt.client.GitServiceClientImpl;
 import org.eclipse.che.api.machine.gwt.client.MachineServiceClient;
@@ -238,7 +238,6 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
 @ExtensionGinModule
 public class CoreGinModule extends AbstractGinModule {
 
-    /** {@inheritDoc} */
     @Override
     protected void configure() {
         GinMapBinder<String, Perspective> mapBinder = GinMapBinder.newMapBinder(binder(), String.class, Perspective.class);
@@ -298,8 +297,6 @@ public class CoreGinModule extends AbstractGinModule {
         mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
         mapBinder.addBinding("Startup").to(StartupComponent.class);
         mapBinder.addBinding("Profile").to(ProfileComponent.class);
-//        mapBinder.addBinding("Project Types").to(ProjectTypeComponent.class);
-//        mapBinder.addBinding("Project Templates").to(ProjectTemplatesComponent.class);
         mapBinder.addBinding("Standard components").to(StandartComponent.class);
 
         bind(DefaultWorkspaceComponent.class).in(Singleton.class);
@@ -459,15 +456,6 @@ public class CoreGinModule extends AbstractGinModule {
     @Singleton
     protected PartStackEventHandler providePartStackEventHandler(FocusManager partAgentPresenter) {
         return partAgentPresenter.getPartStackHandler();
-    }
-
-    /** @deprecated use string constant annotated with {@link RestContext} annotation */
-    @Provides
-    @Named("restContext")
-    @Singleton
-    @Deprecated
-    protected String provideDefaultRestContext() {
-        return Config.getRestContext();
     }
 
     @Provides
