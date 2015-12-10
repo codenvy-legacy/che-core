@@ -10,11 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.memory;
 
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
-import org.eclipse.che.api.vfs.shared.dto.Item;
-import org.eclipse.che.api.vfs.shared.dto.ItemList;
-import org.eclipse.che.commons.lang.Pair;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -24,19 +29,14 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.eclipse.che.api.vfs.server.VirtualFile;
+import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
+import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.vfs.shared.dto.ItemList;
+import org.eclipse.che.commons.lang.Pair;
 import org.everrest.core.impl.ContainerResponse;
+import org.everrest.core.impl.EnvironmentContext;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x
@@ -106,12 +106,8 @@ public class SearcherTest extends MemoryFileSystemTest {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void testSearch() throws Exception {
         ByteArrayContainerResponseWriter writer = new ByteArrayContainerResponseWriter();
-        String requestPath = SERVICE_URI + "search";
-        Map<String, List<String>> h = new HashMap<>(1);
-        h.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
         for (Pair<String[], String> pair : queryToResult) {
-            ContainerResponse response = launcher.service(HttpMethod.POST, requestPath, BASE_URI, h, pair.second.getBytes(), writer, null);
-            //log.info(new String(writer.getBody()));
+            ContainerResponse response = doSearchRequest(null, null, defaultHeaderMap(), pair.second.getBytes(), writer, null);
             assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
             List<Item> result = ((ItemList)response.getEntity()).getItems();
             assertEquals(String.format(
@@ -119,14 +115,64 @@ public class SearcherTest extends MemoryFileSystemTest {
                          pair.first.length,
                          result.size());
             List<String> resultPaths = new ArrayList<>(result.size());
-            for (Item item : result) {
+            result.stream().forEach((Item item) -> {
                 resultPaths.add(item.getPath());
-            }
+            });
             List<String> copy = new ArrayList<>(resultPaths);
             copy.removeAll(Arrays.asList(pair.first));
             assertTrue(String.format("Expected result is %s but found %s", Arrays.toString(pair.first), resultPaths), copy.isEmpty());
             writer.reset();
         }
+    }
+    
+    
+    
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void testSearchNegativeBadMaxItemsValue() throws Exception {
+        ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+        Pair<String[], String> pair = queryToResult[0];
+        // maxItems should be >= -1 to be valid, a value higher then 1000 is still considered valid, but result will still be capped to at most 1000 values.
+        ContainerResponse response = doSearchRequest(-6, null, defaultHeaderMap(), pair.second.getBytes(), responseWriter, null);
+        // expecting request to fail due to bad maxItems query parameter value
+        assertEquals("Error: " + response.getEntity(), 500, response.getStatus());
+    }
+    
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void testSearchNegativeBadSkipCountValue() throws Exception {
+        ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+        Pair<String[], String> pair = queryToResult[0];
+        // skipCount value should be a natural number < maxItems
+        ContainerResponse response = doSearchRequest(5, 7, defaultHeaderMap(), pair.second.getBytes(), responseWriter, null);
+        // expecting request to fail due to bad maxItems query parameter value
+        assertEquals("Error: " + response.getEntity(), 409, response.getStatus());
+    }
+    
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void testSearchMaxItemsLimitation() throws Exception {
+        ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+        Pair<String[], String> pair = queryToResult[0];
+        ContainerResponse response = doSearchRequest(2, null, defaultHeaderMap(), pair.second.getBytes(), responseWriter, null);
+        // expecting request to fail due to bad maxItems query parameter value
+        assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
+         List<Item> result = ((ItemList)response.getEntity()).getItems();
+        // excpected items size to be limited by maxItem query parameter
+        assertEquals(2, result.size());
+        // search result is actually 3 items long, expecting the flag hasMoreItems to be true
+        assertEquals(true, ((ItemList)response.getEntity()).isHasMoreItems());
+    }
+    
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void testSearchSkipCountLimitation() throws Exception {
+        ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+        Pair<String[], String> pair = queryToResult[0];
+        ContainerResponse response = doSearchRequest(3, 2, defaultHeaderMap(), pair.second.getBytes(), responseWriter, null);
+        // expecting request to fail due to bad maxItems query parameter value
+        assertEquals("Error: " + response.getEntity(), 200, response.getStatus());
+         List<Item> result = ((ItemList)response.getEntity()).getItems();
+        // excpected items size to be limited by maxItem query parameter, and 2 items should be skiped, yielding only 1 item in result
+        assertEquals(1, result.size());
+        // search result is actually 3 items long, but skipCount has limited the result to 1 item, thus, expecting the flag hasMoreItems to be false
+        assertEquals(false, ((ItemList)response.getEntity()).isHasMoreItems());
     }
 
     public void testDelete() throws Exception {
@@ -244,5 +290,38 @@ public class SearcherTest extends MemoryFileSystemTest {
         topDocs = luceneSearcher.search(new PrefixQuery(new Term("path", file2)), 10);
         assertEquals(0, topDocs.totalHits);
         searcherManager.release(luceneSearcher);
+    }
+    
+    // ----------- UTILITY METHODS ----------- 
+    
+    /**
+     * This method provides search request logic shared among multiple tests
+     * @param maxItems value for 'maxItems' query parameter
+     * @param skipCount value for 'skipCount' query parameter
+     * @param headers map containing headers of request
+     * @param content the byte[] content to search in
+     * @param writer the response writer
+     * @param env the environment context
+     * @throws Exception 
+     */
+    private ContainerResponse doSearchRequest(Integer maxItems, Integer skipCount, Map<String, List<String>> headers, byte[] content, ByteArrayContainerResponseWriter writer, EnvironmentContext env) throws Exception {
+        
+        UriBuilder builder = UriBuilder.fromPath(SERVICE_URI + "search");
+        // setting maxItems query parameter
+        if(maxItems != null){
+            builder = builder.queryParam("maxItems", maxItems.toString());
+        }
+        // setting skipCount query parameter
+        if(skipCount != null){
+            builder = builder.queryParam("skipCount", skipCount.toString());
+        }
+        String requestPath = builder.build().toString();
+        return launcher.service(HttpMethod.POST, requestPath, BASE_URI, headers, content, writer, env);
+    }
+    
+    private Map<String, List<String>> defaultHeaderMap(){
+        Map<String, List<String>> theHeadersMap = new HashMap<>(1);
+        theHeadersMap.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_FORM_URLENCODED));
+        return theHeadersMap;
     }
 }
