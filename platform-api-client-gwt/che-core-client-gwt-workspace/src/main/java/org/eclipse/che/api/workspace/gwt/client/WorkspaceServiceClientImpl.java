@@ -82,7 +82,10 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     private void create(@NotNull WorkspaceConfigDto newWorkspace,
                         String accountId,
                         @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
-        String url = baseHttpUrl + "/config?account=" + accountId;
+        String url = baseHttpUrl + "/config";
+        if (accountId != null) {
+            url += "?account=" + accountId;
+        }
         asyncRequestFactory.createPostRequest(url, newWorkspace)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
@@ -202,7 +205,10 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     private void startById(@NotNull String workspaceId,
                            @Nullable String envName,
                            @NotNull AsyncCallback<UsersWorkspaceDto> callback) {
-        String url = baseHttpUrl + "/" + workspaceId + "/runtime?environment=" + envName;
+        String url = baseHttpUrl + "/" + workspaceId + "/runtime";
+        if (envName != null) {
+            url += "?environment=" + envName;
+        }
         asyncRequestFactory.createPostRequest(url, null)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
