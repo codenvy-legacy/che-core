@@ -457,7 +457,45 @@ public final class DefaultProjectManager implements ProjectManager {
 
         filterProvider.get().addPersistedAttributesToProject(projectConfigDto, project.getBaseFolder());
 
+        storeCalculatedAttributes(project, projectConfig);
+
         updateProjectInWorkspace(project.getWorkspace(), projectConfigDto);
+    }
+
+    private void storeCalculatedAttributes(Project project, ProjectConfig projectConfig) throws ProjectTypeConstraintException,
+                                                                                              ValueStorageException,
+                                                                                              InvalidValueException {
+        final ProjectTypes types = new ProjectTypes(project, projectConfig.getType(), projectConfig.getMixins(), this);
+        types.removeTransient();
+
+        for (Map.Entry<String, List<String>> entry : projectConfig.getAttributes().entrySet()) {
+            String attributeName = entry.getKey();
+            List<String> attributeValue = entry.getValue();
+
+            // Try to find definition in all the types
+            Attribute attributeDefinition = null;
+            for (ProjectType projectType : types.getAll().values()) {
+                attributeDefinition = projectType.getAttribute(attributeName);
+                if (attributeDefinition != null) {
+                    break;
+                }
+            }
+
+            // initialize provided attributes
+            if (attributeDefinition != null && attributeDefinition.isVariable()) {
+                final Variable variable = (Variable)attributeDefinition;
+                final ValueProviderFactory valueProviderFactory = variable.getValueProviderFactory();
+
+                // store calculated attribute
+                if (valueProviderFactory != null) {
+                    valueProviderFactory.newInstance(project.getBaseFolder()).setValues(variable.getName(), attributeValue);
+                }
+
+                if (attributeValue == null && variable.isRequired()) {
+                    throw new ProjectTypeConstraintException("Required attribute value is initialized with null value " + variable.getId());
+                }
+            }
+        }
     }
 
     private void getModulesRecursive(ProjectConfig module, List<ProjectConfigDto> projectModules) {
