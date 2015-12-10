@@ -15,6 +15,8 @@ import com.google.common.reflect.TypeToken;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.local.storage.LocalStorage;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.user.server.dao.User;
@@ -25,6 +27,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,7 +67,7 @@ public class LocalUserDaoImpl implements UserDao {
     }
 
     @Override
-    public boolean authenticate(String alias, String password) throws NotFoundException {
+    public String authenticate(String alias, String password) throws UnauthorizedException, ServerException {
         lock.readLock().lock();
         try {
             User myUser = null;
@@ -73,10 +76,10 @@ public class LocalUserDaoImpl implements UserDao {
                     myUser = users.get(i);
                 }
             }
-            if (myUser == null) {
-                throw new NotFoundException(String.format("User not found %s", alias));
+            if (myUser == null || !password.equals(myUser.getPassword())) {
+                throw new UnauthorizedException(String.format("Authentication failed for user %s", alias));
             }
-            return password.equals(myUser.getPassword());
+            return myUser.getId();
         } finally {
             lock.readLock().unlock();
         }
@@ -178,6 +181,25 @@ public class LocalUserDaoImpl implements UserDao {
             }
             if (user == null) {
                 throw new NotFoundException(String.format("User not found %s", id));
+            }
+            return doClone(user);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    
+    @Override
+    public User getByName(String name) throws NotFoundException {
+        lock.readLock().lock();
+        try {
+            User user = null;
+            for (int i = 0, size = users.size(); i < size && user == null; i++) {
+                if (users.get(i).getName().equals(name)) {
+                    user = users.get(i);
+                }
+            }
+            if (user == null) {
+                throw new NotFoundException(String.format("User not found %s", name));
             }
             return doClone(user);
         } finally {
