@@ -2307,6 +2307,29 @@ public class ProjectServiceTest {
 
     }
 
+    @Test
+    public void testGetItemWithoutParentProject() throws Exception {
+        FolderEntry a = pm.getProjectsRoot(workspace).createFolder("a");
+        a.createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
+        ContainerResponse response = launcher.service(HttpMethod.GET,
+                String.format("http://localhost:8080/api/project/%s/item/a/test.txt",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        ItemReference result = (ItemReference)response.getEntity();
+        assertEquals(result.getType(), "file");
+        assertEquals(result.getMediaType(), MediaType.TEXT_PLAIN);
+    }
+
+    @Test
+    public void testGetMissingItem() throws Exception {
+        ContainerResponse response = launcher.service(HttpMethod.GET,
+                String.format("http://localhost:8080/api/project/%s/item/some_missing_project/a/b",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 404, "Error: " + response.getEntity());
+    }
+
 
     @Test
     @SuppressWarnings("unchecked")

@@ -1250,7 +1250,22 @@ public class ProjectService extends Service {
                    ProjectTypeConstraintException {
 
         Project project = projectManager.getProject(workspace, projectPath(path));
-        final VirtualFileEntry entry = project.getItem(path);
+        final VirtualFileEntry entry;
+        if (project != null) {
+            // If there is a project, allow it to intercept getting file meta-data
+            entry = project.getItem(path);
+        } else {
+            // If there is no project, try to retrieve the item directly
+            FolderEntry wsRoot = projectManager.getProjectsRoot(workspace);
+            if (wsRoot != null) {
+                entry = wsRoot.getChild(path);
+            } else {
+                entry = null;
+            }
+        }
+        if (entry == null) {
+            throw new NotFoundException(path);
+        }
 
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
 
