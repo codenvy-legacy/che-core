@@ -378,12 +378,8 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
             @Override
             public void apply(UsersWorkspaceDto workspaceToStart) throws OperationException {
                 WorkspaceStatus wsFromReferenceStatus = workspaceToStart.getStatus();
-
-                if (RUNNING.equals(wsFromReferenceStatus)) {
-                    setCurrentWorkspace(workspaceToStart);
-                } else {
-                    startWorkspaceById(workspaceToStart);
-                }
+                Log.info(getClass(), workspaceToStart);
+                startWorkspaceById(workspaceToStart);
             }
         };
     }
