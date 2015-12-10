@@ -78,7 +78,6 @@ public class BootstrapController {
         this.documentTitleDecorator = documentTitleDecorator;
         this.appStateManagerProvider = appStateManagerProvider;
 
-        // Register DTO providers
         dtoRegistrar.registerDtoProviders();
     }
 
@@ -126,7 +125,6 @@ public class BootstrapController {
                 Scheduler.get().scheduleDeferred(new ScheduledCommand() {
                     @Override
                     public void execute() {
-
                         displayIDE();
                     }
                 });
