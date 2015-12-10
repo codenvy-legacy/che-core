@@ -23,19 +23,18 @@ import java.util.regex.Pattern;
 public final class Path {
     /** Create new path. */
     public static Path fromString(String path) {
-        return new Path(parse(path));
+        return ROOT.newPath(path);
     }
 
     private static final String[] EMPTY_PATH    = new String[0];
     private static final Pattern  PATH_SPLITTER = Pattern.compile("/");
 
-    private static String[] parse(String raw) {
-        String[] parsed = ((raw == null) || raw.isEmpty() || ((raw.length() == 1) && (raw.charAt(0) == '/')))
-                          ? EMPTY_PATH : PATH_SPLITTER.split(raw.charAt(0) == '/' ? raw.substring(1) : raw);
+    private Path normalizeParts(String[] parsed, Object raw) {
         if (parsed.length == 0) {
-            return parsed;
+            return this;
         }
-        List<String> newTokens = new ArrayList<>(parsed.length);
+        List<String> newTokens = new ArrayList<>(this.elements.length + parsed.length);
+        newTokens.addAll(Arrays.asList(this.elements));
         for (String token : parsed) {
             if ("..".equals(token)) {
                 int size = newTokens.size();
@@ -47,7 +46,11 @@ public final class Path {
                 newTokens.add(token);
             }
         }
-        return newTokens.toArray(new String[newTokens.size()]);
+        if (newTokens.isEmpty()) {
+            return ROOT;
+        }
+        String[] normalizedElements = newTokens.toArray(new String[newTokens.size()]);
+        return new Path(normalizedElements);
     }
 
     public static final Path ROOT = new Path();
@@ -72,9 +75,7 @@ public final class Path {
         if (beginIndex < 0 || beginIndex >= elements.length || endIndex > elements.length || beginIndex >= endIndex) {
             throw new IllegalArgumentException("Invalid end or begin index. ");
         }
-        final int len = endIndex - beginIndex;
-        final String[] subPath = new String[len];
-        System.arraycopy(elements, beginIndex, subPath, 0, len);
+        final String[] subPath = Arrays.copyOfRange(elements, beginIndex, endIndex);
         return new Path(subPath);
     }
 
@@ -83,9 +84,7 @@ public final class Path {
     }
 
     public String[] elements() {
-        String[] copy = new String[elements.length];
-        System.arraycopy(elements, 0, copy, 0, elements.length);
-        return copy;
+        return Arrays.copyOf(elements, elements.length);
     }
 
     public int length() {
@@ -116,24 +115,16 @@ public final class Path {
     }
 
     public Path newPath(String name) {
-        final String[] relative = parse(name);
-        if (relative.length == 0) {
-            return this; // It is safety to return this instance since it is immutable.
-        }
-        final String[] absolute = new String[elements.length + relative.length];
-        System.arraycopy(elements, 0, absolute, 0, elements.length);
-        System.arraycopy(relative, 0, absolute, elements.length, relative.length);
-        return new Path(absolute);
+        String[] parsed = ((name == null) || name.isEmpty() || ((name.length() == 1) && (name.charAt(0) == '/')))
+                ? EMPTY_PATH : PATH_SPLITTER.split(name.charAt(0) == '/' ? name.substring(1) : name);
+        return normalizeParts(parsed, name);
     }
 
     public Path newPath(String... relative) {
         if (relative.length == 0) {
             return this; // It is safety to return this instance since it is immutable.
         }
-        final String[] absolute = new String[elements.length + relative.length];
-        System.arraycopy(elements, 0, absolute, 0, elements.length);
-        System.arraycopy(relative, 0, absolute, elements.length, relative.length);
-        return new Path(absolute);
+        return normalizeParts(relative, relative);
     }
 
     public Path newPath(Path relative) {
@@ -156,11 +147,12 @@ public final class Path {
 
     @Override
     public String toString() {
-        if (isRoot()) {
-            return "/";
-        }
         if (asString == null) {
-            asString = join('/');
+            if (isRoot()) {
+                asString = "/";
+            } else {
+                asString = join('/');
+            }
         }
         return asString;
     }
@@ -179,12 +171,9 @@ public final class Path {
 
     @Override
     public int hashCode() {
-        int hash = hashCode;
-        if (hash == 0) {
-            hash = 8;
-            hash = 31 * hash + Arrays.hashCode(elements);
-            hashCode = hash;
+        if (hashCode == 0) {
+            hashCode = Arrays.hashCode(elements);
         }
-        return hash;
+        return hashCode;
     }
 }
