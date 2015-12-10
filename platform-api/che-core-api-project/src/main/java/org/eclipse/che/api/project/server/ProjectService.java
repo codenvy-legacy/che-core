@@ -356,10 +356,17 @@ public class ProjectService extends Service {
                                           NewProject newProject)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException {
 
+        Map<String, String> options;
+        if (newProject == null || newProject.getGeneratorDescription() == null) {
+            options = Collections.emptyMap();
+        } else {
+            options = newProject.getGeneratorDescription().getOptions();
+        }
+
         Project module = projectManager.addModule(workspace, parentPath, path,
                 (newProject == null) ? null : DtoConverter
                         .fromDto2(newProject, projectManager.getProjectTypeRegistry()),
-                (newProject == null) ? null : newProject.getGeneratorDescription().getOptions(),
+                options,
                 (newProject == null) ? null : newProject.getVisibility());
 
 

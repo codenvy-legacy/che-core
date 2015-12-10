@@ -748,6 +748,41 @@ public class ProjectServiceTest {
 
     }
 
+    @Test
+    public void testCreateModuleWithoutGeneratorDescription() throws Exception {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+
+
+
+        Map<String, List<String>> attributeValues = new LinkedHashMap<>();
+        attributeValues.put("new module attribute", Arrays.asList("to be or not to be"));
+
+        NewProject descriptor = DtoFactory.getInstance().createDto(NewProject.class)
+                                          .withType("my_project_type")
+                                          .withDescription("new module")
+                                          .withAttributes(attributeValues);
+
+        ContainerResponse response = launcher.service(HttpMethod.POST,
+                                                      String.format("http://localhost:8080/api/project/%s/my_project?path=%s",
+                                                                    workspace, "new_module"),
+                                                      "http://localhost:8080/api",
+                                                      headers,
+                                                      DtoFactory.getInstance().toJson(descriptor).getBytes(),
+                                                      null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        ProjectDescriptor result = (ProjectDescriptor)response.getEntity();
+        assertNotNull(result);
+        assertEquals(result.getName(), "new_module");
+        assertEquals(result.getPath(), "/my_project/new_module");
+        assertEquals(result.getDescription(), "new module");
+        assertEquals(result.getType(), "my_project_type");
+        assertEquals(result.getTypeName(), "my project type");
+        assertEquals(result.getVisibility(), "public");
+        assertEquals(result.getWorkspaceId(), workspace);
+        assertEquals(result.getBaseUrl(), String.format("http://localhost:8080/api/project/%s/my_project/new_module", workspace));
+    }
+
 
     @Test
     public void testRemoveModule() throws Exception {
