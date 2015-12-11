@@ -24,6 +24,7 @@ import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,23 @@ public interface ProjectManager {
      *         if other error occurs
      */
     Project getProject(String workspace, String projectPath) throws ForbiddenException, ServerException, NotFoundException;
+
+    /**
+     * Finds project in workspace via path to project.
+     *
+     * @param wsId
+     *         id of workspace to find project
+     * @param projectPath
+     *         path to project in workspace
+     * @return an instance of {@link ProjectConfigDto} or {@code null} if project not found.
+     * @throws ServerException
+     *         if some error occurs
+     * @throws NullPointerException
+     *         if project path will be null
+     * @throws IllegalArgumentException
+     *         if workspace id will be null
+     */
+    ProjectConfigDto getProjectFromWorkspace(@NotNull String wsId, @NotNull String projectPath) throws ServerException;
 
     /**
      * Creates new project.

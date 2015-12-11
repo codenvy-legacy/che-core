@@ -13,6 +13,7 @@ package org.eclipse.che.api.project.server;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 
 import javax.inject.Singleton;
@@ -27,7 +28,7 @@ import java.util.Map;
  */
 @Singleton
 public class ZipProjectImporter implements ProjectImporter {
-    public static final String ID           = "zip";
+    public static final String ID = "zip";
 
     @Override
     public String getId() {
@@ -45,18 +46,20 @@ public class ZipProjectImporter implements ProjectImporter {
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
-            throws ForbiddenException, ConflictException, IOException, ServerException {
-        importSources(baseFolder, location, parameters, LineConsumerFactory.NULL);
+    public void importSources(FolderEntry baseFolder, SourceStorage storage) throws ForbiddenException,
+                                                                                    ConflictException,
+                                                                                    IOException,
+                                                                                    ServerException {
+        importSources(baseFolder, storage, LineConsumerFactory.NULL);
     }
 
     @Override
     public void importSources(FolderEntry baseFolder,
-                              String location,
-                              Map<String, String> parameters,
+                              SourceStorage storage,
                               LineConsumerFactory importOutputConsumerFactory)
             throws ForbiddenException, ConflictException, IOException, ServerException {
         URL url;
+        String location = storage.getLocation();
         if (location.startsWith("http://") || location.startsWith("https://")) {
             url = new URL(location);
         } else {
@@ -72,6 +75,7 @@ public class ZipProjectImporter implements ProjectImporter {
             throw new IOException(String.format("Can't find %s", location));
         }
 
+        Map<String, String> parameters = storage.getParameters();
         try (InputStream zip = url.openStream()) {
             int stripNumber = 0;
             if (parameters != null && parameters.containsKey("skipFirstLevel")) {

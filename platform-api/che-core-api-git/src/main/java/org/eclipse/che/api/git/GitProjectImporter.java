@@ -10,30 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.util.FileCleaner;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
-import org.eclipse.che.api.project.server.FolderEntry;
-import org.eclipse.che.api.project.server.ProjectImporter;
-import org.eclipse.che.commons.lang.IoUtil;
-import org.eclipse.che.dto.server.DtoFactory;
-
-import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 import org.eclipse.che.api.git.shared.Branch;
-import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.BranchListRequest;
+import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.InitRequest;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
+import org.eclipse.che.api.project.server.FolderEntry;
+import org.eclipse.che.api.project.server.ProjectImporter;
+import org.eclipse.che.commons.lang.IoUtil;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.vfs.impl.fs.LocalPathResolver;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
+import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,15 +84,22 @@ public class GitProjectImporter implements ProjectImporter {
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
-            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
-        importSources(baseFolder, location, parameters, LineConsumerFactory.NULL);
+    public void importSources(FolderEntry baseFolder, SourceStorage storage) throws ForbiddenException,
+                                                                                    ConflictException,
+                                                                                    UnauthorizedException,
+                                                                                    IOException,
+                                                                                    ServerException {
+        importSources(baseFolder, storage, LineConsumerFactory.NULL);
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters,
-                              LineConsumerFactory consumerFactory)
-            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+    public void importSources(FolderEntry baseFolder,
+                              SourceStorage storage,
+                              LineConsumerFactory consumerFactory) throws ForbiddenException,
+                                                                          ConflictException,
+                                                                          UnauthorizedException,
+                                                                          IOException,
+                                                                          ServerException {
         GitConnection git = null;
         try {
             // For factory: checkout particular commit after clone
@@ -110,6 +116,8 @@ public class GitProjectImporter implements ProjectImporter {
             // Delete vcs info if false.
             String branchMerge = null;
             boolean keepVcs = true;
+
+            Map<String, String> parameters = storage.getParameters();
             if (parameters != null) {
                 commitId = parameters.get("commitId");
                 branch = parameters.get("branch");
@@ -123,6 +131,7 @@ public class GitProjectImporter implements ProjectImporter {
             // Get path to local file. Git works with local filesystem only.
             final String localPath = localPathResolver.resolve((VirtualFileImpl)baseFolder.getVirtualFile());
             final DtoFactory dtoFactory = DtoFactory.getInstance();
+            final String location = storage.getLocation();
             if (keepDirectory != null) {
                 final File temp = Files.createTempDirectory(null).toFile();
                 try {
@@ -237,8 +246,8 @@ public class GitProjectImporter implements ProjectImporter {
 
     private void checkoutCommit(GitConnection git, String commit, DtoFactory dtoFactory) throws GitException {
         final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName("temp")
-                                                                                   .withCreateNew(true)
-                                                                                   .withStartPoint(commit);
+                                                  .withCreateNew(true)
+                                                  .withStartPoint(commit);
         try {
             git.checkout(request);
         } catch (GitException e) {

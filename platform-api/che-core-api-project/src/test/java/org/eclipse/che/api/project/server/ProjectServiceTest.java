@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.project.type.Attribute;
 import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
@@ -1500,43 +1501,7 @@ public class ProjectServiceTest {
         zipOut.close();
         final InputStream zip = new ByteArrayInputStream(bout.toByteArray());
         final String importType = "_123_";
-        final ValueHolder<FolderEntry> folderHolder = new ValueHolder<>();
-        importerRegistry.register(new ProjectImporter() {
-            @Override
-            public String getId() {
-                return importType;
-            }
-
-            @Override
-            public boolean isInternal() {
-                return false;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Chuck importer";
-            }
-
-            @Override
-            public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
-                    throws ConflictException, ServerException, ForbiddenException {
-                importSources(baseFolder, location, parameters, LineConsumerFactory.NULL);
-            }
-
-            @Override
-            public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters,
-                                      LineConsumerFactory importOutputConsumerFactory)
-                    throws ConflictException, ServerException, ForbiddenException {
-                // Don't really use location in this test.
-                baseFolder.getVirtualFile().unzip(zip, true, 0);
-                folderHolder.set(baseFolder);
-            }
-
-            @Override
-            public ImporterCategory getCategory() {
-                return ImporterCategory.ARCHIVE;
-            }
-        });
+        registerImporter(importType, zip);
 
         final String myType = "chuck_project_type";
 
@@ -1567,16 +1532,7 @@ public class ProjectServiceTest {
         assertNotNull(newProject.getConfig());
     }
 
-    @Test
-    public void testImportProjectWithModules() throws Exception {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        ZipOutputStream zipOut = new ZipOutputStream(bout);
-        zipOut.putNextEntry(new ZipEntry("module1/"));
-        zipOut.putNextEntry(new ZipEntry("module1/marker"));
-        zipOut.write("to be or not to be".getBytes());
-        zipOut.close();
-        final InputStream zip = new ByteArrayInputStream(bout.toByteArray());
-        final String importType = "_123_";
+    private void registerImporter(String importType, InputStream zip) throws Exception {
         final ValueHolder<FolderEntry> folderHolder = new ValueHolder<>();
         importerRegistry.register(new ProjectImporter() {
             @Override
@@ -1595,15 +1551,18 @@ public class ProjectServiceTest {
             }
 
             @Override
-            public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
-                    throws ConflictException, ServerException, ForbiddenException {
-                importSources(baseFolder, location, parameters, LineConsumerFactory.NULL);
+            public void importSources(FolderEntry baseFolder, SourceStorage storage) throws ConflictException,
+                                                                                            ServerException,
+                                                                                            ForbiddenException {
+                importSources(baseFolder, storage, LineConsumerFactory.NULL);
             }
 
             @Override
-            public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters,
-                                      LineConsumerFactory importOutputConsumerFactory)
-                    throws ConflictException, ServerException, ForbiddenException {
+            public void importSources(FolderEntry baseFolder,
+                                      SourceStorage storage,
+                                      LineConsumerFactory importOutputConsumerFactory) throws ConflictException,
+                                                                                              ServerException,
+                                                                                              ForbiddenException {
                 // Don't really use location in this test.
                 baseFolder.getVirtualFile().unzip(zip, true, 0);
                 folderHolder.set(baseFolder);
@@ -1614,6 +1573,20 @@ public class ProjectServiceTest {
                 return ImporterCategory.ARCHIVE;
             }
         });
+    }
+
+    @Test
+    public void testImportProjectWithModules() throws Exception {
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        ZipOutputStream zipOut = new ZipOutputStream(bout);
+        zipOut.putNextEntry(new ZipEntry("module1/"));
+        zipOut.putNextEntry(new ZipEntry("module1/marker"));
+        zipOut.write("to be or not to be".getBytes());
+        zipOut.close();
+        final InputStream zip = new ByteArrayInputStream(bout.toByteArray());
+        final String importType = "_123_";
+
+        registerImporter(importType, zip);
 
         phRegistry.register(new PostImportProjectHandler() {
             @Override
@@ -1645,7 +1618,7 @@ public class ProjectServiceTest {
 
         SourceStorageDto source = DtoFactory.newDto(SourceStorageDto.class)
                                             .withParameters(Collections.emptyMap())
-                                            .withLocation("location")
+                                            .withLocation("location/new_project.ext")
                                             .withType(importType);
 
         ProjectConfigDto pModule = DtoFactory.newDto(ProjectConfigDto.class)
