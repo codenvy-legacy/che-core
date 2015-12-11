@@ -12,7 +12,6 @@ package org.eclipse.che.api.factory.server;
 
 import com.jayway.restassured.response.Response;
 
-import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
@@ -73,6 +72,7 @@ import static javax.ws.rs.core.Response.Status;
 import static org.eclipse.che.api.workspace.server.DtoConverter.asDto;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -935,15 +935,15 @@ public class FactoryServiceTest {
     }
 
     @Test
-    public void shoutFindByAttribute() throws Exception {
+    public void shouldFindByAttribute() throws Exception {
         // given
-        Factory factory = prepareFactoryWithGivenStorage("git", "http://github.com/codenvy/platform-api.git")                                      .withId(
-                CORRECT_FACTORY_ID)
-                                      .withCreator(dto.createDto(Author.class)
-                                                      .withAccountId("testorg"));
-
-
-        when(factoryStore.findByAttribute(Pair.of("creator.accountid", "testorg"))).thenReturn(
+        Factory factory = prepareFactoryWithGivenStorage("git", "http://github.com/codenvy/platform-api.git") 
+                .withId(CORRECT_FACTORY_ID)
+                .withCreator(dto.createDto(Author.class)
+                                .withAccountId("testorg"));
+                                
+        List<Pair<String, String>>  expected = Collections.singletonList(Pair.of("creator.accountid", "testorg"));
+        when(factoryStore.findByAttribute(anyInt(), anyInt(), eq(expected))).thenReturn(
                 Arrays.asList(factory, factory));
 
         // when
@@ -952,8 +952,8 @@ public class FactoryServiceTest {
 
         // then
         assertEquals(response.getStatusCode(), 200);
-        List<Link> responseLinks = dto.createListDtoFromJson(response.getBody().asString(), Link.class);
-        assertEquals(responseLinks.size(), 2);
+        List<Factory> responseFactories = dto.createListDtoFromJson(response.getBody().asString(), Factory.class);
+        assertEquals(responseFactories.size(), 2);
     }
 
 
