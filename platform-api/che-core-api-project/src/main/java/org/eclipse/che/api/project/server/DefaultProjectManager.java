@@ -60,6 +60,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -554,7 +555,8 @@ public final class DefaultProjectManager implements ProjectManager {
         }
     }
 
-    private ProjectConfigDto getProjectFromWorkspace(String wsId, String projectPath) throws ServerException {
+    @Override
+    public ProjectConfigDto getProjectFromWorkspace(@NotNull String wsId, @NotNull String projectPath) throws ServerException {
         final UsersWorkspaceDto usersWorkspaceDto = getWorkspace(wsId);
         final String path = projectPath.startsWith("/") ? projectPath : "/" + projectPath;
         for (ProjectConfigDto projectConfig : usersWorkspaceDto.getProjects()) {

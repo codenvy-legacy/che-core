@@ -64,7 +64,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -799,7 +798,7 @@ public class ProjectService extends Service {
         filesBuffer.addToBufferRecursive(virtualFile.getVirtualFile());
 
         final FolderEntry baseProjectFolder = (FolderEntry)virtualFile;
-        importer.importSources(baseProjectFolder, sourceStorage.getLocation(), sourceStorage.getParameters(), outputOutputConsumerFactory);
+        importer.importSources(baseProjectFolder, sourceStorage, outputOutputConsumerFactory);
     }
 
     private VirtualFileEntry getVirtualFile(String workspace, String path, boolean force)
