@@ -35,10 +35,9 @@ public class WebSocket extends JavaScriptObject {
      *         WebSocket server URL
      * @return the created {@link WebSocket} object
      */
-    public static native WebSocket create(String url)
-   /*-{
+    public static native WebSocket create(String url) /*-{
        return new WebSocket(url);
-   }-*/;
+    }-*/;
 
     /**
      * Creates a WebSocket object.
@@ -50,19 +49,17 @@ public class WebSocket extends JavaScriptObject {
      *         subprotocol name
      * @return the created {@link WebSocket} object
      */
-    public static native WebSocket create(String url, String protocol)
-   /*-{
+    public static native WebSocket create(String url, String protocol) /*-{
        return new WebSocket(url, protocol);
-   }-*/;
+    }-*/;
 
     /**
      * Closes the WebSocket connection. If the connection state
      * is already {@link MessageBus.ReadyState#CLOSED}, this method does nothing.
      */
-    public final native void close()
-   /*-{
+    public final native void close() /*-{
        this.close();
-   }-*/;
+    }-*/;
 
     /**
      * Method can be used to detect WebSocket support in the current browser.
@@ -70,20 +67,18 @@ public class WebSocket extends JavaScriptObject {
      * @return <code>true</code>  if WebSockets are supported;
      *         <code>false</code> if they are not.
      */
-    public static native boolean isSupported()
-   /*-{
+    public static native boolean isSupported() /*-{
        return !!window.WebSocket;
-   }-*/;
+    }-*/;
 
     /**
      * Returns the state of the WebSocket connection.
      *
      * @return ready-state value
      */
-    public final native short getReadyState()
-   /*-{
+    public final native short getReadyState() /*-{
        return this.readyState;
-   }-*/;
+    }-*/;
 
     /**
      * Represents the number of bytes of UTF-8 text
@@ -91,10 +86,9 @@ public class WebSocket extends JavaScriptObject {
      *
      * @return the number of queued bytes
      */
-    public final native int getBufferedAmount()
-   /*-{
+    public final native int getBufferedAmount() /*-{
        return this.bufferedAmount;
-   }-*/;
+    }-*/;
 
     /**
      * Transmits data to the server over the WebSocket connection.
@@ -102,10 +96,9 @@ public class WebSocket extends JavaScriptObject {
      * @param data
      *         the data to be sent to the server
      */
-    public final native void send(String data)
-   /*-{
+    public final native void send(String data) /*-{
        this.send(data);
-   }-*/;
+    }-*/;
 
     /**
      * Sets the {@link org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler} to be notified when the WebSocket connection established.
@@ -113,12 +106,11 @@ public class WebSocket extends JavaScriptObject {
      * @param handler
      *         WebSocket open handler
      */
-    public final native void setOnOpenHandler(ConnectionOpenedHandler handler)
-   /*-{
-       this.onopen = $entry(function () {
+    public final native void setOnOpenHandler(ConnectionOpenedHandler handler) /*-{
+       this.onopen = function () {
            handler.@org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler::onOpen()();
-       });
-   }-*/;
+       };
+    }-*/;
 
     /**
      * Sets the {@link ConnectionClosedHandler} to be notified when the WebSocket close.
@@ -126,14 +118,13 @@ public class WebSocket extends JavaScriptObject {
      * @param handler
      *         WebSocket close handler
      */
-    public final native void setOnCloseHandler(ConnectionClosedHandler handler)
-   /*-{
-       this.onclose = $entry(function (event) {
+    public final native void setOnCloseHandler(ConnectionClosedHandler handler) /*-{
+       this.onclose = function (event) {
            var webSocketClosedEventInstance = @org.eclipse.che.ide.websocket.events.WebSocketClosedEvent::new(ILjava/lang/String;Z)(event
                .code, event.reason, event.wasClean);
            handler.@org.eclipse.che.ide.websocket.events.ConnectionClosedHandler::onClose(Lorg/eclipse/che/ide/websocket/events/WebSocketClosedEvent;)(webSocketClosedEventInstance);
-       });
-   }-*/;
+       };
+    }-*/;
 
     /**
      * Sets the {@link org.eclipse.che.ide.websocket.events.ConnectionErrorHandler} to be notified when there is any error in communication.
@@ -141,12 +132,11 @@ public class WebSocket extends JavaScriptObject {
      * @param handler
      *         WebSocket error handler
      */
-    public final native void setOnErrorHandler(ConnectionErrorHandler handler)
-   /*-{
-       this.onerror = $entry(function () {
+    public final native void setOnErrorHandler(ConnectionErrorHandler handler) /*-{
+       this.onerror = function (event) {
            handler.@org.eclipse.che.ide.websocket.events.ConnectionErrorHandler::onError()();
-       });
-   }-*/;
+       };
+    }-*/;
 
     /**
      * Sets the {@link org.eclipse.che.ide.websocket.events.MessageReceivedHandler} to be notified when
@@ -155,11 +145,23 @@ public class WebSocket extends JavaScriptObject {
      * @param handler
      *         WebSocket message handler
      */
-    public final native void setOnMessageHandler(MessageReceivedHandler handler)
-   /*-{
-       this.onmessage = $entry(function (event) {
-           var webSocketMessageEventInstance = @org.eclipse.che.ide.websocket.events.MessageReceivedEvent::new(Ljava/lang/String;)(event.data);
-           handler.@org.eclipse.che.ide.websocket.events.MessageReceivedHandler::onMessageReceived(Lorg/eclipse/che/ide/websocket/events/MessageReceivedEvent;)(webSocketMessageEventInstance);
-       });
-   }-*/;
+    public final native void setOnMessageHandler(MessageReceivedHandler handler) /*-{
+       this.onmessage = function (event) {
+           if (event.data instanceof Blob) {
+               var reader = new FileReader();
+               reader.onloadend = function() {
+                   var e = @org.eclipse.che.ide.websocket.events.MessageReceivedEvent::new(Ljava/lang/String;)(reader.result);
+                   handler.@org.eclipse.che.ide.websocket.events.MessageReceivedHandler::onMessageReceived(Lorg/eclipse/che/ide/websocket/events/MessageReceivedEvent;)(e);
+
+               };
+
+               //reader.readAsBinaryString(event.data);
+               reader.readAsText(event.data);
+           } else {
+               var webSocketMessageEventInstance = @org.eclipse.che.ide.websocket.events.MessageReceivedEvent::new(Ljava/lang/String;)(event.data);
+               handler.@org.eclipse.che.ide.websocket.events.MessageReceivedHandler::onMessageReceived(Lorg/eclipse/che/ide/websocket/events/MessageReceivedEvent;)(webSocketMessageEventInstance);
+           }
+       };
+    }-*/;
+
 }

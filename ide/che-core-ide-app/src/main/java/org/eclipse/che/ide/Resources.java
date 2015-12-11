@@ -217,6 +217,9 @@ public interface Resources extends Tree.Resources,
     @Source("defaulticons/project.svg")
     SVGResource defaultProject();
 
+    @Source("defaulticons/projectFolder.svg")
+    SVGResource projectFolder();
+
     @Source("defaulticons/image-icon.svg")
     SVGResource defaultImage();
 
