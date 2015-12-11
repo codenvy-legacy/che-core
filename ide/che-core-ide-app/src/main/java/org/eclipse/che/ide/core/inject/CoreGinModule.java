@@ -15,7 +15,6 @@ import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
 import com.google.gwt.inject.client.multibindings.GinMapBinder;
 import com.google.gwt.inject.client.multibindings.GinMultibinder;
-import com.google.gwt.user.client.Window;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -463,17 +462,6 @@ public class CoreGinModule extends AbstractGinModule {
     @Singleton
     protected String provideWorkspaceId() {
         return Config.getWorkspaceId();
-    }
-
-    /** @deprecated use string constant annotated with {@link WebSocketUrl} annotation */
-    @Provides
-    @Named("websocketUrl")
-    @Singleton
-    @Deprecated
-    protected String provideDefaultWebsocketUrl() {
-        boolean isSecureConnection = Window.Location.getProtocol().equals("https:");
-        return (isSecureConnection ? "wss://" : "ws://") + Window.Location.getHost() + Config.getRestContext() + "/ws/" +
-               Config.getWorkspaceId();
     }
 
     @Provides
