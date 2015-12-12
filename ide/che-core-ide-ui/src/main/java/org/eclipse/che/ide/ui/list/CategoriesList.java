@@ -159,8 +159,6 @@ public class CategoriesList extends Composite {
 
         String itemContainer();
 
-        String headerIcon();
-
         String headerText();
     }
 

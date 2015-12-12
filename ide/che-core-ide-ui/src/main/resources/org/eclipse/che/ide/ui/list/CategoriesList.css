@@ -111,12 +111,13 @@
     transform: rotate(90deg);
 }
 
-.headerIcon {
+.headerText svg {
     float: left;
     width: 15px;
     height: 15px;
     margin-top: 1px;
     margin-right: 5px;
+    fill: categoriesListHeaderIconColor;
 }
 
 .headerText {
@@ -124,6 +125,7 @@
     white-space: nowrap;
 }
 
-svg.headerIcon {
-    fill: categoriesListHeaderIconColor;
+.headerText > span {
+    text-transform: uppercase;
+    margin-left: 1px;
 }

@@ -16,6 +16,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -165,8 +166,15 @@ public class CategoryNodeElement extends FlowPanel {
             ListItem<?> element = ListItem.create(categoryRenderer, resources.defaultCategoriesListCss(), o);
             categoryRenderer.renderElement(element, o);
             elementsMap.put(o, element);
-            UIObject.ensureDebugId(element, "projectWizard-" + element.getInnerText());
+            if(element.getId().isEmpty()) {
+                UIObject.ensureDebugId(element, "projectWizard-" + element.getInnerText());
+            }
             container.getElement().appendChild(element);
+        }
+        if(elementsMap.isEmpty()) {
+            expandControl.getStyle().setVisibility(Style.Visibility.HIDDEN);
+        } else {
+            expandControl.getStyle().setVisibility(Style.Visibility.VISIBLE);
         }
     }
 

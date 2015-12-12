@@ -39,6 +39,7 @@ import org.eclipse.che.ide.projecttype.wizard.ProjectWizardResources;
 import org.eclipse.che.ide.ui.list.CategoriesList;
 import org.eclipse.che.ide.ui.list.Category;
 import org.eclipse.che.ide.ui.list.CategoryRenderer;
+import org.vectomatic.dom.svg.ui.SVGImage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,8 +82,8 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
                 }
 
                 @Override
-                public SpanElement renderCategory(Category<ProjectTypeDefinition> category) {
-                    return renderCategoryWithIcon(category.getTitle());
+                public Element renderCategory(Category<ProjectTypeDefinition> category) {
+                    return renderCategoryHeader(category.getTitle());
                 }
             };
     private final CategoryRenderer<ProjectTemplateDescriptor>               templateCategoryRenderer         =
@@ -93,8 +94,8 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
                 }
 
                 @Override
-                public SpanElement renderCategory(Category<ProjectTemplateDescriptor> category) {
-                    return renderCategoryWithIcon(category.getTitle());
+                public Element renderCategory(Category<ProjectTemplateDescriptor> category) {
+                    return renderCategoryHeader(category.getTitle());
                 }
             };
     private final IconRegistry iconRegistry;
@@ -206,28 +207,27 @@ public class CategoriesPageViewImpl implements CategoriesPageView {
         projectDescription.setEnabled(enabled);
     }
 
-    private SpanElement renderCategoryWithIcon(String category) {
+    private Element renderCategoryHeader(String category) {
+        SpanElement categoryElement = Document.get().createSpanElement();
+        categoryElement.setClassName(resources.defaultCategoriesListCss().headerText());
+
+        SpanElement iconElement = Document.get().createSpanElement();
+        categoryElement.appendChild(iconElement);
+
         SpanElement textElement = Document.get().createSpanElement();
-        textElement.setClassName(resources.defaultCategoriesListCss().headerText());
-        textElement.setInnerText(category.toUpperCase());
+        categoryElement.appendChild(textElement);
+        textElement.setInnerText(category);
+
         Icon icon = iconRegistry.getIconIfExist(category + ".samples.category.icon");
         if (icon != null) {
-            Element iconElement = null;
-            if (icon.getSVGImage() != null) {
-                iconElement = icon.getSVGImage().getElement();
-                iconElement.setAttribute("class", resources.defaultCategoriesListCss().headerIcon());
-            } else if (icon.getImage() != null) {
-                iconElement = icon.getImage().getElement();
-                iconElement.setClassName(resources.defaultCategoriesListCss().headerIcon());
-            }
-            if (iconElement != null) {
-                SpanElement spanElement = Document.get().createSpanElement();
-                spanElement.appendChild(iconElement);
-                spanElement.appendChild(textElement);
-                return spanElement;
+            final SVGImage iconSVG = icon.getSVGImage();
+            if (iconSVG != null) {
+                iconElement.appendChild(iconSVG.getElement());
+                return categoryElement;
             }
         }
-        return textElement;
+
+        return categoryElement;
     }
 
     @Override

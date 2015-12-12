@@ -137,14 +137,17 @@
 }
 
 .tooltip {
-    display: none;
+   display: none;
 }
 
 .iconButtonPanel:hover .tooltip,
 .popupButtonPanel:hover .tooltip {
+    position: fixed;
+    top: initial !important;
+    left: initial !important;
     display: inline-block;
-    position: relative;
-    margin: 0;
+    margin-top: 14px;
+    margin-left: -8px;
 }
 
 .iconButtonPanel:hover .tooltipBody,
@@ -161,21 +164,22 @@
     border-radius: 0;
     -moz-border-radius: 0;
     -webkit-border-radius: 0;
-    top: -13px;
     margin: inherit;
+    line-height: initial;
 }
 
 .iconButtonPanel:hover .tooltipArrow,
 .popupButtonPanel:hover .tooltipArrow {
     display: inline-block;
-    position: relative;
+    position: absolute;
     content: "";
     width: 0;
     height: 0;
     border-width: 9px;
     border-style: solid;
     border-color: transparent transparent #232323 transparent;
-    top: -11px;
+    top: -16px;
+    float:left;
     margin: inherit;
 }
 

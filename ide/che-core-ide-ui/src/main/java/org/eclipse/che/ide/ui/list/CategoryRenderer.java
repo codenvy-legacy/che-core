@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.ui.list;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.user.client.DOM;
 
 /**
@@ -24,7 +23,7 @@ public abstract class CategoryRenderer<T> {
 
     public abstract void renderElement(Element element, T data);
 
-    public abstract SpanElement renderCategory(Category<T> category);
+    public abstract Element renderCategory(Category<T> category);
 
     /**
      * A factory method for the outermost element used by a list item.
@@ -40,11 +39,11 @@ public abstract class CategoryRenderer<T> {
     /**
      * A factory method for the category element used by a list item.
      * <p/>
-     * The default implementation returns a div element.
+     * The default implementation returns a span element.
      *
      * @return the element
      */
     public Element createCategoryElement() {
-        return DOM.createDiv();
+        return DOM.createSpan();
     }
 }

@@ -1306,4 +1306,23 @@ public interface Theme {
      */
     String loaderProgressStatusColor();
 
+
+    /**
+     * The placeholder color for input fields.
+     *
+     * @return {@link String} color
+     */
+    String placeholderColor();
+
+    /********************************************************************************************
+     *
+     * Category
+     *
+     ********************************************************************************************/
+    String categoryHeaderButtonHoverColor();
+    String categoryHeaderButtonColor();
+    String categoryElementButtonHoverColor();
+    String categoryElementButtonColor();
+    String categorySelectElementBackgroundColor();
+    String categorySelectElementColor();
 }

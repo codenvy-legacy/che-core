@@ -224,6 +224,9 @@
 /*Icons colors*/
 @eval blueIconColor org.eclipse.che.ide.api.theme.Style.getBlueIconColor();
 
+/*Placeholder*/
+@eval placeholderColor org.eclipse.che.ide.api.theme.Style.theme.placeholderColor();
+
 /*Toolbar*/
 @eval toolbarBackgroundImage org.eclipse.che.ide.api.theme.Style.getToolbarBackgroundImage();
 @eval toolbarActionGroupShadowColor org.eclipse.che.ide.api.theme.Style.getToolbarActionGroupShadowColor();
@@ -244,7 +247,7 @@
 @eval selectCommandActionIconColor org.eclipse.che.ide.api.theme.Style.getSelectCommandActionIconColor();
 @eval selectCommandActionIconBackgroundColor org.eclipse.che.ide.api.theme.Style.getSelectCommandActionIconBackgroundColor();
 
-/* DialogBox*/
+/*DialogBox*/
 @eval dialogTopLeft org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
 @eval dialogTopCenter org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
 @eval dialogTopRight org.eclipse.che.ide.api.theme.Style.theme.tabBorderColor();
@@ -350,3 +353,4 @@
 @eval checkBoxDisabledIconColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledIconColor();
 @eval checkBoxDisabledFontColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledFontColor();
 @eval checkBoxDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledBackgroundColor();
+

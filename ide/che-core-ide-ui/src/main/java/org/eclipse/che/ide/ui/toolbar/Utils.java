@@ -23,6 +23,7 @@ import org.eclipse.che.ide.util.loging.Log;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
@@ -210,37 +211,23 @@ public class Utils {
 
         @Override
         public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+
             if (!(o instanceof VisibleActionGroup)) {
                 return false;
             }
+
             VisibleActionGroup other = (VisibleActionGroup)o;
-            if (this.groupId != null) {
-                if (!this.groupId.equals(other.groupId)) {
-                    return false;
-                }
-            } else {
-                if (other.groupId != null) {
-                    return false;
-                }
-            }
-            if (this.actionList != null) {
-                if (!ListHelper.equals(this.actionList, other.actionList)) {
-                    return false;
-                }
-            } else {
-                if (other.actionList != null) {
-                    return false;
-                }
-            }
-            return true;
+
+            return Objects.equals(groupId, other.groupId)
+                   && Objects.equals(actionList, other.actionList);
         }
 
         @Override
         public int hashCode() {
-            int hash = 7;
-            hash = hash * 31 + (groupId != null ? groupId.hashCode() : 0);
-            hash = hash * 31 + (actionList != null ? actionList.hashCode() : 0);
-            return hash;
+            return Objects.hash(groupId, actionList);
         }
     }
 }

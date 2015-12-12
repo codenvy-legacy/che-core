@@ -1156,4 +1156,39 @@ public class LightTheme implements Theme {
     public String loaderProgressStatusColor() {
         return "#1a68af";
     }
+
+    @Override
+    public String  placeholderColor() {
+        return "#727272";
+    }
+
+    @Override
+    public String categoryHeaderButtonHoverColor() {
+        return this.getToolbarHoverIconColor();
+    }
+
+    @Override
+    public String categoryHeaderButtonColor() {
+        return this.getToolbarIconColor();
+    }
+
+    @Override
+    public String categoryElementButtonHoverColor() {
+        return this.getBlueIconColor();
+    }
+
+    @Override
+    public String categoryElementButtonColor() {
+        return this.getPrimaryButtonBackground();
+    }
+
+    @Override
+    public String categorySelectElementBackgroundColor() {
+        return "#E7F2FF";
+    }
+
+    @Override
+    public String categorySelectElementColor() {
+        return this.getPrimaryButtonBackground();
+    }
 }

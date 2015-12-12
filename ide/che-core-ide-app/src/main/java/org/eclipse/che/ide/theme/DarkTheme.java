@@ -994,7 +994,7 @@ public class DarkTheme implements Theme {
     public String scrollbarHoverBackgroundColor() {
         return "rgba(215, 215, 215, 0.3)";
     }
-    
+
     @Override
     public String openedFilesDropdownButtonBackground() {
         return "rgba(51,55,59,0.50)";
@@ -1178,5 +1178,40 @@ public class DarkTheme implements Theme {
     @Override
     public String loaderProgressStatusColor() {
         return "#4a90e2";
+    }
+
+    @Override
+    public String placeholderColor() {
+        return "#727272";
+    }
+
+    @Override
+    public String categoryHeaderButtonHoverColor() {
+        return this.getToolbarHoverIconColor();
+    }
+
+    @Override
+    public String categoryHeaderButtonColor() {
+        return this.getToolbarIconColor();
+    }
+
+    @Override
+    public String categoryElementButtonHoverColor() {
+        return this.getBlueIconColor();
+    }
+
+    @Override
+    public String categoryElementButtonColor() {
+        return this.getPrimaryButtonBackground();
+    }
+
+    @Override
+    public String categorySelectElementBackgroundColor() {
+        return "#2E3946";
+    }
+
+    @Override
+    public String categorySelectElementColor() {
+        return this.getPrimaryButtonBackground();
     }
 }
