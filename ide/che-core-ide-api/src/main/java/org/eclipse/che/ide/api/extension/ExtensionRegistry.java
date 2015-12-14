@@ -15,7 +15,6 @@ import java.util.Map;
 /**
  * Provides information about Extensions, their description, version and the list of dependencies.
  * Currently for information purposes only
- * TODO: connect with ExtensionInitializer or ExtensionManager
  *
  * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
  */

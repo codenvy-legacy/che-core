@@ -24,12 +24,11 @@ import java.util.List;
  * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
  */
 public class ExtensionDescription {
-    private final String                       id;
-    private final String                       version;
+    private final String                      id;
+    private final String                      version;
     private final List<DependencyDescription> dependencies;
-    private final String                       title;
-    private final String                       description;
-    private boolean enabled = false;
+    private final String                      title;
+    private final String                      description;
 
     /**
      * Construct {@link ExtensionDescription}
@@ -95,18 +94,5 @@ public class ExtensionDescription {
      */
     public List<DependencyDescription> getDependencies() {
         return dependencies;
-    }
-
-    /** @return the enabled */
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    /**
-     * @param enabled
-     *         the enabled to set
-     */
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 }
