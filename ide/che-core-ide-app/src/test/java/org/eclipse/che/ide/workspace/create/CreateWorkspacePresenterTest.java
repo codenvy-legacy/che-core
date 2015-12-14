@@ -360,7 +360,7 @@ public class CreateWorkspacePresenterTest {
         when(usersWorkspaceDto.getDefaultEnvName()).thenReturn("name");
         when(usersWorkspaceDto.getEnvironments()).thenReturn(environments);
 
-        when(environmentDto.getMachineConfigs()).thenReturn(Arrays.asList(machineConfigDto));
+        when(environmentDto.getMachineConfigs()).thenReturn(Arrays.<MachineConfigDto>asList(machineConfigDto));
 
         clickOnCreateButton();
 

@@ -70,7 +70,7 @@ public class WorkspaceSnapshotCreatorTest {
     public void shouldShowNotificationWhenCreatingSnapshot() {
         snapshotCreator.createSnapshot("workspace123");
 
-        verify(notificationManager).showNotification(any());
+        verify(notificationManager).showNotification(any(Notification.class));
     }
 
     @Test

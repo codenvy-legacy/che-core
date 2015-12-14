@@ -23,6 +23,7 @@ import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.message.MessageDialog;
 import org.eclipse.che.test.GwtReflectionUtils;
@@ -35,8 +36,8 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -203,7 +204,7 @@ public class LocalZipImporterPagePresenterTest {
     public void onImportClickedWhenProjectWithSameNameAlreadyExistsTest() {
         when(view.getProjectName()).thenReturn(PROJECT_NAME);
         MessageDialog dialog = mock(MessageDialog.class);
-        when(dialogFactory.createMessageDialog(anyString(), anyString(), anyObject())).thenReturn(dialog);
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), any(ConfirmCallback.class))).thenReturn(dialog);
 
         presenter.onImportClicked();
 
@@ -212,7 +213,7 @@ public class LocalZipImporterPagePresenterTest {
         GwtReflectionUtils.callOnSuccess(callback, mock(Item.class));
 
         verify(view).setEnabledImportButton(eq(false));
-        verify(dialogFactory).createMessageDialog(anyString(), anyString(), anyObject());
+        verify(dialogFactory).createMessageDialog(anyString(), anyString(), any(ConfirmCallback.class));
         verify(dialog).show();
         verify(view, never()).submit();
         verify(view, never()).setLoaderVisibility(anyBoolean());
@@ -223,7 +224,7 @@ public class LocalZipImporterPagePresenterTest {
     public void onImportClickedWhenShouldImportAndOpenProjectTest() {
         when(view.getProjectName()).thenReturn(PROJECT_NAME);
         MessageDialog dialog = mock(MessageDialog.class);
-        when(dialogFactory.createMessageDialog(anyString(), anyString(), anyObject())).thenReturn(dialog);
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), any(ConfirmCallback.class))).thenReturn(dialog);
 
         presenter.onImportClicked();
 
@@ -231,7 +232,7 @@ public class LocalZipImporterPagePresenterTest {
         AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
 
-        verify(dialogFactory, never()).createMessageDialog(anyString(), anyString(), anyObject());
+        verify(dialogFactory, never()).createMessageDialog(anyString(), anyString(), any(ConfirmCallback.class));
         verify(dialog, never()).show();
         verify(importProjectNotificationSubscriber).subscribe(eq(PROJECT_NAME));
         verify(view).setEncoding(eq(FormPanel.ENCODING_MULTIPART));

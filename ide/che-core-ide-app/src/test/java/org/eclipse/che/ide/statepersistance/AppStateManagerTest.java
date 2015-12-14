@@ -154,7 +154,7 @@ public class AppStateManagerTest {
         OpenProjectEvent openProjectEvent = mock(OpenProjectEvent.class);
         when(openProjectEvent.getProjectConfig()).thenReturn(projectConfig);
 
-        when(appState.getProjects()).thenReturn(new HashMap<>());
+        when(appState.getProjects()).thenReturn(new HashMap<String, ProjectState>());
 
         appStateManager.onProjectOpened(openProjectEvent);
 
