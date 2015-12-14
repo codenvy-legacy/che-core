@@ -732,6 +732,39 @@ public class ProjectTest {
 
     }
 
+    // Test that renaming a folder affects all projects that contain modules inside of it, including absolute references
+    @Test
+    public void testRenameModuleIndirectly() throws Exception {
+        final String ws = "my_ws";
+        // Rename folders that contain indirect module
+        final String projType = "myprojtype1";
+        pm.getProjectTypeRegistry().registerProjectType(new ProjectType(projType, "my module type 1", true, false) {
+        });
+        // Modify the main projects
+        final String projName1 = "my_project";
+        Project proj1 = pm.getProject(ws, projName1);
+        proj1.updateConfig(new ProjectConfig("my proj", projType));
+        final String projName2 = "MainProject2";
+        Project proj2 = pm.createProject(ws, projName2, new ProjectConfig("good project", projType), null, null);
+        // Create a nested modules
+        FolderEntry parentFolder = proj1.getBaseFolder().createFolder("myfolder");
+        // first project contains a relative module inside the folder
+        parentFolder.createFolder("mymodule1");
+        pm.addModule(ws, projName1, "myfolder/mymodule1", new ProjectConfig("good project", projType), null, null);
+        // second project contains an absolute module inside the folder
+        parentFolder.createFolder("mymodule2");
+        pm.addModule(ws, projName2, "/my_project/myfolder/mymodule2", new ProjectConfig("good project", projType), null, null);
+        // Verify the modules
+        Assert.assertEquals(proj1.getModules().get(), Collections.singleton("myfolder/mymodule1"));
+        Assert.assertEquals(proj2.getModules().get(), Collections.singleton("/my_project/myfolder/mymodule2"));
+        // Rename and make sure the other project is updated
+        String newParentName = "somestuff";
+        pm.rename(ws, "/my_project/myfolder", newParentName, null);
+        // Verify the modules
+        Assert.assertEquals(proj1.getModules().get(), Collections.singleton("somestuff/mymodule1"));
+        Assert.assertEquals(proj2.getModules().get(), Collections.singleton("/my_project/somestuff/mymodule2"));
+    }
+
     @Test
     public void testDtoConverterWithMixin() throws Exception {
         //final ProjectTypeRegistry registry = injector.getInstance(ProjectTypeRegistry.class);
