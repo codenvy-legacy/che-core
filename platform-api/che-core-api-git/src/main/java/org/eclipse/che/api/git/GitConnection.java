@@ -45,6 +45,7 @@ import org.eclipse.che.api.git.shared.RebaseRequest;
 import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
+import org.eclipse.che.api.git.shared.ShowRequest;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
@@ -186,6 +187,8 @@ public interface GitConnection extends Closeable {
      * @see DiffRequest
      */
     DiffPage diff(DiffRequest request) throws GitException;
+
+    InfoPage show(ShowRequest request) throws GitException;
 
     /**
      * Fetch data from remote repository.

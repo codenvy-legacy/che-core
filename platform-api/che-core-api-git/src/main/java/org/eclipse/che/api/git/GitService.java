@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
+import com.wordnik.swagger.annotations.ApiParam;
+
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.git.shared.AddRequest;
@@ -43,6 +45,7 @@ import org.eclipse.che.api.git.shared.RepoInfo;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
+import org.eclipse.che.api.git.shared.ShowRequest;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
@@ -75,6 +78,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -212,6 +216,16 @@ public class GitService {
     public InfoPage diff(DiffRequest request) throws ApiException {
         try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.diff(request);
+        }
+    }
+
+    @Path("show")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public InfoPage show(ShowRequest request) throws ApiException {
+        try (GitConnection gitConnection = getGitConnection()) {
+            return gitConnection.show(request);
         }
     }
 

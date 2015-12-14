@@ -431,6 +431,17 @@ public interface GitServiceClient {
               AsyncRequestCallback<String> callback);
 
     /**
+     * Get the file content from specified revision or branch.
+     *
+     * @param project
+     *         project (root of GIT repository)
+     * @param file path to the file
+     * @param version working tree of repository where the file you wont to show is present.
+     * @param callback
+     */
+    void show(ProjectConfigDto project, String file, String version, AsyncRequestCallback<String> callback);
+
+    /**
      * Get log of commits. The result is the list of {@link Revision}, which is returned by callback in
      * <code>onSuccess(Revision result)</code>.
      *

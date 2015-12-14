@@ -43,6 +43,8 @@ import org.eclipse.che.api.git.shared.RepoInfo;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
+import org.eclipse.che.api.git.shared.ShowRequest;
+import org.eclipse.che.api.git.shared.ShowResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
@@ -94,6 +96,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     public static final String FETCH             = "/fetch";
     public static final String INIT              = "/init";
     public static final String LOG               = "/log";
+    public static final String SHOW              = "/show";
     public static final String MERGE             = "/merge";
     public static final String STATUS            = "/status";
     public static final String RO_URL            = "/read-only-url";
@@ -464,6 +467,14 @@ public class GitServiceClientImpl implements GitServiceClient {
                                             .withRenameLimit(renameLimit);
 
         diff(diffRequest, project.getPath(), callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void show(@NotNull ProjectConfigDto project, String file, String version, @NotNull AsyncRequestCallback<String> callback) {
+        ShowRequest showRequest = dtoFactory.createDto(ShowRequest.class).withFile(file).withVersion(version);
+        String url = baseHttpUrl + SHOW + "?projectPath=" + project.getPath();
+        asyncRequestFactory.createPostRequest(url, showRequest).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */

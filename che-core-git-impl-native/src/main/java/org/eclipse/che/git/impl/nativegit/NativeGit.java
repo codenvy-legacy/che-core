@@ -39,6 +39,7 @@ import org.eclipse.che.git.impl.nativegit.commands.RemoteListCommand;
 import org.eclipse.che.git.impl.nativegit.commands.RemoteUpdateCommand;
 import org.eclipse.che.git.impl.nativegit.commands.RemoveCommand;
 import org.eclipse.che.git.impl.nativegit.commands.ResetCommand;
+import org.eclipse.che.git.impl.nativegit.commands.ShowCommand;
 import org.eclipse.che.git.impl.nativegit.commands.StatusCommand;
 import org.eclipse.che.git.impl.nativegit.commands.TagCreateCommand;
 import org.eclipse.che.git.impl.nativegit.commands.TagDeleteCommand;
@@ -178,6 +179,15 @@ public class NativeGit {
      */
     public DiffCommand createDiffCommand() {
         DiffCommand command = new DiffCommand(repository);
+        command.setLineConsumerFactory(gitOutputPublisherFactory);
+        return command;
+    }
+
+    /**
+     * @return show command
+     */
+    public ShowCommand createShowCommand() {
+        ShowCommand command = new ShowCommand(repository);
         command.setLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }

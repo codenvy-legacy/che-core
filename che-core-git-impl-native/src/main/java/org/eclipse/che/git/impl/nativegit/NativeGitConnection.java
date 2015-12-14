@@ -18,7 +18,9 @@ import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.InfoPage;
 import org.eclipse.che.api.git.LogPage;
+import org.eclipse.che.api.git.ShowPage;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
@@ -52,6 +54,7 @@ import org.eclipse.che.api.git.shared.RemoteUpdateRequest;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
+import org.eclipse.che.api.git.shared.ShowRequest;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
@@ -305,6 +308,11 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public DiffPage diff(DiffRequest request) throws GitException {
         return new NativeGitDiffPage(request, nativeGit);
+    }
+
+    @Override
+    public InfoPage show(ShowRequest request) throws GitException {
+        return new NativeGitShowPage(request, nativeGit);
     }
 
     @Override
