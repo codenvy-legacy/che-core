@@ -188,6 +188,14 @@ public interface GitConnection extends Closeable {
      */
     DiffPage diff(DiffRequest request) throws GitException;
 
+    /**
+     * Show content of the file from specified revision or branch.
+     *
+     * @param request show request
+     * @return InfoPage. Content can be serialized to stream by using method {@link InfoPage#writeTo(java.io.OutputStream)}
+     * @throws GitException if any error occurs
+     * @see ShowRequest
+     */
     InfoPage show(ShowRequest request) throws GitException;
 
     /**

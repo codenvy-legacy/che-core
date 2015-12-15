@@ -42,7 +42,7 @@ public class NativeGitShowPage implements InfoPage {
     public void writeTo(OutputStream out) throws IOException {
         try (PrintWriter outWriter = new PrintWriter(out)) {
             outWriter.print(nativeGit.createShowCommand()
-                                     .withFilePattern(request.getFile())
+                                     .withFile(request.getFile())
                                      .withVersion(request.getVersion())
                                      .execute());
         } catch (GitException e) {

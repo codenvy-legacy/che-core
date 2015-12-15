@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-import com.wordnik.swagger.annotations.ApiParam;
-
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.git.shared.AddRequest;
@@ -78,7 +76,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

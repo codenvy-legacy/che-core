@@ -29,7 +29,7 @@ public interface ShowRequest {
     ShowRequest withFile(String file);
 
     /**
-     * Working tree of the file (revision or branch)
+     * hash of revision or branch
      */
     String getVersion();
 

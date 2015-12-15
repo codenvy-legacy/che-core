@@ -21,7 +21,7 @@ import java.io.File;
  */
 public class ShowCommand extends GitCommand<String> {
     
-    private String filePattern;
+    private String file;
     private String version;
 
     public ShowCommand(File repositoryPlace) {
@@ -33,12 +33,12 @@ public class ShowCommand extends GitCommand<String> {
      */
     @Override
     public String execute() throws GitException {
-        if (filePattern == null) {
-            throw new GitException("No file pattern was set.");
+        if (file == null) {
+            throw new GitException("No file was set.");
         }
         reset();
         commandLine.add("show");
-        commandLine.add(version + ":" + filePattern);
+        commandLine.add(version + ":" + file);
         start();
         
         String content = "";
@@ -51,13 +51,13 @@ public class ShowCommand extends GitCommand<String> {
     }
 
     /**
-     * Set up file pattern for show command.
+     * Set up file for show command.
      *
-     * @param filePattern file pattern for show command.
-     * @return ShowCommand with established file pattern
+     * @param file file name with its full path for show command
+     * @return ShowCommand with established file
      */
-    public ShowCommand withFilePattern(String filePattern) {
-        this.filePattern = filePattern;
+    public ShowCommand withFile(String file) {
+        this.file = file;
         return this;
     }
 
