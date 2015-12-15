@@ -27,19 +27,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.NavigableMap;
+import java.util.Map;
 import java.util.TreeMap;
 
-import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -51,8 +47,8 @@ import static org.mockito.Mockito.when;
 public class OpenedFilesPersistenceComponentTest {
 
     private static final String OPEN_FILE_ACTION_ID = "openFile";
-    private static final String PROJECT_PATH        = "/project";
-    private static final String FILE_PATH           = PROJECT_PATH + "/file1";
+    private static final String FILE1_PATH          = "/project/file1";
+    private static final String FILE2_PATH          = "/project/file2";
 
     @Mock
     private Provider<EditorAgent> editorAgentProvider;
@@ -70,13 +66,22 @@ public class OpenedFilesPersistenceComponentTest {
     private DtoFactory dtoFactory;
 
     @Mock
-    private EditorPartPresenter editorPartPresenter;
+    private EditorPartPresenter editorPartPresenter1;
 
     @Mock
-    private EditorInput editorInput;
+    private EditorPartPresenter editorPartPresenter2;
 
     @Mock
-    private VirtualFile virtualFile;
+    private EditorInput editorInput1;
+
+    @Mock
+    private EditorInput editorInput2;
+
+    @Mock
+    private VirtualFile virtualFile1;
+
+    @Mock
+    private VirtualFile virtualFile2;
 
     @InjectMocks
     private OpenedFilesPersistenceComponent component;
@@ -85,36 +90,45 @@ public class OpenedFilesPersistenceComponentTest {
     public void setUp() {
         when(editorAgentProvider.get()).thenReturn(editorAgent);
         when(actionManager.getId(eq(openFileAction))).thenReturn(OPEN_FILE_ACTION_ID);
+
+        ActionDescriptor actionDescriptor = mock(ActionDescriptor.class);
+        when(actionDescriptor.withId(anyString())).thenReturn(actionDescriptor);
+        when(actionDescriptor.withParameters(anyMapOf(String.class, String.class))).thenReturn(actionDescriptor);
+        when(dtoFactory.createDto(eq(ActionDescriptor.class))).thenReturn(actionDescriptor);
     }
 
     @Test
-    public void shouldGetActions() {
+    public void shouldReturnActionsForReopeningFiles() {
         configureOpenedEditors();
 
-        ActionDescriptor action = mock(ActionDescriptor.class);
-        when(action.withId(anyString())).thenReturn(action);
-        when(action.withParameters(anyMapOf(String.class, String.class))).thenReturn(action);
-        when(dtoFactory.createDto(eq(ActionDescriptor.class))).thenReturn(action);
-        NavigableMap<String, EditorPartPresenter> editors = new TreeMap<>();
-        editors.put("/foo", editorPartPresenter);
-        when(editorAgent.getOpenedEditors()).thenReturn(editors);
-        when(editorPartPresenter.getEditorInput()).thenReturn(editorInput);
-        when(editorInput.getFile()).thenReturn(virtualFile);
-        when(virtualFile.getPath()).thenReturn(FILE_PATH);
+        List<ActionDescriptor> actionDescriptors = component.getActions();
 
-        List<ActionDescriptor> actionDescriptors = component.getActions(PROJECT_PATH);
+        assertEquals(2, actionDescriptors.size());
+    }
 
-        verify(action).withId(anyString());
-        verify(action).withParameters(eq(Collections.singletonMap(FILE_PARAM_ID, FILE_PATH)));
-        assertEquals(1, actionDescriptors.size());
-        assertTrue(actionDescriptors.contains(action));
+    @Test
+    public void shouldAddActionForActivatingLastFile() {
+        configureOpenedEditors();
+        when(editorAgent.getActiveEditor()).thenReturn(editorPartPresenter1);
+        when(editorAgent.getLastEditor()).thenReturn(editorPartPresenter2);
+
+        List<ActionDescriptor> actionDescriptors = component.getActions();
+
+        assertEquals(3, actionDescriptors.size());
     }
 
     private void configureOpenedEditors() {
-        NavigableMap<String, EditorPartPresenter> openedEditors = new TreeMap<>();
-        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
+        when(virtualFile1.getPath()).thenReturn(FILE1_PATH);
+        when(virtualFile2.getPath()).thenReturn(FILE2_PATH);
+        when(editorInput1.getFile()).thenReturn(virtualFile1);
+        when(editorInput2.getFile()).thenReturn(virtualFile2);
+        when(editorPartPresenter1.getEditorInput()).thenReturn(editorInput1);
+        when(editorPartPresenter2.getEditorInput()).thenReturn(editorInput2);
 
-        EditorPartPresenter editorPartPresenter = mock(EditorPartPresenter.class);
-        openedEditors.put(FILE_PATH, editorPartPresenter);
+        Map<String, EditorPartPresenter> openedEditors = new TreeMap<>();
+        openedEditors.put(FILE1_PATH, editorPartPresenter1);
+        openedEditors.put(FILE2_PATH, editorPartPresenter1);
+
+        when(editorAgent.getOpenedEditors()).thenReturn(openedEditors);
     }
 }

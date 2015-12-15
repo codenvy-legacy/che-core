@@ -15,37 +15,36 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.actions.ShowHiddenFilesAction;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import static java.util.Collections.singletonMap;
 import static org.eclipse.che.ide.actions.ShowHiddenFilesAction.SHOW_HIDDEN_FILES_PARAM_ID;
 
 /**
+ * Component provides sequence of actions which should be performed
+ * in order to restore hidden files visibility in project explorer.
+ *
  * @author Andrienko Alexander
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class ShowHiddenFilesPersistenceComponent implements PersistenceComponent {
 
-    private final AppContext               appContext;
     private final ActionManager            actionManager;
     private final ShowHiddenFilesAction    showHiddenFilesAction;
     private final DtoFactory               dtoFactory;
     private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
-    public ShowHiddenFilesPersistenceComponent(AppContext appContext,
-                                               ActionManager actionManager,
+    public ShowHiddenFilesPersistenceComponent(ActionManager actionManager,
                                                ShowHiddenFilesAction showHiddenFilesAction,
                                                DtoFactory dtoFactory,
                                                ProjectExplorerPresenter projectExplorer) {
-        this.appContext = appContext;
         this.actionManager = actionManager;
         this.showHiddenFilesAction = showHiddenFilesAction;
         this.dtoFactory = dtoFactory;
@@ -53,22 +52,13 @@ public class ShowHiddenFilesPersistenceComponent implements PersistenceComponent
     }
 
     @Override
-    public List<ActionDescriptor> getActions(String projectPath) {
+    public List<ActionDescriptor> getActions() {
         List<ActionDescriptor> actions = new ArrayList<>();
 
-        CurrentProject currentProject = appContext.getCurrentProject();
-
-        if (currentProject == null) {
-            return actions;
-        }
-
-        String actionId = actionManager.getId(showHiddenFilesAction);
-
-        boolean isShowHiddenFiles = projectExplorer.isShowHiddenFiles();
-
         actions.add(dtoFactory.createDto(ActionDescriptor.class)
-                              .withId(actionId)
-                              .withParameters(Collections.singletonMap(SHOW_HIDDEN_FILES_PARAM_ID, String.valueOf(isShowHiddenFiles))));
+                              .withId(actionManager.getId(showHiddenFilesAction))
+                              .withParameters(singletonMap(SHOW_HIDDEN_FILES_PARAM_ID,
+                                                           String.valueOf(projectExplorer.isShowHiddenFiles()))));
 
         return actions;
     }

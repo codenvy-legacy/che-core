@@ -159,8 +159,6 @@ import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
 import org.eclipse.che.ide.settings.common.SettingsPagePresenter;
-import org.eclipse.che.ide.statepersistance.ActiveFilePersistenceComponent;
-import org.eclipse.che.ide.statepersistance.ExpandedNodesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
@@ -273,16 +271,10 @@ public class CoreGinModule extends AbstractGinModule {
         configureEditorAPI();
         configureProjectTree();
 
-        GinMultibinder<PersistenceComponent> componentMultibinder = GinMultibinder.newSetBinder(binder(), PersistenceComponent.class);
-        componentMultibinder.addBinding().to(ShowHiddenFilesPersistenceComponent.class);
-        componentMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
-        componentMultibinder.addBinding().to(ActiveFilePersistenceComponent.class);
-        componentMultibinder.addBinding().to(ExpandedNodesPersistenceComponent.class);
-
-        GinMapBinder<String, PersistenceComponent> projectTreeComponentBinder =
-                GinMapBinder.newMapBinder(binder(), String.class, PersistenceComponent.class);
-        projectTreeComponentBinder.addBinding("openedNodes").to(ExpandedNodesPersistenceComponent.class);
-        projectTreeComponentBinder.addBinding("showHiddenFiles").to(ShowHiddenFilesPersistenceComponent.class);
+        GinMultibinder<PersistenceComponent> persistenceComponentsMultibinder =
+                GinMultibinder.newSetBinder(binder(), PersistenceComponent.class);
+        persistenceComponentsMultibinder.addBinding().to(ShowHiddenFilesPersistenceComponent.class);
+        persistenceComponentsMultibinder.addBinding().to(OpenedFilesPersistenceComponent.class);
 
         install(new GinFactoryModuleBuilder().implement(RecipeWidget.class, RecipeWidgetImpl.class)
                                              .implement(WorkspaceWidget.class, WorkspaceWidgetImpl.class)

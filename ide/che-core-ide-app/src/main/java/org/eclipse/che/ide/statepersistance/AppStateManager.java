@@ -16,30 +16,25 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateHandler;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
-import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.WindowActionHandler;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
-import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
-import org.eclipse.che.ide.api.event.project.OpenProjectHandler;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.project.event.ProjectExplorerLoadedEvent;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.ProjectState;
-import org.eclipse.che.ide.statepersistance.dto.RecentProject;
+import org.eclipse.che.ide.statepersistance.dto.WorkspaceState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
 import org.eclipse.che.ide.util.loging.Log;
@@ -52,7 +47,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Responsible for persisting and restoring the Codenvy application's state across sessions.
+ * Responsible for persisting and restoring IDE state across sessions.
  * Uses user preferences as storage for serialized state.
  *
  * @author Artem Zatsarynnyy
@@ -60,11 +55,11 @@ import java.util.Set;
 @Singleton
 public class AppStateManager implements WindowActionHandler,
                                         StopWorkspaceHandler,
-                                        OpenProjectHandler,
-                                        CloseCurrentProjectHandler {
+                                        ExtServerStateHandler,
+                                        ProjectExplorerLoadedEvent.ProjectExplorerLoadedHandler {
 
     /** The name of the property for the mappings in user preferences. */
-    public static final String PREFERENCE_PROPERTY_NAME = "CodenvyAppState";
+    public static final String PREFERENCE_PROPERTY_NAME = "IdeAppState";
 
     private final Set<PersistenceComponent>    persistenceComponents;
     private final PreferencesManager           preferencesManager;
@@ -72,7 +67,7 @@ public class AppStateManager implements WindowActionHandler,
     private final DtoFactory                   dtoFactory;
     private final ActionManager                actionManager;
     private final PresentationFactory          presentationFactory;
-    private final Provider<PerspectiveManager> managerProvider;
+    private final Provider<PerspectiveManager> perspectiveManagerProvider;
 
     private AppState appState;
 
@@ -83,7 +78,7 @@ public class AppStateManager implements WindowActionHandler,
                            DtoFactory dtoFactory,
                            ActionManager actionManager,
                            PresentationFactory presentationFactory,
-                           Provider<PerspectiveManager> managerProvider,
+                           Provider<PerspectiveManager> perspectiveManagerProvider,
                            EventBus eventBus) {
         this.persistenceComponents = persistenceComponents;
         this.preferencesManager = preferencesManager;
@@ -91,12 +86,12 @@ public class AppStateManager implements WindowActionHandler,
         this.dtoFactory = dtoFactory;
         this.actionManager = actionManager;
         this.presentationFactory = presentationFactory;
-        this.managerProvider = managerProvider;
+        this.perspectiveManagerProvider = perspectiveManagerProvider;
 
         eventBus.addHandler(StopWorkspaceEvent.TYPE, this);
         eventBus.addHandler(WindowActionEvent.TYPE, this);
-        eventBus.addHandler(OpenProjectEvent.TYPE, this);
-        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
+        eventBus.addHandler(ExtServerStateEvent.TYPE, this);
+        eventBus.addHandler(ProjectExplorerLoadedEvent.getType(), this);
 
         readStateFromPreferences();
     }
@@ -105,46 +100,48 @@ public class AppStateManager implements WindowActionHandler,
         final String json = preferencesManager.getValue(PREFERENCE_PROPERTY_NAME);
         if (json == null) {
             appState = dtoFactory.createDto(AppState.class);
-            initClearRecentProject(appState);
         } else {
             try {
                 appState = dtoFactory.createDtoFromJson(json, AppState.class);
-                if (appState.getRecentProject() == null) {
-                    initClearRecentProject(appState);
-                }
             } catch (Exception e) {
-                // create 'clear' state if there's any error
+                // create 'clear' state if any deserializing error occurred
                 appState = dtoFactory.createDto(AppState.class);
-                initClearRecentProject(appState);
             }
         }
     }
 
-    private void initClearRecentProject(AppState appState) {
-        final RecentProject recentProject = dtoFactory.createDto(RecentProject.class);
-        recentProject.setPath("");
-        recentProject.setWorkspaceId("");
-        recentProject.setWorkspaceName("");
-        appState.setRecentProject(recentProject);
+    @Override
+    public void onWindowClosing(WindowActionEvent event) {
+        persistWorkspaceState();
     }
 
     @Override
-    public void onWindowClosing(WindowActionEvent event) {
-
+    public void onWindowClosed(WindowActionEvent event) {
     }
 
-    private void persistCurrentProjectState(ProjectConfigDto projectConfig) {
-        String projectPath = projectConfig.getPath();
-        String fullProjectPath = "/" + appContext.getWorkspace().getId() + projectPath;
+    @Override
+    public void onExtServerStarted(ExtServerStateEvent event) {
+    }
 
-        ProjectState projectState = dtoFactory.createDto(ProjectState.class);
+    @Override
+    public void onExtServerStopped(ExtServerStateEvent event) {
+        persistWorkspaceState();
+    }
 
-        appState.getProjects().put(fullProjectPath, projectState);
+    @Override
+    public void onWorkspaceStopped(UsersWorkspaceDto workspace) {
+        persistWorkspaceState();
+    }
 
-        final List<ActionDescriptor> actions = projectState.getActions();
+    private void persistWorkspaceState() {
+        appState.setRecentWorkspaceId(appContext.getWorkspace().getId());
 
+        final WorkspaceState workspaceState = dtoFactory.createDto(WorkspaceState.class);
+        appState.getWorkspaces().put(appContext.getWorkspace().getId(), workspaceState);
+
+        final List<ActionDescriptor> actions = workspaceState.getActions();
         for (PersistenceComponent persistenceComponent : persistenceComponents) {
-            actions.addAll(persistenceComponent.getActions(projectPath));
+            actions.addAll(persistenceComponent.getActions());
         }
 
         writeStateToPreferences();
@@ -153,11 +150,6 @@ public class AppStateManager implements WindowActionHandler,
     private void writeStateToPreferences() {
         final String json = dtoFactory.toJson(appState);
         preferencesManager.setValue(PREFERENCE_PROPERTY_NAME, json);
-
-        flushPreferences();
-    }
-
-    private void flushPreferences() {
         preferencesManager.flushPreferences(new AsyncCallback<Map<String, String>>() {
             @Override
             public void onSuccess(Map<String, String> result) {
@@ -171,59 +163,39 @@ public class AppStateManager implements WindowActionHandler,
     }
 
     @Override
-    public void onWindowClosed(WindowActionEvent event) {
+    public void onProjectsLoaded(ProjectExplorerLoadedEvent event) {
+        restoreWorkspaceState();
     }
 
-    @Override
-    public void onWorkspaceStopped(UsersWorkspaceDto workspace) {
-        appState.setRecentWorkspaceId(workspace.getId());
-
-        RecentProject recentProject = appState.getRecentProject();
-        recentProject.setWorkspaceId(workspace.getId());
-        recentProject.setWorkspaceName(workspace.getName());
-
-        writeStateToPreferences();
-    }
-
-    @Override
-    public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
-        persistCurrentProjectState(event.getProjectConfig());
-    }
-
-    @Override
-    public void onProjectOpened(OpenProjectEvent event) {
-        ProjectConfigDto projectConfig = event.getProjectConfig();
-
-        String projectPath = projectConfig.getPath();
-        String fullProjectPath = "/" + appContext.getWorkspace().getId() + projectPath;
-
-        ProjectState projectState = appState.getProjects().get(fullProjectPath);
-
-        if (projectState == null) {
+    private void restoreWorkspaceState() {
+        final WorkspaceState workspaceState = appState.getWorkspaces().get(appContext.getWorkspace().getId());
+        if (workspaceState == null) {
             return;
         }
 
-        List<ActionDescriptor> actions = projectState.getActions();
-        List<Pair<Action, ActionEvent>> actionsToPerform = new ArrayList<>(actions.size());
+        List<ActionDescriptor> actions = workspaceState.getActions();
+        if (actions.isEmpty()) {
+            return;
+        }
 
+        List<Pair<Action, ActionEvent>> actionsToPerform = new ArrayList<>(actions.size());
         for (ActionDescriptor actionDescriptor : actions) {
             final Action action = actionManager.getAction(actionDescriptor.getId());
             if (action == null) {
                 continue;
             }
 
-            final Presentation presentation = presentationFactory.getPresentation(action);
-
-            PerspectiveManager manager = managerProvider.get();
-            final ActionEvent actionEvent = new ActionEvent("", presentation, actionManager, manager, actionDescriptor.getParameters());
-            actionsToPerform.add(new Pair<>(action, actionEvent));
+            actionsToPerform.add(new Pair<>(action, new ActionEvent("",
+                                                                    presentationFactory.getPresentation(action),
+                                                                    actionManager,
+                                                                    perspectiveManagerProvider.get(),
+                                                                    actionDescriptor.getParameters())));
         }
 
-        final Promise<Void> promise = actionManager.performActions(actionsToPerform, false);
-        promise.catchError(new Operation<PromiseError>() {
+        actionManager.performActions(actionsToPerform, false).catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
-                Log.info(AppStateManager.class, "Failed to restore project's state");
+                Log.info(AppStateManager.class, "Failed to restore workspace state.");
             }
         });
     }

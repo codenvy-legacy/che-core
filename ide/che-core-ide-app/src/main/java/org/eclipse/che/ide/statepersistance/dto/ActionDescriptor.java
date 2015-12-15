@@ -22,17 +22,18 @@ import java.util.Map;
 @DTO
 public interface ActionDescriptor {
 
-    /** get action's ID. */
+    /** Returns action's ID. */
     String getId();
 
+    /** Sets action's ID. */
     void setId(String id);
 
     ActionDescriptor withId(String id);
 
-
-    /** Get parameters for performing action. */
+    /** Returns parameters for performing action. */
     Map<String, String> getParameters();
 
+    /** Sets parameters for performing action. */
     void setParameters(Map<String, String> parameters);
 
     ActionDescriptor withParameters(Map<String, String> parameters);

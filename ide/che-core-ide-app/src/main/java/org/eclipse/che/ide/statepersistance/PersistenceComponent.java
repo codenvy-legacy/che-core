@@ -15,25 +15,19 @@ import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import java.util.List;
 
 /**
- * Defines requirements for a component which would like to persist some state of project across sessions.
- * <p/>
- * Implementations of this interface need to be registered using
- * a multibinder in order to be picked-up on start-up.
+ * Defines requirements for a component which would like to persist some state of workspace across sessions.
+ * <p/>Implementations of this interface need to be registered using
+ * a multibinder in order to be picked-up on IDE start-up.
  *
  * @author Artem Zatsarynnyy
  */
 public interface PersistenceComponent {
 
     /**
-     * Returns sequence of actions which should be performed
-     * each time when project with the given path is opened
-     * in order to restore some part of project's state.
-     * <p/>
-     * Invoked each time when project with the given {@code projectPath} is closing.
+     * Returns sequence of actions which should be performed each
+     * time when IDE is loaded in order to restore workspace state.
      *
-     * @param projectPath
-     *         project path
-     * @return actions with it's parameters which should be performed on each opening the project
+     * @return actions with it's parameters that should be performed on each loading IDE
      */
-    List<ActionDescriptor> getActions(String projectPath);
+    List<ActionDescriptor> getActions();
 }

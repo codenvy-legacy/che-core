@@ -509,6 +509,23 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     /** {@inheritDoc} */
     @Override
+    public void showHiddenFilesForAllExpandedNodes(boolean show) {
+        for (Node node : tree.getRootNodes()) {
+            if (node instanceof HasSettings) {
+                ((HasSettings)node).getSettings().setShowHiddenFiles(show);
+                for (Node child : tree.getNodeStorage().getAllChildren(node)) {
+                    if (child instanceof HasSettings) {
+                        ((HasSettings)child).getSettings().setShowHiddenFiles(show);
+                    }
+                }
+
+                reloadChildren(node, true);
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isShowHiddenFiles() {
         for (Node node : tree.getRootNodes()) {
             if (node instanceof HasSettings) {
