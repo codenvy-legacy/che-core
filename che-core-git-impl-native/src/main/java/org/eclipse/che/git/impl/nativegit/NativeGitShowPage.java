@@ -13,7 +13,7 @@ package org.eclipse.che.git.impl.nativegit;
 
 
 import org.eclipse.che.api.git.GitException;
-import org.eclipse.che.api.git.ShowPage;
+import org.eclipse.che.api.git.InfoPage;
 import org.eclipse.che.api.git.shared.ShowRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ import java.io.PrintWriter;
  *
  * @author Igor Vinokur
  */
-public class NativeGitShowPage extends ShowPage {
+public class NativeGitShowPage implements InfoPage {
 
     private static Logger LOG = LoggerFactory.getLogger(NativeGitShowPage.class);
     private ShowRequest request;
