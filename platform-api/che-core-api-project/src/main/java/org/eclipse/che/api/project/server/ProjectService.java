@@ -1349,7 +1349,8 @@ public class ProjectService extends Service {
                     .setPath(path.startsWith("/") ? path : ('/' + path))
                     .setName(name)
                     .setMediaType(mediatype)
-                    .setText(text);
+                    .setText(text)
+                    .setMaxItems(maxItems);
 
             final String[] result = searcherProvider.getSearcher(folder.getVirtualFile().getMountPoint(), true).search(expr);
             if (skipCount > 0) {
