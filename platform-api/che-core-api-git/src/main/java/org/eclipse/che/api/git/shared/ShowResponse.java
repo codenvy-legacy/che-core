@@ -13,13 +13,12 @@ package org.eclipse.che.api.git.shared;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * The response with the log of commits.
+ * The response with the content of the file
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
- * @version $Id: Apr 14, 2011 4:32:17 PM anya $
+ * @author Igor Vinokur
  */
 @DTO
 public interface ShowResponse {
-    /** @return the textLog text format of the log response */
-    String getFile();
+    /** @return content of the file from show response */
+    String getContent();
 }
