@@ -13,7 +13,7 @@ package org.eclipse.che.api.git.shared;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * The response with the log of commits.
+ * Request to show the content of the file from specified revision or branch
  *
  * @author Igor Vinokur
  */
