@@ -44,7 +44,6 @@ import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
 import org.eclipse.che.api.git.shared.ShowRequest;
-import org.eclipse.che.api.git.shared.ShowResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
