@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Testing {@link ConfirmDialogFooter} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ConfirmDialogFooterTest extends BaseTest {
     @Mock

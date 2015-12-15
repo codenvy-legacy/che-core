@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Client for Machine API.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
 public interface MachineServiceClient {

@@ -14,7 +14,7 @@ package org.eclipse.che.ide.ui.dialogs.message;
  * Interface to the message/information dialog component.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface MessageDialog {
 

@@ -16,7 +16,7 @@ import static com.google.gwt.user.client.Window.Location.getProtocol;
 /**
  * The implementation of {@link MessageBus}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
 public class MessageBusImpl extends AbstractMessageBus {

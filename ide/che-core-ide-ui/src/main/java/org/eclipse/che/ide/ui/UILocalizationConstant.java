@@ -16,7 +16,7 @@ import com.google.gwt.i18n.client.Messages;
  * I18n messages interface for the 'CodenvyUI' module.
  *
  * @author Vitaly Parfonov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface UILocalizationConstant extends Messages {
 

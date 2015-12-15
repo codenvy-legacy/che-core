@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Container for command line arguments.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class CommandLine {
 

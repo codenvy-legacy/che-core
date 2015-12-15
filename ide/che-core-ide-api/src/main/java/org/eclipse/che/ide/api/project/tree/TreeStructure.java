@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Defines the requirements for an object that can be used as a project's tree structure.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface TreeStructure {
     /**

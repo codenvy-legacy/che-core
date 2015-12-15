@@ -19,7 +19,7 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import javax.validation.constraints.NotNull;
 
-/** @author Artem Zatsarynnyy */
+/** @author Artem Zatsarynnyi */
 final public class GenericTreeStructureProvider implements TreeStructureProvider {
     public final static String ID = "_codenvy_generic_tree_";
     private final NodeFactory            nodeFactory;

@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * @author Vitaly Parfonov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 

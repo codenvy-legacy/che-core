@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * DTO describes the state of the project.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @DTO
 public interface ProjectState {

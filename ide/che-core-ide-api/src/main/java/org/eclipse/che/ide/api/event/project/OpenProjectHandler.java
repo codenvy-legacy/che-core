@@ -15,7 +15,7 @@ import com.google.gwt.event.shared.EventHandler;
 /**
  * A handler for handling {@link OpenProjectEvent}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface OpenProjectHandler extends EventHandler {
     /**

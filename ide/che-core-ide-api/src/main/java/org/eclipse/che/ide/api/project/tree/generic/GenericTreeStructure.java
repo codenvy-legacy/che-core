@@ -32,7 +32,7 @@ import java.util.List;
  * <p/>
  * Builds a currently opened project's tree structure that reflects the project's physical structure.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @see NodeFactory
  * @see org.eclipse.che.ide.api.project.tree.TreeSettings
  */

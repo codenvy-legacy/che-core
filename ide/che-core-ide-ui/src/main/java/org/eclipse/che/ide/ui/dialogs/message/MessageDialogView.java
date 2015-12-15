@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
  * The view interface for the message dialog component.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface MessageDialogView {
 

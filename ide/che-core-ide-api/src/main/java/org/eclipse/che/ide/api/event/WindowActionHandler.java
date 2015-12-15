@@ -15,7 +15,7 @@ import com.google.gwt.event.shared.EventHandler;
 /**
  * Handles {@link WindowActionEvent}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface WindowActionHandler extends EventHandler {
     /**

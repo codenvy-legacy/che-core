@@ -30,8 +30,7 @@ import static java.nio.file.FileVisitResult.TERMINATE;
 /**
  * A smattering of useful methods to work with GWT module descriptor (*.gwt.xml) files.
  *
- * @author <a href="mailto:azatsarynnyy@codenvy.com">Artem Zatsarynnyy</a>
- * @version $Id: GwtXmlUtils.java Jul 31, 2013 11:30:14 AM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public class GwtXmlUtils {
     /** Filename suffix used for GWT module XML files. */

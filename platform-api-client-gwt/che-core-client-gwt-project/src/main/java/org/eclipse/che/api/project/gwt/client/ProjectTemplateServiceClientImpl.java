@@ -29,7 +29,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 /**
  * The implementation for {@link ProjectTemplateServiceClient}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceClient {
     private final String              baseUrl;

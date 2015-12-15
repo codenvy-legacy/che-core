@@ -13,8 +13,7 @@ package org.eclipse.che.ide.websocket.events;
 /**
  * Handler opening WebSocket connection.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a>
- * @version $Id: ConnectionOpenedHandler.java Dec 7, 2012 11:17:16 AM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public interface ConnectionOpenedHandler {
     void onOpen();

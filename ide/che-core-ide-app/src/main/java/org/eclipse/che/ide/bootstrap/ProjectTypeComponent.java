@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * @author Evgen Vidolob
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class ProjectTypeComponent implements Component {

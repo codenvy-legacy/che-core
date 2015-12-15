@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link ConfirmDialogViewImpl} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ConfirmDialogViewTest extends BaseTest {
     @Mock

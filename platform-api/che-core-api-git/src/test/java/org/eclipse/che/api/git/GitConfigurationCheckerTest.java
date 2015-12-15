@@ -23,7 +23,7 @@ import java.nio.file.Paths;
 /**
  * Tests for {@link GitConfigurationChecker}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class GitConfigurationCheckerTest {
     private static final String GITIGNORE_FILE_CONTENT = "\n"

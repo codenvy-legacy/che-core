@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test covers {@link OpenedFilesPersistenceComponent} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class OpenedFilesPersistenceComponentTest {

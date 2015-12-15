@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
  * Testing {@link AbstractWizard}.
  *
  * @author Andrey Plotnikov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractWizardTest {

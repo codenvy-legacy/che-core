@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide;
 
-/** @author Artem Zatsarynnyy */
+/** @author Artem Zatsarynnyi */
 public interface Constants {
 
     String CODENVY_PLUGIN_ID       = "codenvy_extension";

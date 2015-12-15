@@ -25,7 +25,7 @@ import java.util.Map;
  * Abstract base implementation of a {@link Wizard}.
  *
  * @author Andrey Plotnikov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public abstract class AbstractWizard<T> implements Wizard<T> {
     protected final T                   dataObject;

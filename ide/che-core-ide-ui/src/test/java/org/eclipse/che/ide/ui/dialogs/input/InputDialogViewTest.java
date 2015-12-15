@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link InputDialogViewImpl} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class InputDialogViewTest extends BaseTest {
     @Mock

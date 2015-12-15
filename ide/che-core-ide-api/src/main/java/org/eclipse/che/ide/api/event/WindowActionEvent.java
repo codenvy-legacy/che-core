@@ -16,7 +16,7 @@ import com.google.gwt.user.client.Window;
 /**
  * Event that describes the fact that Codenvy browser's tab has been closed or closing now.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class WindowActionEvent extends GwtEvent<WindowActionHandler> {
 

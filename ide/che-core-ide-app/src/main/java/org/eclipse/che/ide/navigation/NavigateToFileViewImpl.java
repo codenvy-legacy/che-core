@@ -40,7 +40,7 @@ import java.util.List;
  * The implementation of {@link NavigateToFileView} view.
  *
  * @author Ann Shumilova
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class NavigateToFileViewImpl extends Window implements NavigateToFileView {

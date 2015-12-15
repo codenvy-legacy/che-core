@@ -16,7 +16,7 @@ import com.google.gwt.regexp.shared.RegExp;
  * Utility methods for validating file/folder/project name.
  *
  * @author Evgen Vidolob
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class NameUtils {
     private static RegExp FILE_NAME    = RegExp.compile("^[\\sA-Za-z0-9_\\-\\.]+$");

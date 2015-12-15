@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * @author Evgen Vidolob
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class SchemeImpl implements Scheme {
 

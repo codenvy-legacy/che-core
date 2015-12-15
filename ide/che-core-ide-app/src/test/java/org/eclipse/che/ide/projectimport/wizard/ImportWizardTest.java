@@ -59,7 +59,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link ImportWizard}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ImportWizardTest {

@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @param <T>
  *         the type of the associated data
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public abstract class AbstractTreeNode<T> implements TreeNode<T> {
     private final TreeStructure                treeStructure;

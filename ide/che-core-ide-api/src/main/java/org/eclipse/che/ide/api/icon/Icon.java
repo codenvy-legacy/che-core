@@ -22,7 +22,7 @@ import org.eclipse.che.commons.annotation.Nullable;
 /**
  * Icon.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class Icon {
     private final String        id;

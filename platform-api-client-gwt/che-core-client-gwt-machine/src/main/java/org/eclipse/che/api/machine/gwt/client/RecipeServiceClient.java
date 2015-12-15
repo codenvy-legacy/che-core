@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Client for Recipe API.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Valeriy Svydenko
  */
 public interface RecipeServiceClient {

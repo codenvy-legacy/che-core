@@ -19,7 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-/** @author Artem Zatsarynnyy */
+/** @author Artem Zatsarynnyi */
 @RunWith(MockitoJUnitRunner.class)
 public class BlankProjectWizardRegistrarTest {
 

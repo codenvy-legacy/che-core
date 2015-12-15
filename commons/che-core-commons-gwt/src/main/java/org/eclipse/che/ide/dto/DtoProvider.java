@@ -15,7 +15,7 @@ package org.eclipse.che.ide.dto;
  *
  * @param <DTO>
  *         the type of DTO interface which implementation this provider provides
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface DtoProvider<DTO> {
     /** Get type of interface which implementation this provider provides. */

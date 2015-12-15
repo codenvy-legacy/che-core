@@ -18,7 +18,7 @@ import com.google.gwt.http.client.RequestBuilder.Method;
 /**
  * Builder for constructing {@link Message}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class MessageBuilder {
     public static final String UUID_FIELD = "uuid";

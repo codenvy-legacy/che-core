@@ -14,7 +14,7 @@ import org.eclipse.che.ide.collections.Jso;
 import org.eclipse.che.ide.collections.js.JsoArray;
 import org.eclipse.che.ide.websocket.rest.Pair;
 
-/** @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a> */
+/** @author Artem Zatsarynnyi */
 public class Message extends Jso {
 
     protected Message() {

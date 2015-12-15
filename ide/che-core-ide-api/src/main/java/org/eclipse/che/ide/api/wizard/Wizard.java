@@ -19,7 +19,7 @@ import org.eclipse.che.commons.annotation.Nullable;
  * @param <T>
  *         the type of the data-object that stores collected data
  * @author Andrey Plotnikov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface Wizard<T> {
     /**

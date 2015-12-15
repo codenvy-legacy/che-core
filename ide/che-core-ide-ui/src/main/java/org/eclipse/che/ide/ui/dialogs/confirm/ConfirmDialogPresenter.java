@@ -24,7 +24,7 @@ import org.eclipse.che.commons.annotation.Nullable;
  * {@link ConfirmDialog} implementation.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ConfirmDialogPresenter implements ConfirmDialog, ConfirmDialogView.ActionDelegate {
 

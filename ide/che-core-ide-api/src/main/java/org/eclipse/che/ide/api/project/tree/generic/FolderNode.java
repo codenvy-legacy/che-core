@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * A node that represents a folder (an {@link ItemReference} with type - folder or project).
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Deprecated
 public class FolderNode extends ItemNode {
