@@ -15,7 +15,7 @@ import com.google.gwt.event.shared.EventHandler;
 /**
  * A handler for receiving {@link NodeChangedEvent}s.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface NodeChangedHandler extends EventHandler {
 

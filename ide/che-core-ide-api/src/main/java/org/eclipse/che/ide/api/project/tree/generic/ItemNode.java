@@ -28,7 +28,7 @@ import javax.validation.constraints.NotNull;
  * Abstract base class for all tree nodes that represent an {@link ItemReference}.
  * There are exactly two kinds of {@link ItemNode}: {@link FileNode}, {@link FolderNode}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @see FileNode
  * @see FolderNode
  */

@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Implementation for {@link ImportWizardRegistry}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ImportWizardRegistryImpl implements ImportWizardRegistry {
     private final Map<String, ImportWizardRegistrar> registrars;

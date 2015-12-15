@@ -21,8 +21,7 @@ import org.eclipse.che.ide.websocket.rest.RequestCallback;
 /**
  * WebSocket message bus, that provides two asynchronous messaging patterns: RPC and list-based PubSub.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a>
- * @version $Id: MessageBus.java Dec 4, 2012 2:50:32 PM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public interface MessageBus extends MessageReceivedHandler {
     /** This enumeration used to describe the ready state of the WebSocket connection. */

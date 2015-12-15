@@ -29,7 +29,7 @@ import javax.validation.constraints.NotNull;
  * Implementation of the input dialog view.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class InputDialogViewImpl extends Window implements InputDialogView {
 

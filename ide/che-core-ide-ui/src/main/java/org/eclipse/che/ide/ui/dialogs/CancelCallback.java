@@ -14,7 +14,7 @@ package org.eclipse.che.ide.ui.dialogs;
  * Callback called when the user clicks on "Cancel" in the confirmation/input dialog.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface CancelCallback {
 

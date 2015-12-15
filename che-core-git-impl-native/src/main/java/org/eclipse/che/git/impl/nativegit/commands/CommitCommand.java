@@ -29,7 +29,7 @@ import java.util.Map;
  * Commit changes
  *
  * @author Eugene Voevodin
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class CommitCommand extends GitCommand<Void> {
     private static final Logger LOG = LoggerFactory.getLogger(CommitCommand.class);

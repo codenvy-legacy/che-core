@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
  * Implementations of this interface need to be registered using a multibinder
  * in order to be picked up by {@link TreeStructureProviderRegistry}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface TreeStructureProvider extends Provider<TreeStructure> {
 

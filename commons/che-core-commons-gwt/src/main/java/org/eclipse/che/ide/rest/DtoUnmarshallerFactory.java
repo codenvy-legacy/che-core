@@ -20,7 +20,7 @@ import java.util.List;
  * Provides implementations of Unmarshallable instances to
  * deserialize HTTP request result or WebSocket message to DTO.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class DtoUnmarshallerFactory {

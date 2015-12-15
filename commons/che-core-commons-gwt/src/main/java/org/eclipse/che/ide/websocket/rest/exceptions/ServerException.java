@@ -19,8 +19,7 @@ import java.util.List;
 /**
  * Thrown when there was an any exception was received from the server over WebSocket.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a>
- * @version $Id: ServerException.java Nov 9, 2012 5:20:18 PM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 @SuppressWarnings("serial")
 public class ServerException extends Exception {

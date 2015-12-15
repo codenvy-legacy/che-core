@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 /**
  * DTO interface definition annotation. Used to mark interface for generating DTO.
  *
- * @author <a href="mailto:azatsarynnyy@codenvy.com">Artem Zatsarynnyy</a>
+ * @author Artem Zatsarynnyi
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Provides implementations of {@link AsyncRequest} instances.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class AsyncRequestFactory {

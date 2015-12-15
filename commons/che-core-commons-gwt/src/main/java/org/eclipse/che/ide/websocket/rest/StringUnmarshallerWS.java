@@ -15,7 +15,7 @@ import org.eclipse.che.ide.websocket.Message;
 /**
  * String unmarshaller for websocket messages.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class StringUnmarshallerWS implements Unmarshallable<String> {
     protected String builder;

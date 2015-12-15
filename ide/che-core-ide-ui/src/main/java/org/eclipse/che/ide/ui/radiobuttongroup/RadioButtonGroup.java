@@ -32,7 +32,7 @@ import java.util.List;
  * Turning on one of those buttons turns off all other buttons in the group.
  * Initially, all buttons in the group are unselected.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class RadioButtonGroup extends Composite {
 

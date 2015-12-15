@@ -17,7 +17,7 @@ import org.eclipse.che.api.promises.client.Promise;
  * The purpose of the returned {@link Promise} is to allow for interested parties to be
  * notified when performing action has completed or rejected.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface PromisableAction {
 

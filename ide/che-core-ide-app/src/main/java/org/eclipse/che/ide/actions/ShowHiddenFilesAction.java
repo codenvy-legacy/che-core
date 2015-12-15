@@ -37,7 +37,7 @@ import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
 @Singleton

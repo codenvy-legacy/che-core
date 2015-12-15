@@ -17,7 +17,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 /**
  * An event that should be fired in order to configure the currently opened project.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ConfigureProjectEvent extends GwtEvent<ConfigureProjectHandler> {
     public static Type<ConfigureProjectHandler> TYPE = new Type<>();

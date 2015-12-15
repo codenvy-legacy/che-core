@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test covers {@link ActiveFilePersistenceComponent} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ActiveFilePersistenceComponentTest {

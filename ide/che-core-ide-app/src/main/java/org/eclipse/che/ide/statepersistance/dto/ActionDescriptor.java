@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * DTO for {@link org.eclipse.che.ide.api.action.Action}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @DTO
 public interface ActionDescriptor {

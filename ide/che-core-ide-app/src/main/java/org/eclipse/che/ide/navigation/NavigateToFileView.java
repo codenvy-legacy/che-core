@@ -20,7 +20,7 @@ import java.util.List;
  * View for file navigation (find file by name and open it).
  *
  * @author Ann Shumilova
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface NavigateToFileView extends View<NavigateToFileView.ActionDelegate> {
     /** Needs for delegate some function into NavigateToFile view. */

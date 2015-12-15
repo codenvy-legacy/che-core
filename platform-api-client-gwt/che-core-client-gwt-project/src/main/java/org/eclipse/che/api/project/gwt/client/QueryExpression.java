@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.gwt.client;
 
-/** @author Artem Zatsarynnyy */
+/** @author Artem Zatsarynnyi */
 public class QueryExpression {
     private String name;
     private String path;

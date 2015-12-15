@@ -13,8 +13,7 @@ package org.eclipse.che.ide.websocket.events;
 /**
  * Event is fired, when WebSocket connection is closed.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatform.org">Artem Zatsarynnyy</a>
- * @version $Id: WebSocketClosedEvent.java Jun 18, 2012 14:33:50 PM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public class WebSocketClosedEvent {
 

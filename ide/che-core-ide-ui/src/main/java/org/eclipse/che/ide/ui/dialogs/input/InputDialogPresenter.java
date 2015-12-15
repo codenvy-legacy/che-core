@@ -23,7 +23,7 @@ import org.eclipse.che.commons.annotation.Nullable;
  * {@link InputDialog} implementation.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class InputDialogPresenter implements InputDialog, InputDialogView.ActionDelegate {
 

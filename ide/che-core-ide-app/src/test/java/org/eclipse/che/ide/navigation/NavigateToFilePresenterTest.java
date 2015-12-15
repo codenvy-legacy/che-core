@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
  * Test for {@link NavigateToFilePresenter}.
  *
  * @author Ann Shumilova
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class NavigateToFilePresenterTest {

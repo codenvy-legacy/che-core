@@ -27,7 +27,7 @@ import static org.eclipse.che.ide.ui.dialogs.message.MessageDialogView.ActionDel
  * {@link MessageDialog} implementation.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class MessageDialogPresenter implements MessageDialog, MessageDialogView.ActionDelegate {
 

@@ -43,7 +43,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 /**
  * Implementation for {@link RecipeServiceClient}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Valeriy Svydenko
  */
 public class RecipeServiceClientImpl implements RecipeServiceClient {

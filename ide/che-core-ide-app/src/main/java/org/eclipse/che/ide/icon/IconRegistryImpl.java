@@ -20,7 +20,7 @@ import java.util.Map;
  * Implementation of {@link IconRegistry}.
  *
  * @author Vitaly Parfonov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class IconRegistryImpl implements IconRegistry {
 

@@ -17,7 +17,7 @@ import com.google.gwt.json.client.JSONParser;
 /**
  * DTO unmarshaller for websocket messages.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class DtoUnmarshaller<T> implements Unmarshallable<T> {
     protected T          payload;

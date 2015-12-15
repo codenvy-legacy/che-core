@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Factory that helps to create nodes for {@link GenericTreeStructure}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface NodeFactory {
     /**

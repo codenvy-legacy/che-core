@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Registry allows to register new {@link FileType} and get the registered one.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface FileTypeRegistry {
     /**

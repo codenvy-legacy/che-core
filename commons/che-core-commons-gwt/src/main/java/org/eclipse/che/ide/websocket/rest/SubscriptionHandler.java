@@ -20,8 +20,7 @@ import java.util.List;
 /**
  * Handler to receive messages by subscription.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatform.org">Artem Zatsarynnyy</a>
- * @version $Id: SubscriptionHandler.java Jul 30, 2012 9:54:41 AM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public abstract class SubscriptionHandler<T> implements MessageHandler {
     /** Deserializer for the body of the {@link Message}. */

@@ -31,7 +31,7 @@ import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
  * Component provides sequence of actions which should be performed
  * in order to restore active file for the particular project.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class ActiveFilePersistenceComponent implements PersistenceComponent {

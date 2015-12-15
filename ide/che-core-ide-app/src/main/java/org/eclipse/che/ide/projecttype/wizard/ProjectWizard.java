@@ -51,7 +51,7 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar
 /**
  * Project wizard used for creating new a project or updating an existing one.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
 

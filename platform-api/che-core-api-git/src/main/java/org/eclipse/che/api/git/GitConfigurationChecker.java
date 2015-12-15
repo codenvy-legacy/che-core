@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  *    .vfs/
  * like system files for Codenvy
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class GitConfigurationChecker {

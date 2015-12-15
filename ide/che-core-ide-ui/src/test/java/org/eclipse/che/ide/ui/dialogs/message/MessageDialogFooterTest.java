@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Testing {@link MessageDialogFooter} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class MessageDialogFooterTest extends BaseTest {
     @Mock

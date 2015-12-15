@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Project import wizard used for importing a project.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 

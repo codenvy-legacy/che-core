@@ -42,7 +42,7 @@ import static org.testng.Assert.assertTrue;
  * Tests that the interfaces specified in org.eclipse.che.dto.definitions have
  * corresponding generated server implementations.
  *
- * @author <a href="mailto:azatsarynnyy@codenvy.com">Artem Zatsarynnyy</a>
+ * @author Artem Zatsarynnyi
  */
 public class ServerDtoTest {
 

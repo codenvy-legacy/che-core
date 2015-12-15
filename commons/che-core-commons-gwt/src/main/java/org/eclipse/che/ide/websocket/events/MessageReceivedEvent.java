@@ -13,8 +13,7 @@ package org.eclipse.che.ide.websocket.events;
 /**
  * Event is fired, when WebSocket message was received.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatform.org">Artem Zatsarynnyy</a>
- * @version $Id: MessageReceivedEvent.java Jun 18, 2012 14:33:50 PM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public class MessageReceivedEvent {
     /** Received message. */
