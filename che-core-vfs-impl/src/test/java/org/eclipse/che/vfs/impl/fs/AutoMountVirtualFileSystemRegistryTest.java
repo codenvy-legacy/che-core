@@ -11,6 +11,7 @@
 package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemProvider;
 
 /**
@@ -20,7 +21,7 @@ public class AutoMountVirtualFileSystemRegistryTest extends LocalFileSystemTest 
     public void testAutoMount() throws Exception {
         // new registry without any registered vfs providers
         AutoMountVirtualFileSystemRegistry registry =
-                new AutoMountVirtualFileSystemRegistry(new WorkspaceHashLocalFSMountStrategy(root, root), new EventService(), null);
+                new AutoMountVirtualFileSystemRegistry(new WorkspaceHashLocalFSMountStrategy(root, root), new EventService(), SystemPathsFilter.ANY, null);
         final VirtualFileSystemProvider fileSystemProvider = registry.getProvider(MY_WORKSPACE_ID);
         assertEquals(MY_WORKSPACE_ID, fileSystemProvider.getWorkspaceId());
     }

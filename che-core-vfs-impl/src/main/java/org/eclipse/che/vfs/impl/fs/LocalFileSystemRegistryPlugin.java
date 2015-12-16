@@ -12,6 +12,7 @@ package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 
@@ -30,9 +31,10 @@ public class LocalFileSystemRegistryPlugin {
                                          LocalFSMountStrategy mountStrategy,
                                          VirtualFileSystemRegistry registry,
                                          EventService eventService,
+                                         SystemPathsFilter systemFilter,
                                          @Nullable SearcherProvider searcherProvider) throws ServerException {
         for (String id : ids) {
-            registry.registerProvider(id, new LocalFileSystemProvider(id, mountStrategy, eventService, searcherProvider, registry));
+            registry.registerProvider(id, new LocalFileSystemProvider(id, mountStrategy, eventService, searcherProvider, systemFilter, registry));
         }
     }
 }

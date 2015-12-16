@@ -43,6 +43,7 @@ import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.vfs.server.ContentStream;
 import org.eclipse.che.api.vfs.server.ContentStreamWriter;
 import org.eclipse.che.api.vfs.server.MountPoint;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
@@ -169,7 +170,7 @@ public class ProjectServiceTest {
                     public VirtualFileSystemUser getVirtualFileSystemUser() {
                         return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
                     }
-                }, vfsRegistry);
+                }, vfsRegistry, new SystemPathsFilter(Collections.singleton(new ProjectMiscPathFilter())));
 
         MemoryMountPoint mmp = (MemoryMountPoint)memoryFileSystemProvider.getMountPoint(true);
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
