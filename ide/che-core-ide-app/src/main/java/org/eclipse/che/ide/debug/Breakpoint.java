@@ -13,6 +13,9 @@ package org.eclipse.che.ide.debug;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 
 /**
+ * Immutable object represents a breakpoint. It isn't designed to be preserved.
+ * {@link org.eclipse.che.ide.debug.dto.BreakpointDto} should be used then.
+ *
  * @author Evgen Vidolob
  * @author Anatoliy Bazko
  */

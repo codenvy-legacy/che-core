@@ -533,22 +533,27 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
 
             if (breakpointRenderer != null) {
                 for (final Breakpoint breakpoint : fileBreakpoints) {
-                    int lineNumber = breakpoint.getLineNumber();
-                    breakpointRenderer.addBreakpointMark(lineNumber, new LineChangeAction() {
-                        @Override
-                        public void onLineChange(VirtualFile file, int firstLine, int linesAdded, int linesRemoved) {
-                            BreakpointManagerImpl.this.onLineChange(file, firstLine, linesAdded, linesRemoved);
-                        }
-                    });
-
-                    if (debuggerState == CONNECTED && breakpoint.isActive()) {
-                        breakpointRenderer.setBreakpointActive(lineNumber, true);
-                    }
-                    if (isCurrentBreakpoint(lineNumber)) {
-                        breakpointRenderer.setLineActive(lineNumber, true);
-                    }
+                    readdBreakpointMark(breakpointRenderer, breakpoint);
                 }
             }
+        }
+    }
+
+    private void readdBreakpointMark(BreakpointRenderer breakpointRenderer, Breakpoint breakpoint) {
+        int lineNumber = breakpoint.getLineNumber();
+
+        breakpointRenderer.addBreakpointMark(lineNumber, new LineChangeAction() {
+            @Override
+            public void onLineChange(VirtualFile file, int firstLine, int linesAdded, int linesRemoved) {
+                BreakpointManagerImpl.this.onLineChange(file, firstLine, linesAdded, linesRemoved);
+            }
+        });
+
+        if (debuggerState == CONNECTED && breakpoint.isActive()) {
+            breakpointRenderer.setBreakpointActive(lineNumber, true);
+        }
+        if (isCurrentBreakpoint(lineNumber)) {
+            breakpointRenderer.setLineActive(lineNumber, true);
         }
     }
 
