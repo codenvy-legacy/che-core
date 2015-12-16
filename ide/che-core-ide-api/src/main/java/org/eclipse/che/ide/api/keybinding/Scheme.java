@@ -20,7 +20,7 @@ import java.util.List;
  * Scheme is set of the key bindings.
  *
  * @author Evgen Vidolob
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface Scheme {
 

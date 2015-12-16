@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Generates {DtoFactoryVisitorRegistry} class source.
  *
- * @author <a href="mailto:azatsarynnyy@codenvy.com">Artem Zatsarynnyy</a>
+ * @author Artem Zatsarynnyi
  */
 public class DtoFactoryVisitorRegistryGenerator {
 

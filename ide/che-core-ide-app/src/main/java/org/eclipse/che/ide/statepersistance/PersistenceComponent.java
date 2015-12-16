@@ -20,7 +20,7 @@ import java.util.List;
  * Implementations of this interface need to be registered using
  * a multibinder in order to be picked-up on start-up.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface PersistenceComponent {
 

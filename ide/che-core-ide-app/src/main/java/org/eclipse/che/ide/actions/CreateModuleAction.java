@@ -25,7 +25,7 @@ import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import java.util.List;
 
 /**
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
 @Singleton

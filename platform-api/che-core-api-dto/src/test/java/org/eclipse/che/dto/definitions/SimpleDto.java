@@ -16,7 +16,7 @@ import org.eclipse.che.dto.shared.DTO;
  * DTO for testing that the {@link org.eclipse.che.dto.generator.DtoGenerator}
  * correctly generates server implementations for simple DTO interface.
  *
- * @author <a href="mailto:azatsarynnyy@codenvy.com">Artem Zatsarynnyy</a>
+ * @author Artem Zatsarynnyi
  */
 @DTO
 public interface SimpleDto {

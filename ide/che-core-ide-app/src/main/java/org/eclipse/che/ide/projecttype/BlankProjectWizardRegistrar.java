@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Provides information for registering Blank project type into project wizard.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class BlankProjectWizardRegistrar implements ProjectWizardRegistrar {
 

@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Defines modes used to open a project wizard.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public enum ProjectWizardMode {
 

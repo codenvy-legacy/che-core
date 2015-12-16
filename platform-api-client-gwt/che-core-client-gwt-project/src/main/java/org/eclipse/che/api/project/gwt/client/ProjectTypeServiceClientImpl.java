@@ -35,7 +35,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 /**
  * The implementation of {@link ProjectTypeServiceClient}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
     private final AsyncRequestLoader     loader;

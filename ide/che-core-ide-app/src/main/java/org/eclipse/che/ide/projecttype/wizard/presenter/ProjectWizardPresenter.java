@@ -47,7 +47,7 @@ import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.UPDA
  * @author Evgen Vidolob
  * @author Oleksii Orel
  * @author Sergii Leschenko
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class ProjectWizardPresenter implements Wizard.UpdateDelegate,

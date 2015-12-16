@@ -16,7 +16,7 @@ import org.eclipse.che.commons.annotation.Nullable;
 /**
  * Picks-up all bounded {@link ProjectWizardRegistrar}s to be able to return it for the particular project type ID.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ProjectWizardRegistry {
     /**

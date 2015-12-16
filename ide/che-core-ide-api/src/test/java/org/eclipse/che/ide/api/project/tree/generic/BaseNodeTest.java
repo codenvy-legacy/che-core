@@ -22,7 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.when;
 
-/** @author Artem Zatsarynnyy */
+/** @author Artem Zatsarynnyi */
 @RunWith(MockitoJUnitRunner.class)
 public abstract class BaseNodeTest {
     @Mock

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link InputDialogPresenter} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Roman Nikitenko
  */
 public class InputDialogPresenterTest extends BaseTest {

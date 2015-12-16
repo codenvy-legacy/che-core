@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Callback to receive a {@link Message}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public abstract class RequestCallback<T> {
 

@@ -14,7 +14,7 @@ package org.eclipse.che.ide.ui.dialogs.input;
  * Interface to the input dialog component.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface InputDialog {
 

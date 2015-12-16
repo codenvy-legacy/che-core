@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Testing {@link ConfirmDialogPresenter} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ConfirmDialogPresenterTest extends BaseTest {
     @Mock

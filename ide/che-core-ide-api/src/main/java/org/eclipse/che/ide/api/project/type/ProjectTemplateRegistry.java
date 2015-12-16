@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Registry for {@link org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor}s.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ProjectTemplateRegistry {
     /**

@@ -23,7 +23,7 @@ import java.util.Map.Entry;
  * Class responsible for register DTO providers. It uses {@link DtoFactoryVisitorRegistry} to acquire
  * {@link DtoFactoryVisitor}s.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class DtoRegistrar {

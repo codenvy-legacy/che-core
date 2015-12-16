@@ -60,7 +60,7 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
  * After performing this action, it asks user for the resource's name
  * and then creates resource in the selected folder.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
 public abstract class AbstractNewResourceAction extends AbstractPerspectiveAction {

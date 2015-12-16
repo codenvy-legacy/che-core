@@ -14,7 +14,7 @@ package org.eclipse.che.ide.dto;
  * DtoFactory visitor definition annotation. Used to mark class as {@link DtoFactoryVisitor}, which can accept
  * {@link DtoFactory} to register one or multiple {@link DtoProvider}s.
  *
- * @author <a href="mailto:azatsarynnyy@codenvy.com">Artem Zatsarynnyy</a>
+ * @author Artem Zatsarynnyi
  */
 public @interface ClientDtoFactoryVisitor {
 }

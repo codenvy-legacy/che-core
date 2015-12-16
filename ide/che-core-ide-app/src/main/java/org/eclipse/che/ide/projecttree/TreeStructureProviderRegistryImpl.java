@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Implementation for {@link TreeStructureProviderRegistry}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class TreeStructureProviderRegistryImpl implements TreeStructureProviderRegistry {
     private final Map<String, TreeStructureProvider> treeProviders;

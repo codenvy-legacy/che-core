@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
  * Implementation of the message dialog view.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class MessageDialogViewImpl extends Window implements MessageDialogView {
 

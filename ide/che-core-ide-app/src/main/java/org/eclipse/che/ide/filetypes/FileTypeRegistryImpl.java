@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Implementation of {@link org.eclipse.che.ide.api.filetypes.FileTypeRegistry}
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class FileTypeRegistryImpl implements FileTypeRegistry {

@@ -16,7 +16,7 @@ import com.google.gwt.event.shared.GwtEvent;
 /**
  * Event that describes the fact that node has been changed.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class NodeChangedEvent extends GwtEvent<NodeChangedHandler> {
 

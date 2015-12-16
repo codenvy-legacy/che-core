@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Client for Project Type API.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ProjectTypeServiceClient {
 

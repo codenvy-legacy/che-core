@@ -13,7 +13,7 @@ package org.eclipse.che.ide.websocket;
 /**
  * Thrown when there was a problem with WebSocket connection.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @SuppressWarnings("serial")
 public class WebSocketException extends Exception {

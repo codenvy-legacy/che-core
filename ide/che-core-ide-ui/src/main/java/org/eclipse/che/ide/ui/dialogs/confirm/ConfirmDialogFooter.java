@@ -29,7 +29,7 @@ import javax.validation.constraints.NotNull;
  * The footer show on confirmation dialogs.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ConfirmDialogFooter extends Composite {
 

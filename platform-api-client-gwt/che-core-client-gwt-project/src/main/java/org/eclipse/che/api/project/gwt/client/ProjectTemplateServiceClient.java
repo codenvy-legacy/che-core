@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Client for Project Template service.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ProjectTemplateServiceClient {
     /**

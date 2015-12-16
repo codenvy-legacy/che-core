@@ -30,7 +30,7 @@ import static org.eclipse.che.ide.ui.window.Window.Resources;
  * The footer show on input dialogs.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class InputDialogFooter extends Composite {
 

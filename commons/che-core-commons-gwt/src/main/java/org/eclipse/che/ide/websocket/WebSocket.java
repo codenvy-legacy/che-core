@@ -20,8 +20,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 /**
  * Class that wraps native JavaScript WebSocket object.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a>
- * @version $Id: WebSocket.java Dec 4, 2012 4:46:55 PM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public class WebSocket extends JavaScriptObject {
     protected WebSocket() {

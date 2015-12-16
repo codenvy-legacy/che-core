@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-/** @author Artem Zatsarynnyy */
+/** @author Artem Zatsarynnyi */
 @RunWith(GwtMockitoTestRunner.class)
 public abstract class BaseTest  {
     protected static String TITLE   = "title";

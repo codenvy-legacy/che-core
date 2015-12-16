@@ -50,7 +50,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
  * Presenter for file navigation (find file by name and open it).
  *
  * @author Ann Shumilova
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class NavigateToFilePresenter implements NavigateToFileView.ActionDelegate, ExtServerStateHandler {

@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Implementation for {@link ProjectTemplateRegistry}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ProjectTemplateRegistryImpl implements ProjectTemplateRegistry {
     private final Map<String, List<ProjectTemplateDescriptor>> templateDescriptors;

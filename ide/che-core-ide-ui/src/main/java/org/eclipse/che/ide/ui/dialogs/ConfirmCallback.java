@@ -14,7 +14,7 @@ package org.eclipse.che.ide.ui.dialogs;
  * Callback called when the user clicks on "OK" in the confirmation dialog.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ConfirmCallback {
 
