@@ -49,6 +49,7 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -71,6 +72,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.api.core.util.LinksHelper.createLink;
 import static org.eclipse.che.api.workspace.server.Constants.GET_ALL_USER_WORKSPACES;
@@ -96,6 +98,9 @@ public class WorkspaceService extends Service {
     @Context
     private SecurityContext securityContext;
 
+    @Context
+    private ServletContext servletContext;
+
     @Inject
     public WorkspaceService(WorkspaceManager workspaceManager,
                             MachineManager machineManager,
@@ -106,8 +111,8 @@ public class WorkspaceService extends Service {
     }
 
     @ApiOperation(value = "Create a new workspace",
-                  notes = "For 'system/admin' it is required to set new workspace owner, " +
-                          "when for any other kind of 'user' it is not(users identifier will be used for this purpose)")
+            notes = "For 'system/admin' it is required to set new workspace owner, " +
+                    "when for any other kind of 'user' it is not(users identifier will be used for this purpose)")
     @ApiResponses({@ApiResponse(code = 201, message = "Workspace was created successfully"),
                    @ApiResponse(code = 400, message = "Missed required parameters"),
                    @ApiResponse(code = 403, message = "User does not have access to create new workspace"),
@@ -540,6 +545,15 @@ public class WorkspaceService extends Service {
                                        .toString(),
                              APPLICATION_JSON,
                              "get workspace's snapshot"));
+
+        //TODO here we add url to IDE with workspace name not good solution do it here but critical for this task  https://jira.codenvycorp.com/browse/IDEX-3619
+        links.add(createLink("GET", uriBuilder.clone()
+                                              .replacePath(servletContext.getContextPath())
+                                              .path(workspace.getName())
+                                              .build()
+                                              .toString(),
+                             TEXT_HTML,
+                             "ide url"));
         if (RuntimeWorkspaceDto.class.isAssignableFrom(workspace.getClass())) {
             links.add(createLink("GET",
                                  uriBuilder.clone()
