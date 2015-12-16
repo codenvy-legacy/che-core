@@ -79,7 +79,7 @@ public class ShowHiddenFilesAction extends AbstractPerspectiveAction implements 
     @Override
     public Promise<Void> promise(final ActionEvent event) {
         if (event.getParameters() == null || event.getParameters().get(SHOW_HIDDEN_FILES_PARAM_ID) == null) {
-            Promises.reject(JsPromiseError.create("Parameter" + SHOW_HIDDEN_FILES_PARAM_ID + " is not specified"));
+            return Promises.reject(JsPromiseError.create("Mandatory parameter" + SHOW_HIDDEN_FILES_PARAM_ID + " is not specified"));
         }
 
         final String showHiddenFilesKey = event.getParameters().get(SHOW_HIDDEN_FILES_PARAM_ID);
