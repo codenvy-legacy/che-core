@@ -36,13 +36,13 @@ public interface LoaderView extends IsWidget {
     void setCurrentOperation(String operation);
 
     /** Sets the 'error' status for operation with {@code index}. */
-    void setErrorStatus(int index);
+    void setErrorStatus(int index, String operation);
 
     /** Sets the 'success' status for operation with {@code index}. */
-    void setSuccessStatus(int index);
+    void setSuccessStatus(int index, String operation);
 
     /** Sets the 'in progress' status for operation with {@code index}. */
-    void setInProgressStatus(int index);
+    void setInProgressStatus(int index, String operation);
 
     /** Expand Operations area. */
     void expandOperations();

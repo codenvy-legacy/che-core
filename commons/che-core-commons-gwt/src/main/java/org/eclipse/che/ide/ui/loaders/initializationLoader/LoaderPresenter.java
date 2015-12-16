@@ -89,18 +89,21 @@ public class LoaderPresenter implements OperationInfo.StatusListener, LoaderView
 
     @Override
     public void onStatusChanged(OperationInfo operation) {
+        int operationIndex = operations.indexOf(operation);
+        String operationName = operation.getOperationName();
+
         switch (operation.getStatus()) {
             case IN_PROGRESS:
-                view.setInProgressStatus(operations.indexOf(operation));
-                view.setCurrentOperation(operation.getOperationName());
+                view.setInProgressStatus(operationIndex, operationName);
+                view.setCurrentOperation(operationName);
                 break;
             case SUCCESS:
-                view.setSuccessStatus(operations.indexOf(operation));
+                view.setSuccessStatus(operationIndex, operationName);
                 updateState();
                 break;
             case ERROR:
-                view.setErrorStatus(operations.indexOf(operation));
-                view.setCurrentOperation("Error while " + operation.getOperationName());
+                view.setErrorStatus(operationIndex, operationName);
+                view.setCurrentOperation("Error while " + operationName);
                 break;
         }
     }

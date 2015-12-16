@@ -63,6 +63,7 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
 
 /**
  * @author Evgen Vidolob
@@ -215,6 +216,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                         }
                     });
                 } else {
+                    initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), SUCCESS);
                     setCurrentWorkspace(workspace);
                 }
             }
@@ -252,11 +254,10 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
      * Handles workspace start or recovering.
      */
     private void handleWsStart(final Promise<UsersWorkspaceDto> promise) {
-        loader.show(initialLoadingInfo);
-        initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), IN_PROGRESS);
         promise.then(new Operation<UsersWorkspaceDto>() {
             @Override
             public void apply(UsersWorkspaceDto workspace) throws OperationException {
+                initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), SUCCESS);
                 setCurrentWorkspace(workspace);
                 List<MachineStateDto> machineStates = workspace.getEnvironments()
                                                                .get(workspace.getDefaultEnvName())

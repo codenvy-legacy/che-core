@@ -58,9 +58,9 @@ public class LoaderViewImpl implements LoaderView {
     DivElement progressBar;
     FlowPanel  rootElement;
 
-    private List<HTML>     components;
-    private ActionDelegate delegate;
-    private LoaderCss      styles;
+    private List<FlowPanel> components;
+    private ActionDelegate  delegate;
+    private LoaderCss       styles;
 
     @Inject
     public LoaderViewImpl(LoaderViewImplUiBinder uiBinder,
@@ -97,13 +97,17 @@ public class LoaderViewImpl implements LoaderView {
 
         iconPanel.clear();
         iconPanel.getElement().appendChild((resources.loaderIcon().getSvg().getElement()));
+        iconPanel.setStyleName(resources.css().iconPanel());
 
         progressBar.addClassName(styles.progressBarInProgressStatus());
         setProgressBarState(0);
 
         for (String operation : operations) {
-            HTML operationComponent = new HTML(operation);
-            operationComponent.addStyleName(styles.waitStatus());
+            FlowPanel operationComponent = new FlowPanel();
+            HTML label = new HTML(operation);
+            operationComponent.setStyleName(styles.waitStatus());
+            operationComponent.add(label);
+
             this.components.add(operationComponent);
             this.operations.add(operationComponent);
         }
@@ -116,26 +120,44 @@ public class LoaderViewImpl implements LoaderView {
     }
 
     @Override
-    public void setErrorStatus(int index) {
+    public void setErrorStatus(int index, String operation) {
         iconPanel.clear();
-        HTML error = new HTML("!");
-        error.addStyleName(styles.iconPanelErrorStatus());
-        iconPanel.add(error);
+        iconPanel.getElement().appendChild(resources.errorOperationIcon().getSvg().getElement());
+        iconPanel.setStyleName(styles.iconPanelErrorStatus());
 
-        components.get(index).setStyleName(styles.completedStatus());
         progressBar.setClassName(styles.progressBarErrorStatus());
         status.setStyleName(styles.errorStatusLabel());
         setProgressBarState(100);
+
+        FlowPanel operationComponent = components.get(index);
+        operationComponent.getElement().removeAllChildren();
+
+        operationComponent.getElement().appendChild((resources.errorOperationIcon().getSvg().getElement()));
+        HTML label = new HTML(operation);
+        operationComponent.add(label);
+        operationComponent.setStyleName(styles.errorStatus());
     }
 
     @Override
-    public void setSuccessStatus(int index) {
-        components.get(index).setStyleName(styles.completedStatus());
+    public void setSuccessStatus(int index, String operation) {
+        FlowPanel operationComponent = components.get(index);
+        operationComponent.getElement().removeAllChildren();
+
+        operationComponent.getElement().appendChild((resources.completedOperationIcon().getSvg().getElement()));
+        HTML label = new HTML(operation);
+        operationComponent.add(label);
+        operationComponent.setStyleName(styles.completedStatus());
     }
 
     @Override
-    public void setInProgressStatus(int index) {
-        components.get(index).setStyleName(styles.inProgressStatus());
+    public void setInProgressStatus(int index, String operation) {
+        FlowPanel operationComponent = components.get(index);
+        operationComponent.getElement().removeAllChildren();
+
+        operationComponent.getElement().appendChild((resources.currentOperationIcon().getSvg().getElement()));
+        HTML label = new HTML(operation);
+        operationComponent.add(label);
+        operationComponent.setStyleName(styles.inProgressStatus());
     }
 
     @Override
@@ -146,7 +168,6 @@ public class LoaderViewImpl implements LoaderView {
     @Override
     public void expandOperations() {
         operations.setVisible(true);
-        resize();
     }
 
     @Override
@@ -162,17 +183,6 @@ public class LoaderViewImpl implements LoaderView {
     @Override
     public Widget asWidget() {
         return rootElement;
-    }
-
-    private void resize() {
-        if (!operations.isVisible()) {
-            return;
-        }
-
-        int top = currentOperation.getElement().getAbsoluteTop();
-        int left = currentOperation.getElement().getAbsoluteLeft();
-        operations.getElement().getStyle().setPropertyPx("top", top + 27);
-        operations.getElement().getStyle().setPropertyPx("left", left);
     }
 
     /** Styles for loader. */
@@ -218,6 +228,15 @@ public class LoaderViewImpl implements LoaderView {
 
         @Source("loaderIcon.svg")
         SVGResource loaderIcon();
+
+        @Source("arrow.svg")
+        SVGResource currentOperationIcon();
+
+        @Source("done.svg")
+        SVGResource completedOperationIcon();
+
+        @Source("org/eclipse/che/ide/notification/error.svg")
+        SVGResource errorOperationIcon();
     }
 
     interface LoaderViewImplUiBinder extends UiBinder<FlowPanel, LoaderViewImpl> {

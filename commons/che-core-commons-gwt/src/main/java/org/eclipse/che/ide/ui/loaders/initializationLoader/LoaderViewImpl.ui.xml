@@ -15,10 +15,6 @@
              xmlns:g="urn:import:com.google.gwt.user.client.ui">
     <ui:with field='resources' type='org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderViewImpl.Resources'/>
     <ui:style>
-        .animate {
-            transition: width 0.25s linear, height 0.25s linear;
-            overflow: hidden;
-        }
 
         .mainPanel {
             height: 100%;
@@ -27,8 +23,13 @@
             margin: 0 !important;
         }
 
+        .mainPanel svg > path {
+            fill: inherit !important;
+        }
+
         .rightPanel {
             height: 100%;
+            width: 73%;
             display: inline-block;
             margin: 0 !important;
         }
