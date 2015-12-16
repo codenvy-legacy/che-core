@@ -20,7 +20,6 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -45,8 +44,6 @@ public class StopWorkspaceActionTest {
     private AppContext               appContext;
     @Mock
     private WorkspaceServiceClient   workspaceService;
-    @Mock
-    private WorkspaceComponent       workspaceComponent;
     @Mock
     private NotificationManager      notificationManager;
 

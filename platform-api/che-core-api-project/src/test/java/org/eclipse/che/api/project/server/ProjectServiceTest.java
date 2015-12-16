@@ -43,6 +43,7 @@ import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.vfs.server.ContentStream;
 import org.eclipse.che.api.vfs.server.ContentStreamWriter;
 import org.eclipse.che.api.vfs.server.MountPoint;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
@@ -169,7 +170,7 @@ public class ProjectServiceTest {
                     public VirtualFileSystemUser getVirtualFileSystemUser() {
                         return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
                     }
-                }, vfsRegistry);
+                }, vfsRegistry, new SystemPathsFilter(Collections.singleton(new ProjectMiscPathFilter())));
 
         MemoryMountPoint mmp = (MemoryMountPoint)memoryFileSystemProvider.getMountPoint(true);
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
@@ -1756,6 +1757,29 @@ public class ProjectServiceTest {
         result = (ItemReference)response.getEntity();
         assertEquals(result.getType(), "file");
         assertEquals(result.getMediaType(), TEXT_PLAIN);
+    }
+
+    @Test
+    public void testGetItemWithoutParentProject() throws Exception {
+        FolderEntry a = pm.getProjectsRoot(workspace).createFolder("a");
+        a.createFile("test.txt", "test".getBytes());
+        ContainerResponse response = launcher.service(GET,
+                String.format("http://localhost:8080/api/project/%s/item/a/test.txt",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        ItemReference result = (ItemReference)response.getEntity();
+        assertEquals(result.getType(), "file");
+        assertEquals(result.getMediaType(), TEXT_PLAIN);
+    }
+
+    @Test
+    public void testGetMissingItem() throws Exception {
+        ContainerResponse response = launcher.service(GET,
+                String.format("http://localhost:8080/api/project/%s/item/some_missing_project/a/b",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 404, "Error: " + response.getEntity());
     }
 
     @Test

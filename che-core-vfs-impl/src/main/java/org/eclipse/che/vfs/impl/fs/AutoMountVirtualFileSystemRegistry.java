@@ -12,6 +12,7 @@ package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
@@ -37,14 +38,17 @@ public class AutoMountVirtualFileSystemRegistry extends VirtualFileSystemRegistr
     private final LocalFSMountStrategy mountStrategy;
     private final EventService         eventService;
     private final SearcherProvider     searcherProvider;
+    private final SystemPathsFilter    systemFilter;
 
     @Inject
     public AutoMountVirtualFileSystemRegistry(LocalFSMountStrategy mountStrategy,
                                               EventService eventService,
+                                              SystemPathsFilter systemFilter,
                                               @Nullable SearcherProvider searcherProvider) {
         this.mountStrategy = mountStrategy;
         this.eventService = eventService;
         this.searcherProvider = searcherProvider;
+        this.systemFilter = systemFilter;
     }
 
     @Override
@@ -54,6 +58,6 @@ public class AutoMountVirtualFileSystemRegistry extends VirtualFileSystemRegistr
             return null;
         }
         LOG.debug("Using {} as mount point for workspace {} ", wsPath.getAbsolutePath(), vfsId);
-        return new LocalFileSystemProvider(vfsId, mountStrategy, eventService, searcherProvider, this);
+        return new LocalFileSystemProvider(vfsId, mountStrategy, eventService, searcherProvider, systemFilter, this);
     }
 }

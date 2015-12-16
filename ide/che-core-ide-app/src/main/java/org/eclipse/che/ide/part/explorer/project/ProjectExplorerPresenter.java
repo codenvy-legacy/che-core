@@ -124,6 +124,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
     public static final int PART_SIZE = 250;
 
+    private boolean hiddenFilesAreShown;
+
     @Inject
     public ProjectExplorerPresenter(ProjectExplorerView view,
                                     EventBus eventBus,
@@ -624,22 +626,22 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
     /**
      * Configure tree to show or hide files that starts with ".", e.g. hidden files.
-     * Affects only current project which is under selection.
      *
      * @param show
      *         true - if those files should be shown, otherwise - false
      */
     public void showHiddenFiles(boolean show) {
-        view.showHiddenFiles(show);
+        hiddenFilesAreShown = show;
+        view.showHiddenFilesForAllExpandedNodes(show);
     }
 
     /**
-     * Retrieve status of showing hidden files from selected project.
+     * Retrieve status of showing hidden files.
      *
      * @return true - if hidden files are shown, otherwise - false
      */
     public boolean isShowHiddenFiles() {
-        return view.isShowHiddenFiles();
+        return hiddenFilesAreShown;
     }
 
     /**

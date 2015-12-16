@@ -236,6 +236,15 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
     void showHiddenFiles(boolean show);
 
     /**
+     * Configure tree to show or hide files that starts with ".", e.g. hidden files.
+     * Affects all expanded nodes.
+     *
+     * @param show
+     *         true - if those files should be shown, otherwise - false
+     */
+    void showHiddenFilesForAllExpandedNodes(boolean show);
+
+    /**
      * Retrieve status of showing hidden files from selected project.
      *
      * @return true - if hidden files are shown, otherwise - false

@@ -66,4 +66,14 @@ public class GitUrlResolverTest extends LocalFileSystemTest {
         final String url = resolver.resolve(URI.create("http://localhost/some/path"), mountPoint.getVirtualFile(folder));
         assertEquals(expectedUrl, url);
     }
+
+    public void testResolveGitUrlWithHttps() throws Exception {
+        String path = root.toPath().relativize(getIoFile(file).toPath()).toString();
+        path = path.replaceAll("[\\\\]", "/");
+        String expectedUrl = String.format("https://localhost:9000/%s/%s", GIT_SERVER_URI_PREFIX, path);
+
+        GitUrlResolver resolver = new GitUrlResolver(root, GIT_SERVER_URI_PREFIX, new LocalPathResolver());
+        final String url = resolver.resolve(URI.create("https://localhost:9000/some/path"), mountPoint.getVirtualFile(file));
+        assertEquals(expectedUrl, url);
+    }
 }
