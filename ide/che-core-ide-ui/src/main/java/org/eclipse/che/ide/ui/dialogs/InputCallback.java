@@ -13,7 +13,7 @@ package org.eclipse.che.ide.ui.dialogs;
 /**
  * Callback called when the user clicks on "OK" in the input dialog.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface InputCallback {
 

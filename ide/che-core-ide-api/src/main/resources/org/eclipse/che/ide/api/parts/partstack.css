@@ -47,7 +47,6 @@
 .ide-PartStack-Tab svg rect,
 .ide-PartStack-Tab svg path {
     fill: tabTextColor;
-    stroke: tabTextColor;
 
     -webkit-transition: color 0.1s ease-in-out,
                 fill 0.1s ease-in-out,
@@ -65,7 +64,6 @@
 .ide-PartStack-Tab:hover svg rect,
 .ide-PartStack-Tab:hover svg path {
     fill: hoveredTabTextColor;
-    stroke: hoveredTabTextColor;
 }
 
 .leftTabs {
@@ -118,7 +116,6 @@
 .selectedRightOrLeftTab svg rect,
 .selectedRightOrLeftTab svg path {
     fill: activeTabIconColor;
-    stroke: activeTabIconColor;
 }
 
 /* This style removes double border from left tab on the bottom panel. */

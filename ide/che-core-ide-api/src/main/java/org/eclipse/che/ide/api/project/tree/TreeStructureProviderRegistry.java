@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Registry for tree structure providers. It also allows to associate project type with {@link TreeStructureProvider}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface TreeStructureProviderRegistry {
 

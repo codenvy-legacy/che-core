@@ -17,7 +17,7 @@ import com.google.gwt.json.client.JSONParser;
 /**
  * Deserializer for responses body.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class DtoUnmarshaller<T> implements Unmarshallable<T> {
     protected T          payload;

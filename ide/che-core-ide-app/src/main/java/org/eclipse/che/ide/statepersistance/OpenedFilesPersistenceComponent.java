@@ -34,7 +34,7 @@ import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
  * in order to re-open all previously opened files and active (last opened) file.
  * <p>Note that all related project nodes will be expanded. This is project tree feature.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class OpenedFilesPersistenceComponent implements PersistenceComponent {

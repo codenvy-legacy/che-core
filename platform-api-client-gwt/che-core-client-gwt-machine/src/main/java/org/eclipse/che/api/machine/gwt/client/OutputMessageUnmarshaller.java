@@ -19,7 +19,7 @@ import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 /**
  * Unmarshaller for websocket messages from machine.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class OutputMessageUnmarshaller implements Unmarshallable<String> {
     private String payload;

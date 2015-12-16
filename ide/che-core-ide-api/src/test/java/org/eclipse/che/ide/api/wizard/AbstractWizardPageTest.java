@@ -28,7 +28,7 @@ import static org.mockito.Mockito.mock;
 /**
  * Testing {@link AbstractWizardPage}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractWizardPageTest {

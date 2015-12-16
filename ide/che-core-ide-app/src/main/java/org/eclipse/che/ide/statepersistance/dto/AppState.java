@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * DTO describes IDE application's state that may be saved/restored.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @DTO
 public interface AppState {

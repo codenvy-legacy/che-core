@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link ProjectWizard}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ProjectWizardTest {

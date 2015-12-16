@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Provides implementations of all registered DTO interfaces.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class DtoFactory {

@@ -50,7 +50,7 @@ import java.util.Set;
  * Responsible for persisting and restoring IDE state across sessions.
  * Uses user preferences as storage for serialized state.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class AppStateManager implements WindowActionHandler,

@@ -42,7 +42,7 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
 /**
  * Action for renaming an item which is selected in 'Project Explorer'.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class RenameItemAction extends AbstractPerspectiveAction {

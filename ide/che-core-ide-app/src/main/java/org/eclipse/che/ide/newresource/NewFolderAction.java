@@ -24,7 +24,7 @@ import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 /**
  * Action to create new folder.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class NewFolderAction extends AbstractNewResourceAction {

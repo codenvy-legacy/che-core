@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test covers {@link AppStateManager} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
 @RunWith(GwtMockitoTestRunner.class)

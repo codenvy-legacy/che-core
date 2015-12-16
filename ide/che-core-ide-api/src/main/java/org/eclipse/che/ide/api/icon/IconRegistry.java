@@ -18,7 +18,7 @@ import org.eclipse.che.commons.annotation.Nullable;
  * On IDE start it populated by application-scope 'default' icons and 'generic' icon (e.g. Codenvy logo).
  *
  * @author Vitaly Parfonov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface IconRegistry {
 

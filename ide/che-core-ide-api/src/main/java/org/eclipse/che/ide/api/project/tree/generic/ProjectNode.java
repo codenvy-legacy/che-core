@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Node that represents a project.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Deprecated
 public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements StorableNode<ProjectConfigDto>, Openable,

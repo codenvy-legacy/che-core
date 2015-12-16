@@ -58,7 +58,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * Implementation of {@link ProjectServiceClient}.
  *
  * @author Vitaly Parfonov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Valeriy Svydenko
  */
 public class ProjectServiceClientImpl implements ProjectServiceClient {

@@ -36,7 +36,7 @@ import java.util.Set;
  * Reads project template descriptions that may be described in separate json-files for every project type. This file should be named as
  * &lt;project_type_id&gt;.json.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class ProjectTemplateDescriptionLoader {

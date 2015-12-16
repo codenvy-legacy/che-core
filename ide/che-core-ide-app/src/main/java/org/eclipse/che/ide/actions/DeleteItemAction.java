@@ -65,7 +65,7 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
 /**
  * Action for deleting an item which is selected in 'Project Explorer'.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  * @author Vlad Zhukovskyi
  */

@@ -21,7 +21,7 @@ import java.util.List;
  * GWT Client for VFS Service.
  *
  * @author Sergii Leschenko
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface VfsServiceClient {
     void replaceInCurrentWorkspace(@NotNull String projectPath,

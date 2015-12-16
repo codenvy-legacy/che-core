@@ -15,8 +15,7 @@ import org.eclipse.che.ide.websocket.Message;
 /**
  * Thrown when there was a HTTP Status-Code 401 (Unauthorized) was received.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a>
- * @version $Id: UnauthorizedException.java Nov 9, 2012 5:09:29 PM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 @SuppressWarnings("serial")
 public class UnauthorizedException extends Exception {

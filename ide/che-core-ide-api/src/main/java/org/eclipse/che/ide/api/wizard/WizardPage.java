@@ -21,7 +21,7 @@ import java.util.Map;
  * @param <T>
  *         the type of the data-object that stores collected data
  * @author Andrey Plotnikov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface WizardPage<T> extends Presenter {
     /** Initializes page by the passed {@code dataObject}. */

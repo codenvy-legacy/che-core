@@ -37,7 +37,7 @@ import java.util.Objects;
 /**
  * A node that represents a file (an {@link ItemReference} with type - file).
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @Deprecated
 public class FileNode extends ItemNode implements VirtualFile {

@@ -14,7 +14,7 @@ package org.eclipse.che.ide.ui.dialogs.confirm;
  * Interface to the confirmation dialog component.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ConfirmDialog {
 

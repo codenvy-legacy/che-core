@@ -36,7 +36,7 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
 /**
  * Action for showing/hiding hidden files.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
 @Singleton

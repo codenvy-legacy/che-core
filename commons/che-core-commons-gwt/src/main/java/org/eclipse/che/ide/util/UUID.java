@@ -13,8 +13,7 @@ package org.eclipse.che.ide.util;
 /**
  * Generate a random UUID.
  *
- * @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a>
- * @version $Id: UUID.java Dec 6, 2012 5:46:07 PM azatsarynnyy $
+ * @author Artem Zatsarynnyi
  */
 public class UUID {
     private static final char[] CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();

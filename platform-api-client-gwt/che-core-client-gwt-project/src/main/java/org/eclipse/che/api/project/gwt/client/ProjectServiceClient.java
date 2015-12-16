@@ -26,7 +26,7 @@ import java.util.Map;
  * Client for Project service.
  *
  * @author Vitaly Parfonov
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ProjectServiceClient {
 

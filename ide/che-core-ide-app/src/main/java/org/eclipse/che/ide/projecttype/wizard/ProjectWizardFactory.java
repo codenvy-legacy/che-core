@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Helps to create new instances of {@link ProjectWizard}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface ProjectWizardFactory {
     ProjectWizard newWizard(@NotNull ProjectConfigDto dataObject,

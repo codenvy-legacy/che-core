@@ -13,7 +13,7 @@ package org.eclipse.che.ide.api.project.tree;
 /**
  * The settings for the project tree structure.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface TreeSettings {
     /** The default settings. */

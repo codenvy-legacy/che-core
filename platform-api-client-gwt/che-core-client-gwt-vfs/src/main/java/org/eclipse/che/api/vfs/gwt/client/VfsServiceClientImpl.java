@@ -32,7 +32,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * Implementation for {@link VfsServiceClient}.
  *
  * @author Sergii Leschenko
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class VfsServiceClientImpl implements VfsServiceClient {
     private final String VFS;

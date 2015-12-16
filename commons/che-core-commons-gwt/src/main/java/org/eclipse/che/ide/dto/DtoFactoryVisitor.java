@@ -15,7 +15,7 @@ package org.eclipse.che.ide.dto;
  * Class, which contains generated code for client side, implements this interface. When all implementations of this
  * interface is instantiated - its {@link #accept(DtoFactory)} method will be called.
  *
- * @author <a href="mailto:azatsarynnyy@codenvy.com">Artem Zatsarynnyy</a>
+ * @author Artem Zatsarynnyi
  */
 public interface DtoFactoryVisitor {
     void accept(DtoFactory dtoFactory);

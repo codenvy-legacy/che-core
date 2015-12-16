@@ -23,16 +23,13 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.EnvironmentState;
 import org.eclipse.che.api.core.rest.Service;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.factory.server.builder.FactoryBuilder;
 import org.eclipse.che.api.factory.server.snippet.SnippetGenerator;
 import org.eclipse.che.api.factory.shared.dto.Author;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
-import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.workspace.server.DtoConverter;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
@@ -46,7 +43,6 @@ import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.lang.URLEncodedUtils;
 import org.eclipse.che.commons.user.User;
-import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +53,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -74,7 +69,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -152,8 +146,7 @@ public class FactoryService extends Service {
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces({MediaType.APPLICATION_JSON})
     public Factory saveFactory(Iterator<FileItem> formData,
-                               @Context UriInfo uriInfo)
-            throws ApiException {
+                               @Context UriInfo uriInfo) throws ApiException {
         try {
             EnvironmentContext context = EnvironmentContext.getCurrent();
             if (context.getUser() == null || context.getUser().getName() == null || context.getUser().getId() == null) {
@@ -358,8 +351,12 @@ public class FactoryService extends Service {
 
 
     /**
-     * Get list of factory links which conform specified attributes.
+     * Get list of factories which conform specified attributes.
      *
+     * @param maxItems
+     *         max number of items in response.
+     * @param skipCount
+     *         skip items. Must be equals or greater then {@code 0}
      * @param uriInfo
      *         - url context
      * @return - stored data, if id is correct.
@@ -370,34 +367,20 @@ public class FactoryService extends Service {
     @GET
     @Path("/find")
     @Produces({MediaType.APPLICATION_JSON})
-    @SuppressWarnings("unchecked")
-    public List<Link> getFactoryByAttribute(@Context UriInfo uriInfo) throws ApiException {
-        List<Link> result = new ArrayList<>();
+    public List<Factory> getFactoryByAttribute(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
+                                               @DefaultValue("30") @QueryParam("maxItems") Integer maxItems,
+                                               @Context UriInfo uriInfo) throws ApiException {
         URI uri = UriBuilder.fromUri(uriInfo.getRequestUri()).replaceQueryParam("token").build();
         Map<String, Set<String>> queryParams = URLEncodedUtils.parse(uri, "UTF-8");
         if (queryParams.isEmpty()) {
             throw new IllegalArgumentException("Query must contain at least one attribute.");
         }
-        ArrayList<Pair> pairs = new ArrayList<>();
-        queryParams.entrySet().stream()
-                   .filter(entry -> !entry.getValue().isEmpty())
-                   .forEach(entry -> pairs.add(Pair.of(entry.getKey(), entry.getValue().iterator().next())));
-        List<Factory> factories = factoryStore.findByAttribute(pairs.toArray(new Pair[pairs.size()]));
-        result.addAll(factories.stream()
-                               .map(factory -> DtoFactory.getInstance()
-                                                         .createDto(Link.class)
-                                                         .withMethod(HttpMethod.GET)
-                                                         .withRel("self")
-                                                         .withProduces(MediaType.APPLICATION_JSON)
-                                                         .withConsumes(null)
-                                                         .withHref(UriBuilder.fromUri(uriInfo.getBaseUri())
-                                                                             .path(FactoryService.class)
-                                                                             .path(FactoryService.class, "getFactory")
-                                                                             .build(factory.getId())
-                                                                             .toString())
-                                                         .withParameters(null))
-                               .collect(toList()));
-        return result;
+        List<Pair<String,String>> pairs =  queryParams.entrySet().stream()
+                                                                 .filter(entry -> !entry.getValue().isEmpty())
+                                                                 .map(entry -> Pair.of(entry.getKey(), entry.getValue().iterator().next()))
+                                                                 .collect(toList());
+                              
+        return factoryStore.findByAttribute(maxItems, skipCount, pairs);
     }
 
     /**
@@ -609,8 +592,9 @@ public class FactoryService extends Service {
     private void processDefaults(Factory factory) throws ApiException {
         User currentUser = EnvironmentContext.getCurrent().getUser();
         if (factory.getCreator() == null) {
-            factory.setCreator(DtoFactory.getInstance().createDto(Author.class).withUserId(currentUser.getId()).withCreated(
-                    System.currentTimeMillis()));
+            factory.setCreator(newDto(Author.class)
+                                  .withUserId(currentUser.getId())
+                                  .withCreated(System.currentTimeMillis()));
         } else {
             if (isNullOrEmpty(factory.getCreator().getUserId())) {
                 factory.getCreator().setUserId(currentUser.getId());

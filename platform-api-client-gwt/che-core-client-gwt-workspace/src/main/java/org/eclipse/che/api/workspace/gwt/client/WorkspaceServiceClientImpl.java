@@ -46,7 +46,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 /**
  * Implementation for {@link WorkspaceServiceClient}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  * @author Alexander Garagatyi
  * @author Yevhenii Voevodin

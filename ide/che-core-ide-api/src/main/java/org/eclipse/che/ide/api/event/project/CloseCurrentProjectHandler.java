@@ -15,7 +15,7 @@ import com.google.gwt.event.shared.EventHandler;
 /**
  * A handler for handling {@link CloseCurrentProjectEvent}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface CloseCurrentProjectHandler extends EventHandler {
     /**

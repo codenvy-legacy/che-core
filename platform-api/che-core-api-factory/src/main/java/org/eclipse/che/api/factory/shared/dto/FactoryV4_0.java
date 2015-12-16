@@ -99,5 +99,15 @@ public interface FactoryV4_0 {
     void setId(String id);
 
     FactoryV4_0 withId(String id);
+    
+    /**
+     * @return - name of stored factory object
+     */
+    @FactoryParameter(obligation = OPTIONAL)
+    String getName();
+
+    void setName(String name);
+
+    FactoryV4_0 withName(String name);
 
 }

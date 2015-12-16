@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Implementation for {@link ProjectWizardRegistry}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ProjectWizardRegistryImpl implements ProjectWizardRegistry {
     private static final String DEFAULT_CATEGORY = "Other";

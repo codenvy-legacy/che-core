@@ -20,7 +20,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-/** @author Artem Zatsarynnyy */
+/** @author Artem Zatsarynnyi */
 public class ProjectProblemDialog extends Window {
 
     private static AskUiBinder uiBinder = GWT.create(AskUiBinder.class);

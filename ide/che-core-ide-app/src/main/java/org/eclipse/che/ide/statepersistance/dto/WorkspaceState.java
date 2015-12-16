@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * DTO describes saved state of the workspace.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 @DTO
 public interface WorkspaceState {

@@ -30,7 +30,7 @@ import static org.eclipse.che.ide.ui.dialogs.message.MessageDialogView.ActionDel
  * The footer show on message windows.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class MessageDialogFooter extends Composite {
 

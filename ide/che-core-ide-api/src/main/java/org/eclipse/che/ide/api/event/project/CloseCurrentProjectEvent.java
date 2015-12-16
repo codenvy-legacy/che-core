@@ -17,7 +17,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 /**
  * An event that should be fired in order to close the currently opened project.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class CloseCurrentProjectEvent extends GwtEvent<CloseCurrentProjectHandler> {
 

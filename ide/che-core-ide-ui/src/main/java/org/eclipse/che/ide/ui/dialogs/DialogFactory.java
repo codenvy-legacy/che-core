@@ -24,7 +24,7 @@ import com.google.inject.assistedinject.Assisted;
  * Factory for {@link MessageDialog}, {@link ConfirmDialog} and {@link InputDialog} components.
  *
  * @author Mickaël Leduque
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface DialogFactory {
 

@@ -32,6 +32,8 @@ public interface Factory extends FactoryV4_0 {
     Factory withV(String v);
 
     Factory withId(String id);
+    
+    Factory withName(String name);
 
     Factory withWorkspace(WorkspaceConfigDto workspace);
 

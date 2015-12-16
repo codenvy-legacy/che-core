@@ -18,7 +18,7 @@ import com.google.gwt.event.shared.GwtEvent;
  * Event that describes the fact that file is going to be opened.
  *
  * @author Nikolay Zamosenchuk
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class FileEvent extends GwtEvent<FileEventHandler> {
 

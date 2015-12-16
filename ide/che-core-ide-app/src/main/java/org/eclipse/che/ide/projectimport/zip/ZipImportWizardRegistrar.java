@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Provides information for registering ZIP importer into import wizard.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class ZipImportWizardRegistrar implements ImportWizardRegistrar {
     private final List<Provider<? extends WizardPage<ProjectConfigDto>>> wizardPages;

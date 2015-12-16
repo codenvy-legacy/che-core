@@ -15,7 +15,7 @@ import org.eclipse.che.commons.annotation.Nullable;
 /**
  * Validator for {@link InputDialog}.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public interface InputValidator {
     /**

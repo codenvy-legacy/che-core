@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link MessageDialogPresenter} functionality.
  *
- * @author Artem Zatsarynnyy
+ * @author Artem Zatsarynnyi
  */
 public class MessageDialogPresenterTest extends BaseTest {
     @Mock

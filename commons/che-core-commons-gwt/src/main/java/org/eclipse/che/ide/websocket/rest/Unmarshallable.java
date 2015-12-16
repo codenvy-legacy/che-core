@@ -21,7 +21,7 @@ import org.eclipse.che.ide.websocket.Message;
  * and return the same object (with different content) before and after <code>unmarshal()</code>.
  *
  * @param <T>
- * @author <a href="mailto:azatsarynnyy@exoplatfrom.com">Artem Zatsarynnyy</a>
+ * @author Artem Zatsarynnyi
  */
 public interface Unmarshallable<T> {
     /**
