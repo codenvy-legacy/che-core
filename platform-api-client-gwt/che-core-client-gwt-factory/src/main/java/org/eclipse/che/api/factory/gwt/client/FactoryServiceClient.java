@@ -22,15 +22,17 @@ import javax.validation.constraints.NotNull;
  */
 public interface FactoryServiceClient {
     /**
-     * Get valid JSON factory object based on input factory ID or raw query string which represent non encoded factory URL.
+     * Get valid JSON factory object based on input factory ID
      *
-     * @param raw
-     *         factory ID or query string which represents factory non encoded version
+     * @param factoryId
+     *         factory ID to retrieve
+     * @param validate
+     *         indicates whether or not factory should be validated by accept validator
      * @param callback
      *         callback which return valid JSON object of factory or exception if occurred
      *
      */
-    void getFactory(@NotNull String raw, @NotNull AsyncRequestCallback<Factory> callback);
+    void getFactory(@NotNull String factoryId, boolean validate, @NotNull AsyncRequestCallback<Factory> callback);
     
     /**
      * @param factoryId Factory's id

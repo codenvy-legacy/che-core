@@ -108,7 +108,7 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
     public void start(final Callback<Component, Exception> callback) {
         this.callback = callback;
         String factoryParams = Config.getStartupParam("factory");
-        factoryServiceClient.getFactory(factoryParams,
+        factoryServiceClient.getFactory(factoryParams, true,
                                         new AsyncRequestCallback<Factory>(dtoUnmarshallerFactory.newUnmarshaller(Factory.class)) {
                                             @Override
                                             protected void onSuccess(Factory result) {

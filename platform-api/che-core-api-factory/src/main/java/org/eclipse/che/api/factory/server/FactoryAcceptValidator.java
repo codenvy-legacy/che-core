@@ -11,7 +11,7 @@
 package org.eclipse.che.api.factory.server;
 
 
-import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 
 /**
@@ -27,8 +27,8 @@ public interface FactoryAcceptValidator {
      *
      * @param factory
      *         factory object to validate
-     * @throws org.eclipse.che.api.core.ApiException
-     *         - in case if factory is not valid
+     * @throws org.eclipse.che.api.core.ConflictException
+     *          in case if factory is not valid
      */
-    void validateOnAccept(Factory factory) throws ApiException;
+    void validateOnAccept(Factory factory) throws ConflictException;
 }
