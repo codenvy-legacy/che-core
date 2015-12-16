@@ -15,17 +15,21 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.List;
 
 /**
- * DTO describes the state of the project.
+ * DTO describes saved state of the workspace.
  *
  * @author Artem Zatsarynnyi
  */
 @DTO
-public interface ProjectState {
+public interface WorkspaceState {
 
-    /** Get the list of the actions that should be performed in order to restore some project's state. */
+    /** Returns the list of the actions that should be performed in order to restore workspace's state. */
     List<ActionDescriptor> getActions();
 
+    /**
+     * Sets the list of the actions that should be performed in order to restore workspace's state.
+     *
+     * @param actions
+     *         the list of the actions
+     */
     void setActions(List<ActionDescriptor> actions);
-
-    ProjectState withActions(List<ActionDescriptor> actions);
 }

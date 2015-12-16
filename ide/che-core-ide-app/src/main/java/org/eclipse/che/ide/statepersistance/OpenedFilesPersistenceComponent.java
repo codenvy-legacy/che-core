@@ -22,6 +22,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,8 @@ import static org.eclipse.che.ide.actions.OpenFileAction.FILE_PARAM_ID;
 
 /**
  * Component provides sequence of actions which should be performed
- * in order to restore all opened files for the particular project.
+ * in order to re-open all previously opened files and active (last opened) file.
+ * <p>Note that all related project nodes will be expanded. This is project tree feature.
  *
  * @author Artem Zatsarynnyi
  */
@@ -53,7 +55,7 @@ public class OpenedFilesPersistenceComponent implements PersistenceComponent {
     }
 
     @Override
-    public List<ActionDescriptor> getActions(String projectPath) {
+    public List<ActionDescriptor> getActions() {
         final EditorAgent editorAgent = editorAgentProvider.get();
         final List<ActionDescriptor> actions = new ArrayList<>();
         final String openFileActionId = actionManager.getId(openFileAction);
@@ -62,12 +64,30 @@ public class OpenedFilesPersistenceComponent implements PersistenceComponent {
         for (EditorPartPresenter editor : openedEditors.values()) {
             String openedFilePath = editor.getEditorInput().getFile().getPath();
 
-            if (openedFilePath.startsWith(projectPath)) {
+            actions.add(dtoFactory.createDto(ActionDescriptor.class)
+                                  .withId(openFileActionId)
+                                  .withParameters(singletonMap(FILE_PARAM_ID, openedFilePath)));
+        }
+
+        addActionForActiveFile(actions);
+        return actions;
+    }
+
+    private void addActionForActiveFile(List<ActionDescriptor> actions) {
+        final EditorAgent editorAgent = editorAgentProvider.get();
+        final String openFileActionId = actionManager.getId(openFileAction);
+        final EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
+        final EditorPartPresenter lastOpenedEditor = editorAgent.getLastEditor();
+
+        if (activeEditor != null && lastOpenedEditor != null) {
+            final String activeFilePath = activeEditor.getEditorInput().getFile().getPath();
+            final String lastOpenedFilePath = lastOpenedEditor.getEditorInput().getFile().getPath();
+            // save active file only if it's not the last opened file
+            if (!activeFilePath.equals(lastOpenedFilePath)) {
                 actions.add(dtoFactory.createDto(ActionDescriptor.class)
                                       .withId(openFileActionId)
-                                      .withParameters(singletonMap(FILE_PARAM_ID, openedFilePath)));
+                                      .withParameters(Collections.singletonMap(FILE_PARAM_ID, activeFilePath)));
             }
         }
-        return actions;
     }
 }

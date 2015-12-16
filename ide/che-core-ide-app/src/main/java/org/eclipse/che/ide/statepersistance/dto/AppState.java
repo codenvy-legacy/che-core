@@ -15,33 +15,32 @@ import org.eclipse.che.dto.shared.DTO;
 import java.util.Map;
 
 /**
- * DTO describes Codenvy application's state that may be saved/restored.
+ * DTO describes IDE application's state that may be saved/restored.
  *
  * @author Artem Zatsarynnyi
  */
 @DTO
 public interface AppState {
 
-    /** Returns workspace id which was previously stopped. */
+    /** Returns recent workspace ID (workspace which was recently used). */
     String getRecentWorkspaceId();
 
     /**
-     * Set stopped workspace id to app state
+     * Set recent workspace ID.
      *
      * @param workspaceId
-     *         workspace id which will be saved to app state
+     *         ID of the workspace which was recently used
      */
     void setRecentWorkspaceId(String workspaceId);
 
-    /** Get recent project info. */
-    RecentProject getRecentProject();
+    /** Returns the mapping of the workspaces's ID to it's saved state. */
+    Map<String, WorkspaceState> getWorkspaces();
 
-    void setRecentProject(RecentProject recentProject);
-
-    /** Get the mapping of project's path to it's state. */
-    Map<String, ProjectState> getProjects();
-
-    void setProjects(Map<String, ProjectState> projects);
-
-    AppState withProjects(Map<String, ProjectState> projects);
+    /**
+     * Set saved workspaces's state.
+     *
+     * @param workspaces
+     *         mapping of the workspaces's ID to it's saved state
+     */
+    void setWorkspaces(Map<String, WorkspaceState> workspaces);
 }

@@ -14,30 +14,31 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
+import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
 import org.eclipse.che.ide.dto.DtoFactory;
+import org.eclipse.che.ide.project.event.ProjectExplorerLoadedEvent;
 import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.ProjectState;
-import org.eclipse.che.ide.statepersistance.dto.RecentProject;
+import org.eclipse.che.ide.statepersistance.dto.WorkspaceState;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
+import org.eclipse.che.ide.workspace.start.StopWorkspaceEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -62,9 +63,8 @@ import static org.mockito.Mockito.when;
 public class AppStateManagerTest {
 
     private static final String JSON      = "json";
-    private static final String PATH      = "path";
-    private static final String NAME      = "name";
-    private static final String SOME_TEXT = "someText";
+    private static final String WS_ID     = "ws_id";
+    private static final String ACTION_ID = "action_id";
 
     @Mock
     private PreferencesManager           preferencesManager;
@@ -77,7 +77,7 @@ public class AppStateManagerTest {
     @Mock
     private PresentationFactory          presentationFactory;
     @Mock
-    private Provider<PerspectiveManager> managerProvider;
+    private Provider<PerspectiveManager> perspectiveManagerProvider;
     @Mock
     private EventBus                     eventBus;
 
@@ -85,21 +85,9 @@ public class AppStateManagerTest {
     @Mock
     private AppState             appState;
     @Mock
-    private RecentProject        recentProject;
-    @Mock
-    private UsersWorkspaceDto    workspace;
-    @Mock
-    private ProjectConfigDto     projectConfig;
-    @Mock
-    private ProjectState         projectState;
-    @Mock
-    private ActionDescriptor     actionDescriptor;
-    @Mock
-    private Action               action;
+    private WorkspaceState       workspaceState;
     @Mock
     private Promise<Void>        voidPromise;
-    @Mock
-    private ProjectConfigDto     currentProjectConfig;
     @Mock
     private PersistenceComponent persistenceComponent;
 
@@ -107,22 +95,18 @@ public class AppStateManagerTest {
 
     @Before
     public void setUp() {
-        when(appContext.getWorkspace()).thenReturn(workspace);
-        when(workspace.getId()).thenReturn(NAME);
+        UsersWorkspaceDto usersWorkspaceDto = mock(UsersWorkspaceDto.class);
+        when(appContext.getWorkspace()).thenReturn(usersWorkspaceDto);
+        when(usersWorkspaceDto.getId()).thenReturn(WS_ID);
         when(preferencesManager.getValue(PREFERENCE_PROPERTY_NAME)).thenReturn(JSON);
         when(dtoFactory.createDtoFromJson(JSON, AppState.class)).thenReturn(appState);
 
-        when(dtoFactory.createDto(RecentProject.class)).thenReturn(recentProject);
+        Map<String, WorkspaceState> workspaceStates = new HashMap<>();
+        workspaceStates.put(WS_ID, workspaceState);
 
-        when(projectConfig.getPath()).thenReturn(PATH);
+        when(appState.getWorkspaces()).thenReturn(workspaceStates);
 
-        Map<String, ProjectState> projectStates = new HashMap<>();
-
-        projectStates.put("/" + NAME + PATH, projectState);
-
-        when(appState.getProjects()).thenReturn(projectStates);
-
-        Set<PersistenceComponent> persistenceComponents = new HashSet<>(Arrays.asList(persistenceComponent));
+        Set<PersistenceComponent> persistenceComponents = new HashSet<>(Collections.singletonList(persistenceComponent));
 
         appStateManager = new AppStateManager(persistenceComponents,
                                               preferencesManager,
@@ -130,59 +114,58 @@ public class AppStateManagerTest {
                                               dtoFactory,
                                               actionManager,
                                               presentationFactory,
-                                              managerProvider,
+                                              perspectiveManagerProvider,
                                               eventBus);
     }
 
     @Test
-    public void stateFromPreferencesShouldBeRead() {
+    public void shouldSubscribeOnEventBus() {
+        verify(eventBus).addHandler(StopWorkspaceEvent.TYPE, appStateManager);
+        verify(eventBus).addHandler(WindowActionEvent.TYPE, appStateManager);
+        verify(eventBus).addHandler(ExtServerStateEvent.TYPE, appStateManager);
+        verify(eventBus).addHandler(ProjectExplorerLoadedEvent.getType(), appStateManager);
+    }
+
+    @Test
+    public void shouldReadStateFromPreferences() {
         verify(preferencesManager).getValue(PREFERENCE_PROPERTY_NAME);
         verify(dtoFactory).createDtoFromJson(JSON, AppState.class);
-
-        verifyInitClearRecentProject();
-    }
-
-    private void verifyInitClearRecentProject() {
-        verify(dtoFactory).createDto(RecentProject.class);
-        verify(recentProject).setPath("");
-        verify(recentProject).setWorkspaceId("");
-        verify(appState).setRecentProject(recentProject);
     }
 
     @Test
-    public void projectStateShouldNotBeRestoredWhenProjectStateIsNull() {
-        OpenProjectEvent openProjectEvent = mock(OpenProjectEvent.class);
-        when(openProjectEvent.getProjectConfig()).thenReturn(projectConfig);
-
-        when(appState.getProjects()).thenReturn(new HashMap<String, ProjectState>());
-
-        appStateManager.onProjectOpened(openProjectEvent);
-
-        verify(projectState, never()).getActions();
-    }
-
-    @Test
-    public void projectStateShouldBeRestored() {
-        OpenProjectEvent openProjectEvent = mock(OpenProjectEvent.class);
-        when(openProjectEvent.getProjectConfig()).thenReturn(projectConfig);
-
-        when(projectState.getActions()).thenReturn(Arrays.asList(actionDescriptor));
-        when(actionDescriptor.getId()).thenReturn(SOME_TEXT);
-        when(actionManager.getAction(anyString())).thenReturn(action);
+    public void shouldRestoreWorkspaceState() {
+        ActionDescriptor actionDescriptor = mock(ActionDescriptor.class);
+        when(actionDescriptor.getId()).thenReturn(ACTION_ID);
+        when(workspaceState.getActions()).thenReturn(Collections.singletonList(actionDescriptor));
+        Action action = mock(Action.class);
+        when(actionManager.getAction(eq(ACTION_ID))).thenReturn(action);
         when(actionManager.performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false))).thenReturn(voidPromise);
 
-        appStateManager.onProjectOpened(openProjectEvent);
+        appStateManager.onProjectsLoaded(mock(ProjectExplorerLoadedEvent.class));
 
-        verify(projectConfig).getPath();
-        verify(appState).getProjects();
-
-        verify(projectState).getActions();
-
-        verify(actionManager).getAction(SOME_TEXT);
-
+        verify(appState).getWorkspaces();
+        verify(workspaceState).getActions();
+        verify(actionManager).getAction(ACTION_ID);
         verify(presentationFactory).getPresentation(action);
-        verify(managerProvider).get();
-
+        verify(perspectiveManagerProvider).get();
         verify(actionManager).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false));
+    }
+
+    @Test
+    public void shouldNotRestoreWorkspaceStateWhenNoSavedStates() {
+        when(appState.getWorkspaces()).thenReturn(new HashMap<String, WorkspaceState>());
+
+        appStateManager.onProjectsLoaded(mock(ProjectExplorerLoadedEvent.class));
+
+        verify(actionManager, never()).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), anyBoolean());
+    }
+
+    @Test
+    public void shouldNotRestoreWorkspaceStateWhenNoActions() {
+        when(workspaceState.getActions()).thenReturn(Collections.<ActionDescriptor>emptyList());
+
+        appStateManager.onProjectsLoaded(mock(ProjectExplorerLoadedEvent.class));
+
+        verify(actionManager, never()).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), anyBoolean());
     }
 }
