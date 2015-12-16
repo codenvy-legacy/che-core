@@ -30,6 +30,9 @@ public interface BreakpointManager {
      */
     void removeAllBreakpoints();
 
+    /**
+     * Indicates if current active file has a breakpoint at giving line.
+     */
     boolean isCurrentBreakpoint(int lineNumber);
 
     /**
