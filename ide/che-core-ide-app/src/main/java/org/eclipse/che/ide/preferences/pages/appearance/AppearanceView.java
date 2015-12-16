@@ -8,18 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.extension;
+package org.eclipse.che.ide.preferences.pages.appearance;
 
-import org.eclipse.che.ide.api.extension.ExtensionDescription;
 import org.eclipse.che.ide.api.mvp.View;
+import org.eclipse.che.ide.api.theme.Theme;
 
 import java.util.List;
 
-/** @author Evgen Vidolob */
-public interface ExtensionManagerView extends View<ExtensionManagerView.ActionDelegate> {
+/**
+ * @author Evgen Vidolob
+ */
+public interface AppearanceView extends View<AppearanceView.ActionDelegate> {
 
-    void setExtensions(List<ExtensionDescription> extensions);
+    void setThemes(List<Theme> themes, String currentThemeId);
 
     interface ActionDelegate {
+
+        void themeSelected(String themeId);
     }
 }
