@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.theme;
+package org.eclipse.che.ide.preferences.pages.appearance;
 
 import org.eclipse.che.ide.api.theme.Theme;
 

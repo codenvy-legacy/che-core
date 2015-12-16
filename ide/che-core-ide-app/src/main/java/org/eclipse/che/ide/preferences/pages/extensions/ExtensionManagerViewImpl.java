@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.extension;
+package org.eclipse.che.ide.preferences.pages.extensions;
 
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
