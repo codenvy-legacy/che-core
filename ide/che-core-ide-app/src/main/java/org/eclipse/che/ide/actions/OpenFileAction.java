@@ -58,7 +58,7 @@ public class OpenFileAction extends Action implements PromisableAction {
     private final ProjectExplorerPresenter projectExplorer;
     private final NotificationManager      notificationManager;
 
-    private Callback<Void, Throwable> actionCompletedCallBack;
+    private Callback<Void, Throwable> actionCompletedCallback;
 
     @Inject
     public OpenFileAction(EventBus eventBus,
@@ -78,17 +78,17 @@ public class OpenFileAction extends Action implements PromisableAction {
             return;
         }
 
-        String path = event.getParameters().get(FILE_PARAM_ID);
-        if (path == null) {
+        final String pathToOpen = event.getParameters().get(FILE_PARAM_ID);
+        if (pathToOpen == null) {
             Log.error(getClass(), localization.fileToOpenIsNotSpecified());
             return;
         }
 
-        projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(path), true)
+        projectExplorer.getNodeByPath(new HasStorablePath.StorablePath(pathToOpen), true)
                        .then(selectNode())
                        .then(openNode())
                        .then(actionComplete())
-                       .catchError(onFailedToLocate(path));
+                       .catchError(onFailedToLocate(pathToOpen));
     }
 
     private Operation<PromiseError> onFailedToLocate(final String path) {
@@ -97,8 +97,8 @@ public class OpenFileAction extends Action implements PromisableAction {
             public void apply(PromiseError arg) throws OperationException {
                 notificationManager.showNotification(new Notification(localization.unableOpenResource(path), WARNING));
 
-                if (actionCompletedCallBack != null) {
-                    actionCompletedCallBack.onSuccess(null);
+                if (actionCompletedCallback != null) {
+                    actionCompletedCallback.onFailure(arg.getCause());
                 }
             }
         };
@@ -108,8 +108,8 @@ public class OpenFileAction extends Action implements PromisableAction {
         return new Operation<Node>() {
             @Override
             public void apply(Node arg) throws OperationException {
-                if (actionCompletedCallBack != null) {
-                    actionCompletedCallBack.onSuccess(null);
+                if (actionCompletedCallback != null) {
+                    actionCompletedCallback.onSuccess(null);
                 }
             }
         };
@@ -141,13 +141,12 @@ public class OpenFileAction extends Action implements PromisableAction {
 
     @Override
     public Promise<Void> promise(final ActionEvent actionEvent) {
-
         if (actionEvent.getParameters() == null) {
             return Promises.reject(JsPromiseError.create(localization.canNotOpenFileWithoutParams()));
         }
 
-        final String relPathToOpen = actionEvent.getParameters().get(FILE_PARAM_ID);
-        if (relPathToOpen == null) {
+        final String pathToOpen = actionEvent.getParameters().get(FILE_PARAM_ID);
+        if (pathToOpen == null) {
             return Promises.reject(JsPromiseError.create(localization.fileToOpenIsNotSpecified()));
         }
 
@@ -156,15 +155,14 @@ public class OpenFileAction extends Action implements PromisableAction {
 
             @Override
             public void makeCall(final Callback<Void, Throwable> callback) {
-
-                actionCompletedCallBack = callback;
+                actionCompletedCallback = callback;
                 handlerRegistration = eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
                     @Override
                     public void onActivePartChanged(ActivePartChangedEvent event) {
                         if (event.getActivePart() instanceof EditorPartPresenter) {
                             EditorPartPresenter editor = (EditorPartPresenter)event.getActivePart();
                             handlerRegistration.removeHandler();
-                            if ((relPathToOpen).equals(editor.getEditorInput().getFile().getPath())) {
+                            if ((pathToOpen).equals(editor.getEditorInput().getFile().getPath())) {
                                 callback.onSuccess(null);
                             }
                         }

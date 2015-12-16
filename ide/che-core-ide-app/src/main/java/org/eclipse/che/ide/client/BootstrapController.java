@@ -86,11 +86,6 @@ public class BootstrapController {
         startComponents(components.values().iterator());
     }
 
-    private void componentStartFail(Exception reason) {
-        Log.error(BootstrapController.class, reason);
-        initializationFailed(reason);
-    }
-
     private void startComponents(final Iterator<Provider<Component>> componentProviderIterator) {
         if (componentProviderIterator.hasNext()) {
             Provider<Component> componentProvider = componentProviderIterator.next();
@@ -110,6 +105,11 @@ public class BootstrapController {
         } else {
             startExtensions();
         }
+    }
+
+    private void componentStartFail(Exception reason) {
+        Log.error(BootstrapController.class, reason);
+        initializationFailed(reason);
     }
 
     /** Start extensions */

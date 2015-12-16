@@ -24,7 +24,7 @@ public class WindowActionEvent extends GwtEvent<WindowActionHandler> {
     public static Type<WindowActionHandler> TYPE = new Type<>();
 
     /** Set of possible Window Actions. */
-    public static enum WindowAction {
+    public enum WindowAction {
         CLOSING, CLOSED
     }
 
