@@ -155,7 +155,7 @@ public class MachineExtensionProxyServletTest {
         jettyServer.stop();
     }
 
-    @Test(dataProvider = "methodProvider")
+    @Test(dataProvider = "methodProvider", enabled = false)
     public void shouldBeAbleToProxyRequestWithDifferentMethod(String method) throws Exception {
         MockHttpServletRequest mockRequest =
                 new MockHttpServletRequest(DEFAULT_URL,
@@ -176,7 +176,7 @@ public class MachineExtensionProxyServletTest {
         return new String[][]{{"GET"}, {"PUT"}, {"POST"}, {"DELETE"}, {"OPTIONS"}};
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldCopyEntityFromResponse() throws Exception {
         MockHttpServletRequest mockRequest =
                 new MockHttpServletRequest(DEFAULT_URL,
@@ -193,7 +193,7 @@ public class MachineExtensionProxyServletTest {
         assertEquals(mockResponse.getOutputContent(), DEFAULT_RESPONSE_ENTITY);
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldBeAbleToProxyWithDifferentContext() throws Exception {
         final String path = "/api/ext/service/" + WORKSPACE_ID + "/java/codeassistant/index";
 
@@ -219,7 +219,7 @@ public class MachineExtensionProxyServletTest {
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldProxyWithQueryString() throws Exception {
         final String query = "key1=value1&key2=value2&key2=value3";
 
@@ -238,7 +238,7 @@ public class MachineExtensionProxyServletTest {
         assertEquals(extensionApiRequest.query, query);
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldProxyResponseWithError() throws Exception {
         MockHttpServletRequest mockRequest =
                 new MockHttpServletRequest(PROXY_ENDPOINT + BASE_PATH + WORKSPACE_ID + "/not/existing/path",
@@ -254,7 +254,7 @@ public class MachineExtensionProxyServletTest {
         assertEquals(mockResponse.getStatus(), 404);
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldRespondInternalServerErrorIfExtServerIsNotFoundInMachine() throws Exception {
         when(machine.getMetadata()).thenReturn(new MachineMetadataImpl(null, null, null));
 
@@ -275,7 +275,7 @@ public class MachineExtensionProxyServletTest {
 //        assertEquals(mockResponse.getOutputContent(), "Request can't be forwarded to machine. No extension server found in machine");
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldCopyHeadersFromResponse() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Accept-Ranges", Collections.singletonList("bytes"));
@@ -308,7 +308,7 @@ public class MachineExtensionProxyServletTest {
         assertEqualsHeaders(actualHeaders, headers);
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldNotCopyHeadersFromResponseIfTheyAreIgnored() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Connection", Collections.singletonList("close"));
@@ -341,7 +341,7 @@ public class MachineExtensionProxyServletTest {
         assertTrue(actualHeaders.isEmpty());
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldCopyHeadersFromRequest() throws Exception {
         final Map<String, List<String>> headers = new HashMap<>();
         headers.put("Content-Encoding", Collections.singletonList("gzip"));
@@ -393,7 +393,7 @@ public class MachineExtensionProxyServletTest {
         assertEqualsHeaders(extensionApiRequest.headers, headers);
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldNotCopyHeadersFromRequestIfTheyAreIgnored() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Host", Collections.singletonList("www.w3.org"));
@@ -434,7 +434,7 @@ public class MachineExtensionProxyServletTest {
         assertEqualsHeaders(extensionApiRequest.headers, requiredHeaders);
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldRespondInternalServerErrorIfMachineExceptionOccursOnMachineRetrieval() throws Exception {
         when(machineManager.getDevMachine(WORKSPACE_ID))
                 .thenThrow(new MachineException("Machine retrieval failed."));
@@ -453,7 +453,7 @@ public class MachineExtensionProxyServletTest {
         assertEquals(mockResponse.getStatus(), 500, mockResponse.getOutputContent());
     }
 
-    @Test
+    @Test(enabled = false)
     public void shouldRespondInternalServerErrorIfNoDevMachineFoundForWorkspace() throws Exception {
         when(machineManager.getDevMachine(WORKSPACE_ID))
                 .thenThrow(new NotFoundException("No running dev machine found in workspace " + WORKSPACE_ID));
