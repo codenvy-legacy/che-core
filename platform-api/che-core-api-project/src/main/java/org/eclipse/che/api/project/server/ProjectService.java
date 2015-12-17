@@ -348,10 +348,11 @@ public class ProjectService extends Service {
                                                                                     IOException {
         Project project = projectManager.getProject(workspace, path);
 
+        FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(path);
         if (project != null) {
             project = projectManager.updateProject(workspace, path, projectConfigDto);
+            reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
         } else {
-            FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(path);
             try {
                 project = projectManager.convertFolderToProject(workspace, path, projectConfigDto);
                 reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
@@ -1191,7 +1192,6 @@ public class ProjectService extends Service {
             final QueryExpression expr = new QueryExpression()
                     .setPath(path.startsWith("/") ? path : ('/' + path))
                     .setName(name)
-                    .setMediaType(mediatype)
                     .setText(text);
 
             final String[] result = searcherProvider.getSearcher(folder.getVirtualFile().getMountPoint(), true).search(expr);

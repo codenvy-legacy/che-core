@@ -182,6 +182,11 @@ public abstract class Window implements IsWidget {
     protected void onEnterClicked() {
     }
 
+    /** Set focus to current window. */
+    public void focus() {
+        getWidget().getParent().getParent().getElement().focus();
+    }
+
     /**
      * See {@link #show(com.google.gwt.dom.client.InputElement)}.
      */

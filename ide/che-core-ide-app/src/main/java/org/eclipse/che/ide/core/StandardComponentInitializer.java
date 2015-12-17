@@ -30,6 +30,7 @@ import org.eclipse.che.ide.actions.ExpandNodeAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
+import org.eclipse.che.ide.actions.FullTextSearchAction;
 import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
@@ -204,6 +205,9 @@ public class StandardComponentInitializer {
     private CreateModuleAction createModuleAction;
 
     @Inject
+    private FullTextSearchAction fullTextSearchAction;
+
+    @Inject
     private NewFolderAction newFolderAction;
 
     @Inject
@@ -358,6 +362,7 @@ public class StandardComponentInitializer {
         actionManager.registerAction("downloadProjectAsZipAction", downloadProjectAsZipAction);
         actionManager.registerAction("downloadItemAction", downloadItemAction);
         actionManager.registerAction("navigateToFile", navigateToFileAction);
+        actionManager.registerAction("fullTextSearch", fullTextSearchAction);
         actionManager.registerAction("projectConfiguration", projectConfigurationAction);
         actionManager.registerAction("createModuleAction", createModuleAction);
         actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
@@ -381,6 +386,7 @@ public class StandardComponentInitializer {
         fileGroup.add(uploadFolderFromZipAction);
         fileGroup.add(downloadProjectAsZipAction);
         fileGroup.add(navigateToFileAction);
+        fileGroup.add(fullTextSearchAction);
         fileGroup.add(showHiddenFilesAction);
 
         fileGroup.add(cutAction);
@@ -498,6 +504,7 @@ public class StandardComponentInitializer {
 
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
+        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('F').build(), "fullTextSearch");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('A').build(), "findActionAction");
         keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode('L').build(), "format");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('c').build(), "copy");

@@ -157,6 +157,7 @@ import org.eclipse.che.ide.projecttype.wizard.ProjectWizardRegistryImpl;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.RestContextProvider;
+import org.eclipse.che.ide.search.factory.FindResultNodeFactory;
 import org.eclipse.che.ide.selection.SelectionAgentImpl;
 import org.eclipse.che.ide.settings.common.SettingsPagePresenter;
 import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
@@ -393,6 +394,8 @@ public class CoreGinModule extends AbstractGinModule {
         install(new GinFactoryModuleBuilder().implement(ImportProjectNotificationSubscriber.class,
                                                         ImportProjectNotificationSubscriberImpl.class)
                                              .build(ImportProjectNotificationSubscriberFactory.class));
+
+        install(new GinFactoryModuleBuilder().build(FindResultNodeFactory.class));
 
         bind(UploadFileView.class).to(UploadFileViewImpl.class);
         bind(UploadFolderFromZipView.class).to(UploadFolderFromZipViewImpl.class);

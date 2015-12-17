@@ -387,8 +387,13 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void search(QueryExpression expression, AsyncRequestCallback<List<ItemReference>> callback) {
-        final String requestUrl = baseHttpUrl + "/search" + normalizePath(expression.getPath());
+    public Promise<List<ItemReference>> search(QueryExpression expression) {
+        StringBuilder requestUrl = new StringBuilder(baseHttpUrl + "/search");
+        if (expression.getPath() != null) {
+            requestUrl.append(normalizePath(expression.getPath()));
+        } else {
+            requestUrl.append('/');
+        }
 
         StringBuilder queryParameters = new StringBuilder();
         if (expression.getName() != null && !expression.getName().isEmpty()) {
@@ -407,9 +412,9 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
             queryParameters.append("&skipCount=").append(expression.getSkipCount());
         }
 
-        asyncRequestFactory.createGetRequest(requestUrl + queryParameters.toString().replaceFirst("&", "?"))
+        return asyncRequestFactory.createGetRequest(requestUrl.toString() + queryParameters.toString().replaceFirst("&", "?"))
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .send(callback);
+                           .send(dtoUnmarshaller.newListUnmarshaller(ItemReference.class));
     }
 
     @Override

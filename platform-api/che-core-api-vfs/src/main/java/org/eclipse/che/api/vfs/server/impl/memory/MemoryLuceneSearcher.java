@@ -10,12 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.memory;
 
-import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
-
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
-
-import java.util.Set;
+import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
 
 /**
  * In-memory implementation of LuceneSearcher.
@@ -23,8 +20,8 @@ import java.util.Set;
  * @author <a href="mailto:aparfonov@codenvy.com">Andrey Parfonov</a>
  */
 public class MemoryLuceneSearcher extends LuceneSearcher {
-    public MemoryLuceneSearcher(Set<String> indexedMediaTypes) {
-        super(indexedMediaTypes);
+    public MemoryLuceneSearcher() {
+        super();
     }
 
     @Override

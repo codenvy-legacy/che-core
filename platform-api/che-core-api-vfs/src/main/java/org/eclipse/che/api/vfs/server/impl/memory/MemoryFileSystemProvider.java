@@ -36,7 +36,7 @@ public class MemoryFileSystemProvider extends VirtualFileSystemProvider {
         @Override
         public Searcher getSearcher(MountPoint mountPoint, boolean create) throws ServerException {
             if (searcher == null) {
-                searcher = new MemoryLuceneSearcher(getIndexedMediaTypes());
+                searcher = new MemoryLuceneSearcher();
                 searcher.init(mountPoint);
             }
             return searcher;

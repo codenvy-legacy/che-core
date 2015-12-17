@@ -10,17 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.search;
 
-import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.server.LazyIterator;
-import org.eclipse.che.api.vfs.server.MountPoint;
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.VirtualFileFilter;
-import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
-
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.document.Document;
@@ -43,6 +35,13 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.IOUtils;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.vfs.server.LazyIterator;
+import org.eclipse.che.api.vfs.server.MountPoint;
+import org.eclipse.che.api.vfs.server.VirtualFile;
+import org.eclipse.che.api.vfs.server.VirtualFileFilter;
+import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +50,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.LinkedList;
-import java.util.Set;
 
 /**
  * Lucene based searcher.
@@ -68,8 +66,8 @@ public abstract class LuceneSearcher implements Searcher {
     private SearcherManager searcherManager;
     private boolean         closed;
 
-    public LuceneSearcher(Set<String> indexedMediaTypes) {
-        this(new MediaTypeFilter(indexedMediaTypes));
+    public LuceneSearcher() {
+        this(new MediaTypeFilter());
     }
 
     public LuceneSearcher(VirtualFileFilter filter) {
@@ -144,6 +142,7 @@ public abstract class LuceneSearcher implements Searcher {
         }
         if (text != null) {
             QueryParser qParser = new QueryParser("text", makeAnalyzer());
+            qParser.setDefaultOperator(QueryParser.Operator.AND);
             try {
                 luceneQuery.add(qParser.parse(text), BooleanClause.Occur.MUST);
             } catch (ParseException e) {
