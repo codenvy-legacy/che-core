@@ -65,10 +65,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -233,18 +234,11 @@ public class FactoryService extends Service {
     @Produces({MediaType.APPLICATION_JSON})
     public Factory getFactory(@ApiParam(value = "Factory ID", required = true)
                               @PathParam("id") String id,
-                              @ApiParam(value = "Legacy. Whether or not to transform Factory into the most recent format",
-                                        allowableValues = "true,false", defaultValue = "false")
-                              @DefaultValue("false") @QueryParam("legacy") Boolean legacy,
                               @ApiParam(value = "Whether or not to validate values like it is done when accepting a Factory",
                                         allowableValues = "true,false", defaultValue = "false")
                               @DefaultValue("false") @QueryParam("validate") Boolean validate,
                               @Context UriInfo uriInfo) throws ApiException {
         Factory factory = factoryStore.getFactory(id);
-
-        if (legacy) {
-            factory = factoryBuilder.convertToLatest(factory);
-        }
 
         try {
             factory = factory.withLinks(linksHelper.createLinks(factory, factoryStore.getFactoryImages(id, null), uriInfo));
@@ -358,10 +352,10 @@ public class FactoryService extends Service {
      * @param skipCount
      *         skip items. Must be equals or greater then {@code 0}
      * @param uriInfo
-     *         - url context
-     * @return - stored data, if id is correct.
-     * @throws org.eclipse.che.api.core.ApiException
-     *         - {@link org.eclipse.che.api.core.NotFoundException} when factory with given id doesn't exist
+     *         url context
+     * @return stored data, if id is correct.
+     * @throws org.eclipse.che.api.core.IllegalArgumentException
+     *          when no search attributes passed
      */
     @RolesAllowed({"user", "system/manager"})
     @GET
@@ -369,18 +363,18 @@ public class FactoryService extends Service {
     @Produces({MediaType.APPLICATION_JSON})
     public List<Factory> getFactoryByAttribute(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
                                                @DefaultValue("30") @QueryParam("maxItems") Integer maxItems,
-                                               @Context UriInfo uriInfo) throws ApiException {
-        URI uri = UriBuilder.fromUri(uriInfo.getRequestUri()).replaceQueryParam("token").build();
-        Map<String, Set<String>> queryParams = URLEncodedUtils.parse(uri, "UTF-8");
+                                               @Context UriInfo uriInfo) {
+        final List<String> skipParams = Arrays.asList("token", "skipCount", "maxItems");
+        final List<Pair<String, String>> queryParams = URLEncodedUtils.parse(uriInfo.getRequestUri()).entrySet().stream()
+                                                                      .filter(entry -> !skipParams.contains(entry.getKey()) &&
+                                                                                       !entry.getValue().isEmpty())
+                                                                      .map(entry -> Pair.of(entry.getKey(), entry.getValue().iterator().next()))
+                                                                      .collect(toList());
         if (queryParams.isEmpty()) {
             throw new IllegalArgumentException("Query must contain at least one attribute.");
         }
-        List<Pair<String,String>> pairs =  queryParams.entrySet().stream()
-                                                                 .filter(entry -> !entry.getValue().isEmpty())
-                                                                 .map(entry -> Pair.of(entry.getKey(), entry.getValue().iterator().next()))
-                                                                 .collect(toList());
-                              
-        return factoryStore.findByAttribute(maxItems, skipCount, pairs);
+
+        return factoryStore.findByAttribute(maxItems, skipCount, queryParams);
     }
 
     /**
@@ -412,8 +406,7 @@ public class FactoryService extends Service {
     public Response getImage(@ApiParam(value = "Factory ID", required = true)
                              @PathParam("factoryId") String factoryId,
                              @ApiParam(value = "Image ID", required = true)
-                             @DefaultValue("") @QueryParam("imgId") String imageId)
-            throws ApiException {
+                             @DefaultValue("") @QueryParam("imgId") String imageId) throws ApiException {
         Set<FactoryImage> factoryImages = factoryStore.getFactoryImages(factoryId, null);
         if (imageId.isEmpty()) {
             if (factoryImages.size() > 0) {
@@ -466,8 +459,7 @@ public class FactoryService extends Service {
                                     @ApiParam(value = "Snippet type", required = true, allowableValues = "url,html,iframe,markdown",
                                               defaultValue = "url")
                                     @DefaultValue("url") @QueryParam("type") String type,
-                                    @Context UriInfo uriInfo)
-            throws ApiException {
+                                    @Context UriInfo uriInfo) throws ApiException {
         Factory factory = factoryStore.getFactory(id);
 
         final String baseUrl = UriBuilder.fromUri(uriInfo.getBaseUri()).replacePath("").build().toString();
