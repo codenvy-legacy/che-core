@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.DelayedTask;
 import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.MutableNode;
 import org.eclipse.che.ide.api.project.node.Node;

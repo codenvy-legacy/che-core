@@ -19,6 +19,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 
+import org.eclipse.che.ide.DelayedTask;
 import org.eclipse.che.ide.api.project.node.Node;
 
 import java.util.List;
