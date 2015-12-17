@@ -2045,7 +2045,7 @@ public class ProjectServiceTest {
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         List<ItemReference> result = (List<ItemReference>)response.getEntity();
-        assertEquals(result.size(), 1);
+        assertEquals(result.size(), 2);
         Set<String> paths = new LinkedHashSet<>(1);
         paths.addAll(result.stream().map(ItemReference::getPath).collect(Collectors.toList()));
         Assert.assertTrue(paths.contains("/my_project/x/y/__test.txt"));
@@ -2053,32 +2053,7 @@ public class ProjectServiceTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testSearchByMediaType() throws Exception {
-        Project myProject = pm.getProject(workspace, "my_project");
-        myProject.getBaseFolder().createFolder("a/b").createFile("test.txt", "6769675".getBytes());
-        myProject.getBaseFolder().createFolder("x/y").createFile("test.txt", "132434".getBytes());
-        myProject.getBaseFolder().createFolder("c").createFile("test", "2343124".getBytes());
-
-        ContainerResponse response = launcher.service(GET,
-                                                      String.format(
-                                                              "http://localhost:8080/api/project/%s/search/my_project?mediatype=text/plain",
-                                                              workspace),
-                                                      "http://localhost:8080/api", null, null, null);
-        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
-        List<ItemReference> result = (List<ItemReference>)response.getEntity();
-        assertEquals(result.size(), 2);
-        Set<String> paths = new LinkedHashSet<>(2);
-        for (ItemReference itemReference : result) {
-            paths.add(itemReference.getPath());
-        }
-        Assert.assertTrue(paths.contains("/my_project/x/y/test.txt"));
-        Assert.assertTrue(paths.contains("/my_project/a/b/test.txt"));
-        Assert.assertFalse(paths.contains("/my_project/c/test"));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testSearchByNameAndTextAndMediaType() throws Exception {
+    public void testSearchByNameAndText() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         myProject.getBaseFolder().createFolder("a/b").createFile("test.txt", "test".getBytes());
         myProject.getBaseFolder().createFolder("x/y").createFile("test.txt", "test".getBytes());
@@ -2086,7 +2061,7 @@ public class ProjectServiceTest {
 
         ContainerResponse response = launcher.service(GET,
                                                       String.format(
-                                                              "http://localhost:8080/api/project/%s/search/my_project?text=test&name=test.txt&mediatype=text/plain",
+                                                              "http://localhost:8080/api/project/%s/search/my_project?text=test&name=test.txt",
                                                               workspace),
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
@@ -2106,7 +2081,7 @@ public class ProjectServiceTest {
 
         ContainerResponse response = launcher.service(GET,
                                                       String.format(
-                                                              "http://localhost:8080/api/project/%s/search/?text=test&name=test.txt&mediatype=text/plain",
+                                                              "http://localhost:8080/api/project/%s/search/?text=test&name=test.txt",
                                                               workspace),
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.vfs.impl.fs;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
@@ -17,7 +19,6 @@ import org.eclipse.che.api.vfs.server.search.LuceneSearcherProvider;
 import org.eclipse.che.api.vfs.server.search.Searcher;
 import org.eclipse.che.api.vfs.server.util.MediaTypeFilter;
 import org.eclipse.che.api.vfs.server.util.VirtualFileFilters;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -73,10 +74,10 @@ public class CleanableSearcherProvider extends LuceneSearcherProvider {
                     for (int i = 1; i < myFilters.length; i++) {
                         myFilters[i] = iterator.next();
                     }
-                    myFilters[0] = new MediaTypeFilter(getIndexedMediaTypes());
+                    myFilters[0] = new MediaTypeFilter();
                     filter = VirtualFileFilters.createAndFilter(myFilters);
                 } else {
-                    filter = new MediaTypeFilter(getIndexedMediaTypes());
+                    filter = new MediaTypeFilter();
                 }
                 newSearcher = new CleanableSearcher(this, myIndexDir, filter);
             } catch (IOException e) {

@@ -316,10 +316,8 @@ public interface ProjectServiceClient {
      *
      * @param expression
      *         search query expression
-     * @param callback
-     *         the callback to use for the response
      */
-    void search(QueryExpression expression, AsyncRequestCallback<List<ItemReference>> callback);
+    Promise<List<ItemReference>> search(QueryExpression expression);
 
     /**
      * Switch visibility(public/private) of the project represented by it's path.

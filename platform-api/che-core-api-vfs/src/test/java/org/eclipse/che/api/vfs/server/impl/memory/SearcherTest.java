@@ -10,11 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.memory;
 
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
-import org.eclipse.che.api.vfs.shared.dto.Item;
-import org.eclipse.che.api.vfs.shared.dto.ItemList;
-import org.eclipse.che.commons.lang.Pair;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -24,19 +19,23 @@ import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.eclipse.che.api.vfs.server.VirtualFile;
+import org.eclipse.che.api.vfs.server.search.LuceneSearcher;
+import org.eclipse.che.api.vfs.shared.dto.Item;
+import org.eclipse.che.api.vfs.shared.dto.ItemList;
+import org.eclipse.che.commons.lang.Pair;
 import org.everrest.core.impl.ContainerResponse;
 import org.everrest.core.tools.ByteArrayContainerResponseWriter;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @author andrew00x

@@ -795,4 +795,9 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.scrollToNode(node);
     }
 
+    /** Returns all root nodes. */
+    public List<Node> getRootNodes() {
+        return view.getRootNodes();
+    }
+
 }

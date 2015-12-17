@@ -136,6 +136,9 @@ public interface Resources extends Tree.Resources,
     @Source("actions/help.svg")
     SVGResource help();
 
+    @Source("actions/find.svg")
+    SVGResource find();
+
     @Source("actions/find-actions.svg")
     SVGResource findActions();
 

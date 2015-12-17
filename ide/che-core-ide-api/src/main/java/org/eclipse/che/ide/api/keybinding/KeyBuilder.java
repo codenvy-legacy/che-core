@@ -89,7 +89,7 @@ public class KeyBuilder {
      * Set char code
      *
      * @param charCode
-     *         the code of the character.
+     *         the code of the character. If the character is upper-case it means that KeyBuilder will be with the SHIFT modifier.
      * @return the KeyBuilder with char code added
      */
     public KeyBuilder charCode(int charCode) {

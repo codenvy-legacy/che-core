@@ -565,4 +565,27 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("hot.keys.table.item.title")
     String hotKeysTableItemTitle();
+
+    @Key("action.full.text.search")
+    String actionFullTextSearch();
+
+    @Key("action.full.text.search.description")
+    String actionFullTextSearchDescription();
+
+    String search();
+
+    @Key("text.search.content.label")
+    String textSearchContentLabel();
+
+    @Key("text.search.title")
+    String textSearchTitle();
+
+    @Key("text.search.file.mask")
+    String textSearchFileMask();
+
+    @Key("text.search.directory")
+    String textSearchDirectory();
+
+    @Key("select.path.window.title")
+    String selectPathWindowTitle();
 }
