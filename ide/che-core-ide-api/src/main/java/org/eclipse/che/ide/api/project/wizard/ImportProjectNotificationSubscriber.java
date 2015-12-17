@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.wizard;
 
-import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.StatusNotification;
 
 /**
  * Client service that subscribes a project to import project output notifications. Default implementation get the output stream of the
@@ -24,7 +24,7 @@ public interface ImportProjectNotificationSubscriber {
      * @param projectName
      * @param notification existing already shown notification.
      */
-    void subscribe(String projectName, Notification notification);
+    void subscribe(String projectName, StatusNotification notification);
 
     /**
      * Subscribe to display the import output notifications. To be called before triggering the import.

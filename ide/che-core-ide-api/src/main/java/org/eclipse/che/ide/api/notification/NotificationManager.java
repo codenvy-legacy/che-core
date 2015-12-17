@@ -10,51 +10,291 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.notification;
 
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.ide.api.notification.StatusNotification.Status;
 import org.eclipse.che.ide.api.parts.PartPresenter;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * The manager for notifications. Used to show notifications and change their states.
  *
  * @author Andrey Plotnikov
+ * @author Vlad Zhukovskii
  */
 public interface NotificationManager extends PartPresenter {
+
     /**
      * Show notification.
      *
      * @param notification
-     *         notification that need to show
+     *         notification
+     * @param <T>
+     *         return type of the notification
+     * @return notification object
      */
-    void showNotification(@NotNull Notification notification);
+    <T extends Notification> T notify(T notification);
 
     /**
-     * Show information notification with the specified message.
-     * <p/>
-     * This is a shortcut for <code>showNotification(new Notification({message}, Notification.Type.INFO))</code>.
+     * Show notification.
      *
-     * @param message
-     *         notification's message
+     * @param title
+     *         title
+     * @return notification object
      */
-    void showInfo(@NotNull String message);
+    Notification notify(String title);
 
     /**
-     * Show warning notification with the specified message.
-     * <p/>
-     * This is a shortcut for <code>showNotification(new Notification({message}, Notification.Type.WARNING))</code>.
+     * Show notification.
      *
-     * @param message
-     *         notification's message
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @return notification object
      */
-    void showWarning(@NotNull String message);
+    Notification notify(String title,
+                        String content);
 
     /**
-     * Show error notification with the specified message.
-     * <p/>
-     * This is a shortcut for <code>showNotification(new Notification({message}, Notification.Type.ERROR))</code>.
+     * Show notification.
      *
-     * @param message
-     *         notification's message
+     * @param title
+     *         title
+     * @param listener
+     *         notification event listener
+     * @return notification object
      */
-    void showError(@NotNull String message);
+    Notification notify(String title,
+                        NotificationListener listener);
+
+    /**
+     * Show notification.
+     *
+     * @param title
+     *         title
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              Status status,
+                              boolean balloon);
+
+    /**
+     * Show notification.
+     *
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @param listener
+     *         notification event listener
+     * @return notification object
+     */
+    Notification notify(String title,
+                        String content,
+                        NotificationListener listener);
+
+    /**
+     * Show status notification.
+     *
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              String content,
+                              Status status,
+                              boolean balloon);
+
+    /**
+     * Show status notification.
+     *
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @param listener
+     *         notification event listener
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              String content,
+                              Status status,
+                              boolean balloon,
+                              NotificationListener listener);
+
+    /**
+     * Show status notification.
+     *
+     * @param title
+     *         title
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @param listener
+     *         notification event listener
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              Status status,
+                              boolean balloon,
+                              NotificationListener listener);
+
+    /**
+     * Show notification.
+     *
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    Notification notify(String title,
+                        String content,
+                        ProjectConfigDto project);
+
+    /**
+     * Show notification.
+     *
+     * @param title
+     *         title
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    Notification notify(String title,
+                        ProjectConfigDto project);
+
+    /**
+     * Show notification.
+     *
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @param listener
+     *         notification event listener
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    Notification notify(String title,
+                        String content,
+                        NotificationListener listener,
+                        ProjectConfigDto project);
+
+    /**
+     * Show notification.
+     *
+     * @param title
+     *         title
+     * @param listener
+     *         notification event listener
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    Notification notify(String title,
+                        NotificationListener listener,
+                        ProjectConfigDto project);
+
+    /**
+     * Show status notification.
+     *
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              String content,
+                              Status status,
+                              boolean balloon,
+                              ProjectConfigDto project);
+
+    /**
+     * Show status notification.
+     *
+     * @param title
+     *         title
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              Status status,
+                              boolean balloon,
+                              ProjectConfigDto project);
+
+    /**
+     * Show status notification.
+     *
+     * @param title
+     *         title
+     * @param content
+     *         content
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @param listener
+     *         notification event listener
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              String content,
+                              Status status,
+                              boolean balloon,
+                              NotificationListener listener,
+                              ProjectConfigDto project);
+
+    /**
+     * Show status notification.
+     *
+     * @param title
+     *         title
+     * @param status
+     *         notification status
+     * @param balloon
+     *         true if notification should be balloon
+     * @param listener
+     *         notification event listener
+     * @param project
+     *         provide project information to which notification belongs
+     * @return notification object
+     */
+    StatusNotification notify(String title,
+                              Status status,
+                              boolean balloon,
+                              NotificationListener listener,
+                              ProjectConfigDto project);
+
 }

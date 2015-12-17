@@ -173,7 +173,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
 
                     @Override
                     protected void onFailure(Throwable exception) {
-                        notificationManager.showError(exception.getMessage());
+                        notificationManager.notify(exception.getMessage());
                     }
                 });
             }
@@ -202,12 +202,12 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
                     gitService.add(project, false, itemsToAddToIndex, new RequestCallback<Void>() {
                         @Override
                         protected void onSuccess(Void result) {
-                            notificationManager.showInfo(locale.deleteAddToIndexDialogNotification());
+                            notificationManager.notify(locale.deleteAddToIndexDialogNotification());
                         }
 
                         @Override
                         protected void onFailure(Throwable exception) {
-                            notificationManager.showError(exception.getMessage());
+                            notificationManager.notify(exception.getMessage());
                         }
                     });
                 } catch (WebSocketException e) {

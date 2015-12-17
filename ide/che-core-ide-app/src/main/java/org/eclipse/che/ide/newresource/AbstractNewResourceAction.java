@@ -141,7 +141,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
                 projectExplorer.getNodeByPath(path, true)
                                .then(selectNode())
                                .then(openNode());
-                
+
                 if ("file".equals(itemReference.getType())) {
                     askAddToIndex(path.getStorablePath(), itemReference.getName());
                 }
@@ -171,12 +171,13 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
                                  new RequestCallback<Void>() {
                                      @Override
                                      protected void onSuccess(Void result) {
-                                         notificationManager.showInfo(localizationConstant.actionNewFileAddToIndexNotification(fileName));
+                                         notificationManager
+                                                 .notify(localizationConstant.actionNewFileAddToIndexNotification(fileName));
                                      }
 
                                      @Override
                                      protected void onFailure(Throwable exception) {
-                                         notificationManager.showError(exception.getMessage());
+                                         notificationManager.notify(exception.getMessage());
                                      }
                                  });
                 } catch (WebSocketException e) {

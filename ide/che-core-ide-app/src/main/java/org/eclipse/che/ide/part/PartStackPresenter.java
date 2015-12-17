@@ -262,6 +262,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
     /** {@inheritDoc} */
     @Override
     public void onTabClicked(@NotNull TabItem selectedTab) {
+        //handle somehow part close event
         if (selectedTab.equals(activeTab)) {
             selectedTab.unSelect();
 
@@ -279,7 +280,7 @@ public class PartStackPresenter implements Presenter, PartStackView.ActionDelega
 
         activeTab = selectedTab;
         activePart = parts.get(selectedTab);
-
+        activePart.onOpen();
         selectActiveTab(activeTab);
     }
 

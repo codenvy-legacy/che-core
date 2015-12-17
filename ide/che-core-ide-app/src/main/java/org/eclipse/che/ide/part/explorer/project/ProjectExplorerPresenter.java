@@ -192,7 +192,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.select(node, false);
 
         if (!projectConfig.getProblems().isEmpty()) {
-            notificationManager.showInfo(locale.projectExplorerDetectedUnconfiguredProject());
+            notificationManager.notify("Project", locale.projectExplorerDetectedUnconfiguredProject(), projectConfig);
             askUserToSetUpProject(projectConfig);
         }
 
@@ -215,7 +215,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         }).catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
-                notificationManager.showError(locale.projectExplorerProjectsLoadFailed());
+                notificationManager.notify("Project", locale.projectExplorerProjectsLoadFailed());
             }
         });
     }
@@ -239,7 +239,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                 }).catchError(new Operation<PromiseError>() {
                     @Override
                     public void apply(PromiseError arg) throws OperationException {
-                        notificationManager.showError(locale.projectExplorerProjectConfigurationFailed());
+                        notificationManager.notify("Project", locale.projectExplorerProjectConfigurationFailed(), descriptor);
                         Log.warn(getClass(), arg.getMessage());
                     }
                 });
@@ -376,7 +376,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.removeAllNodes();
         appContext.setCurrentProject(null);
         queryFieldViewer.setProjectName("");
-        notificationManager.showWarning(locale.projectExplorerExtensionServerStopped());
+        notificationManager.notify("Project", locale.projectExplorerExtensionServerStopped());
     }
 
     /** {@inheritDoc} */
@@ -426,7 +426,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             @Override
             public void apply(PromiseError arg) throws OperationException {
                 Log.warn(getClass(), arg.getMessage());
-                notificationManager.showError(locale.projectExplorerProjectUpdateFailed());
+                notificationManager.notify("Project", locale.projectExplorerProjectUpdateFailed(), project);
             }
         });
     }

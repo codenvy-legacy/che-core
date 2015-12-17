@@ -74,7 +74,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
         projectExplorer.reloadChildren(getResourceBasedNode());
         if (result != null && !result.isEmpty()) {
             view.closeDialog();
-            notificationManager.showError(parseMessage(result));
+            notificationManager.notify("Upload", parseMessage(result));
             return;
         }
 

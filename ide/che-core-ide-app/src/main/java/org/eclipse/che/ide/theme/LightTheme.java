@@ -1191,4 +1191,39 @@ public class LightTheme implements Theme {
     public String categorySelectElementColor() {
         return this.getPrimaryButtonBackground();
     }
+
+    @Override
+    public String notificationPopupSuccessBackground() {
+        return "#31b993";
+    }
+
+    @Override
+    public String notificationPopupFailBackground() {
+        return "#c34d4d";
+    }
+
+    @Override
+    public String notificationPopupProgressBackground() {
+        return "#9b9b9b";
+    }
+
+    @Override
+    public String notificationPopupPanelShadow() {
+        return "0 0 10px rgba(0,0,0,0.6)";
+    }
+
+    @Override
+    public String notificationPopupIconSuccessFill() {
+        return "#31b993";
+    }
+
+    @Override
+    public String notificationPopupIconFailFill() {
+        return "#c34d4d";
+    }
+
+    @Override
+    public String notificationPopupIconProgressFill() {
+        return "#9b9b9b";
+    }
 }

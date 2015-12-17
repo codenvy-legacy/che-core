@@ -1325,4 +1325,17 @@ public interface Theme {
     String categoryElementButtonColor();
     String categorySelectElementBackgroundColor();
     String categorySelectElementColor();
+
+    /********************************************************************************************
+     *
+     * Notification
+     *
+     ********************************************************************************************/
+    String notificationPopupSuccessBackground();
+    String notificationPopupFailBackground();
+    String notificationPopupProgressBackground();
+    String notificationPopupPanelShadow();
+    String notificationPopupIconSuccessFill();
+    String notificationPopupIconFailFill();
+    String notificationPopupIconProgressFill();
 }

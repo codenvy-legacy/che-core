@@ -130,7 +130,7 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
         final WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
 
         if (workspaceConfigDto == null) {
-            notificationManager.showError(locale.workspaceConfigUndefined());
+            notificationManager.notify("Factory", locale.workspaceConfigUndefined());
             return;
         }
 

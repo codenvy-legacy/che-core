@@ -10,75 +10,53 @@
  *******************************************************************************/
 package org.eclipse.che.ide.notification;
 
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.mvp.View;
-import org.eclipse.che.ide.api.notification.Notification;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTMLTable;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.notification.NotificationManagerView.ActionDelegate;
+import org.eclipse.che.ide.notification.NotificationManagerView.NotificationActionDelegate;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The graphic container for {@link NotificationItem}. Show notification in special popup.
+ * Notification container. Performs rendering each notification.
+ * <p/>
+ * Possible improvements:
+ * <ul>
+ * <li>Add ability to check if notification is visible on viewport to mark it as read</li>
+ * </ul>
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Vlad Zhukovskyi
  */
-
-//TODO need remove this class, rework functionality
 @Singleton
-public class NotificationContainer extends FlowPanel implements View<NotificationItem.ActionDelegate> {
-    public static final int WIDTH  = 400;
-    public static final int HEIGHT = 200;
-    private Grid panel;
-    private Resources                           resources;
-    private List<Notification>                  notificationWidget;
-    private NotificationItem.ActionDelegate     delegate;
-    private Timer doubleClickTimer = new Timer() {
-        @Override
-        public void run() {
-        }
-    };
+public class NotificationContainer extends FlowPanel implements NotificationActionDelegate {
+
+    private Grid           nGrid;
+    private Resources      resources;
+    private ActionDelegate delegate;
+
+    private List<Notification> notifications = new ArrayList<>();
 
     /**
      * Create notification container.
      *
      * @param resources
+     *         core resources
      */
     @Inject
     public NotificationContainer(Resources resources) {
         this.resources = resources;
-        this.notificationWidget = new ArrayList<Notification>();
 
-        panel = new Grid(0, 4);
-        panel.getColumnFormatter().setWidth(0, "20px");
-        panel.getColumnFormatter().setWidth(1, "54px");
-        panel.getColumnFormatter().setWidth(3, "26px");
-        panel.setStyleName(resources.notificationCss().notificationGrid());
-
-        panel.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                HTMLTable.Cell cell = panel.getCellForEvent(event);
-                Notification notification = notificationWidget.get(cell.getRowIndex());
-                //Detect double click:
-                if (doubleClickTimer.isRunning()){
-                    delegate.onOpenItemClicked(notification);
-                    doubleClickTimer.cancel();
-                } else {
-                    doubleClickTimer.schedule(1000);
-                }
-            }
-        });
-
-        add(panel);
+        nGrid = new Grid(0, 1);
+        nGrid.setStyleName(resources.notificationCss().notificationPanelContainer());
+        add(nGrid);
     }
 
 
@@ -89,35 +67,64 @@ public class NotificationContainer extends FlowPanel implements View<Notificatio
      *         notification that need to show
      */
     public void addNotification(@NotNull Notification notification) {
-        //Will be added to parent container itself.
-        NotificationItem item = new NotificationItem(resources, notification, delegate, panel);
-        notificationWidget.add(notification);
+        notifications.add(notification);
+        NotificationContainerItem item = new NotificationContainerItem(notification, resources);
+        item.setDelegate(this);
+
+        int index = nGrid.getRowCount();
+        nGrid.resizeRows(index + 1);
+        nGrid.setWidget(index, 0, item);
+
     }
 
     /**
-     * Disable notification in container.
+     * Remove notification from the container.
      *
      * @param notification
-     *         notification that need to disable
+     *         notification that need to removed
      */
     public void removeNotification(@NotNull Notification notification) {
-        int index = notificationWidget.indexOf(notification);
+        int index = notifications.indexOf(notification);
         if (index >= 0) {
-            panel.removeRow(index);
-            notificationWidget.remove(index);
+            nGrid.removeRow(index);
+            notifications.remove(index);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void setDelegate(ActionDelegate delegate) {
+        this.delegate = delegate;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void onClick(Notification notification) {
+        if (delegate != null) {
+            delegate.onClick(notification);
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setDelegate(NotificationItem.ActionDelegate delegate) {
-        this.delegate = delegate;
+    public void onDoubleClick(Notification notification) {
+        if (delegate != null) {
+            delegate.onDoubleClick(notification);
+        }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void onClose(Notification notification) {
+        removeNotification(notification);
+        delegate.onClose(notification);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void clear() {
-        notificationWidget.clear();
-        panel.clear();
-        panel.resizeRows(0);
+        notifications.clear();
+        nGrid.clear();
+        nGrid.resizeRows(0);
     }
 }
