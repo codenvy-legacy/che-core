@@ -71,12 +71,17 @@ public interface MachineServiceClient {
      *
      * @param machineId
      *         ID of the machine where command should be executed
+     * @param commandName
+     *         name of the command that should be executed in the machine
      * @param commandLine
      *         command line that should be executed in the machine
      * @param outputChannel
      *         websocket chanel for execution logs
      */
-    Promise<MachineProcessDto> executeCommand(@NotNull String machineId, @NotNull String commandLine, @Nullable String outputChannel);
+    Promise<MachineProcessDto> executeCommand(@NotNull String machineId,
+                                              @NotNull String commandName,
+                                              @NotNull String commandLine,
+                                              @Nullable String outputChannel);
 
     /**
      * Get processes from the specified machine.

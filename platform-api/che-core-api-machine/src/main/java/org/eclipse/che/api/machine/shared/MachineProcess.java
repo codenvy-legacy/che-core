@@ -37,4 +37,9 @@ public interface MachineProcess {
      * @return {@code true} if process running and {@code false} otherwise
      */
     boolean isAlive();
+
+    /**
+     * Returns user-friendly name of command that was the source for machine process
+     */
+    String getCommandName();
 }

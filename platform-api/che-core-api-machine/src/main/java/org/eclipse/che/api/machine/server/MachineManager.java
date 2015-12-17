@@ -24,7 +24,6 @@ import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.MachineState;
 import org.eclipse.che.api.core.model.machine.MachineStatus;
 import org.eclipse.che.api.core.model.machine.Recipe;
-import org.eclipse.che.api.core.model.machine.Snapshot;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.util.CompositeLineConsumer;
@@ -622,7 +621,7 @@ public class MachineManager {
     public InstanceProcess exec(final String machineId, final Command command, String outputChannel)
             throws NotFoundException, MachineException {
         final Instance machine = getMachine(machineId);
-        final InstanceProcess instanceProcess = machine.createProcess(command.getCommandLine());
+        final InstanceProcess instanceProcess = machine.createProcess(command.getName(), command.getCommandLine());
         final int pid = instanceProcess.getPid();
 
         final LineConsumer processLogger = getProcessLogger(machineId, pid, outputChannel);
@@ -897,10 +896,6 @@ public class MachineManager {
 
     private String generateMachineId() {
         return NameGenerator.generate("machine", 16);
-    }
-
-    private String generateSnapshotId() {
-        return NameGenerator.generate("snapshot", 16);
     }
 
     private LineConsumer getMachineLogger(String machineId, String outputChannel) throws MachineException {

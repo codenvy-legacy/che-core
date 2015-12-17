@@ -24,7 +24,6 @@ import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.dao.SnapshotDao;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.impl.AbstractInstance;
-import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.model.impl.ChannelsImpl;
 import org.eclipse.che.api.machine.server.model.impl.LimitsImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineConfigImpl;
@@ -171,10 +170,6 @@ public class MachineManagerTest {
             super(id, type, workspaceId, owner, isDev, displayName, channels, limits, source, machineStatus, envName);
         }
 
-        public NoOpInstanceImpl(MachineState machineState) {
-            super(machineState);
-        }
-
         @Override
         public LineConsumer getLogger() {
             return null;
@@ -191,7 +186,7 @@ public class MachineManagerTest {
         }
 
         @Override
-        public InstanceProcess createProcess(String commandLine) throws MachineException {
+        public InstanceProcess createProcess(String commandName, String commandLine) throws MachineException {
             return null;
         }
 

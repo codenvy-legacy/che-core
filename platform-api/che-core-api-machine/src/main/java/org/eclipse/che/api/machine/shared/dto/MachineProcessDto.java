@@ -37,6 +37,10 @@ public interface MachineProcessDto extends MachineProcess, Hyperlinks {
 
     MachineProcessDto withAlive(boolean isAlive);
 
+    void setCommandName(String commandName);
+
+    MachineProcessDto withCommandName(String commandName);
+
     @Override
     MachineProcessDto withLinks(List<Link> links);
 }

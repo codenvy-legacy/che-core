@@ -154,6 +154,7 @@ public final class DtoConverter {
         return newDto(MachineProcessDto.class).withPid(machineProcess.getPid())
                                               .withCommandLine(machineProcess.getCommandLine())
                                               .withAlive(machineProcess.isAlive())
+                                              .withCommandName(machineProcess.getCommandName())
                                               .withLinks(null);
     }
 
