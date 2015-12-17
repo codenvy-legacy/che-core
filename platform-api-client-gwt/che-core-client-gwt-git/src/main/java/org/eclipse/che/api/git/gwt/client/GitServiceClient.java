@@ -434,7 +434,7 @@ public interface GitServiceClient {
      * Get the file content from specified revision or branch.
      *
      * @param project
-     *         project configuration of root of GIT repository
+     *         project configuration of root GIT repository
      * @param file
      *         file name with its full path
      * @param version
