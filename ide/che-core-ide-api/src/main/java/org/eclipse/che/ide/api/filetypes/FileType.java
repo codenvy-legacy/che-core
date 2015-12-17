@@ -16,6 +16,7 @@ import org.eclipse.che.ide.collections.ListHelper;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -105,7 +106,7 @@ public class FileType {
         this.contentDescription = contentDescription;
         this.image = image;
         this.imageSVG = imageSVG;
-        this.mimeTypes = mimeTypes;
+        this.mimeTypes = mimeTypes == null ? Collections.<String>emptyList() : mimeTypes;
         this.extension = extension;
         this.namePattern = namePattern;
         id = contentDescription + (mimeTypes == null ? "noMimeType" : ListHelper.join(mimeTypes, ",") + namePattern);

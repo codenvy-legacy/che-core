@@ -13,6 +13,8 @@ package org.eclipse.che.ide.filetypes;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+
+import com.google.common.base.Strings;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -61,34 +63,43 @@ public class FileTypeRegistryImpl implements FileTypeRegistry {
 
     @Override
     public FileType getFileTypeByExtension(String extension) {
-        for (FileType type : fileTypes) {
-            if (extension.equals(type.getExtension())) {
-                return type;
+        if (!Strings.isNullOrEmpty(extension)) {
+            for (FileType type : fileTypes) {
+                if (type.getExtension() != null && type.getExtension().equals(extension)) {
+                    return type;
+                }
             }
         }
+
         return unknownFileType;
     }
 
     @Override
     public FileType getFileTypeByMimeType(String mimeType) {
-        for (FileType type : fileTypes) {
-            if (type.getMimeTypes().contains(mimeType)) {
-                return type;
+        if (!Strings.isNullOrEmpty(mimeType)) {
+            for (FileType type : fileTypes) {
+                if (type.getMimeTypes() != null && type.getMimeTypes().contains(mimeType)) {
+                    return type;
+                }
             }
         }
+
         return unknownFileType;
     }
 
     @Override
     public FileType getFileTypeByNamePattern(String name) {
-        for (FileType type : fileTypes) {
-            if (type.getNamePattern() != null) {
-                RegExp regExp = RegExp.compile(type.getNamePattern());
-                if (regExp.test(name)) {
-                    return type;
+        if (!Strings.isNullOrEmpty(name)) {
+            for (FileType type : fileTypes) {
+                if (type.getNamePattern() != null) {
+                    RegExp regExp = RegExp.compile(type.getNamePattern());
+                    if (regExp.test(name)) {
+                        return type;
+                    }
                 }
             }
         }
+
         return unknownFileType;
     }
 
