@@ -10,17 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
-import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.workspace.Environment;
+import org.eclipse.che.api.core.model.workspace.EnvironmentState;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
@@ -51,13 +51,21 @@ import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPING;
 /**
  * Defines {@link RuntimeWorkspace} internal API.
  *
- * <p>Workspaces are stored in memory - in 2 Maps.
- * First for <i>identifier -> workspace</i> mapping, second for <i>owner -> list of workspaces</i> mapping.
+ * <p>Registry implements {@link WorkspaceStatus} contract for runtime workspaces,
+ * the only implementation remark here is that in the case of {@link WorkspaceStatus#STOPPED}
+ * status registry removes workspace from in-memory storage instead of updating its status to STOPPED.
+ *
+ * <p>All methods which return instance of {@link RuntimeWorkspace} return the
+ * copy of real object, which means that instance modification won't affect real object.
+ * This is done for keeping data in actual state and for avoiding race-conditions.
+ * All operations performed by registry are synchronous.
+ *
+ * <p>The implementation is thread-safe.
+ * Workspaces are stored in memory - in 2 Maps. First for <i>identifier -> workspace</i> mapping,
+ * second for <i>owner -> list of workspaces</i> mapping(which speeds up fetching workspaces by owner).
  * Maps are guarded by {@link ReentrantReadWriteLock}.
  *
- * <p>It is thread-safe!
- *
- * @author Eugene Voevodin
+ * @author Yevhenii Voevodin
  * @author Alexander Garagatyi
  */
 @Singleton
@@ -81,12 +89,11 @@ public class RuntimeWorkspaceRegistry {
     }
 
     /**
-     * Starts {@link UsersWorkspace workspace} with specified environment.
+     * Starts all machines from specified workspace environment, creates runtime workspace for it.
      *
-     * <p>Actually starts all machines in certain environment starting from dev-machine.
-     * When environment is not specified - default one is going to be used.
-     * During workspace starting workspace is visible with {@link WorkspaceStatus#STARTING starting} status,
-     * until all machines in workspace are started, after that status will be changed to {@link WorkspaceStatus#RUNNING running}.
+     * <p>Dev-machine always starts before the other machines. If dev-machine start failed
+     * method throws appropriate {@link ServerException} and removes runtime workspace instance from the registry.
+     * During the start the runtime workspace is visible with {@link WorkspaceStatus#STARTING} status.
      *
      * <p>Note that it doesn't provide any events for machines start, Machine API is responsible for it.
      *
@@ -100,62 +107,51 @@ public class RuntimeWorkspaceRegistry {
      * @throws ConflictException
      *         when workspace is already running or any other conflict error occurs during environment start
      * @throws BadRequestException
-     *         when active environment is in inconsistent state or {@code envName} is null
+     *         when active environment is in inconsistent state or {@code envName/usersWorkspace} is null
      * @throws NotFoundException
      *         whe any not found exception occurs during environment start
      * @throws ServerException
      *         when registry {@link #isStopped is stopped} other error occurs during environment start
      * @see MachineManager#createMachineSync(MachineConfig, String, String)
+     * @see WorkspaceStatus#STARTING
      */
     public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName, boolean recover) throws ConflictException,
                                                                                                              ServerException,
                                                                                                              BadRequestException,
                                                                                                              NotFoundException {
-        if (envName == null) {
-            throw new BadRequestException("Required non-null environment name");
-        }
-        checkIsNotStopped();
+        checkRegistryIsNotStopped();
+        checkWorkspaceIsValidForStart(usersWorkspace, envName);
         // Prepare runtime workspace for start
-        RuntimeWorkspaceImpl newRuntime = RuntimeWorkspaceImpl.builder()
-                                                              .fromWorkspace(usersWorkspace)
-                                                              .setActiveEnvName(envName)
-                                                              .setStatus(STARTING)
-                                                              .build();
+        final RuntimeWorkspaceImpl newRuntime = RuntimeWorkspaceImpl.builder()
+                                                                    .fromWorkspace(usersWorkspace)
+                                                                    .setActiveEnvName(envName)
+                                                                    .setStatus(STARTING)
+                                                                    .build();
         // Save workspace with 'STARTING' status
         lock.writeLock().lock();
         try {
-            checkIsNotStopped();
+            checkRegistryIsNotStopped();
             final RuntimeWorkspace running = idToWorkspaces.get(newRuntime.getId());
             if (running != null) {
                 throw new ConflictException(format("Could not start workspace '%s' because its status is '%s'",
-                                                   newRuntime.getName(),
-                                                   newRuntime.getStatus()));
+                                                   running.getName(),
+                                                   running.getStatus()));
             }
             idToWorkspaces.put(newRuntime.getId(), newRuntime);
             ownerToWorkspaces.get(newRuntime.getOwner()).add(newRuntime);
         } finally {
             lock.writeLock().unlock();
         }
-
-        // Start active environment
-        final List<MachineImpl> machines = startEnvironment(newRuntime.getActiveEnvironment(), newRuntime.getId(), recover);
-
-        // Update runtime workspace with machines and 'RUNNING' status
-        final RuntimeWorkspaceImpl running = get(newRuntime.getId());
-        running.setDevMachine(findDev(machines));
-        running.setMachines(machines);
-        running.setStatus(RUNNING);
-        update(running);
-        return running;
+        startEnvironment(newRuntime.getActiveEnvironment(), newRuntime.getId(), recover);
+        return get(newRuntime.getId());
     }
 
     /**
-     * Starts {@link UsersWorkspace workspace} with specified environment.
+     * Starts all machines from specified workspace environment, creates runtime workspace for it.
      *
-     * <p>Actually starts all machines in certain environment starting from dev-machine.
-     * When environment is not specified - default one is going to be used.
-     * During workspace starting workspace is visible with {@link WorkspaceStatus#STARTING starting} status,
-     * until all machines in workspace are started, after that status will be changed to {@link WorkspaceStatus#RUNNING running}.
+     * <p>Dev-machine always starts before the other machines. If dev-machine start failed
+     * method throws appropriate {@link ServerException} and removes runtime workspace instance from the registry.
+     * During the start the runtime workspace is visible with {@link WorkspaceStatus#STARTING} status.
      *
      * <p>Note that it doesn't provide any events for machines start, Machine API is responsible for it.
      *
@@ -173,6 +169,7 @@ public class RuntimeWorkspaceRegistry {
      * @throws ServerException
      *         when registry {@link #isStopped is stopped} other error occurs during environment start
      * @see MachineManager#createMachineSync(MachineConfig, String, String)
+     * @see WorkspaceStatus#STARTING
      */
     public RuntimeWorkspaceImpl start(UsersWorkspace usersWorkspace, String envName) throws ConflictException,
                                                                                             ServerException,
@@ -184,9 +181,10 @@ public class RuntimeWorkspaceRegistry {
     /**
      * Stops running workspace.
      *
-     * <p>Actually stops all machines related to certain workspace one by one (order is not specified).
-     * During workspace stopping workspace still will be accessible with {@link WorkspaceStatus#STOPPING stopping} status,
-     * and invoking {@link #start(UsersWorkspace, String)} for the same workspace {@code workspaceId} will throw {@link ConflictException}.
+     * <p>Stops all {@link RuntimeWorkspace#getMachines() running machines} one by one,
+     * non-dev machines first. During the workspace stopping the workspace
+     * will still be accessible with {@link WorkspaceStatus#STOPPING stopping} status.
+     * Workspace may be stopped only if its status is {@link WorkspaceStatus#RUNNING}.
      *
      * <p>Note that it doesn't provide any events for machines stop, Machine API is responsible for it.
      *
@@ -196,15 +194,21 @@ public class RuntimeWorkspaceRegistry {
      *         when workspace with specified identifier is not running
      * @throws ServerException
      *         when any error occurs during workspace stopping
+     * @throws ConflictException
+     *         when running workspace status is different from {@link WorkspaceStatus#RUNNING}
      * @see MachineManager#destroy(String, boolean)
+     * @see WorkspaceStatus#STOPPING
      */
     public void stop(String workspaceId) throws NotFoundException, ServerException, ConflictException {
-        checkIsNotStopped();
+        checkRegistryIsNotStopped();
         lock.writeLock().lock();
         final RuntimeWorkspaceImpl workspace;
         try {
-            checkIsNotStopped();
-            workspace = get(workspaceId);
+            checkRegistryIsNotStopped();
+            workspace = idToWorkspaces.get(workspaceId);
+            if (workspace == null) {
+                throw new NotFoundException("Workspace with id " + workspaceId + " is not running.");
+            }
             if (workspace.getStatus() != RUNNING) {
                 throw new ConflictException(format("Couldn't stop '%s' workspace because its status is '%s'",
                                                    workspace.getName(),
@@ -214,37 +218,7 @@ public class RuntimeWorkspaceRegistry {
         } finally {
             lock.writeLock().unlock();
         }
-        doStop(workspace);
-    }
-
-    /**
-     * Updates runtime workspace.
-     *
-     * <p>Workspace will be entirely updated(replaced) with copy of given instance
-     *
-     * @param update
-     *         new runtime workspace
-     * @throws ServerException
-     *         when update is performed when registry stops running workspaces
-     * @throws NotFoundException
-     *         when workspace with given identifier is not {@link #isRunning(String) running}
-     */
-    public void update(RuntimeWorkspaceImpl update) throws ServerException, NotFoundException {
-        checkIsNotStopped();
-        lock.writeLock().lock();
-        try {
-            checkIsNotStopped();
-            if (!idToWorkspaces.containsKey(update.getId())) {
-                throw new NotFoundException("Could not update runtime workspace '" + update.getId() + " it is not running");
-            }
-            final RuntimeWorkspaceImpl updateCopy = new RuntimeWorkspaceImpl(update);
-            idToWorkspaces.put(update.getId(), updateCopy);
-            final List<RuntimeWorkspaceImpl> workspaces = ownerToWorkspaces.get(update.getOwner());
-            workspaces.removeIf(w -> w.getId().equals(update.getId()));
-            workspaces.add(updateCopy);
-        } finally {
-            lock.writeLock().unlock();
-        }
+        stopMachines(workspace);
     }
 
     /**
@@ -254,7 +228,7 @@ public class RuntimeWorkspaceRegistry {
      * <p> Using of this method is equivalent to {@link #get(String)} + {@code try catch}, see example:
      * <pre>
      *
-     *     if (!registry.isRunning("workspace123")) {
+     *     if (!registry.hasRuntime("workspace123")) {
      *         doStuff("workspace123");
      *     }
      *
@@ -272,7 +246,7 @@ public class RuntimeWorkspaceRegistry {
      *         workspace identifier to perform check
      * @return true if workspace is running, otherwise false
      */
-    public boolean isRunning(String workspaceId) {
+    public boolean hasRuntime(String workspaceId) {
         lock.readLock().lock();
         try {
             return idToWorkspaces.containsKey(workspaceId);
@@ -286,7 +260,6 @@ public class RuntimeWorkspaceRegistry {
      *
      * <p>Note that returned {@link RuntimeWorkspaceImpl instance} is a copy of real runtime workspace object
      * and its modification will not affect the real object.
-     * Use {@link #update(RuntimeWorkspaceImpl) #update} method for runtime workspace modification.
      *
      * @param workspaceId
      *         workspace identifier to get runtime workspace
@@ -311,9 +284,8 @@ public class RuntimeWorkspaceRegistry {
     /**
      * Gets runtime workspaces owned by certain user.
      *
-     * <p>Note that returned {@link RuntimeWorkspaceImpl instances} are copies of real runtime workspace object
-     * and its modification will not affect the real object.
-     * Use {@link #update(RuntimeWorkspaceImpl) #update} method for runtime workspace modification.
+     * <p>Note that returned {@link RuntimeWorkspaceImpl instances} are copies of real runtime workspace objects
+     * and it modification will not affect the real objects.
      *
      * @param ownerId
      *         owner identifier
@@ -334,54 +306,145 @@ public class RuntimeWorkspaceRegistry {
     /**
      * Starts all environment machines, starting from dev machine.
      */
-    List<MachineImpl> startEnvironment(Environment environment, String workspaceId, boolean recover) throws BadRequestException,
-                                                                                                            ServerException,
-                                                                                                            NotFoundException,
-                                                                                                            ConflictException {
-        /* todo replace with environments management
-           for now we consider environment is:
-           - recipe with type "docker"
-           - recipe script will be ignored
-           - list of docker machines configs
-           - one of machines in this list is dev machine
-        */
-        //FIXME "docker"
-        String envRecipeType = environment.getRecipe() == null ? "docker" : environment.getRecipe().getType();
-        if (!"docker".equals(envRecipeType)) {
-            throw new BadRequestException("Invalid environment recipe type " + envRecipeType);
+    private void startEnvironment(Environment environment, String workspaceId, boolean recover) throws BadRequestException,
+                                                                                                       ServerException,
+                                                                                                       NotFoundException,
+                                                                                                       ConflictException {
+        final List<? extends MachineConfig> machineConfigs = new ArrayList<>(environment.getMachineConfigs());
+        final MachineConfig devCfg = findDev(machineConfigs);
+
+        // Starting workspace dev machine
+        final MachineImpl devMachine;
+        try {
+            devMachine = createMachine(devCfg, workspaceId, environment.getName(), recover);
+        } catch (MachineException | BadRequestException | NotFoundException | SnapshotException | ConflictException ex) {
+            doRemoveWorkspace(workspaceId);
+            throw ex;
         }
 
-        final List<MachineImpl> machines = new ArrayList<>();
-
-        MachineConfig devMachine = findDev(environment.getMachineConfigs());
-        if (devMachine == null) {
-            throw new BadRequestException("Dev machine was not found in workspace environment " + environment.getName());
+        // Try to add dev-machine to the list of runtime workspace machines.
+        // If runtime workspace doesn't exist it means only that
+        // 'stopRegistry' was performed and workspace was removed by 'stopRegistry',
+        // in that case dev-machine must not be destroyed(MachineManager is responsible for it)
+        // and another machines must not be started.
+        lock.writeLock().lock();
+        try {
+            if (!addRunningMachine(devMachine)) {
+                // Dev machine was started but workspace doesn't exist
+                // it means that registry was stopped, dev-machine must not be
+                // destroyed in this place as MachineManager#cleanup() does it
+                throw new ServerException("Workspace '" + workspaceId + "' had been stopped before its dev-machine was started");
+            }
+            idToWorkspaces.get(workspaceId).setStatus(RUNNING);
+        } finally {
+            lock.writeLock().unlock();
         }
 
-        machines.add(createMachine(devMachine, workspaceId, environment.getName(), recover));
+        // Try to start all the other machines different from the dev one.
+        machineConfigs.remove(devCfg);
+        for (MachineConfig nonDevCfg : machineConfigs) {
+            try {
+                final MachineImpl nonDevMachine = createMachine(nonDevCfg, workspaceId, environment.getName(), recover);
+                if (!addRunningMachine(nonDevMachine)) {
+                    // Non dev machine was started but workspace doesn't exist
+                    // it means that either registry was stopped or runtime workspace
+                    // was stopped by client. In the case when it was stopped by
+                    // client we should destroy newly started non-dev machine
+                    // as it wasn't destroyed by 'stop' method. When 'stopRegistry' was performed we
+                    // must not destroy machine as MachineManager is responsible for it.
+                    if (!isStopped) {
+                        machineManager.destroy(nonDevMachine.getId(), false);
+                    }
+                    throw new ServerException("Workspace '" + workspaceId + "' had been stopped before all its machines were started");
+                }
+            } catch (MachineException | BadRequestException | NotFoundException | SnapshotException | ConflictException ex) {
+                LOG.error(format("Error while creating machine '%s' in workspace '%s', environment '%s'",
+                                 nonDevCfg.getName(),
+                                 workspaceId,
+                                 environment.getName()),
+                          ex);
+            }
+        }
+    }
 
-        //TODO should it be error?
-        environment.getMachineConfigs()
-                   .stream()
-                   .filter(machineConfig -> !machineConfig.isDev())
-                   .forEach(machineConfig -> {
-                       try {
-                           // TODO change to true when it will be necessary to recover not only dev machine
-                           machines.add(createMachine(machineConfig, workspaceId, environment.getName(), false));
-                       } catch (ApiException apiEx) {
-                           //TODO should it be error?
-                           LOG.error(apiEx.getMessage(), apiEx);
-                       }
-                   });
+    /**
+     * Checks if workspace is valid for start.
+     */
+    private void checkWorkspaceIsValidForStart(UsersWorkspace workspace, String envName) throws BadRequestException {
+        if (workspace == null) {
+            throw new BadRequestException("Required non-null workspace");
+        }
+        if (envName == null) {
+            throw new BadRequestException(format("Couldn't start workspace '%s', environment name is null", workspace.getName()));
+        }
+        final EnvironmentState environment = workspace.getEnvironments().get(envName);
+        if (environment == null) {
+            throw new BadRequestException(format("Couldn't start workspace '%s', workspace doesn't have environment '%s'",
+                                                 workspace.getName(),
+                                                 envName));
+        }
+        if (environment.getRecipe() != null && !"docker".equals(environment.getRecipe().getType())) {
+            throw new BadRequestException(format("Couldn't start workspace '%s' from environment '%s', " +
+                                                 "environment recipe has unsupported type '%s'",
+                                                 workspace.getName(),
+                                                 envName,
+                                                 environment.getRecipe().getType()));
+        }
+        if (findDev(environment.getMachineConfigs()) == null) {
+            throw new BadRequestException(format("Couldn't start workspace '%s' from environment '%s', " +
+                                                 "environment doesn't contain dev-machine",
+                                                 workspace.getName(),
+                                                 envName));
+        }
+    }
 
-        return machines;
+    /**
+     * Adds given machine to the running workspace, if the workspace exists.
+     * Sets up this machine as dev-machine if it is dev.
+     *
+     * @return true if machine was added to the workspace(workspace exists) and false otherwise
+     */
+    @VisibleForTesting
+    boolean addRunningMachine(MachineImpl machine) throws ServerException {
+        lock.writeLock().lock();
+        try {
+            final RuntimeWorkspaceImpl workspace = idToWorkspaces.get(machine.getWorkspaceId());
+            if (workspace != null) {
+                if (machine.isDev()) {
+                    workspace.setDevMachine(machine);
+                }
+                workspace.getMachines().add(machine);
+            }
+            return workspace != null;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private void doRemoveWorkspace(String workspaceId) {
+        lock.writeLock().lock();
+        try {
+            final RuntimeWorkspaceImpl workspace = idToWorkspaces.get(workspaceId);
+            if (workspace != null) {
+                ownerToWorkspaces.get(workspace.getOwner()).removeIf(ws -> ws.getId().equals(workspaceId));
+            }
+            idToWorkspaces.remove(workspaceId);
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
      * Creates or recovers machine based on machine config.
      */
-    private MachineImpl createMachine(MachineConfig machine, String workspaceId, String envName, boolean recover)
-            throws MachineException, BadRequestException, SnapshotException, NotFoundException, ConflictException {
+    private MachineImpl createMachine(MachineConfig machine,
+                                      String workspaceId,
+                                      String envName,
+                                      boolean recover) throws MachineException,
+                                                              BadRequestException,
+                                                              SnapshotException,
+                                                              NotFoundException,
+                                                              ConflictException {
         if (recover) {
             return machineManager.recoverMachine(machine, workspaceId, envName);
         } else {
@@ -392,7 +455,7 @@ public class RuntimeWorkspaceRegistry {
     /**
      * Checks that registry is not stopped(stopWorkspaces was performed) if it is - throws {@link ServerException}.
      */
-    private void checkIsNotStopped() throws ServerException {
+    private void checkRegistryIsNotStopped() throws ServerException {
         if (isStopped) {
             throw new ServerException("Could not perform operation while registry is stopping workspaces");
         }
@@ -410,33 +473,41 @@ public class RuntimeWorkspaceRegistry {
     /**
      * Stops workspace destroying all its machines and removing it from in memory storage.
      */
-    private void doStop(RuntimeWorkspaceImpl workspace) throws NotFoundException, ServerException {
-        //destroy all machines
-        for (Machine machine : workspace.getMachines()) {
-            machineManager.destroy(machine.getId(), true);
+    private void stopMachines(RuntimeWorkspaceImpl workspace) throws NotFoundException, ServerException {
+        final List<MachineImpl> machines = new ArrayList<>(workspace.getMachines());
+        machines.remove(findDev(machines));
+        // destroying all non-dev machines
+        for (MachineImpl machine : machines) {
+            try {
+                machineManager.destroy(machine.getId(), false);
+            } catch (NotFoundException | MachineException ex) {
+                LOG.error(format("Could not destroy machine '%s' of workspace '%s'",
+                                 machine.getId(),
+                                 machine.getWorkspaceId()),
+                          ex);
+            }
         }
-
-        lock.writeLock().lock();
+        // destroying dev-machine
         try {
-            idToWorkspaces.remove(workspace.getId());
-            ownerToWorkspaces.get(workspace.getOwner()).removeIf(ws -> ws.getId().equals(workspace.getId()));
+            machineManager.destroy(workspace.getDevMachine().getId(), false);
         } finally {
-            lock.writeLock().unlock();
+            doRemoveWorkspace(workspace.getId());
         }
     }
 
+    /**
+     * Removes all workspaces from the in-memory storage, while
+     * {@link MachineManager#cleanup()} is responsible for machines destroying.
+     */
     @PreDestroy
-    private void stopWorkspaces() {
+    @VisibleForTesting
+    void stopRegistry() {
         isStopped = true;
         lock.writeLock().lock();
         try {
-            for (RuntimeWorkspaceImpl workspace : idToWorkspaces.values()) {
-                try {
-                    doStop(workspace);
-                } catch (NotFoundException | ServerException e) {
-                    LOG.error(e.getLocalizedMessage(), e);
-                }
-            }
+            new ArrayList<>(idToWorkspaces.values()).stream()
+                                                    .map(UsersWorkspace::getId)
+                                                    .forEach(this::doRemoveWorkspace);
         } finally {
             lock.writeLock().unlock();
         }

@@ -831,8 +831,15 @@ public class MachineManager {
     }
 
     private void doDestroy(Instance machine) throws MachineException, NotFoundException {
+        LOG.info("Destroying machine [ws = {}: env = {}: machine = {}]",
+                 machine.getWorkspaceId(),
+                 machine.getEnvName(),
+                 machine.getName());
         machine.destroy();
-
+        LOG.info("Machine [ws = {}: env = {}: machine = {}] was successfully destroyed",
+                 machine.getWorkspaceId(),
+                 machine.getEnvName(),
+                 machine.getName());
         cleanupOnDestroy(machine, null);
     }
 
