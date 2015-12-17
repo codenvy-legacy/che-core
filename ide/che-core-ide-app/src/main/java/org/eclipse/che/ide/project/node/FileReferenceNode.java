@@ -44,6 +44,11 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     public static final String GET_CONTENT_REL = "get content";
 
+    /**
+     * If you want to display another name different from origin, just set into attributes of this node this parameter.
+     */
+    public static final String DISPLAY_NAME_ATTR = "display";
+
     @Inject
     public FileReferenceNode(@Assisted ItemReference itemReference,
                              @Assisted ProjectConfigDto projectConfig,
@@ -79,6 +84,10 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
 
     @Override
     public String getDisplayName() {
+        if (getAttributes().containsKey(DISPLAY_NAME_ATTR)) {
+            return getAttributes().get(DISPLAY_NAME_ATTR).get(0);
+        }
+
         return getData().getName();
     }
 

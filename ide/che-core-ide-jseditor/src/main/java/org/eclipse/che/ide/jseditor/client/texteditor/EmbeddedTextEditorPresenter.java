@@ -429,7 +429,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     @NotNull
     @Override
     public String getTitle() {
-        return input.getName();
+        return input.getFile().getDisplayName();
     }
 
     @Override
