@@ -77,6 +77,7 @@ public class PartButtonWidget extends Composite implements PartButton {
 
         initWidget(UI_BINDER.createAndBindUi(this));
         setStyleName(resources.partStackCss().idePartStackTab());
+        this.ensureDebugId("partButton-" + title);
 
         addDomHandler(this, ClickEvent.getType());
 
