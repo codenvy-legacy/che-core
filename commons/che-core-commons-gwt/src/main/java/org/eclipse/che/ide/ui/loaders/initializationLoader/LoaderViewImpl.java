@@ -235,7 +235,7 @@ public class LoaderViewImpl implements LoaderView {
         @Source("done.svg")
         SVGResource completedOperationIcon();
 
-        @Source("org/eclipse/che/ide/notification/error.svg")
+        @Source("error.svg")
         SVGResource errorOperationIcon();
     }
 
