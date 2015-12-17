@@ -433,10 +433,14 @@ public interface GitServiceClient {
     /**
      * Get the file content from specified revision or branch.
      *
-     * @param project project (root of GIT repository)
-     * @param file file name with its full path
-     * @param version revision or branch where the showed file is present
-     * @param callback callback for sending asynchronous response with file content
+     * @param project
+     *         project configuration of root of GIT repository
+     * @param file
+     *         file name with its full path
+     * @param version
+     *         revision or branch where the showed file is present
+     * @param callback
+     *         callback for sending asynchronous response with file content
      */
     void show(ProjectConfigDto project, String file, String version, AsyncRequestCallback<String> callback);
 
