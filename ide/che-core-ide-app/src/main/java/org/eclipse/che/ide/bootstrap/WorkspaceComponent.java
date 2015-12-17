@@ -60,6 +60,8 @@ import org.eclipse.che.ide.workspace.start.StopWorkspaceEvent;
 import java.util.List;
 
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.SUCCESS;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
 import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
@@ -142,13 +144,13 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
-        notificationManager.showInfo(locale.extServerStarted());
+        notificationManager.notify("Workspace", locale.extServerStarted(), SUCCESS, false);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onExtServerStopped(ExtServerStateEvent event) {
-        notificationManager.showInfo(locale.extServerStopped());
+        notificationManager.notify("Workspace", locale.extServerStopped(), FAIL, false);
     }
 
 
@@ -291,25 +293,17 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                     switch (statusEvent.getEventType()) {
                         case RUNNING:
                             setCurrentWorkspace(workspace);
-
-                            notificationManager.showInfo(locale.startedWs(workspaceName));
-
+                            notificationManager.notify("Workspace", locale.startedWs(workspaceName));
                             eventBus.fireEvent(new StartWorkspaceEvent(workspace));
-
                             break;
                         case ERROR:
-                            notificationManager.showError(locale.workspaceStartFailed(workspaceName));
-
+                            notificationManager.notify("Workspace", locale.workspaceStartFailed(workspaceName));
                             initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
-
                             showErrorDialog(workspaceName, statusEvent.getError());
-
                             break;
                         case STOPPED:
                             unSubscribeWorkspace(statusEvent.getWorkspaceId());
-
                             eventBus.fireEvent(new StopWorkspaceEvent(workspace));
-
                             workspaceServiceClient.getWorkspaces(SKIP_COUNT, MAX_COUNT).then(new Operation<List<UsersWorkspaceDto>>() {
                                 @Override
                                 public void apply(List<UsersWorkspaceDto> workspaces) throws OperationException {
@@ -332,7 +326,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
 
                 @Override
                 protected void onErrorReceived(Throwable exception) {
-                    notificationManager.showError(exception.getMessage());
+                    notificationManager.notify("Workspace", exception.getMessage());
                 }
             });
         } catch (WebSocketException exception) {

@@ -80,7 +80,7 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
 
         if (result != null && !result.isEmpty()) {
             view.closeDialog();
-            notificationManager.showError(parseMessage(result));
+            notificationManager.notify("Upload", parseMessage(result));
             return;
         }
 

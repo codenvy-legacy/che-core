@@ -17,7 +17,6 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardView;
 
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
@@ -37,16 +36,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-
 /**
  * Presenter of the import project wizard's main page.
  *
  * @author Ann Shumilova
  */
 public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements MainPageView.ActionDelegate {
-
-    private static final String PUBLIC_VISIBILITY = "public";
 
     private final MainPageView                                 view;
     private final DtoUnmarshallerFactory                       dtoUnmarshallerFactory;
@@ -156,7 +151,7 @@ public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> impl
             @Override
             protected void onFailure(Throwable exception) {
                 Log.error(MainPagePresenter.class, locale.importProjectError() + exception);
-                notificationManager.showNotification(new Notification(exception.getMessage(), ERROR));
+                notificationManager.notify("Importer", exception.getMessage());
             }
         });
     }

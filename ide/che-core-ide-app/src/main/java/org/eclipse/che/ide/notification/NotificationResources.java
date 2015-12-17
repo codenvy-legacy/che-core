@@ -12,66 +12,66 @@ package org.eclipse.che.ide.notification;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-/** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
+/**
+ * Notifications resources. Contains definition of styles and icons.
+ *
+ * @author Andrey Plotnikov
+ * @author Vlad Zhukovskyi
+ **/
 public interface NotificationResources extends ClientBundle {
-    public interface NotificationCss extends CssResource {
+    interface NotificationCss extends CssResource {
+
         String notificationPanel();
+
+        String notificationPanelContainer();
+
+        String notification();
+
+        String notificationIconWrapper();
+
+        String notificationContentWrapper();
+
+        String notificationTitleWrapper();
+
+        String notificationMessageWrapper();
+
+        String notificationCloseButtonWrapper();
+
+        String notificationStatusProgress();
+
+        String notificationStatusSuccess();
+
+        String notificationStatusFail();
 
         String notificationPopup();
 
-        String notificationItem();
+        String notificationPopupContentWrapper();
 
-        String notificationGrid();
+        String notificationPopupIconWrapper();
 
-        String floatLeft();
+        String notificationPopupCloseButtonWrapper();
 
-        String margin4px();
+        String notificationPopupTitleWrapper();
 
-        String error();
+        String notificationPopupMessageWrapper();
 
-        String unread();
+        String notificationPopupPanel();
 
-        String warning();
-
-        String success();
-
-        String right25px();
-
-        String notificationMessage();
-
-        String progress();
-
-        String countLabel();
-
-        String center();
-
-        String close();
-
-        String closePopupIcon();
+        String notificationPopupPlaceholder();
     }
 
     @Source({"notification.css", "org/eclipse/che/ide/api/ui/style.css"})
     NotificationCss notificationCss();
 
-    @Source("message.png")
-    ImageResource message();
-
-    @Source("progress.svg")
-    SVGResource progress();
-
     @Source("success.svg")
     SVGResource success();
 
-    @Source("error.svg")
-    SVGResource error();
+    @Source("fail.svg")
+    SVGResource fail();
 
-    @Source("warning.svg")
-    SVGResource warning();
-
-    @Source("close-popup.svg")
-    SVGResource closePopup();
+    @Source("progress.svg")
+    SVGResource progress();
 }

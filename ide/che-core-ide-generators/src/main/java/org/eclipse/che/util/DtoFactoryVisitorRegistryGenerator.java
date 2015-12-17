@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.util;
 
-import org.eclipse.che.ide.dto.ClientDtoFactoryVisitor;
-
 import org.apache.commons.io.FileUtils;
+import org.eclipse.che.ide.dto.ClientDtoFactoryVisitor;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;

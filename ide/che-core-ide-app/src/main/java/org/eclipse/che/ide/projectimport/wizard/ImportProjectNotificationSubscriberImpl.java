@@ -21,8 +21,8 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.notification.StatusNotification;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.commons.exception.UnmarshallerException;
 import org.eclipse.che.ide.util.loging.Log;
@@ -30,6 +30,10 @@ import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
+
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.PROGRESS;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.SUCCESS;
 
 /**
  * Subscribes on import project notifications.
@@ -47,7 +51,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
 
     private String                      wsChannel;
     private String                      projectName;
-    private Notification                notification;
+    private StatusNotification          notification;
     private SubscriptionHandler<String> subscriptionHandler;
 
     @Inject
@@ -69,20 +73,19 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
 
     @Override
     public void subscribe(final String projectName) {
-        this.notification = new Notification(locale.importingProject(projectName), Notification.Status.PROGRESS, true);
+        notification = notificationManager.notify("Import", locale.importingProject(projectName), PROGRESS, true);
         subscribe(projectName, notification);
-        notificationManager.showNotification(notification);
     }
 
     @Override
-    public void subscribe(final String projectName, final Notification existingNotification) {
+    public void subscribe(final String projectName, final StatusNotification existingNotification) {
         this.projectName = projectName;
         this.wsChannel = "importProject:output:" + workspaceId + ":" + projectName;
         this.notification = existingNotification;
         this.subscriptionHandler = new SubscriptionHandler<String>(new LineUnmarshaller()) {
             @Override
             protected void onMessageReceived(String result) {
-                notification.setMessage(locale.importingProject(projectName) + " " + result);
+                notification.setContent(locale.importingProject(projectName) + " " + result);
             }
 
             @Override
@@ -95,9 +98,8 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                         } catch (WebSocketException e) {
                             Log.error(getClass(), e);
                         }
-                        notification.setType(Notification.Type.ERROR);
-                        notification.setImportant(true);
-                        notification.setMessage(locale.importProjectMessageFailure(projectName) + " " + throwable.getMessage());
+                        notification.setContent(locale.importProjectMessageFailure(projectName));
+                        notification.setStatus(FAIL);
                         Log.error(getClass(), throwable);
                     }
                 }).catchError(logErrorHandler);
@@ -126,8 +128,8 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                 } catch (WebSocketException e) {
                     Log.error(getClass(), e);
                 }
-                notification.setStatus(Notification.Status.FINISHED);
-                notification.setMessage(locale.importProjectMessageSuccess(projectName));
+                notification.setStatus(SUCCESS);
+                notification.setContent(locale.importProjectMessageSuccess(projectName));
             }
         }).catchError(logErrorHandler);
     }
@@ -142,10 +144,8 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                 } catch (WebSocketException e) {
                     Log.error(getClass(), e);
                 }
-                notification.setType(Notification.Type.ERROR);
-                notification.setStatus(Notification.Status.FINISHED);
-                notification.setImportant(true);
-                notification.setMessage(errorMessage);
+                notification.setStatus(FAIL);
+                notification.setContent(errorMessage);
             }
         }).catchError(logErrorHandler);
     }

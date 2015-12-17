@@ -15,11 +15,15 @@ import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.notification.StatusNotification;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.PROGRESS;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.SUCCESS;
 
 /**
  * Creates snapshot of the workspace using {@link WorkspaceServiceClient}.
@@ -35,7 +39,7 @@ public class WorkspaceSnapshotCreator {
     private final NotificationManager      notificationManager;
     private final CoreLocalizationConstant locale;
 
-    Notification notification;
+    private StatusNotification notification;
 
     @Inject
     public WorkspaceSnapshotCreator(WorkspaceServiceClient workspaceService,
@@ -50,27 +54,23 @@ public class WorkspaceSnapshotCreator {
      * Changes notification state to finished with an error.
      */
     public void creationError(String message) {
-        notification.setMessage(message);
-        notification.setType(Notification.Type.ERROR);
-        notification.setStatus(Notification.Status.FINISHED);
-        notification = null;
+        notification.setTitle(message);
+        notification.setStatus(FAIL);
     }
 
     /**
      * Changes notification state to successfully finished.
      */
     public void successfullyCreated() {
-        notification.setMessage(locale.createSnapshotSuccess());
-        notification.setType(Notification.Type.INFO);
-        notification.setStatus(Notification.Status.FINISHED);
-        notification = null;
+        notification.setStatus(SUCCESS);
+        notification.setTitle(locale.createSnapshotSuccess());
     }
 
     /**
      * Returns true if workspace creation process is not done, otherwise when it is done - returns false
      */
     public boolean isInProgress() {
-        return notification != null;
+        return notification.getStatus() == PROGRESS;
     }
 
     /**
@@ -80,8 +80,7 @@ public class WorkspaceSnapshotCreator {
      *         id of the workspace to create snapshot from.
      */
     public void createSnapshot(String workspaceId) {
-        notification = new Notification(locale.createSnapshotProgress(), Notification.Status.PROGRESS);
-        notificationManager.showNotification(notification);
+        notification = notificationManager.notify(locale.createSnapshotProgress(), PROGRESS, true);
         workspaceService.createSnapshot(workspaceId)
                         .catchError(new Operation<PromiseError>() {
                             @Override

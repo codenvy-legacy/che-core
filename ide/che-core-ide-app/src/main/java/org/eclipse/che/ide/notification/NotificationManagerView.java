@@ -11,28 +11,66 @@
 package org.eclipse.che.ide.notification;
 
 import org.eclipse.che.ide.api.mvp.View;
+import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 
 /**
  * The view of {@link NotificationManagerImpl}.
  *
  * @author Andrey Plotnikov
+ * @author Vlad Zhukovskyi
+ * @see {@link Notification}
  */
 public interface NotificationManagerView extends View<NotificationManagerView.ActionDelegate> {
-    /** Required for delegating some functions in view. */
-    interface ActionDelegate extends BaseActionDelegate {
+    /**
+     * Required for delegating some functions in view.
+     */
+    interface ActionDelegate extends BaseActionDelegate, NotificationActionDelegate {
     }
 
     /**
-     * Status of a notification manager. The manager has 3 statuses: manager has unread messages, manager has at least one message in
-     * progress and manager has no new messages
+     * Delegate events between notifications widgets.
      */
-    enum Status {
-        IN_PROGRESS, EMPTY, HAS_UNREAD
+    interface NotificationActionDelegate {
+        /**
+         * Handle notification <code>com.google.gwt.user.client.Event.ONCLICK</code> event.
+         *
+         * @param notification
+         *         {@link Notification} on which onClick handled
+         */
+        void onClick(Notification notification);
+
+        /**
+         * Handle notification <code>com.google.gwt.user.client.Event.ONDBLCLICK</code> event.
+         *
+         * @param notification
+         *         {@link Notification} on which onDoubleClick handled
+         */
+        void onDoubleClick(Notification notification);
+
+        /**
+         * Handle notification close event. This event fires when notification is closed automatically or manually by user.
+         *
+         * @param notification
+         *         {@link Notification} on which onClose handled
+         */
+        void onClose(Notification notification);
     }
 
+    /**
+     * Set widget container into notification manager presenter. This container need to display notification row by row.
+     *
+     * @param container
+     *         instance of {@link NotificationContainer}
+     */
     void setContainer(NotificationContainer container);
 
+    /**
+     * Manage notification manager visibility.
+     *
+     * @param visible
+     *         true - if notification part should be showed, false - otherwise
+     */
     void setVisible(boolean visible);
 
     /**

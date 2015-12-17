@@ -31,7 +31,6 @@ import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.event.FileContentUpdateHandler;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEventHandler;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
@@ -84,9 +83,6 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-
 
 /**
  * Presenter part for the embedded variety of editor implementations.
@@ -467,8 +463,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
             @Override
             public void onFailure(Throwable caught) {
-                final Notification notification = new Notification(caught.getMessage(), ERROR);
-                notificationManager.showNotification(notification);
+                notificationManager.notify("Editor", caught.getMessage());
                 if (callback != null) {
                     callback.onFailure(caught);
                 }

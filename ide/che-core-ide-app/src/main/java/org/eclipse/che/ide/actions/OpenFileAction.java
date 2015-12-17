@@ -30,7 +30,6 @@ import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -42,7 +41,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
-import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
 
 /**
  * @author Sergii Leschenko
@@ -95,7 +93,7 @@ public class OpenFileAction extends Action implements PromisableAction {
         return new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
-                notificationManager.showNotification(new Notification(localization.unableOpenResource(path), WARNING));
+                notificationManager.notify("Project", localization.unableOpenResource(path));
 
                 if (actionCompletedCallback != null) {
                     actionCompletedCallback.onFailure(arg.getCause());

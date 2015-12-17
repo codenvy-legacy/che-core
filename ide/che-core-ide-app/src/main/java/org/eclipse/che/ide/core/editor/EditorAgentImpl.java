@@ -40,7 +40,6 @@ import org.eclipse.che.ide.api.event.project.DeleteProjectEvent;
 import org.eclipse.che.ide.api.event.project.DeleteProjectHandler;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
@@ -70,8 +69,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
 import static org.eclipse.che.ide.api.parts.PartStackType.EDITING;
 
 /** @author Evgen Vidolob */
@@ -401,8 +398,7 @@ public class EditorAgentImpl implements EditorAgent {
     public void saveAll(final AsyncCallback callback) {
         dirtyEditors = getDirtyEditors();
         if (dirtyEditors.isEmpty()) {
-            Notification notification = new Notification(coreLocalizationConstant.allFilesSaved(), INFO);
-            notificationManager.showNotification(notification);
+            notificationManager.notify("Editor", coreLocalizationConstant.allFilesSaved());
             callback.onSuccess("Success");
         } else {
             doSave(callback);
@@ -415,16 +411,14 @@ public class EditorAgentImpl implements EditorAgent {
             @Override
             public void onFailure(Throwable caught) {
                 callback.onFailure(caught);
-                Notification notification = new Notification(coreLocalizationConstant.someFilesCanNotBeSaved(), ERROR);
-                notificationManager.showNotification(notification);
+                notificationManager.notify("Editor", coreLocalizationConstant.someFilesCanNotBeSaved());
             }
 
             @Override
             public void onSuccess(EditorInput result) {
                 dirtyEditors.remove(partPresenter);
                 if (dirtyEditors.isEmpty()) {
-                    Notification notification = new Notification(coreLocalizationConstant.allFilesSaved(), INFO);
-                    notificationManager.showNotification(notification);
+                    notificationManager.notify("Editor", coreLocalizationConstant.allFilesSaved());
                     callback.onSuccess("Success");
                 } else {
                     doSave(callback);

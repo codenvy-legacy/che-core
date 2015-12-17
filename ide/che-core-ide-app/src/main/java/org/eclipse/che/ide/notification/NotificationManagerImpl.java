@@ -11,89 +11,91 @@
 package org.eclipse.che.ide.notification;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.NotificationListener;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.notification.NotificationObserver;
+import org.eclipse.che.ide.api.notification.StatusNotification;
+import org.eclipse.che.ide.api.notification.StatusNotification.Status;
 import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.che.ide.api.notification.Notification.State.READ;
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
-import static org.eclipse.che.ide.api.notification.Notification.Type.WARNING;
+import static java.lang.Enum.valueOf;
+import static org.eclipse.che.ide.api.notification.ReadState.READ;
 
 /**
  * The implementation of {@link NotificationManager}.
+ * Base notification part. Perform showing notification in the "Events panel". Also checking is performed on each created notification.
+ * <p/>
+ * Each notification may be simple notification {@link Notification} or status notification {@link StatusNotification}.
+ * <p/>
+ * If notification instance of {@link StatusNotification} then notification may be showed as balloon widget by need. By default all
+ * notifications are showed only in events panel.
  *
  * @author Andrey Plotnikov
  * @author Dmitry Shnurenko
  */
 @Singleton
 public class NotificationManagerImpl extends BasePresenter implements NotificationManager,
-                                                                      NotificationItem.ActionDelegate,
-                                                                      Notification.NotificationObserver,
+                                                                      NotificationObserver,
                                                                       NotificationManagerView.ActionDelegate,
-                                                                      NotificationMessageStack.ActionDelegate,
                                                                       HasView {
-    private static final DateTimeFormat DATA_FORMAT = DateTimeFormat.getFormat("hh:mm:ss");
-    private static final String         TITLE       = "Events";
-    private NotificationManagerView  view;
-    private DialogFactory            dialogFactory;
-    private NotificationContainer    notificationContainer;
-    private NotificationMessageStack notificationMessageStack;
-    private List<Notification>       notifications;
+    public static final String TITLE   = "Events";
+    public static final String TOOLTIP = "Event Log";
+
+    private       NotificationManagerView view;
+    private       NotificationContainer   nContainer;
+    private       NotificationPopupStack  nPopupStack;
+    private List<Notification> notifications = new ArrayList<>();
 
     private Resources resources;
 
-    /** Count of unread messages */
-    private int unread;
+    /** Count of unread notifications */
+    private int unread = 0;
 
+    /** Flag that display panel open state */
+    private boolean opened;
+
+    /**
+     * Create instance of notification panel.
+     *
+     * @param view
+     *         the view
+     * @param nContainer
+     *         notification container. It holds showed notifications
+     * @param nPopupStack
+     *         popup notification stack. It showed each notification as balloon
+     * @param resources
+     *         core resources
+     */
     @Inject
-    public NotificationManagerImpl(EventBus eventBus,
-                                   NotificationManagerView view,
-                                   DialogFactory dialogFactory,
-                                   final NotificationContainer notificationContainer,
-                                   final NotificationMessageStack notificationMessageStack,
-                                   final Resources resources) {
+    public NotificationManagerImpl(NotificationManagerView view,
+                                   NotificationContainer nContainer,
+                                   NotificationPopupStack nPopupStack,
+                                   Resources resources) {
         this.view = view;
-        this.dialogFactory = dialogFactory;
-        this.notificationContainer = notificationContainer;
+        this.nContainer = nContainer;
+        this.nContainer.setDelegate(this);
+        this.nPopupStack = nPopupStack;
+        this.nPopupStack.setDelegate(this);
         this.view.setDelegate(this);
-        this.view.setContainer(notificationContainer);
+        this.view.setContainer(nContainer);
         this.view.setTitle(TITLE);
-        this.notificationContainer.setDelegate(this);
-        this.notificationMessageStack = notificationMessageStack;
-        this.notificationMessageStack.setDelegate(this);
-        this.notifications = new ArrayList<>();
         this.resources = resources;
-
-        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, new CloseCurrentProjectHandler() {
-            @Override
-            public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
-                notifications.clear();
-                notificationMessageStack.clear();
-                notificationContainer.clear();
-                onValueChanged();
-            }
-        });
     }
 
+    /** {@inheritDoc} */
     @Override
     public View getView() {
         return view;
@@ -104,15 +106,18 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     public void onValueChanged() {
         unread = 0;
 
-        for (Notification notification : notifications) {
-            if (!notification.isRead()) {
-                unread++;
+        if (!opened) {
+            for (Notification notification : notifications) {
+                if (!notification.isRead()) {
+                    unread++;
+                }
             }
         }
 
         firePropertyChange(TITLE_PROPERTY);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getUnreadNotificationsCount() {
         return unread;
@@ -120,11 +125,15 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
 
     /** {@inheritDoc} */
     @Override
-    public void showNotification(@NotNull Notification notification) {
+    public <T extends Notification> T notify(T notification) {
         notification.addObserver(this);
         notifications.add(notification);
-        notificationMessageStack.addNotification(notification);
-        notificationContainer.addNotification(notification);
+
+        if (notification instanceof StatusNotification && ((StatusNotification)notification).isBalloon()) {
+            nPopupStack.push((StatusNotification)notification);
+        }
+
+        nContainer.addNotification(notification);
         onValueChanged();
 
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
@@ -133,24 +142,139 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
                 view.scrollBottom();
             }
         });
+
+        return notification;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void showInfo(@NotNull String message) {
-        showNotification(new Notification(message, INFO));
+    public Notification notify(String title) {
+        return notify(new Notification(title));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void showWarning(@NotNull String message) {
-        showNotification(new Notification(message, WARNING));
+    public Notification notify(String title,
+                               String content) {
+        return notify(title, content, (NotificationListener)null);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void showError(@NotNull String message) {
-        showNotification(new Notification(message, ERROR));
+    public Notification notify(String title,
+                               String content,
+                               NotificationListener listener) {
+        return notify(title, content, listener, null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Notification notify(String title,
+                               NotificationListener listener) {
+        return notify(title, listener, null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title, Status status, boolean balloon) {
+        return notify(new StatusNotification(title, status, balloon));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title, Status status, boolean balloon, NotificationListener listener) {
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title,
+                                     String content,
+                                     Status status,
+                                     boolean balloon) {
+        return notify(title, content, status, balloon, (NotificationListener)null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title,
+                                     String content,
+                                     Status status,
+                                     boolean balloon,
+                                     NotificationListener listener) {
+        return notify(title, content, status, balloon, listener, null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Notification notify(String title,
+                               String content,
+                               ProjectConfigDto project) {
+        return notify(title, content, null, project);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Notification notify(String title,
+                               ProjectConfigDto project) {
+        return notify(title, null, (NotificationListener)project);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Notification notify(String title,
+                               String content,
+                               NotificationListener listener,
+                               ProjectConfigDto project) {
+        return notify(new Notification(title, content, project, listener));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Notification notify(String title,
+                               NotificationListener listener,
+                               ProjectConfigDto project) {
+        return notify(title, null, listener, project);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title,
+                                     String content,
+                                     Status status,
+                                     boolean balloon,
+                                     ProjectConfigDto project) {
+        return notify(title, content, status, balloon, null, project);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title,
+                                     Status status,
+                                     boolean balloon,
+                                     ProjectConfigDto project) {
+        return notify(title, null, status, balloon, null, project);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title,
+                                     String content,
+                                     Status status,
+                                     boolean balloon,
+                                     NotificationListener listener,
+                                     ProjectConfigDto project) {
+        return notify(new StatusNotification(title, content, status, balloon, project, listener));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public StatusNotification notify(String title,
+                                     Status status,
+                                     boolean balloon,
+                                     NotificationListener listener,
+                                     ProjectConfigDto project) {
+        return notify(title, null, status, balloon, listener, project);
     }
 
     /**
@@ -159,97 +283,79 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
      * @param notification
      *         notification that need to remove
      */
-    public void removeNotification(@NotNull Notification notification) {
+    public void removeNotification(Notification notification) {
         notification.removeObserver(this);
         notifications.remove(notification);
-        notificationContainer.removeNotification(notification);
-        notificationMessageStack.removeNotification(notification);
+        nContainer.removeNotification(notification);
         onValueChanged();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onOpenMessageClicked(@NotNull Notification notification) {
-        onOpenClicked(notification);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onOpenItemClicked(@NotNull Notification notification) {
-        onOpenClicked(notification);
-    }
-
-    /**
-     * Performs some actions in response to a user's opening a notification
-     *
-     * @param notification
-     *         notification that is opening
-     */
-    private void onOpenClicked(@NotNull Notification notification) {
-        notification.setState(READ);
-
-        Notification.OpenNotificationHandler openHandler = notification.getOpenHandler();
-        if (openHandler != null) {
-            openHandler.onOpenClicked();
-        } else {
-            dialogFactory.createMessageDialog(notification.getType().toString(),
-                                              DATA_FORMAT.format(notification.getTime()) + " " + notification.getMessage(), null).show();
+    public void onClick(Notification notification) {
+        NotificationListener listener = notification.getListener();
+        if (listener != null) {
+            listener.onClick();
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onCloseMessageClicked(@NotNull Notification notification) {
-        notification.setState(READ);
-        onCloseClicked(notification);
+    public void onDoubleClick(Notification notification) {
+        NotificationListener listener = notification.getListener();
+        if (listener != null) {
+            listener.onDoubleClick();
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void onCloseItemClicked(@NotNull Notification notification) {
+    public void onClose(Notification notification) {
         removeNotification(notification);
-        onCloseClicked(notification);
-    }
 
-    /**
-     * Performs some actions in response to a user's closing a notification
-     *
-     * @param notification
-     *         notification that is closing
-     */
-    private void onCloseClicked(@NotNull Notification notification) {
-        Notification.CloseNotificationHandler closeHandler = notification.getCloseHandler();
-        if (closeHandler != null) {
-            closeHandler.onCloseClicked();
+        NotificationListener listener = notification.getListener();
+        if (listener != null) {
+            listener.onClose();
         }
     }
 
-    @NotNull
+    /** {@inheritDoc} */
     @Override
     public String getTitle() {
         return TITLE;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setVisible(boolean visible) {
         view.setVisible(visible);
     }
 
-    @Nullable
+    /** {@inheritDoc} */
     @Override
     public SVGResource getTitleSVGImage() {
         return resources.eventsPartIcon();
     }
 
-    @Nullable
+    /** {@inheritDoc} */
     @Override
     public String getTitleToolTip() {
-        return "Log Events";
+        return TOOLTIP;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void onOpen() {
+        super.onOpen();
+
+        for (Notification notification : notifications) {
+            notification.setState(READ);
+        }
+    }
 }

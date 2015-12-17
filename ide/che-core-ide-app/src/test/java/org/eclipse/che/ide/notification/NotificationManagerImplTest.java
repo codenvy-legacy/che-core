@@ -15,23 +15,24 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.extension.ExtensionRegistry;
 import org.eclipse.che.ide.api.notification.Notification;
+import org.eclipse.che.ide.api.notification.NotificationListener;
+import org.eclipse.che.ide.api.notification.ReadState;
+import org.eclipse.che.ide.api.notification.StatusNotification;
 import org.eclipse.che.ide.part.PartStackPresenter;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 
-import static org.eclipse.che.ide.api.notification.Notification.State.READ;
-import static org.eclipse.che.ide.api.notification.Notification.Status.FINISHED;
-import static org.eclipse.che.ide.api.notification.Notification.Status.PROGRESS;
-import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
-import static org.junit.Assert.assertEquals;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.SUCCESS;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +40,8 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link NotificationManagerImpl} functionality
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Vlad Zhukovskyi
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class NotificationManagerImplTest {
@@ -48,15 +50,15 @@ public class NotificationManagerImplTest {
     private Resources resources;
 
     @Mock
-    private EventBus                 eventBus;
+    private EventBus                eventBus;
     @Mock
-    private NotificationManagerView  view;
+    private NotificationManagerView view;
     @Mock
-    private DialogFactory            dialogFactory;
+    private DialogFactory           dialogFactory;
     @Mock
-    private NotificationContainer    notificationContainer;
+    private NotificationContainer   notificationContainer;
     @Mock
-    private NotificationMessageStack notificationMessageStack;
+    private NotificationPopupStack  notificationMessageStack;
 
     private NotificationManagerImpl manager;
 
@@ -65,7 +67,7 @@ public class NotificationManagerImplTest {
 
     @Before
     public void disarm() {
-        manager = new NotificationManagerImpl(eventBus, view, dialogFactory, notificationContainer, notificationMessageStack, resources);
+        manager = new NotificationManagerImpl(view, notificationContainer, notificationMessageStack, resources);
         manager.setPartStack(partStack);
         when(partStack.getActivePart()).thenReturn(manager);
         reset(view);
@@ -73,111 +75,82 @@ public class NotificationManagerImplTest {
 
     @Test
     public void testOnValueChanged() throws Exception {
-        Notification notification = new Notification("test message", PROGRESS);
-        manager.showNotification(notification);
+        Notification notification = new Notification("Title");
+        manager.notify(notification);
         reset(view);
 
         manager.onValueChanged();
 
         reset(view);
-        notification.setStatus(FINISHED);
-
-        reset(view);
-        notification.setState(READ);
+        notification.setState(ReadState.READ);
     }
 
     @Test
-    public void testShowNotification() throws Exception {
-        Notification notification = new Notification("test message", INFO);
-        manager.showNotification(notification);
+    public void testShowSimpleNotification() throws Exception {
+        Notification notification = new Notification("Title");
+        manager.notify(notification);
 
         verify(notificationContainer).addNotification(eq(notification));
-        verify(notificationMessageStack).addNotification(eq(notification));
+        verify(notificationMessageStack, never()).push(any(StatusNotification.class));
     }
 
     @Test
-    public void testShowInfo() throws Exception {
-        manager.showInfo("test message");
+    public void testShowStatusNotification() throws Exception {
+        StatusNotification notification = new StatusNotification("Title", "Message", SUCCESS, true, null, null);
+        manager.notify(notification);
 
-        verify(notificationContainer).addNotification(Matchers.<Notification>anyObject());
-        verify(notificationMessageStack).addNotification(Matchers.<Notification>anyObject());
+        verify(notificationContainer).addNotification(eq(notification));
+        verify(notificationMessageStack).push(eq(notification));
     }
 
     @Test
-    public void testShowWarning() throws Exception {
-        manager.showWarning("test message");
+    public void testShowStatusNotificationOnlyInEventsPanel() throws Exception {
+        StatusNotification notification = new StatusNotification("Title", "Message", SUCCESS, false, null, null);
+        manager.notify(notification);
 
-        verify(notificationContainer).addNotification(Matchers.<Notification>anyObject());
-        verify(notificationMessageStack).addNotification(Matchers.<Notification>anyObject());
-    }
-
-    @Test
-    public void testShowError() throws Exception {
-        manager.showError("test message");
-
-        verify(notificationContainer).addNotification(Matchers.<Notification>anyObject());
-        verify(notificationMessageStack).addNotification(Matchers.<Notification>anyObject());
+        verify(notificationContainer).addNotification(eq(notification));
+        verify(notificationMessageStack, never()).push(any(StatusNotification.class));
     }
 
     @Test
     public void testRemoveNotification() throws Exception {
-        Notification notification = new Notification("test message", INFO);
+        StatusNotification notification = new StatusNotification("Title", "Message", SUCCESS, false, null, null);
         manager.removeNotification(notification);
 
         verify(notificationContainer).removeNotification(eq(notification));
-        verify(notificationMessageStack).removeNotification(eq(notification));
     }
 
     @Test
-    public void testOnOpenMessageClicked() throws Exception {
-        Notification.OpenNotificationHandler openNotificationHandler = mock(Notification.OpenNotificationHandler.class);
-        Notification notification = new Notification("test message", INFO, openNotificationHandler);
+    public void testOnMessageClicked() throws Exception {
+        NotificationListener listener = mock(NotificationListener.class);
+        StatusNotification notification = new StatusNotification("Title", "Message", SUCCESS, false, null, listener);
 
-        assertEquals(notification.isRead(), false);
-
-        manager.onOpenMessageClicked(notification);
-
-        assertEquals(notification.isRead(), true);
-        verify(openNotificationHandler).onOpenClicked();
+        manager.onClick(notification);
+        verify(listener).onClick();
+        verify(listener, never()).onClose();
+        verify(listener, never()).onDoubleClick();
     }
 
     @Test
-    public void testOnOpenItemClicked() throws Exception {
-        Notification.OpenNotificationHandler openNotificationHandler = mock(Notification.OpenNotificationHandler.class);
-        Notification notification = new Notification("test message", INFO, openNotificationHandler);
+    public void testOnMessageDoubleClicked() throws Exception {
+        NotificationListener listener = mock(NotificationListener.class);
+        StatusNotification notification = new StatusNotification("Title", "Message", SUCCESS, false, null, listener);
 
-        assertEquals(notification.isRead(), false);
-
-        manager.onOpenItemClicked(notification);
-
-        assertEquals(notification.isRead(), true);
-        verify(openNotificationHandler).onOpenClicked();
+        manager.onDoubleClick(notification);
+        verify(listener, never()).onClick();
+        verify(listener, never()).onClose();
+        verify(listener).onDoubleClick();
     }
 
     @Test
     public void testOnCloseMessageClicked() throws Exception {
-        Notification.CloseNotificationHandler closeNotificationHandler = mock(Notification.CloseNotificationHandler.class);
-        Notification notification = new Notification("test message", INFO, closeNotificationHandler);
+        NotificationListener listener = mock(NotificationListener.class);
+        StatusNotification notification = new StatusNotification("Title", "Message", SUCCESS, false, null, listener);
 
-        manager.showNotification(notification);
-        reset(view);
-        manager.onCloseMessageClicked(notification);
-
-        verify(closeNotificationHandler).onCloseClicked();
-    }
-
-    @Test
-    public void testOnCloseItemClicked() throws Exception {
-        Notification.CloseNotificationHandler closeNotificationHandler = mock(Notification.CloseNotificationHandler.class);
-        Notification notification = new Notification("test message", INFO, closeNotificationHandler);
-
-        manager.showNotification(notification);
-        reset(view);
-        manager.onCloseItemClicked(notification);
-
-        verify(closeNotificationHandler).onCloseClicked();
-        verify(notificationContainer).removeNotification(eq(notification));
-        verify(notificationMessageStack).removeNotification(eq(notification));
+        manager.onClose(notification);
+        verify(listener, never()).onClick();
+        verify(listener).onClose();
+        verify(listener, never()).onDoubleClick();
     }
 
     @Test
