@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -77,10 +78,10 @@ public class LoaderPresenterTest {
 
         presenter.onStatusChanged(operationInfo);
 
-        verify(view).setInProgressStatus(eq(index));
+        verify(view).setInProgressStatus(eq(index), eq(OPERATION));
         verify(view).setCurrentOperation(eq(OPERATION));
-        verify(view, never()).setErrorStatus(anyInt());
-        verify(view, never()).setSuccessStatus(anyInt());
+        verify(view, never()).setErrorStatus(anyInt(), anyString());
+        verify(view, never()).setSuccessStatus(anyInt(), anyString());
     }
 
     @Test
@@ -94,9 +95,9 @@ public class LoaderPresenterTest {
 
         presenter.onStatusChanged(operationInfo);
 
-        verify(view).setSuccessStatus(eq(index));
-        verify(view, never()).setErrorStatus(anyInt());
-        verify(view, never()).setInProgressStatus(anyInt());
+        verify(view).setSuccessStatus(eq(index), eq(OPERATION));
+        verify(view, never()).setErrorStatus(anyInt(), anyString());
+        verify(view, never()).setInProgressStatus(anyInt(), anyString());
     }
 
     @Test
@@ -110,10 +111,10 @@ public class LoaderPresenterTest {
 
         presenter.onStatusChanged(operationInfo);
 
-        verify(view).setErrorStatus(eq(index));
+        verify(view).setErrorStatus(eq(index), eq(OPERATION));
         verify(view).setCurrentOperation(eq("Error while " + OPERATION));
-        verify(view, never()).setSuccessStatus(anyInt());
-        verify(view, never()).setInProgressStatus(anyInt());
+        verify(view, never()).setSuccessStatus(anyInt(), anyString());
+        verify(view, never()).setInProgressStatus(anyInt(), anyString());
     }
 
     @Test
