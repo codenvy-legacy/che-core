@@ -165,6 +165,15 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
             final EditorTab editorTab = tabItemFactory.createEditorPartButton(part.getTitleSVGImage(), part.getTitle());
 
+            part.addPropertyListener(new PropertyListener() {
+                @Override
+                public void propertyChanged(PartPresenter source, int propId) {
+                    if (propId == EditorPartPresenter.PROP_INPUT && source instanceof EditorPartPresenter) {
+                        editorTab.setReadOnlyMark(((EditorPartPresenter)source).getEditorInput().getFile().isReadOnly());
+                    }
+                }
+            });
+
             editorTab.setDelegate(this);
 
             parts.put(editorTab, part);

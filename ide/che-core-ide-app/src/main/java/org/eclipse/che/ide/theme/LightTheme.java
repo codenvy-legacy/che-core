@@ -113,6 +113,16 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String editorReadonlyTabBackgroundColor() {
+        return "#d4d4be";
+    }
+
+    @Override
+    public String activeEditorReadonlyTabBackgroundColor() {
+        return "#ffffe4";
+    }
+
+    @Override
     public String getEditorTabIconColor() {
         return "#555555";
     }

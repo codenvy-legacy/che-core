@@ -136,6 +136,16 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String editorReadonlyTabBackgroundColor() {
+        return "#3b372f";
+    }
+
+    @Override
+    public String activeEditorReadonlyTabBackgroundColor() {
+        return "#4f4838";
+    }
+
+    @Override
     public String focusedEditorTabBackgroundColor() {
         return "#353E50";
     }

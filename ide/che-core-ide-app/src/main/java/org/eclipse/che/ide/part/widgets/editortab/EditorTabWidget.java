@@ -172,4 +172,12 @@ public class EditorTabWidget extends Composite implements EditorTab {
         delegate.onTabClose(this);
     }
 
+    @Override
+    public void setReadOnlyMark(boolean isVisible) {
+        if (isVisible) {
+            getElement().setAttribute("readonly", "");
+        } else {
+            getElement().removeAttribute("readonly");
+        }
+    }
 }
