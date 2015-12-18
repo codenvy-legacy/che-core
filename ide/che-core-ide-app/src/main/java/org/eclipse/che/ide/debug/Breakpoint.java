@@ -12,38 +12,43 @@ package org.eclipse.che.ide.debug;
 
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 
-/** @author Evgen Vidolob */
+/**
+ * Immutable object represents a breakpoint. It isn't designed to be preserved.
+ * {@link org.eclipse.che.ide.debug.dto.BreakpointDto} should be used then.
+ *
+ * @author Evgen Vidolob
+ * @author Anatoliy Bazko
+ */
 public class Breakpoint {
-    protected int      lineNumber;
+    protected int         lineNumber;
     protected VirtualFile file;
-    private   Type     type;
-    private   String   message;
-    private   String   path;
+    private   Type        type;
+    private   String      message;
+    private   String      path;
 
     /**
-     * @param type
-     * @param lineNumber
-     * @param path
-     * @param file
+     * Breakpoint becomes active if is added to a JVM, otherwise it is just a user mark.
      */
-    public Breakpoint(Type type, int lineNumber, String path, VirtualFile file) {
-        this(type, lineNumber, path, file, null);
+    private boolean active;
+
+    public Breakpoint(Type type, int lineNumber, String path, VirtualFile file, boolean active) {
+        this(type, lineNumber, path, file, null, active);
     }
 
-    /**
-     * @param type
-     * @param lineNumber
-     * @param path
-     * @param file
-     * @param message
-     */
-    public Breakpoint(Type type, int lineNumber, String path, VirtualFile file, String message) {
-        super();
+    public Breakpoint(Type type, int lineNumber, String path, VirtualFile file, String message, boolean active) {
         this.type = type;
         this.lineNumber = lineNumber;
         this.path = path;
         this.message = message;
         this.file = file;
+        this.active = active;
+    }
+
+    /**
+     * Getter for {@link #active}
+     */
+    public boolean isActive() {
+        return active;
     }
 
     /** @return the type */
@@ -75,11 +80,15 @@ public class Breakpoint {
         return file;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("Breakpoint [lineNumber=").append(lineNumber)
                .append(", type=").append(type)
+               .append(", active=").append(active)
                .append(", message=").append(message)
                .append(", path=").append(path)
                .append("]");

@@ -26,7 +26,7 @@ public interface BreakpointRenderer {
      * Add a breakpoint mark in the gutter on the given line.
      * 
      * @param lineNumber the line where the breakpoint is set
-     * @param reaction to line numbering changes
+     * @param action to line numbering changes
      */
     void addBreakpointMark(int lineNumber, LineChangeAction action);
 
@@ -65,7 +65,7 @@ public interface BreakpointRenderer {
     boolean isReady();
 
     /** Reaction on line numbering changes. */
-    public interface LineChangeAction {
+    interface LineChangeAction {
         /** Action taken on change. */
         void onLineChange(VirtualFile file, int firstLine, int linesAdded, int linesRemoved);
     }
