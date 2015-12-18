@@ -69,11 +69,11 @@
 }
 
 .selected {
-    background-color: projectExplorerSelectedRowBackground;
+    background-color: projectExplorerSelectedRowBackground !important;
 }
 
 .hover {
-    background-color: projectExplorerHoverRowBackground;
+    background-color: projectExplorerHoverRowBackground !important;
 }
 
 .joint {
