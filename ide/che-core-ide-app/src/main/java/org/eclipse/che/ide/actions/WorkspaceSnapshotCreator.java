@@ -54,23 +54,27 @@ public class WorkspaceSnapshotCreator {
      * Changes notification state to finished with an error.
      */
     public void creationError(String message) {
-        notification.setTitle(message);
-        notification.setStatus(FAIL);
+        if (notification != null) {
+            notification.setTitle(message);
+            notification.setStatus(FAIL);
+        }
     }
 
     /**
      * Changes notification state to successfully finished.
      */
     public void successfullyCreated() {
-        notification.setStatus(SUCCESS);
-        notification.setTitle(locale.createSnapshotSuccess());
+        if (notification != null) {
+            notification.setStatus(SUCCESS);
+            notification.setTitle(locale.createSnapshotSuccess());
+        }
     }
 
     /**
      * Returns true if workspace creation process is not done, otherwise when it is done - returns false
      */
     public boolean isInProgress() {
-        return notification.getStatus() == PROGRESS;
+        return notification != null && notification.getStatus() == PROGRESS;
     }
 
     /**
