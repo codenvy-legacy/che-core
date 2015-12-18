@@ -22,6 +22,8 @@ import javax.validation.constraints.NotNull;
  */
 public interface EditorTab extends View<EditorTab.ActionDelegate>, TabItem, DoubleClickHandler {
 
+    void setReadOnlyMark(boolean isVisible);
+
     void setErrorMark(boolean isVisible);
 
     void setWarningMark(boolean isVisible);

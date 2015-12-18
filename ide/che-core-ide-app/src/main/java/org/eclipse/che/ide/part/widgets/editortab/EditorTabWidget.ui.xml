@@ -27,6 +27,8 @@
         @eval activeEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.activeEditorTabBackgroundColor();
         @eval focusedEditorTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.focusedEditorTabBackgroundColor();
         @eval focusedEditorTabBorderBottomColor org.eclipse.che.ide.api.theme.Style.theme.focusedEditorTabBorderBottomColor();
+        @eval editorReadonlyTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.editorReadonlyTabBackgroundColor();
+        @eval activeEditorReadonlyTabBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.activeEditorReadonlyTabBackgroundColor();
 
         .mainPanel {
             -webkit-box-sizing: border-box;
@@ -39,6 +41,13 @@
             color: tabTextColor;
             cursor: default;
             margin-bottom: 1px;
+
+            -webkit-transition: all 0.3s ease-in-out,
+                                fill 0.3s ease-in-out,
+                                stroke 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out,
+                        fill 0.3s ease-in-out,
+                        stroke 0.3s ease-in-out;
         }
 
         .iconPanel {
@@ -104,6 +113,14 @@
          */
         .mainPanel[active] {
             background-color: activeEditorTabBackgroundColor;
+        }
+
+        .mainPanel[readonly] {
+            background-color: editorReadonlyTabBackgroundColor;
+        }
+
+        .mainPanel[active][readonly] {
+            background-color: activeEditorReadonlyTabBackgroundColor;
         }
 
         .mainPanel[active] .closeTabPanel svg {

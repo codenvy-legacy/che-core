@@ -128,6 +128,20 @@ public interface Theme {
     String activeEditorTabBackgroundColor();
 
     /**
+     * Background color for readonly editor tab.
+     *
+     * @return color
+     */
+    String editorReadonlyTabBackgroundColor();
+
+    /**
+     * Background color for readonly active (selected) editor tab.
+     *
+     * @return color
+     */
+    String activeEditorReadonlyTabBackgroundColor();
+
+    /**
      * Background color for focused editor tab.
      *
      * @return color
