@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.widgets.editortab;
 
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwtmockito.GwtMockitoTestRunner;
@@ -61,6 +62,7 @@ public class EditorTabWidgetTest {
     @Before
     public void setUp() {
         when(icon.getSvg()).thenReturn(svg);
+        when(event.getNativeButton()).thenReturn(NativeEvent.BUTTON_LEFT);
 
         tab = new EditorTabWidget(resources, icon, SOME_TEXT);
         tab.setDelegate(delegate);
