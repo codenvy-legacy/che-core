@@ -8,51 +8,45 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
+
 package org.eclipse.che.ide.debug;
 
-import javax.validation.constraints.Null;
 import java.util.List;
 
-/** interface for breakpoints managers. */
+/**
+ * Breakpoint manager.
+ *
+ * @author Anatoliy Bazko
+ */
 public interface BreakpointManager {
 
     /**
-     * Change state of the breakpoint in active editor at the specified line.
-     * @param lineNumber active editor's line number where breakpoint is
+     * Toggle / untoggle breakpoint.
      */
-    void changeBreakPointState(int lineNumber);
+    void changeBreakpointState(int lineNumber);
 
-    /** Removes all breakpoints. */
+    /**
+     * Removes all breakpoints.
+     */
     void removeAllBreakpoints();
 
     /**
-     * Tells if there is a breakpoint on the given line of the active editor.
-     * @param lineNumber the line number
-     * @return true iff there is a breakpoint on this line
+     * Indicates if current active file has a breakpoint at giving line.
      */
-    boolean breakpointExists(int lineNumber);
+    boolean isCurrentBreakpoint(int lineNumber);
 
     /**
-     * Returns all breakpoints.
      * @return all breakpoints
      */
     List<Breakpoint> getBreakpointList();
 
-    void markCurrentBreakpoint(int lineNumber);
-
-    void unmarkCurrentBreakpoint();
-
     /**
-     * @return current breakpoint or null
+     * If debugger has stopped at specific line then this method is invoked.
      */
-    @Null
-    Breakpoint getCurrentBreakpoint();
-
+    void setCurrentBreakpoint(int lineNumber);
+    
     /**
-     * Check whether line has the current breakpoint.
-     *
-     * @param lineNumber line number
-     * @return <code>true</code> if the line is marked, and <code>false</code> otherwise
+     * Removes current breakpoint mark.
      */
-    boolean isCurrentBreakpoint(int lineNumber);
+    void removeCurrentBreakpoint();
 }

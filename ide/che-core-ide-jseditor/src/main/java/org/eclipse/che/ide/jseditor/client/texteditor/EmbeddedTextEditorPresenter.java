@@ -261,7 +261,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
             public void onGutterClick(final GutterClickEvent event) {
                 if (Gutters.BREAKPOINTS_GUTTER.equals(event.getGutterId())
                     || Gutters.LINE_NUMBERS_GUTTER.equals(event.getGutterId())) {
-                    breakpointManager.changeBreakPointState(event.getLineNumber());
+                    breakpointManager.changeBreakpointState(event.getLineNumber());
                 }
             }
         });
