@@ -57,7 +57,4 @@ public interface TreeStyles extends ClientBundle {
 
     @Source("iconExpanded.svg")
     SVGResource iconExpanded();
-
-    @Source("iconLoading.svg")
-    SVGResource iconLoading();
 }

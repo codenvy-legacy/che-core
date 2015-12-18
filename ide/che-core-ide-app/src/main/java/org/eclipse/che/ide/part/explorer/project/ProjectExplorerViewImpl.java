@@ -656,9 +656,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     }
 
     public interface ProjectExplorerResources extends ClientBundle {
-        @Source("gear.svg")
-        SVGResource gear();
-
         @Source("source.svg")
         SVGResource source();
 
