@@ -41,6 +41,7 @@ import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.parts.base.BaseView;
 import org.eclipse.che.ide.api.parts.base.ToolButton;
 import org.eclipse.che.ide.api.project.node.HasAction;
+import org.eclipse.che.ide.api.project.node.HasAttributes;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
@@ -81,6 +82,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
+import static org.eclipse.che.ide.project.node.SyntheticBasedNode.CUSTOM_BACKGROUND_FILL;
 import static org.eclipse.che.ide.ui.menu.PositionController.HorizontalAlign.MIDDLE;
 import static org.eclipse.che.ide.ui.menu.PositionController.VerticalAlign.BOTTOM;
 import static org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.State.ACTIVATED;
@@ -693,6 +695,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
             if (node instanceof SyntheticBasedNode<?>) {
                 element.setAttribute("synthetic", "true");
+            }
+
+            if (node instanceof HasAttributes && ((HasAttributes)node).getAttributes().containsKey(CUSTOM_BACKGROUND_FILL)) {
+                element.getFirstChildElement().getStyle().setBackgroundColor(((HasAttributes)node).getAttributes().get(CUSTOM_BACKGROUND_FILL).get(0));
             }
 
             return element;
