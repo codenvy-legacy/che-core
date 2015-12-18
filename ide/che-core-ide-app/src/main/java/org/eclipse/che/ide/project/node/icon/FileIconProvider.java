@@ -41,19 +41,25 @@ public class FileIconProvider implements NodeIconProvider {
 
     @Override
     public SVGResource getIcon(String fileName) {
+        FileType fileType = fileTypeRegistry.getFileTypeByNamePattern(fileName);
+
+        if (fileType != unknownFileType) {
+            return fileType.getSVGImage();
+        }
+
         final String extension = getFileExtension(fileName);
 
         if (Strings.isNullOrEmpty(extension)) {
             return null;
         }
 
-        FileType fileType = fileTypeRegistry.getFileTypeByExtension(extension);
+        fileType = fileTypeRegistry.getFileTypeByExtension(extension);
 
-        if (fileType == unknownFileType || fileType.getSVGImage() == null) {
-            return null;
+        if (fileType != unknownFileType) {
+            return fileType.getSVGImage();
         }
 
-        return fileType.getSVGImage();
+        return null;
     }
 
     public static String getFileExtension(String fullName) {
