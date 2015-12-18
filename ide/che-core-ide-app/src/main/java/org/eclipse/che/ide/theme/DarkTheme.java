@@ -1249,4 +1249,14 @@ public class DarkTheme implements Theme {
     public String notificationPopupIconProgressFill() {
         return "#9b9b9b";
     }
+
+    @Override
+    public String projectExplorerReadonlyItemBackground() {
+        return "#3b372f";
+    }
+
+    @Override
+    public String projectExplorerTestItemBackground() {
+        return "rgba(45, 74, 48, 0.71)";
+    }
 }

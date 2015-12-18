@@ -1226,4 +1226,14 @@ public class LightTheme implements Theme {
     public String notificationPopupIconProgressFill() {
         return "#9b9b9b";
     }
+
+    @Override
+    public String projectExplorerReadonlyItemBackground() {
+        return "#ffffe4";
+    }
+
+    @Override
+    public String projectExplorerTestItemBackground() {
+        return "#effae7";
+    }
 }

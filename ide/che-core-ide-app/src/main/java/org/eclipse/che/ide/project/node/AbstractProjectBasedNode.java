@@ -30,6 +30,8 @@ public abstract class AbstractProjectBasedNode<DataObject> extends AbstractTreeN
                                                                                                HasPresentation,
                                                                                                HasProjectConfig,
                                                                                                HasSettings {
+    public static final String CUSTOM_BACKGROUND_FILL = "background";
+
     private DataObject       dataObject;
     private ProjectConfigDto projectConfig;
     private NodeSettings     nodeSettings;
