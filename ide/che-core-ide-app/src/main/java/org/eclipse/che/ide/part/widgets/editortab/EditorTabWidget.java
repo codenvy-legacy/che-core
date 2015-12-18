@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.part.widgets.editortab;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -144,7 +145,11 @@ public class EditorTabWidget extends Composite implements EditorTab {
     /** {@inheritDoc} */
     @Override
     public void onClick(@NotNull ClickEvent event) {
-        delegate.onTabClicked(this);
+        if (NativeEvent.BUTTON_LEFT == event.getNativeButton()) {
+            delegate.onTabClicked(this);
+        } else if (NativeEvent.BUTTON_MIDDLE == event.getNativeButton()) {
+            delegate.onTabClose(this);
+        }
     }
 
     /** {@inheritDoc} */
