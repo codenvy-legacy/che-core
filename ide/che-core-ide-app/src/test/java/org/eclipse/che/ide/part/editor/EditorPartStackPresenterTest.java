@@ -177,7 +177,7 @@ public class EditorPartStackPresenterTest {
     public void partShouldBeAdded() {
         presenter.addPart(partPresenter1);
 
-        verify(partPresenter1).addPropertyListener(Matchers.<PropertyListener>anyObject());
+        verify(partPresenter1, times(2)).addPropertyListener(Matchers.<PropertyListener>anyObject());
 
         verify(tabItemFactory).createEditorPartButton(resource1, SOME_TEXT);
 
