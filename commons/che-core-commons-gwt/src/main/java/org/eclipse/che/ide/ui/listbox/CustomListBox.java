@@ -310,8 +310,10 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
     public void setHeight(String height) {
         this.getElement().getStyle().setProperty("height", height);
         final String lineHeightStyle = "line-height: " + height + ";";
+        boolean isVisible = optionsPanel.isVisible();
         currentItemLabel.setAttribute("style", lineHeightStyle);
-        optionsPanel.getElement().setAttribute("style", optionsPanel.isVisible() ? lineHeightStyle : lineHeightStyle + "display: none;");
+        optionsPanel.getElement().setAttribute("style", lineHeightStyle + ";max-height:calc(6*" + height + ");");
+        optionsPanel.setVisible(isVisible);
     }
 
     /**
