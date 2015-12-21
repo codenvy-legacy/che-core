@@ -18,11 +18,13 @@ public interface IdeActions {
     String GROUP_MAIN_MENU      = "mainMenu";
     String GROUP_FILE           = "fileGroup";
     String GROUP_FILE_NEW       = "newGroup";
+    String GROUP_EDIT           = "editGroup";
     String GROUP_CODE           = "codeGroup";
     String GROUP_IMPORT_PROJECT = "importProjectGroup";
     String GROUP_WINDOW         = "windowGroup";
     String GROUP_HELP           = "helpGroup";
     String GROUP_REFACTORING    = "refactoringGroup";
+    String GROUP_RECENT_FILES   = "recentFiles";
 
     String GROUP_MAIN_TOOLBAR   = "mainToolBar";
     String GROUP_CENTER_TOOLBAR = "centerToolBar";

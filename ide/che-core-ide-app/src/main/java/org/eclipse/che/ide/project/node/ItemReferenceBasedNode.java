@@ -80,4 +80,21 @@ public abstract class ItemReferenceBasedNode extends ResourceBasedNode<ItemRefer
 
         return ((HasStorablePath)getParent()).getStorablePath() + "/" + getData().getName();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof HasStorablePath)) return false;
+
+        HasStorablePath that = (HasStorablePath)o;
+
+        if (!getStorablePath().equals(that.getStorablePath())) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return getStorablePath().hashCode();
+    }
 }

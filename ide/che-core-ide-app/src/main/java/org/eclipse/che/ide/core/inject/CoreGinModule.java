@@ -103,6 +103,9 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
+import org.eclipse.che.ide.part.editor.recent.RecentFileActionFactory;
+import org.eclipse.che.ide.part.editor.recent.RecentFileList;
+import org.eclipse.che.ide.part.editor.recent.RecentFileStore;
 import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
 import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerPresenter;
 import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerView;
@@ -412,6 +415,9 @@ public class CoreGinModule extends AbstractGinModule {
         bind(HotKeysDialogView.class).to(HotKeysDialogViewImpl.class).in(Singleton.class);
 
         GinMultibinder.newSetBinder(binder(), SettingsPagePresenter.class);
+
+        bind(RecentFileList.class).to(RecentFileStore.class).in(Singleton.class);
+        install(new GinFactoryModuleBuilder().build(RecentFileActionFactory.class));
     }
 
     /** Configures binding for Editor API */

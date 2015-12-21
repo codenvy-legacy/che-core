@@ -69,6 +69,7 @@ import org.eclipse.che.ide.connection.WsConnectionListener;
 import org.eclipse.che.ide.imageviewer.ImageViewerProvider;
 import org.eclipse.che.ide.newresource.NewFileAction;
 import org.eclipse.che.ide.newresource.NewFolderAction;
+import org.eclipse.che.ide.part.editor.recent.OpenRecentFilesAction;
 import org.eclipse.che.ide.part.editor.actions.CloseAction;
 import org.eclipse.che.ide.part.editor.actions.CloseAllAction;
 import org.eclipse.che.ide.part.editor.actions.CloseAllExceptPinnedAction;
@@ -266,6 +267,9 @@ public class StandardComponentInitializer {
     private HotKeysListAction hotKeysListAction;
 
     @Inject
+    private OpenRecentFilesAction openRecentFilesAction;
+
+    @Inject
     @Named("XMLFileType")
     private FileType xmlFile;
 
@@ -400,6 +404,11 @@ public class StandardComponentInitializer {
         saveGroup.addSeparator();
         saveGroup.add(saveAction);
         saveGroup.add(saveAllAction);
+
+        actionManager.registerAction("openRecentFiles", openRecentFilesAction);
+
+        DefaultActionGroup editGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_EDIT);
+        editGroup.add(openRecentFilesAction);
 
         // Compose File menu
         DefaultActionGroup fileGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_FILE);
@@ -554,6 +563,7 @@ public class StandardComponentInitializer {
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('v').build(), "paste");
         keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode(KeyCodeMap.ARROW_LEFT).build(), "switchLeftTab");
         keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode(KeyCodeMap.ARROW_RIGHT).build(), "switchRightTab");
+        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('e').build(), "openRecentFiles");
     }
 
 }
