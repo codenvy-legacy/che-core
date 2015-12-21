@@ -13,6 +13,8 @@ package org.eclipse.che.ide.part.widgets.editortab;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -28,6 +30,8 @@ import com.google.inject.assistedinject.Assisted;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
@@ -35,11 +39,15 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Editor tab widget. Contains icon, title and close mark.
+ * May be pinned. Pin state indicates whether this tab should be skipped during operation "Close All but Pinned".
+ *
  * @author Dmitry Shnurenko
  * @author Valeriy Svydenko
  * @author Vitaliy Guliy
+ * @author Vlad Zhukovskyi
  */
-public class EditorTabWidget extends Composite implements EditorTab {
+public class EditorTabWidget extends Composite implements EditorTab, ContextMenuHandler {
 
     interface EditorTabWidgetUiBinder extends UiBinder<Widget, EditorTabWidget> {
     }
@@ -58,22 +66,33 @@ public class EditorTabWidget extends Composite implements EditorTab {
     @UiField(provided = true)
     final PartStackUIResources resources;
 
-    private ActionDelegate delegate;
+    private final EditorTabContextMenuFactory editorTabContextMenu;
+    private final VirtualFile                 file;
 
-    private SVGResource icon;
+    private ActionDelegate delegate;
+    private boolean        pinned;
+    private SVGResource    icon;
 
     @Inject
-    public EditorTabWidget(PartStackUIResources resources, @Assisted SVGResource icon, @Assisted String title) {
-        this.resources = resources;
+    public EditorTabWidget(@Assisted VirtualFile file,
+                           @Assisted SVGResource icon,
+                           @Assisted String title,
+                           PartStackUIResources resources,
+                           EditorTabContextMenuFactory editorTabContextMenu) {
         initWidget(UI_BINDER.createAndBindUi(this));
 
+        this.resources = resources;
+        this.editorTabContextMenu = editorTabContextMenu;
+        this.file = file;
         this.icon = icon;
         this.title.setText(title);
 
         iconPanel.add(getIcon());
 
+
         addDomHandler(this, ClickEvent.getType());
         addDomHandler(this, DoubleClickEvent.getType());
+        addDomHandler(this, ContextMenuEvent.getType());
     }
 
     /** {@inheritDoc} */
@@ -118,7 +137,7 @@ public class EditorTabWidget extends Composite implements EditorTab {
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value=0) int countWidgets) {
+    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value = 0) int countWidgets) {
         throw new UnsupportedOperationException("This method doesn't allow in this class " + getClass());
     }
 
@@ -154,6 +173,16 @@ public class EditorTabWidget extends Composite implements EditorTab {
 
     /** {@inheritDoc} */
     @Override
+    public void onContextMenu(ContextMenuEvent event) {
+        //construct for each editor tab own context menu,
+        //that will have store information about selected virtual file and pin state at first step
+        //in future maybe we should create another mechanism to associate context menu with initial dto's
+        editorTabContextMenu.newContextMenu(this)
+                            .show(event.getNativeEvent().getClientX(), event.getNativeEvent().getClientY());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void onDoubleClick(@NotNull DoubleClickEvent event) {
         expandEditor();
     }
@@ -177,6 +206,7 @@ public class EditorTabWidget extends Composite implements EditorTab {
         delegate.onTabClose(this);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setReadOnlyMark(boolean isVisible) {
         if (isVisible) {
@@ -184,5 +214,29 @@ public class EditorTabWidget extends Composite implements EditorTab {
         } else {
             getElement().removeAttribute("readonly");
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public VirtualFile getFile() {
+        return file;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setPinMark(boolean pinned) {
+        this.pinned = pinned;
+
+        if (pinned) {
+            getElement().setAttribute("pinned", "");
+        } else {
+            getElement().removeAttribute("pinned");
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPinned() {
+        return pinned;
     }
 }

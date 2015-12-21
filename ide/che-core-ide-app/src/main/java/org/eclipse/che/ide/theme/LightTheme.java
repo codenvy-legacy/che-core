@@ -1246,4 +1246,14 @@ public class LightTheme implements Theme {
     public String projectExplorerTestItemBackground() {
         return "#effae7";
     }
+
+    @Override
+    public String editorTabPinBackgroundColor() {
+        return "#6AAF32";
+    }
+
+    @Override
+    public String editorTabPinDropShadow() {
+        return "drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.4))";
+    }
 }

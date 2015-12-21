@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
-/** @author Evgen Vidolob */
+/**
+ * @author Evgen Vidolob
+ * @author Vlad Zhukovskyi
+ **/
 public interface IdeActions {
     String GROUP_MAIN_MENU      = "mainMenu";
     String GROUP_FILE           = "fileGroup";
@@ -29,6 +32,7 @@ public interface IdeActions {
     String GROUP_BUILD_CONTEXT_MENU            = "buildGroupContextMenu";
     String GROUP_RUN_CONTEXT_MENU              = "runGroupContextMenu";
     String GROUP_PROJECT_EXPLORER_CONTEXT_MENU = "projectExplorerContextMenu";
+    String GROUP_EDITOR_TAB_CONTEXT_MENU       = "editorTabContextMenu";
 
     String GROUP_OTHER_MENU      = "otherMenu";
     String GROUP_LEFT_MAIN_MENU  = "leftMainMenu";

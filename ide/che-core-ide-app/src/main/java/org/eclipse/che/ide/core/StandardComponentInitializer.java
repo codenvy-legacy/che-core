@@ -69,6 +69,12 @@ import org.eclipse.che.ide.connection.WsConnectionListener;
 import org.eclipse.che.ide.imageviewer.ImageViewerProvider;
 import org.eclipse.che.ide.newresource.NewFileAction;
 import org.eclipse.che.ide.newresource.NewFolderAction;
+import org.eclipse.che.ide.part.editor.actions.CloseAction;
+import org.eclipse.che.ide.part.editor.actions.CloseAllAction;
+import org.eclipse.che.ide.part.editor.actions.CloseAllExceptPinnedAction;
+import org.eclipse.che.ide.part.editor.actions.CloseOtherAction;
+import org.eclipse.che.ide.part.editor.actions.PinEditorTabAction;
+import org.eclipse.che.ide.part.editor.actions.ReopenClosedFileAction;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 import org.eclipse.che.ide.util.input.KeyCodeMap;
@@ -84,6 +90,7 @@ import static org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar.BLANK_
  *
  * @author Evgen Vidolob
  * @author Dmitry Shnurenko
+ * @author Vlad Zhukovskyi
  */
 @Singleton
 public class StandardComponentInitializer {
@@ -155,6 +162,24 @@ public class StandardComponentInitializer {
 
     @Inject
     private FoldersAlwaysOnTopAction foldersAlwaysOnTopAction;
+
+    @Inject
+    private CloseAction closeAction;
+
+    @Inject
+    private CloseAllAction closeAllAction;
+
+    @Inject
+    private CloseOtherAction closeOtherAction;
+
+    @Inject
+    private CloseAllExceptPinnedAction closeAllExceptPinnedAction;
+
+    @Inject
+    private ReopenClosedFileAction reopenClosedFileAction;
+
+    @Inject
+    private PinEditorTabAction pinEditorTabAction;
 
     @Inject
     private GoIntoAction goIntoAction;
@@ -495,6 +520,23 @@ public class StandardComponentInitializer {
                 (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU);
         projectExplorerContextMenu.add(foldersAlwaysOnTopAction);
         actionManager.registerAction("foldersAlwaysOnTop", foldersAlwaysOnTopAction);
+
+        //Editor context menu group
+        DefaultActionGroup editorTabContextMenu =
+                (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_EDITOR_TAB_CONTEXT_MENU);
+        editorTabContextMenu.add(closeAction);
+        actionManager.registerAction("closeEditor", closeAction);
+        editorTabContextMenu.add(closeAllAction);
+        actionManager.registerAction("closeAllEditors", closeAllAction);
+        editorTabContextMenu.add(closeOtherAction);
+        actionManager.registerAction("closeOtherEditorExceptCurrent", closeOtherAction);
+        editorTabContextMenu.add(closeAllExceptPinnedAction);
+        actionManager.registerAction("closeAllEditorExceptPinned", closeAllExceptPinnedAction);
+        editorTabContextMenu.addSeparator();
+        editorTabContextMenu.add(reopenClosedFileAction);
+        actionManager.registerAction("reopenClosedEditorTab", reopenClosedFileAction);
+        editorTabContextMenu.add(pinEditorTabAction);
+        actionManager.registerAction("pinEditorTab", pinEditorTabAction);
 
         final DefaultActionGroup loaderToolbarGroup = new DefaultActionGroup("loader", false, actionManager);
         actionManager.registerAction("loader", loaderToolbarGroup);

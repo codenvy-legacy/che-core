@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.editor;
 
+import com.google.common.base.Predicate;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -17,18 +19,23 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.constraints.Constraints;
+import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.EditorWithErrors;
 import org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
-import org.eclipse.che.ide.api.event.project.CloseCurrentProjectHandler;
+import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackView.TabItem;
 import org.eclipse.che.ide.api.parts.PropertyListener;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.client.inject.factories.TabItemFactory;
 import org.eclipse.che.ide.part.PartStackPresenter;
 import org.eclipse.che.ide.part.PartsComparator;
+import org.eclipse.che.ide.part.editor.event.CloseNonPinnedEditorsEvent;
+import org.eclipse.che.ide.part.editor.event.CloseNonPinnedEditorsEvent.CloseNonPinnedEditorsHandler;
+import org.eclipse.che.ide.part.editor.event.PinEditorTabEvent;
+import org.eclipse.che.ide.part.editor.event.PinEditorTabEvent.PinEditorTabEventHandler;
 import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 import org.eclipse.che.ide.part.widgets.listtab.ListItem;
@@ -36,14 +43,15 @@ import org.eclipse.che.ide.part.widgets.listtab.ListItemWidget;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import static com.google.common.collect.Iterables.filter;
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.ERROR;
 import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNING;
+import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
 
 /**
  * EditorPartStackPresenter is a special PartStackPresenter that is shared among all
@@ -52,13 +60,16 @@ import static org.eclipse.che.ide.api.editor.EditorWithErrors.EditorState.WARNIN
  * @author Nikolay Zamosenchuk
  * @author Stéphane Daviet
  * @author Dmitry Shnurenko
+ * @author Vlad Zhukovskyi
  */
 @Singleton
 public class EditorPartStackPresenter extends PartStackPresenter implements EditorPartStack,
                                                                             EditorTab.ActionDelegate,
                                                                             ListButton.ActionDelegate,
-                                                                            CloseCurrentProjectHandler {
+                                                                            PinEditorTabEventHandler,
+                                                                            CloseNonPinnedEditorsHandler {
 
+    private final EventBus   eventBus;
     private final ListButton listButton;
 
     private final Map<ListItem, TabItem> items;
@@ -69,7 +80,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
     private PartPresenter activePart;
 
     @Inject
-    public EditorPartStackPresenter(final EditorPartStackView view,
+    public EditorPartStackPresenter(EditorPartStackView view,
                                     PartsComparator partsComparator,
                                     EventBus eventBus,
                                     TabItemFactory tabItemFactory,
@@ -77,6 +88,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
                                     ListButton listButton) {
         //noinspection ConstantConditions
         super(eventBus, partStackEventHandler, tabItemFactory, partsComparator, view, null);
+        this.eventBus = eventBus;
 
         this.listButton = listButton;
         this.listButton.setDelegate(this);
@@ -87,42 +99,8 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         this.items = new HashMap<>();
         this.partsOrder = new LinkedList<>();
 
-        eventBus.addHandler(CloseCurrentProjectEvent.TYPE, this);
-    }
-
-    @Override
-    public void onCloseCurrentProject(CloseCurrentProjectEvent event) {
-        String closedProjectPath = event.getProjectConfig().getPath() + "/";
-
-        List<TabItem> deleteTabItemList = new ArrayList<>();
-
-        for (Map.Entry<TabItem, PartPresenter> elem: parts.entrySet()) {
-            if (!(elem.getValue() instanceof EditorPartPresenter)) {
-                continue;
-            }
-            EditorPartPresenter openedEditor = (EditorPartPresenter) elem.getValue();
-            String openedEditorPath = openedEditor.getEditorInput().getFile().getPath();
-            if (openedEditorPath.startsWith(closedProjectPath)) {
-                deleteTabItemList.add(elem.getKey());
-            }
-        }
-
-        for (final TabItem tabItem: deleteTabItemList) {
-            final PartPresenter openedEditor = parts.get(tabItem);
-            openedEditor.onClose(new AsyncCallback<Void>() {
-                @Override
-                public void onFailure(Throwable caught) {
-                }
-
-                @Override
-                public void onSuccess(Void result) {
-                    view.removeTab(openedEditor);
-                    openedEditor.removePropertyListener(propertyListener);
-                    parts.remove(tabItem);
-                    removeItemFromList(tabItem);
-                }
-            });
-        }
+        eventBus.addHandler(PinEditorTabEvent.getType(), this);
+        eventBus.addHandler(CloseNonPinnedEditorsEvent.getType(), this);
     }
 
     private void removeItemFromList(@NotNull TabItem tab) {
@@ -136,7 +114,7 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     @Nullable
     private ListItem getListItemByTab(@NotNull TabItem tabItem) {
-        for (Map.Entry<ListItem, TabItem> entry : items.entrySet()) {
+        for (Entry<ListItem, TabItem> entry : items.entrySet()) {
             if (tabItem.equals(entry.getValue())) {
                 return entry.getKey();
             }
@@ -163,7 +141,10 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         if (!containsPart(part)) {
             part.addPropertyListener(propertyListener);
 
-            final EditorTab editorTab = tabItemFactory.createEditorPartButton(part.getTitleSVGImage(), part.getTitle());
+            VirtualFile file = part instanceof AbstractEditorPresenter ? ((AbstractEditorPresenter)part).getEditorInput().getFile()
+                                                                       : null;
+
+            final EditorTab editorTab = tabItemFactory.createEditorPartButton(file, part.getTitleSVGImage(), part.getTitle());
 
             part.addPropertyListener(new PropertyListener() {
                 @Override
@@ -252,4 +233,38 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
         });
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void onEditorTabPinned(PinEditorTabEvent event) {
+        for (Entry<TabItem, PartPresenter> entry : parts.entrySet()) {
+            if (entry.getValue() instanceof AbstractEditorPresenter) {
+                AbstractEditorPresenter editor = (AbstractEditorPresenter)entry.getValue();
+
+                if (editor.getEditorInput().getFile().equals(event.getFile())) {
+                    ((EditorTab)entry.getKey()).setPinMark(event.isPin());
+                    return;
+                }
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onCloseNonPinnedEditors(CloseNonPinnedEditorsEvent event) {
+        Iterable<TabItem> nonPinned = filter(parts.keySet(), new Predicate<TabItem>() {
+            @Override
+            public boolean apply(@Nullable TabItem input) {
+                return input instanceof EditorTab && !((EditorTab)input).isPinned();
+            }
+        });
+
+        for (final TabItem tabItem : nonPinned) {
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    eventBus.fireEvent(new FileEvent(((EditorTab)tabItem).getFile(), CLOSE));
+                }
+            });
+        }
+    }
 }

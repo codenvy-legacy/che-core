@@ -103,6 +103,7 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
+import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
 import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerPresenter;
 import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerView;
 import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerViewImpl;
@@ -419,6 +420,7 @@ public class CoreGinModule extends AbstractGinModule {
 
         bind(EditorRegistry.class).to(EditorRegistryImpl.class).in(Singleton.class);
         bind(UserActivityManager.class).in(Singleton.class);
+        install(new GinFactoryModuleBuilder().build(EditorTabContextMenuFactory.class));
     }
 
     /** Configure bindings for project's tree. */

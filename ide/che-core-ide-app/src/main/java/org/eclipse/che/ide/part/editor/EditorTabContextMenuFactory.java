@@ -8,23 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.client.inject.factories;
+package org.eclipse.che.ide.part.editor;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
-import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
-import org.vectomatic.dom.svg.ui.SVGResource;
-
-import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 
 /**
- * @author Dmitry Shnurenko
- * @author Vlad Zhukovskyi
+ * Editor tab context menu factory.
+ *
+ * @author Vlad Zhukovskiy
  */
-public interface TabItemFactory {
-
-    PartButton createPartButton(@NotNull String title);
-
-    EditorTab createEditorPartButton(@Nullable VirtualFile virtualFile, @Nullable SVGResource icon, @NotNull String title);
+public interface EditorTabContextMenuFactory {
+    /**
+     * Creates new context menu for editor tab.
+     *
+     * @param editorTab
+     *         editor tab item
+     * @return new context menu
+     */
+    EditorTabContextMenu newContextMenu(EditorTab editorTab);
 }

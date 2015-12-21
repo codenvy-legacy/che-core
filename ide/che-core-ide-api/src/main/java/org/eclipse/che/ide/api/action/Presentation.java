@@ -25,6 +25,7 @@ import java.util.Map;
  * The presentation of an action in a specific place in the user interface.
  *
  * @author Evgen Vidolob
+ * @author Vlad Zhukovskyi
  */
 public final class Presentation {
     private Map<String, Object> userMap;
@@ -255,6 +256,21 @@ public final class Presentation {
         Object oldValue = userMap.get(key);
         userMap.put(key, value);
         firePropertyChange(key, oldValue, value);
+    }
+
+    /**
+     * Return user client property by specified key.
+     *
+     * @param key
+     *         user client property key
+     * @return object, stored by property key
+     */
+    public Object getClientProperty(String key) {
+        if (userMap == null || key == null) {
+            return null;
+        }
+
+        return userMap.get(key);
     }
 
     public int getWeight() {
