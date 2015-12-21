@@ -76,13 +76,13 @@ public abstract class LuceneSearcher implements Searcher {
 
     protected Analyzer makeAnalyzer() {
         return new Analyzer() {
-			@Override
-			protected TokenStreamComponents createComponents(String fieldName) {
-				Tokenizer tokenizer = new WhitespaceTokenizer();
-				TokenStream filter = new LowerCaseFilter(tokenizer);
-				return new TokenStreamComponents(tokenizer, filter);
-			}
-		};
+            @Override
+            protected TokenStreamComponents createComponents(String fieldName) {
+                Tokenizer tokenizer = new WhitespaceTokenizer();
+                TokenStream filter = new LowerCaseFilter(tokenizer);
+                return new TokenStreamComponents(tokenizer, filter);
+            }
+        };
     }
 
     protected abstract Directory makeDirectory() throws ServerException;
@@ -212,8 +212,10 @@ public abstract class LuceneSearcher implements Searcher {
 
     protected void addFile(VirtualFile virtualFile) throws ServerException {
         if (virtualFile.exists()) {
-            try (Reader fContentReader = filter.accept(virtualFile) ? new BufferedReader(
-                    new InputStreamReader(virtualFile.getContent().getStream())) : null) {
+            if (!filter.accept(virtualFile)) {
+                return;
+            }
+            try (Reader fContentReader = new BufferedReader(new InputStreamReader(virtualFile.getContent().getStream()))) {
                 getIndexWriter().updateDocument(new Term("path", virtualFile.getPath()), createDocument(virtualFile, fContentReader));
             } catch (OutOfMemoryError oome) {
                 close();
@@ -250,8 +252,10 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     protected void doUpdate(Term deleteTerm, VirtualFile virtualFile) throws ServerException {
-        try (Reader fContentReader = filter.accept(virtualFile) ? new BufferedReader(
-                new InputStreamReader(virtualFile.getContent().getStream())) : null) {
+        if (!filter.accept(virtualFile)) {
+            return;
+        }
+        try (Reader fContentReader = new BufferedReader(new InputStreamReader(virtualFile.getContent().getStream()))) {
             getIndexWriter().updateDocument(deleteTerm, createDocument(virtualFile, fContentReader));
         } catch (OutOfMemoryError oome) {
             close();
@@ -268,9 +272,7 @@ public abstract class LuceneSearcher implements Searcher {
         doc.add(new StringField("path", virtualFile.getPath(), Field.Store.YES));
         doc.add(new StringField("name", virtualFile.getName(), Field.Store.YES));
         doc.add(new StringField("mediatype", getMediaType(virtualFile), Field.Store.YES));
-        if (inReader != null) {
-            doc.add(new TextField("text", inReader));
-        }
+        doc.add(new TextField("text", inReader));
         return doc;
     }
 
