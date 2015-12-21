@@ -13,13 +13,13 @@ package org.eclipse.che.dto.generator;
 import org.eclipse.che.dto.shared.CompactJsonDto;
 import org.eclipse.che.dto.shared.DTO;
 import org.eclipse.che.dto.shared.DelegateTo;
+import org.eclipse.che.dto.shared.Compared;
 import org.eclipse.che.dto.shared.JsonFieldName;
 import org.eclipse.che.dto.shared.SerializationIndex;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
@@ -32,6 +32,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
 
 /** Abstract base class for the source generating template for a single DTO. */
 abstract class DtoImpl {
@@ -412,4 +415,17 @@ abstract class DtoImpl {
      * @return String representing the source definition for the DTO impl as an inner class.
      */
     abstract String serialize();
+
+    /**
+     * Filter input list of methods by finding {@link Compared} annotation.
+     *
+     * @param methods
+     *         method list
+     * @return filtered list
+     */
+    protected List<Method> getComparableMethods(List<Method> methods) {
+        return newArrayList(filter(methods, input -> {
+            return input.isAnnotationPresent(Compared.class);
+        }));
+    }
 }

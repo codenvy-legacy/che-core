@@ -120,7 +120,11 @@ public class DtoImplServerTemplate extends DtoImpl {
         builder.append("        return false;\n");
         builder.append("      }\n");
         builder.append("      ").append(getImplClassName()).append(" other = (").append(getImplClassName()).append(") o;\n");
-        for (Method getter : getters) {
+        List<Method> comparableGetters =  getComparableMethods(getters);
+        if (comparableGetters.isEmpty()) {
+            comparableGetters = getters;
+        }
+        for (Method getter : comparableGetters) {
             String fieldName = getJavaFieldName(getter.getName());
             Class<?> returnType = getter.getReturnType();
             if (returnType.isPrimitive()) {
@@ -152,7 +156,7 @@ public class DtoImplServerTemplate extends DtoImpl {
         builder.append("    @Override\n");
         builder.append("    public int hashCode() {\n");
         builder.append("      int hash = 7;\n");
-        for (Method method : getters) {
+        for (Method method : comparableGetters) {
             Class<?> type = method.getReturnType();
             String fieldName = getJavaFieldName(method.getName());
             if (type.isPrimitive()) {

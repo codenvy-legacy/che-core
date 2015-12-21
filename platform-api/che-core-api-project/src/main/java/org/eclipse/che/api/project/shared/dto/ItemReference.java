@@ -13,6 +13,7 @@ package org.eclipse.che.api.project.shared.dto;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
+import org.eclipse.che.dto.shared.Compared;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ public interface ItemReference extends Hyperlinks {
     ItemReference withMediaType(String mediaType);
 
     /** Get path of item. */
+    @Compared
     String getPath();
 
     /** Set path of item. */

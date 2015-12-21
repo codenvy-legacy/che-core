@@ -22,6 +22,7 @@ import org.eclipse.che.dto.definitions.DtoWithAny;
 import org.eclipse.che.dto.definitions.DtoWithDelegate;
 import org.eclipse.che.dto.definitions.DtoWithFieldNames;
 import org.eclipse.che.dto.definitions.SimpleDto;
+import org.eclipse.che.dto.definitions.model.ComparedModelDto;
 import org.eclipse.che.dto.definitions.model.Model;
 import org.eclipse.che.dto.definitions.model.ModelComponentDto;
 import org.eclipse.che.dto.definitions.model.ModelDto;
@@ -36,6 +37,7 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -363,5 +365,34 @@ public class ServerDtoTest {
         assertEquals(childDto.getDtoField(), "dto-field");
         assertEquals(childDto.getChildField(), "child-field");
         assertEquals(childDto.getParentField(), "parent-field");
+    }
+
+    @Test
+    public void testTwoComparedDtoThatChangesOwnValues() {
+        final String DEF_NAME = "name";
+        final String DEF_VALUE_1 = "value_1";
+        final String DEF_VALUE_2 = "value_2";
+        final String NEW_VALUE_1 = "value_1_1";
+        final String NEW_VALUE_2 = "value_2_2";
+        final String NEW_NAME_1 = "name_1";
+        final String NEW_NAME_2 = "name-@";
+
+        ComparedModelDto dto1 =
+                DtoFactory.getInstance().createDto(ComparedModelDto.class).withName(DEF_NAME).withValue(DEF_VALUE_1);
+
+        ComparedModelDto dto2 =
+                DtoFactory.getInstance().createDto(ComparedModelDto.class).withName(DEF_NAME).withValue(DEF_VALUE_2);
+
+        assertEquals(dto1, dto2);
+
+        dto1.setValue(NEW_VALUE_1);
+        dto2.setValue(NEW_VALUE_2);
+
+        assertEquals(dto1, dto2);
+
+        dto1.setName(NEW_NAME_1);
+        dto2.setName(NEW_NAME_2);
+
+        assertNotEquals(dto1, dto2);
     }
 }
