@@ -589,6 +589,21 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("select.path.window.title")
     String selectPathWindowTitle();
 
+    @Key("open.recent.file.title")
+    String openRecentFileTitle();
+
+    @Key("open.recent.file.description")
+    String openRecentFileDescription();
+
+    @Key("open.recent.files.title")
+    String openRecentFilesTitle();
+
+    @Key("open.recent.file.clear.title")
+    String openRecentFileClearTitle();
+
+    @Key("open.recent.file.clear.description")
+    String openRecentFileClearDescription();
+
     @Key("editor.tab.context.menu.close")
     String editorTabClose();
 

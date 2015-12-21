@@ -79,6 +79,11 @@ public class ActionManagerImpl implements ActionManager {
         registerAction(IdeActions.GROUP_FILE, fileGroup);
         mainMenu.add(fileGroup);
 
+        DefaultActionGroup editGroup = new DefaultActionGroup("Edit", true, this);
+        registerAction(IdeActions.GROUP_EDIT, editGroup);
+        Constraints afterFile = new Constraints(Anchor.BEFORE, IdeActions.GROUP_CODE);
+        mainMenu.add(editGroup, afterFile);
+
         DefaultActionGroup codeGroup = new DefaultActionGroup("Code", true, this);
         registerAction(IdeActions.GROUP_CODE, codeGroup);
         Constraints afterView = new Constraints(Anchor.AFTER, IdeActions.GROUP_FILE);
