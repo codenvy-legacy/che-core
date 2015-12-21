@@ -40,11 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -415,7 +413,7 @@ public class WorkspaceManager {
     public void removeWorkspace(String workspaceId) throws ConflictException, ServerException, NotFoundException, BadRequestException {
         requiredNotNull(workspaceId, "Workspace id required");
 
-        if (workspaceRegistry.isRunning(workspaceId)) {
+        if (workspaceRegistry.hasRuntime(workspaceId)) {
             throw new ConflictException("Can't remove running workspace " + workspaceId);
         }
 
