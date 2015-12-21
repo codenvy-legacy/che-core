@@ -1355,4 +1355,7 @@ public interface Theme {
 
     String projectExplorerReadonlyItemBackground();
     String projectExplorerTestItemBackground();
+
+    String editorTabPinBackgroundColor();
+    String editorTabPinDropShadow();
 }

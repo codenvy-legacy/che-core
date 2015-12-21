@@ -1269,4 +1269,14 @@ public class DarkTheme implements Theme {
     public String projectExplorerTestItemBackground() {
         return "rgba(45, 74, 48, 0.71)";
     }
+
+    @Override
+    public String editorTabPinBackgroundColor() {
+        return "#6AAF32";
+    }
+
+    @Override
+    public String editorTabPinDropShadow() {
+        return "drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.4))";
+    }
 }

@@ -45,6 +45,7 @@ import java.util.Set;
 
 /**
  * @author Evgen Vidolob
+ * @author Vlad Zhukovskyi
  */
 public class ActionManagerImpl implements ActionManager {
     public static final String[] EMPTY_ARRAY = new String[0];
@@ -117,6 +118,11 @@ public class ActionManagerImpl implements ActionManager {
         DefaultActionGroup projectExplorerContextMenuGroup =
                 new DefaultActionGroup(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU, false, this);
         registerAction(IdeActions.GROUP_PROJECT_EXPLORER_CONTEXT_MENU, projectExplorerContextMenuGroup);
+
+        //Register context menu group for editor tab
+        DefaultActionGroup editorTabContextMenuGroup =
+                new DefaultActionGroup(IdeActions.GROUP_EDITOR_TAB_CONTEXT_MENU, false, this);
+        registerAction(IdeActions.GROUP_EDITOR_TAB_CONTEXT_MENU, editorTabContextMenuGroup);
 
         // register default action groups for main toolbar
         DefaultActionGroup mainToolbarGroup = new DefaultActionGroup(this);

@@ -16,6 +16,8 @@ import com.google.gwt.user.client.Element;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
+import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
 import org.eclipse.che.ide.part.widgets.editortab.EditorTab.ActionDelegate;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +47,7 @@ public class EditorTabWidgetTest {
     private SVGResource          icon;
 
     @Mock
-    private SVGImage             iconImage;
+    private SVGImage iconImage;
 
     //additional mocks
     @Mock
@@ -56,6 +58,10 @@ public class EditorTabWidgetTest {
     private ActionDelegate  delegate;
     @Mock
     private ClickEvent      event;
+    @Mock
+    private VirtualFile     file;
+    @Mock
+    private EditorTabContextMenuFactory editorTabContextMenuFactory;
 
     private EditorTabWidget tab;
 
@@ -64,7 +70,7 @@ public class EditorTabWidgetTest {
         when(icon.getSvg()).thenReturn(svg);
         when(event.getNativeButton()).thenReturn(NativeEvent.BUTTON_LEFT);
 
-        tab = new EditorTabWidget(resources, icon, SOME_TEXT);
+        tab = new EditorTabWidget(file, icon, SOME_TEXT, resources, editorTabContextMenuFactory);
         tab.setDelegate(delegate);
     }
 

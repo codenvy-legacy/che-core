@@ -588,4 +588,40 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("select.path.window.title")
     String selectPathWindowTitle();
+
+    @Key("editor.tab.context.menu.close")
+    String editorTabClose();
+
+    @Key("editor.tab.context.menu.close.description")
+    String editorTabCloseDescription();
+
+    @Key("editor.tab.context.menu.close.all")
+    String editorTabCloseAll();
+
+    @Key("editor.tab.context.menu.close.all.description")
+    String editorTabCloseAllDescription();
+
+    @Key("editor.tab.context.menu.close.all.but.pinned")
+    String editorTabCloseAllButPinned();
+
+    @Key("editor.tab.context.menu.close.all.but.pinned.description")
+    String editorTabCloseAllButPinnedDescription();
+
+    @Key("editor.tab.context.menu.close.all.except.selected")
+    String editorTabCloseAllExceptSelected();
+
+    @Key("editor.tab.context.menu.close.all.except.selected.description")
+    String editorTabCloseAllExceptSelectedDescription();
+
+    @Key("editor.tab.context.menu.pin")
+    String editorTabPin();
+
+    @Key("editor.tab.context.menu.pin.description")
+    String editorTabPinDescription();
+
+    @Key("editor.tab.context.menu.reopen.closed.tab")
+    String editorTabReopenClosedTab();
+
+    @Key("editor.tab.context.menu.reopen.closed.tab.description")
+    String editorTabReopenClosedTabDescription();
 }
