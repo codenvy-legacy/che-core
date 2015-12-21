@@ -17,6 +17,7 @@ import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.workspace.shared.dto.util.ProjectConfigUtil;
+import org.eclipse.che.dto.shared.Compared;
 import org.eclipse.che.dto.shared.DTO;
 import org.eclipse.che.dto.shared.DelegateRule;
 import org.eclipse.che.dto.shared.DelegateTo;
@@ -42,6 +43,7 @@ public interface ProjectConfigDto extends ProjectConfig {
 
     @Override
     @FactoryParameter(obligation = MANDATORY)
+    @Compared
     String getPath();
 
     void setPath(String path);
