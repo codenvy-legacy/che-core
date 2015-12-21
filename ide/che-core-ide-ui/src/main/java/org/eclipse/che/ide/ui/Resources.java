@@ -17,6 +17,9 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  */
 public interface Resources extends com.google.gwt.resources.client.ClientBundle {
 
+    @Source("logo/che-logo.svg")
+    SVGResource logo();
+
     @Source({"Styles.css", "org/eclipse/che/ide/api/ui/style.css"})
     Styles styles();
 }

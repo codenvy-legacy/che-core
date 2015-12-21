@@ -33,6 +33,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String getLogoFill() {
+        return "inherit";
+    }
+
+    @Override
     public String hoverBackgroundColor() {
         return "#D4E8FF";
     }
