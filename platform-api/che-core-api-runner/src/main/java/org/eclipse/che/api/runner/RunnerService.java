@@ -37,7 +37,6 @@ import org.eclipse.che.api.runner.dto.ResourcesDescriptor;
 import org.eclipse.che.api.runner.dto.RunOptions;
 import org.eclipse.che.api.runner.dto.RunnerDescriptor;
 import org.eclipse.che.api.runner.internal.Constants;
-import org.eclipse.che.api.workspace.server.dao.MemberDao;
 import org.eclipse.che.api.workspace.server.dao.WorkspaceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
