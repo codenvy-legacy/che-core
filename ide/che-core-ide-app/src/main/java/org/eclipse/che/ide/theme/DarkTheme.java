@@ -33,6 +33,11 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String getLogoFill() {
+        return "#FFFFFF";
+    }
+
+    @Override
     public String hoverBackgroundColor() {
         return "rgba(215, 215, 215, 0.12)";
     }

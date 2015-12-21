@@ -11,17 +11,29 @@
 package org.eclipse.che.ide.workspace;
 
 import com.google.gwt.user.client.Window;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.api.ProductInfoDataProvider;
 
 /**
  * The class contains business logic which allows get or set workspace name to query field in browser.
  *
  * @author Dmitry Shnurenko
+ * @author Alexander Andrienko
  */
 @Singleton
 public class BrowserQueryFieldRenderer {
 
     private static final int WORKSPACE_ORDER_IN_URL = 2;
+
+    //Used in the JSNI methods follow
+    private final ProductInfoDataProvider productInfoDataProvider;
+
+    @Inject
+    public BrowserQueryFieldRenderer(ProductInfoDataProvider productInfoDataProvider) {
+        this.productInfoDataProvider = productInfoDataProvider;
+    }
 
     /**
      * Sets workspace name to query field in browser.
@@ -45,7 +57,8 @@ public class BrowserQueryFieldRenderer {
 
             browserUrl = urlParts.join("/");
 
-            document.title = "Codenvy Developer Environment";
+            document.title = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
+                productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle()();
             window.history.pushState(window["_history_relocation_id"], document.title, browserUrl);
             window["_history_relocation_id"]++;
         } catch (e) {
@@ -75,7 +88,12 @@ public class BrowserQueryFieldRenderer {
 
             browserUrl = urlParts.join("/") + projectName;
 
-            document.title = projectName.length == 0 ? "Codenvy Developer Environment" : "Codenvy | " + projectName;
+            var titleWithoutSelectedProject = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
+                productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle()();
+            var titleWithSelectedProject = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
+                productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle(Ljava/lang/String;)(projectName);
+            document.title = projectName.length == 0 ? titleWithoutSelectedProject : titleWithSelectedProject;
+
             window.history.pushState(window["_history_relocation_id"], document.title, browserUrl);
             window["_history_relocation_id"]++;
         } catch (e) {

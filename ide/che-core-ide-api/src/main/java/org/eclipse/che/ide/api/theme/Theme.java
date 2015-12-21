@@ -30,6 +30,11 @@ public interface Theme {
     String getDescription();
 
     /**
+     * return the logo color
+     */
+    String getLogoFill();
+
+    /**
      * This color used in toolbar for highlight hovered items
      *
      * @return the color

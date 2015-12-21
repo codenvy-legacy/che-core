@@ -28,7 +28,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.api.DocumentTitleDecorator;
+import org.eclipse.che.ide.api.ProductInfoDataProvider;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
@@ -58,7 +58,7 @@ public class BootstrapController {
     private final ExtensionInitializer         extensionInitializer;
     private final EventBus                     eventBus;
     private final ActionManager                actionManager;
-    private final DocumentTitleDecorator       documentTitleDecorator;
+    private final ProductInfoDataProvider      productInfoDataProvider;
     private final Provider<AppStateManager>    appStateManagerProvider;
 
     @Inject
@@ -68,14 +68,14 @@ public class BootstrapController {
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
                                EventBus eventBus,
                                ActionManager actionManager,
-                               DocumentTitleDecorator documentTitleDecorator,
+                               ProductInfoDataProvider productInfoDataProvider,
                                Provider<AppStateManager> appStateManagerProvider) {
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
         this.eventBus = eventBus;
         this.actionManager = actionManager;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
-        this.documentTitleDecorator = documentTitleDecorator;
+        this.productInfoDataProvider = productInfoDataProvider;
         this.appStateManagerProvider = appStateManagerProvider;
 
         dtoRegistrar.registerDtoProviders();
@@ -150,7 +150,7 @@ public class BootstrapController {
         // Display IDE
         workspacePresenter.go(mainPanel);
 
-        Document.get().setTitle(documentTitleDecorator.getDocumentTitle());
+        Document.get().setTitle(productInfoDataProvider.getDocumentTitle());
 
         processStartupParameters();
 

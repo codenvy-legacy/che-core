@@ -23,6 +23,10 @@ public class Style {
         return theme.getEditorTabIconColor();
     }
 
+    public static String getLogoFill() {
+        return theme.getLogoFill();
+    }
+
     public static String getMainFontColor() {
         return theme.getMainFontColor();
     }
