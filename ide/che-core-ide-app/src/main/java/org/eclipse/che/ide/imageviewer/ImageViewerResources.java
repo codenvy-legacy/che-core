@@ -17,12 +17,12 @@ import com.google.gwt.resources.client.ImageResource;
 /** Resources for the image viewer. */
 public interface ImageViewerResources extends ClientBundle {
 
+    @Source({"imageViewer.css", "org/eclipse/che/ide/api/ui/style.css"})
+    Css imageViewerCss();
+
     /** Image viewer backgroupd image. */
     @Source("image-viewer-bg.png")
     ImageResource imageViewerBackground();
-
-    @Source({"imageViewer.css", "org/eclipse/che/ide/api/ui/style.css"})
-    Css imageViewerCss();
 
     /** CssResource for the image viewer. */
     public interface Css extends CssResource {

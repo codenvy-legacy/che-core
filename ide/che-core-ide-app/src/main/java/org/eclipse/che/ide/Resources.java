@@ -97,26 +97,11 @@ public interface Resources extends Tree.Resources,
     @Source("workspace/recipe.svg")
     SVGResource recipe();
 
-    @Source("part/projectexplorer/project_explorer.png")
-    ImageResource projectExplorer();
-
-    @Source("part/projectexplorer/project-closed.png")
-    ImageResource projectClosed();
-
     @Source("actions/newProject.svg")
     SVGResource newProject();
 
     @Source("actions/showHiddenFiles.svg")
     SVGResource showHiddenFiles();
-
-    @Source("wizard/arrow.svg")
-    SVGResource wizardArrow();
-
-    @Source("texteditor/save-all.png")
-    ImageResource saveAll();
-
-    @Source("texteditor/open-list.png")
-    ImageResource listOpenedEditors();
 
     @Source("texteditor/multi-file-icon.svg")
     SVGResource multiFileIcon();
@@ -204,9 +189,6 @@ public interface Resources extends Tree.Resources,
 
     @Source("actions/refresh.svg")
     SVGResource refresh();
-
-    @Source("workspace/perspectives/general/codenvy-placeholder.png")
-    ImageResource codenvyPlaceholder();
 
     @Source("defaulticons/file.svg")
     SVGResource defaultFile();

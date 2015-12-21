@@ -17,9 +17,6 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  */
 public interface Resources extends com.google.gwt.resources.client.ClientBundle {
 
-    @Source("dialogs/question.svg")
-    SVGResource question();
-
     @Source({"Styles.css", "org/eclipse/che/ide/api/ui/style.css"})
     Styles styles();
 }
