@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.list;
 
-import org.eclipse.che.ide.util.AnimationController;
-
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -25,6 +23,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.UIObject;
+
+import org.eclipse.che.ide.util.AnimationController;
 
 import java.util.HashMap;
 
@@ -81,13 +81,14 @@ public class CategoryNodeElement extends FlowPanel {
         label.appendChild(renderer.renderCategory(category));
 
         header.getElement().appendChild(label);
-        header.ensureDebugId("projectWizard-" + category.getTitle());
+        header.ensureDebugId("categoryHeader-" + category.getTitle());
 
         expandControl = Document.get().createDivElement();
         expandControl.appendChild(resources.arrowExpansionImage().getSvg().getElement());
         expandControl.setClassName(resources.defaultCategoriesListCss().expandControl());
         header.getElement().appendChild(expandControl);
         container = new FocusPanel();
+        container.setTabIndex(1);
         container.setStyleName(resources.defaultCategoriesListCss().itemContainer());
         container.sinkEvents(Event.ONCLICK);
         container.addDomHandler(new ClickHandler() {

@@ -171,13 +171,14 @@
     color: buttonFontColor;
 }
 
-.button:HOVER {
+.button:hover,
+.button:focus {
     background: buttonHoverBackground;
     border: 1px solid buttonHoverBorderColor;
     color: buttonHoverFontColor;
 }
 
-.button:ACTIVE {
+.button:active {
     background: buttonClickedBackground;
     border: 1px solid buttonClickedBorderColor;
     color: buttonClickedFontColor;
@@ -201,13 +202,14 @@
     color: primaryButtonFontColor;
 }
 
-.primaryButton:HOVER {
+.primaryButton:hover,
+.primaryButton:focus {
     background-color: primaryButtonHoverBackground;
     border: 1px solid primaryButtonHoverBorderColor;
     color: primaryButtonHoverFontColor;
 }
 
-.primaryButton:ACTIVE {
+.primaryButton:active {
     background-color: primaryButtonClickedBackground;
     border: 1px solid primaryButtonClickedBorderColor;
     color: primaryButtonFontClickedColor;

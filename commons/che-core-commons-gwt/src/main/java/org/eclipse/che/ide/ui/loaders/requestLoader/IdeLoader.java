@@ -10,13 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.loaders.requestLoader;
 
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
-
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Grid;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.inject.Inject;
+
+import org.eclipse.che.ide.rest.AsyncRequestLoader;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,20 +28,55 @@ import java.util.Map;
  *
  * @author Andrey Plotnikov
  * @author Sergii Leschenko
+ * @author Oleksii Orel
  */
 public class IdeLoader implements AsyncRequestLoader {
-    protected final String DEFAULT_MESSAGE = "Loading ...";
+    private static final String DEFAULT_MESSAGE = "Loading ...";
 
-    private final MessageHeap messageHeap;
-    private final ViewLoader  loader;
+    private final PopupPanel             loader;
+    private final MessageHeap            messageHeap;
+    private final Label                  loaderTextField;
+    private final RequestLoaderResources resources;
+
+    private final Timer showInclusionTimer;
+
 
     /**
      * Create loader.
      */
     @Inject
-    public IdeLoader(RequestLoaderResources resources) {
+    public IdeLoader(final RequestLoaderResources resources) {
+        this.resources = resources;
+        resources.Css().ensureInjected();
+
         messageHeap = new MessageHeap();
-        loader = new ViewLoader(resources);
+
+        loaderTextField = new Label();
+        loaderTextField.setStyleName(resources.Css().textField());
+
+        loader = new PopupPanel();
+        loader.ensureDebugId("loader");
+        loader.setGlassEnabled(true);
+        loader.setGlassStyleName(resources.Css().glassStyle());
+        loader.addStyleName(resources.Css().loader());
+        loader.setVisible(false);
+
+        final Grid grid = new Grid(1, 2);
+        final FlowPanel pinionPanel = new FlowPanel();
+        pinionPanel.add(new FlowPanel());
+        pinionPanel.add(new FlowPanel());
+        pinionPanel.setStyleName(resources.Css().pinionPanel());
+        grid.setWidget(0, 0, pinionPanel);
+        grid.setWidget(0, 1, loaderTextField);
+        loader.add(grid);
+
+        showInclusionTimer = new Timer() {
+            @Override
+            public void run() {
+                loader.setGlassStyleName(resources.Css().glassStyle());
+                loader.removeStyleName(resources.Css().hide());
+            }
+        };
     }
 
     /** {@inheritDoc} */
@@ -54,8 +90,14 @@ public class IdeLoader implements AsyncRequestLoader {
     @Override
     public void show(String message) {
         messageHeap.push(message);
-        loader.setMessage(message);
+        setMessage(message);
         loader.center();
+        //add a delay before the loader showing because most of the process lasts less than 1s
+        if (!showInclusionTimer.isRunning()) {
+            loader.setGlassStyleName(resources.Css().loader());
+            loader.addStyleName(resources.Css().hide());
+            showInclusionTimer.schedule(1000);
+        }
         loader.show();
     }
 
@@ -70,39 +112,20 @@ public class IdeLoader implements AsyncRequestLoader {
     public void hide(String message) {
         String newMessage = messageHeap.drop(message);
         if (newMessage != null) {
-            loader.setMessage(newMessage);
-        } else {
-            loader.hide();
+            setMessage(newMessage);
+        }
+        loader.hide();
+        if (showInclusionTimer.isRunning()) {
+            showInclusionTimer.cancel();
         }
     }
 
-    private static class ViewLoader extends PopupPanel {
-        private Grid grid;
+    public void setMessage(String message) {
+        loaderTextField.setText(message);
+    }
 
-        public ViewLoader(RequestLoaderResources resources) {
-            resources.Css().ensureInjected();
-            FlowPanel container = new FlowPanel();
-            HTML pinionWidget = new HTML("<i></i><i></i>");
-            pinionWidget.getElement().setClassName(resources.Css().pinion());
-            grid = new Grid(1, 2);
-            grid.setWidget(0, 0, pinionWidget);
-            container.add(grid);
-            this.add(container);
-            this.ensureDebugId("loader");
-
-            setGlassEnabled(true);
-            getGlassElement().getStyle().setOpacity(0);
-            getGlassElement().getStyle().setZIndex(9999998);
-            getElement().getStyle().setZIndex(9999998);
-        }
-
-        public void setMessage(String message) {
-            grid.setText(0, 1, message);
-        }
-
-        public String getMessage() {
-            return grid.getText(0, 1);
-        }
+    public String getMessage() {
+        return loaderTextField.getText();
     }
 
     private class MessageHeap {
@@ -139,8 +162,8 @@ public class IdeLoader implements AsyncRequestLoader {
                 messages.remove(message);
 
                 // If dropped message that isn't displayed then do not update text
-                if (!loader.getMessage().equals(message)) {
-                    return loader.getMessage();
+                if (!getMessage().equals(message)) {
+                    return getMessage();
                 }
 
                 if (!messages.isEmpty()) {

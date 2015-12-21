@@ -9,17 +9,37 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 @url pinionIcon pinionIcon;
+@eval glassBackgroundColor "#3f3f3f";
+@eval pinionBackgroundColor "#5caeD4";
 
-.pinion {
+.loader {
+    z-index: 9999998 !important;
+}
+
+.glassStyle {
+    opacity: 0.1;
+    background-color: glassBackgroundColor;
+    z-index: 9999998;
+}
+
+.textField {
+    color: inherit;
+}
+
+.hide {
+    display: none;
+}
+
+.pinionPanel {
     width: 32px;
     height: 32px;
-    background: #5caeD4;
+    background: pinionBackgroundColor;
     -moz-border-radius: 32px;
     -webkit-border-radius: 32px;
     border-radius: 32px;
 }
 
-.pinion > i {
+.pinionPanel > div {
     background-image: pinionIcon;
     display: block;
     position: absolute;
@@ -35,7 +55,7 @@
     animation: barrelRoll 3s infinite linear;
 }
 
-.pinion > i:last-of-type {
+.pinionPanel > div:last-of-type {
     top: 14px;
     left: 19px;
     -webkit-animation-name: invertBarrelRoll;

@@ -165,12 +165,16 @@ public abstract class Window implements IsWidget {
         button.getElement().setId(debugId);
         button.addStyleName(resources.windowCss().button());
         button.addClickHandler(clickHandler);
+        //set default tab index
+        button.setTabIndex(0);
         return button;
     }
 
     protected Button createPrimaryButton(String title, String debugId, ClickHandler clickHandler) {
         Button button = createButton(title, debugId, clickHandler);
         button.addStyleName(resources.windowCss().primaryButton());
+        //set default tab index
+        button.setTabIndex(0);
         return button;
     }
 

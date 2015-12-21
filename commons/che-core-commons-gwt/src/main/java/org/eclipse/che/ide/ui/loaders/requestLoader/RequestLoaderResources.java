@@ -19,17 +19,26 @@ import com.google.gwt.resources.client.DataResource.MimeType;
  * Resources for request loader.
  *
  * @author Andrey Plotnikov
+ * @author Oleksii Orel
  */
 public interface RequestLoaderResources extends ClientBundle {
 
-    interface PinionCss extends CssResource {
-        String pinion();
+    interface LoaderCss extends CssResource {
+        String loader();
+
+        String glassStyle();
+                                                                                                                                                
+        String pinionPanel();
+
+        String textField();
+
+        String hide();
     }
 
     @MimeType("image/png")
     @Source("pinion-icon.png")
     DataResource pinionIcon();
 
-    @Source({"org/eclipse/che/ide/ui/constants.css", "RequestLoader.css", "org/eclipse/che/ide/api/ui/style.css"})
-    PinionCss Css();
+    @Source({"RequestLoader.css", "org/eclipse/che/ide/api/ui/style.css"})
+    LoaderCss Css();
 }

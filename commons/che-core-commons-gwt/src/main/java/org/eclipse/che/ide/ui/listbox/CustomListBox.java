@@ -48,6 +48,7 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
     private final FlowPanel    optionsPanel     = new FlowPanel();
     private final String       optionsGroupName = "listBox-" + Document.get().createUniqueId();
 
+    private int     dropDownSize         = 6;
     private int     selectedIndex        = -1;
     private int     defaultSelectedIndex = -1;
     private boolean isActive             = false;
@@ -309,11 +310,23 @@ public class CustomListBox extends FocusWidget implements HasChangeHandlers {
      */
     public void setHeight(String height) {
         this.getElement().getStyle().setProperty("height", height);
-        final String lineHeightStyle = "line-height: " + height + ";";
-        boolean isVisible = optionsPanel.isVisible();
-        currentItemLabel.setAttribute("style", lineHeightStyle);
-        optionsPanel.getElement().setAttribute("style", lineHeightStyle + ";max-height:calc(6*" + height + ");");
-        optionsPanel.setVisible(isVisible);
+        currentItemLabel.getStyle().setProperty("lineHeight", height);
+        optionsPanel.getElement().getStyle().setProperty("lineHeight", height);
+        optionsPanel.getElement().getStyle().setProperty("maxHeight", "calc(" + dropDownSize + "*" + height + ")");
+    }
+
+    /**
+     * Sets dropdown part size.
+     *
+     * @param dropDownSize
+     * @throws IndexOutOfBoundsException
+     *         if the index is out of range
+     */
+    public void setSize(int dropDownSize) {
+        if (dropDownSize < 1 || dropDownSize > 99) {
+            throw new IndexOutOfBoundsException();
+        }
+        this.dropDownSize = dropDownSize;
     }
 
     /**
