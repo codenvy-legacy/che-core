@@ -41,6 +41,7 @@ import org.eclipse.che.ide.api.event.project.DeleteProjectHandler;
 import org.eclipse.che.ide.api.filetypes.FileType;
 import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.notification.StatusNotification;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
@@ -398,7 +399,6 @@ public class EditorAgentImpl implements EditorAgent {
     public void saveAll(final AsyncCallback callback) {
         dirtyEditors = getDirtyEditors();
         if (dirtyEditors.isEmpty()) {
-            notificationManager.notify("Editor", coreLocalizationConstant.allFilesSaved());
             callback.onSuccess("Success");
         } else {
             doSave(callback);
@@ -411,14 +411,13 @@ public class EditorAgentImpl implements EditorAgent {
             @Override
             public void onFailure(Throwable caught) {
                 callback.onFailure(caught);
-                notificationManager.notify("Editor", coreLocalizationConstant.someFilesCanNotBeSaved());
+                notificationManager.notify(coreLocalizationConstant.someFilesCanNotBeSaved(), StatusNotification.Status.FAIL, true);
             }
 
             @Override
             public void onSuccess(EditorInput result) {
                 dirtyEditors.remove(partPresenter);
                 if (dirtyEditors.isEmpty()) {
-                    notificationManager.notify("Editor", coreLocalizationConstant.allFilesSaved());
                     callback.onSuccess("Success");
                 } else {
                     doSave(callback);

@@ -144,13 +144,13 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
-        notificationManager.notify("Workspace", locale.extServerStarted(), StatusNotification.Status.SUCCESS, false);
+        notificationManager.notify(locale.extServerStarted(), StatusNotification.Status.SUCCESS, true);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onExtServerStopped(ExtServerStateEvent event) {
-        notificationManager.notify("Workspace", locale.extServerStopped(), FAIL, false);
+        notificationManager.notify(locale.extServerStopped());
     }
 
 
@@ -293,11 +293,11 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                     switch (statusEvent.getEventType()) {
                         case RUNNING:
                             setCurrentWorkspace(workspace);
-                            notificationManager.notify("Workspace", locale.startedWs(workspaceName));
+                            notificationManager.notify(locale.startedWs(), StatusNotification.Status.SUCCESS, true);
                             eventBus.fireEvent(new StartWorkspaceEvent(workspace));
                             break;
                         case ERROR:
-                            notificationManager.notify("Workspace", locale.workspaceStartFailed(workspaceName));
+                            notificationManager.notify(locale.workspaceStartFailed(), FAIL, true);
                             initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), ERROR);
                             showErrorDialog(workspaceName, statusEvent.getError());
                             break;
@@ -326,7 +326,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
 
                 @Override
                 protected void onErrorReceived(Throwable exception) {
-                    notificationManager.notify("Workspace", exception.getMessage());
+                    notificationManager.notify(exception.getMessage(), FAIL, false);
                 }
             });
         } catch (WebSocketException exception) {

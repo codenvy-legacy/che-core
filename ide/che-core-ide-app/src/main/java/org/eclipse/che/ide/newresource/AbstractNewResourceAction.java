@@ -171,13 +171,14 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
                                  new RequestCallback<Void>() {
                                      @Override
                                      protected void onSuccess(Void result) {
-                                         notificationManager
-                                                 .notify(localizationConstant.actionNewFileAddToIndexNotification(fileName));
+                                         notificationManager.notify(localizationConstant.actionGitIndexUpdated(),
+                                                                    localizationConstant.actionNewFileAddToIndexNotification(fileName));
                                      }
 
                                      @Override
                                      protected void onFailure(Throwable exception) {
-                                         notificationManager.notify(exception.getMessage());
+                                         notificationManager.notify(localizationConstant.actionGitIndexUpdateFailed(),
+                                                                    exception.getMessage());
                                      }
                                  });
                 } catch (WebSocketException e) {

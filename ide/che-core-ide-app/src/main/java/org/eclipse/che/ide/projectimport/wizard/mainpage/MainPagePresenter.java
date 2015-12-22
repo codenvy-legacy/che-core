@@ -24,7 +24,6 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.NameUtils;
-import org.eclipse.che.ide.util.loging.Log;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
@@ -35,6 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 
 /**
  * Presenter of the import project wizard's main page.
@@ -150,8 +151,7 @@ public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> impl
 
             @Override
             protected void onFailure(Throwable exception) {
-                Log.error(MainPagePresenter.class, locale.importProjectError() + exception);
-                notificationManager.notify("Importer", exception.getMessage());
+                notificationManager.notify(locale.failedToImportProject(), FAIL, true);
             }
         });
     }

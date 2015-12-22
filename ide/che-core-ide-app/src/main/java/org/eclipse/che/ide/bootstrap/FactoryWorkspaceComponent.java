@@ -54,6 +54,8 @@ import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 import java.util.List;
 import java.util.Set;
 
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
+
 /**
  * Retrieves specified factory, and creates and/or starts workspace configured in it.
  *
@@ -131,7 +133,7 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
         final WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
 
         if (workspaceConfigDto == null) {
-            notificationManager.notify("Factory", locale.workspaceConfigUndefined());
+            notificationManager.notify(locale.failedToLoadFactory(), locale.workspaceConfigUndefined(), FAIL, true);
             return;
         }
 
