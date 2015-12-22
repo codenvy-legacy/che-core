@@ -30,6 +30,7 @@ import org.eclipse.che.ide.actions.ExpandNodeAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
+import org.eclipse.che.ide.actions.FullTextSearchAction;
 import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectAction;
@@ -233,6 +234,9 @@ public class StandardComponentInitializer {
     private CreateModuleAction createModuleAction;
 
     @Inject
+    private FullTextSearchAction fullTextSearchAction;
+
+    @Inject
     private NewFolderAction newFolderAction;
 
     @Inject
@@ -264,6 +268,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private HotKeysListAction hotKeysListAction;
+
+    @Inject
+    private OpenRecentFilesAction openRecentFilesAction;
 
     @Inject
     @Named("XMLFileType")
@@ -474,6 +481,9 @@ public class StandardComponentInitializer {
         // Edit (New Menu)
         DefaultActionGroup editGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_EDIT);
 
+        actionManager.registerAction("openRecentFiles", openRecentFilesAction);
+        editGroup.add(openRecentFilesAction);
+
         actionManager.registerAction("format", formatterAction);
         editGroup.add(formatterAction);
 
@@ -497,6 +507,9 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("deleteItem", deleteItemAction);
         editGroup.add(deleteItemAction);
+
+        actionManager.registerAction("fullTextSearch", fullTextSearchAction);
+        editGroup.add(fullTextSearchAction);
 
         // Assistant (New Menu)
         DefaultActionGroup assistantGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_ASSISTANT);
