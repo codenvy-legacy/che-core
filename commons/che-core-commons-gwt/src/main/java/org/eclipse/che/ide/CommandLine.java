@@ -38,7 +38,7 @@ public class CommandLine {
 
     /** Create container for command line based on the specified {@code commandLine}. */
     public CommandLine(String commandLine) {
-        final String[] args = commandLine.split("\\s+");
+        final String[] args = commandLine.split(" ");
         arguments = new ArrayList<>();
         if (args.length > 0) {
             Collections.addAll(arguments, args);
