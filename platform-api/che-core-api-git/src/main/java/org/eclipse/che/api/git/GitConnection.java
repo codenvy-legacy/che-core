@@ -45,6 +45,8 @@ import org.eclipse.che.api.git.shared.RebaseRequest;
 import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
+import org.eclipse.che.api.git.shared.ShowFileContentRequest;
+import org.eclipse.che.api.git.shared.ShowFileContentResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
@@ -188,6 +190,19 @@ public interface GitConnection extends Closeable {
     DiffPage diff(DiffRequest request) throws GitException;
 
     /**
+     * Show content of the file from specified revision or branch.
+     *
+     * @param request
+     *         request with file and hash of revision or branch
+     * @return response with content of the file
+     * @throws GitException
+     *         if any error occurs
+     * @see ShowFileContentRequest
+     * @see ShowFileContentResponse
+     */
+    ShowFileContentResponse showFileContent(ShowFileContentRequest request) throws GitException;
+
+    /**
      * Fetch data from remote repository.
      *
      * @param request
@@ -211,9 +226,9 @@ public interface GitConnection extends Closeable {
 
     /**
      * Check if directory, which was used to create Git connection, is inside the working tree.
-     * 
+     *
      * @return <b>true</b> if only directory is inside working tree, and <b>false</b> if directory is outside the working tree including directory inside .git directory, or bare repository. 
-     * 
+     *
      * @throws GitException
      *         if any error occurs
      */
@@ -266,8 +281,8 @@ public interface GitConnection extends Closeable {
      *         if any error occurs when checkout
      * @see RebaseRequest
      */
-    RebaseResponse rebase(RebaseRequest request) throws GitException;    
-    
+    RebaseResponse rebase(RebaseRequest request) throws GitException;
+
     /**
      * Move or rename file or directory.
      *

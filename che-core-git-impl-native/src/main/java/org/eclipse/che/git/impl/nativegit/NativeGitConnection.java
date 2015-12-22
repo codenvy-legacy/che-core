@@ -52,6 +52,8 @@ import org.eclipse.che.api.git.shared.RemoteUpdateRequest;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
+import org.eclipse.che.api.git.shared.ShowFileContentRequest;
+import org.eclipse.che.api.git.shared.ShowFileContentResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
@@ -75,6 +77,7 @@ import org.eclipse.che.git.impl.nativegit.commands.PullCommand;
 import org.eclipse.che.git.impl.nativegit.commands.PushCommand;
 import org.eclipse.che.git.impl.nativegit.commands.RemoteListCommand;
 import org.eclipse.che.git.impl.nativegit.commands.RemoteOperationCommand;
+import org.eclipse.che.git.impl.nativegit.commands.ShowFileContentCommand;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
@@ -305,6 +308,13 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public DiffPage diff(DiffRequest request) throws GitException {
         return new NativeGitDiffPage(request, nativeGit);
+    }
+
+    @Override
+    public ShowFileContentResponse showFileContent(ShowFileContentRequest request) throws GitException {
+        ShowFileContentCommand showCommand = nativeGit.createShowFileContentCommand().withFile(request.getFile())
+                                                      .withVersion(request.getVersion());
+        return showCommand.execute();
     }
 
     @Override
