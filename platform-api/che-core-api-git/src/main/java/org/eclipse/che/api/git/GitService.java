@@ -43,6 +43,8 @@ import org.eclipse.che.api.git.shared.RepoInfo;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.RmRequest;
+import org.eclipse.che.api.git.shared.ShowFileContentRequest;
+import org.eclipse.che.api.git.shared.ShowFileContentResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
@@ -212,6 +214,25 @@ public class GitService {
     public InfoPage diff(DiffRequest request) throws ApiException {
         try (GitConnection gitConnection = getGitConnection()) {
             return gitConnection.diff(request);
+        }
+    }
+
+    /**
+     * Show file content from specified revision or branch.
+     *
+     * @param request
+     *         request that contains file name with its full path and revision or branch
+     * @return response that contains content of the file
+     * @throws ApiException
+     *         when some error occurred while retrieving the content of the file
+     */
+    @Path("show")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
+    public ShowFileContentResponse showFileContent(ShowFileContentRequest request) throws ApiException {
+        try (GitConnection gitConnection = getGitConnection()) {
+            return gitConnection.showFileContent(request);
         }
     }
 

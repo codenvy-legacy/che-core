@@ -23,6 +23,7 @@ import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RepoInfo;
 import org.eclipse.che.api.git.shared.ResetRequest;
 import org.eclipse.che.api.git.shared.Revision;
+import org.eclipse.che.api.git.shared.ShowFileContentResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
@@ -429,6 +430,20 @@ public interface GitServiceClient {
               String commitA,
               boolean cached,
               AsyncRequestCallback<String> callback);
+
+    /**
+     * Get the file content from specified revision or branch.
+     *
+     * @param project
+     *         project configuration of root GIT repository
+     * @param file
+     *         file name with its full path
+     * @param version
+     *         revision or branch where the showed file is present
+     * @param callback
+     *         callback for sending asynchronous response with file content
+     */
+    void showFileContent(ProjectConfigDto project, String file, String version, AsyncRequestCallback<ShowFileContentResponse> callback);
 
     /**
      * Get log of commits. The result is the list of {@link Revision}, which is returned by callback in
