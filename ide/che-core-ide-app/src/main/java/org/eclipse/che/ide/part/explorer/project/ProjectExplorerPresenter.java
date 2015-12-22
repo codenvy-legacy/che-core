@@ -88,6 +88,7 @@ import java.util.Map;
 
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newCallback;
 import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newPromise;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 
 /**
  * Project explorer presenter. Handle basic logic to control project tree display.
@@ -192,7 +193,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.select(node, false);
 
         if (!projectConfig.getProblems().isEmpty()) {
-            notificationManager.notify("Project", locale.projectExplorerDetectedUnconfiguredProject(), projectConfig);
+            notificationManager.notify(locale.projectExplorerInvalidProjectDetected(), locale.projectExplorerDetectedUnconfiguredProject(),
+                                       projectConfig);
             askUserToSetUpProject(projectConfig);
         }
 
@@ -215,7 +217,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         }).catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
-                notificationManager.notify("Project", locale.projectExplorerProjectsLoadFailed());
+                notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
             }
         });
     }
@@ -239,7 +241,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                 }).catchError(new Operation<PromiseError>() {
                     @Override
                     public void apply(PromiseError arg) throws OperationException {
-                        notificationManager.notify("Project", locale.projectExplorerProjectConfigurationFailed(), descriptor);
+                        notificationManager.notify(locale.projectExplorerProjectConfigurationFailed(descriptor.getName()), FAIL, true,
+                                                   descriptor);
                         Log.warn(getClass(), arg.getMessage());
                     }
                 });
@@ -376,7 +379,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.removeAllNodes();
         appContext.setCurrentProject(null);
         queryFieldViewer.setProjectName("");
-        notificationManager.notify("Project", locale.projectExplorerExtensionServerStopped());
+        notificationManager.notify(locale.projectExplorerExtensionServerStopped(),
+                                   locale.projectExplorerExtensionServerStoppedDescription(), FAIL, false);
     }
 
     /** {@inheritDoc} */
@@ -426,7 +430,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             @Override
             public void apply(PromiseError arg) throws OperationException {
                 Log.warn(getClass(), arg.getMessage());
-                notificationManager.notify("Project", locale.projectExplorerProjectUpdateFailed(), project);
+                notificationManager.notify(locale.failedToUpdateProject(project.getName()), FAIL, false, project);
             }
         });
     }

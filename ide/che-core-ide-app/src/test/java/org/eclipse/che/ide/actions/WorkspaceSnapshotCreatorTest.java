@@ -88,6 +88,8 @@ public class WorkspaceSnapshotCreatorTest {
 
     @Test
     public void shouldChangeNotificationAfterCreationError() {
+        when(locale.createSnapshotFailed()).thenReturn("Error");
+
         snapshotCreator.createSnapshot("workspace123");
 
         snapshotCreator.creationError("Error");

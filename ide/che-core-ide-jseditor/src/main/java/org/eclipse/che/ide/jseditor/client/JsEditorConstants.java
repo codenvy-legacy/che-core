@@ -76,4 +76,8 @@ public interface JsEditorConstants extends Messages {
 
     @DefaultMessage("Keep my changes")
     String fileUpdateKeepUnsaved();
+
+    @DefaultMessage("Failed to update content of file(s)")
+    String failedToUpdateContentOfFiles();
+
 }

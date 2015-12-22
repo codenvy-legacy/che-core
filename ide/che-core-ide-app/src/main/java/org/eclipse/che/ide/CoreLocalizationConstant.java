@@ -81,6 +81,12 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("deleteAddToIndexDialogText")
     String deleteAddToIndexDialogText();
 
+    @Key("deleteAddToIndexIndexFailedToUpdate")
+    String deleteAddToIndexIndexFailedToUpdate();
+
+    @Key("deleteAddToIndexIndexUpdated")
+    String deleteAddToIndexIndexUpdated();
+
     @Key("deleteAddToIndexDialogNotification")
     String deleteAddToIndexDialogNotification();
 
@@ -251,7 +257,7 @@ public interface CoreLocalizationConstant extends Messages {
     String importProjectButton();
 
     @Key("importProject.importing")
-    String importingProject(String projectName);
+    String importingProject();
 
     @Key("importProject.uriFieldTitle")
     String importProjectUriFieldTitle();
@@ -299,6 +305,12 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("action.newFile.add.to.index.notification")
     String actionNewFileAddToIndexNotification(String file);
 
+    @Key("action.git.index.updated")
+    String actionGitIndexUpdated();
+
+    @Key("action.git.index.update.failed")
+    String actionGitIndexUpdateFailed();
+
     @Key("action.newXmlFile.title")
     String actionNewXmlFileTitle();
 
@@ -336,9 +348,6 @@ public interface CoreLocalizationConstant extends Messages {
     /* Messages */
     @Key("messages.changesMayBeLost")
     String changesMayBeLost();
-
-    @Key("messages.allFilesSaved")
-    String allFilesSaved();
 
     @Key("messages.someFilesCanNotBeSaved")
     String someFilesCanNotBeSaved();
@@ -480,7 +489,7 @@ public interface CoreLocalizationConstant extends Messages {
     String stopWsDescription();
 
     @Key("started.ws")
-    String startedWs(String wsName);
+    String startedWs();
 
     @Key("create.snapshot.title")
     String createSnapshotTitle();
@@ -494,6 +503,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("create.snapshot.success")
     String createSnapshotSuccess();
 
+    @Key("create.snapshot.failed")
+    String createSnapshotFailed();
+
     @Key("ext.server.started")
     String extServerStarted();
 
@@ -501,7 +513,10 @@ public interface CoreLocalizationConstant extends Messages {
     String extServerStopped();
 
     @Key("workspace.start.failed")
-    String workspaceStartFailed(String workspaceName);
+    String workspaceStartFailed();
+
+    @Key("failed.to.load.factory")
+    String failedToLoadFactory();
 
     @Key("workspace.config.undefined")
     String workspaceConfigUndefined();
@@ -525,7 +540,7 @@ public interface CoreLocalizationConstant extends Messages {
     String getWsErrorDialogContent(String reason);
 
     @Key("project.explorer.project.configuration.failed")
-    String projectExplorerProjectConfigurationFailed();
+    String projectExplorerProjectConfigurationFailed(String name);
 
     @Key("project.explorer.project.update.failed")
     String projectExplorerProjectUpdateFailed();
@@ -533,11 +548,17 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("project.explorer.projects.load.failed")
     String projectExplorerProjectsLoadFailed();
 
+    @Key("project.explorer.invalid.project.detected")
+    String projectExplorerInvalidProjectDetected();
+
     @Key("project.explorer.detected.unconfigured.project")
     String projectExplorerDetectedUnconfiguredProject();
 
     @Key("project.explorer.extension.server.stopped")
     String projectExplorerExtensionServerStopped();
+
+    @Key("project.explorer.extension.server.stopped.description")
+    String projectExplorerExtensionServerStoppedDescription();
 
     @Key("project.explorer.part.tooltip")
     String projectExplorerPartTooltip();
@@ -642,4 +663,22 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("editor.tab.context.menu.reopen.closed.tab.description")
     String editorTabReopenClosedTabDescription();
+
+    @Key("failed.to.copy.items")
+    String failedToCopyItems();
+
+    @Key("failed.to.move.items")
+    String failedToMoveItems();
+
+    @Key("failed.to.update.project")
+    String failedToUpdateProject(String name);
+
+    @Key("failed.to.import.project")
+    String failedToImportProject();
+
+    @Key("failed.to.upload.files")
+    String failedToUploadFiles();
+
+    @Key("failed.to.upload.files.from.zip")
+    String failedToUploadFilesFromZip();
 }

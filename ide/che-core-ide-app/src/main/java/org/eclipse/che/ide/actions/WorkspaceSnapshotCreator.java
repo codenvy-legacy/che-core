@@ -55,7 +55,8 @@ public class WorkspaceSnapshotCreator {
      */
     public void creationError(String message) {
         if (notification != null) {
-            notification.setTitle(message);
+            notification.setTitle(locale.createSnapshotFailed());
+            notification.setContent(message);
             notification.setStatus(FAIL);
         }
     }

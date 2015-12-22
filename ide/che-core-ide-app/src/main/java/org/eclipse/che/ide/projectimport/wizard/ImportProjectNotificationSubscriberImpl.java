@@ -73,7 +73,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
 
     @Override
     public void subscribe(final String projectName) {
-        notification = notificationManager.notify("Import", locale.importingProject(projectName), PROGRESS, true);
+        notification = notificationManager.notify(locale.importingProject(), PROGRESS, true);
         subscribe(projectName, notification);
     }
 
@@ -85,7 +85,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
         this.subscriptionHandler = new SubscriptionHandler<String>(new LineUnmarshaller()) {
             @Override
             protected void onMessageReceived(String result) {
-                notification.setContent(locale.importingProject(projectName) + " " + result);
+                notification.setContent(result);
             }
 
             @Override
@@ -98,7 +98,8 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                         } catch (WebSocketException e) {
                             Log.error(getClass(), e);
                         }
-                        notification.setContent(locale.importProjectMessageFailure(projectName));
+                        notification.setTitle(locale.importProjectMessageFailure(projectName));
+                        notification.setContent("");
                         notification.setStatus(FAIL);
                         Log.error(getClass(), throwable);
                     }
@@ -129,7 +130,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                     Log.error(getClass(), e);
                 }
                 notification.setStatus(SUCCESS);
-                notification.setContent(locale.importProjectMessageSuccess(projectName));
+                notification.setTitle(locale.importProjectMessageSuccess(projectName));
             }
         }).catchError(logErrorHandler);
     }

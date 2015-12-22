@@ -41,6 +41,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import static org.eclipse.che.api.promises.client.callback.CallbackPromiseHelper.createFromCallback;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 
 /**
  * @author Sergii Leschenko
@@ -93,7 +94,7 @@ public class OpenFileAction extends Action implements PromisableAction {
         return new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
-                notificationManager.notify("Project", localization.unableOpenResource(path));
+                notificationManager.notify(localization.unableOpenResource(path), FAIL, true);
 
                 if (actionCompletedCallback != null) {
                     actionCompletedCallback.onFailure(arg.getCause());

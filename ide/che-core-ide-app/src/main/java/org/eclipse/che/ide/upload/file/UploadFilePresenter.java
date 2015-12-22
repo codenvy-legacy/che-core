@@ -15,14 +15,17 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.notification.StatusNotification;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
 import org.eclipse.che.commons.annotation.Nullable;
+
 import java.util.List;
 
 /**
@@ -32,12 +35,13 @@ import java.util.List;
  */
 public class UploadFilePresenter implements UploadFileView.ActionDelegate {
 
-    private UploadFileView           view;
-    private String                   restContext;
-    private String                   workspaceId;
-    private EventBus                 eventBus;
-    private NotificationManager      notificationManager;
-    private ProjectExplorerPresenter projectExplorer;
+    private       UploadFileView           view;
+    private       String                   restContext;
+    private       String                   workspaceId;
+    private       EventBus                 eventBus;
+    private       NotificationManager      notificationManager;
+    private       ProjectExplorerPresenter projectExplorer;
+    private final CoreLocalizationConstant locale;
 
     @Inject
     public UploadFilePresenter(UploadFileView view,
@@ -45,13 +49,15 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
                                @Named("workspaceId") String workspaceId,
                                EventBus eventBus,
                                NotificationManager notificationManager,
-                               ProjectExplorerPresenter projectExplorer) {
+                               ProjectExplorerPresenter projectExplorer,
+                               CoreLocalizationConstant locale) {
 
         this.restContext = restContext;
         this.workspaceId = workspaceId;
         this.eventBus = eventBus;
         this.view = view;
         this.projectExplorer = projectExplorer;
+        this.locale = locale;
         this.view.setDelegate(this);
         this.view.setEnabledUploadButton(false);
         this.notificationManager = notificationManager;
@@ -74,7 +80,7 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
         projectExplorer.reloadChildren(getResourceBasedNode());
         if (result != null && !result.isEmpty()) {
             view.closeDialog();
-            notificationManager.notify("Upload", parseMessage(result));
+            notificationManager.notify(locale.failedToUploadFiles(), parseMessage(result), StatusNotification.Status.FAIL, true);
             return;
         }
 
@@ -89,7 +95,8 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
     @Override
     public void onUploadClicked() {
         view.setEncoding(FormPanel.ENCODING_MULTIPART);
-        view.setAction(restContext + "/project/" + workspaceId + "/uploadfile" + ((HasStorablePath)getResourceBasedNode()).getStorablePath());
+        view.setAction(
+                restContext + "/project/" + workspaceId + "/uploadfile" + ((HasStorablePath)getResourceBasedNode()).getStorablePath());
         view.submit();
     }
 

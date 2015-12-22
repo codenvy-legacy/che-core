@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
@@ -25,7 +26,10 @@ import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 
 import org.eclipse.che.commons.annotation.Nullable;
+
 import java.util.List;
+
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 
 /**
  * The purpose of this class is upload folder from zip
@@ -36,6 +40,7 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
 
     private       UploadFolderFromZipView  view;
     private final ProjectExplorerPresenter projectExplorer;
+    private final CoreLocalizationConstant locale;
     private       EditorAgent              editorAgent;
     private       String                   restContext;
     private       String                   workspaceId;
@@ -49,13 +54,15 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
                                         EditorAgent editorAgent,
                                         EventBus eventBus,
                                         NotificationManager notificationManager,
-                                        ProjectExplorerPresenter projectExplorer) {
+                                        ProjectExplorerPresenter projectExplorer,
+                                        CoreLocalizationConstant locale) {
         this.restContext = restContext;
         this.workspaceId = workspaceId;
         this.editorAgent = editorAgent;
         this.eventBus = eventBus;
         this.view = view;
         this.projectExplorer = projectExplorer;
+        this.locale = locale;
         this.view.setDelegate(this);
         this.view.setEnabledUploadButton(false);
         this.notificationManager = notificationManager;
@@ -80,7 +87,7 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
 
         if (result != null && !result.isEmpty()) {
             view.closeDialog();
-            notificationManager.notify("Upload", parseMessage(result));
+            notificationManager.notify(locale.failedToUploadFilesFromZip(), parseMessage(result), FAIL, true);
             return;
         }
 
@@ -95,7 +102,8 @@ public class UploadFolderFromZipPresenter implements UploadFolderFromZipView.Act
     public void onUploadClicked() {
         view.setLoaderVisibility(true);
         view.setEncoding(FormPanel.ENCODING_MULTIPART);
-        view.setAction(restContext + "/project/" + workspaceId + "/upload/zipfolder/" + ((HasStorablePath)getResourceBasedNode()).getStorablePath());
+        view.setAction(restContext + "/project/" + workspaceId + "/upload/zipfolder/" +
+                       ((HasStorablePath)getResourceBasedNode()).getStorablePath());
         view.submit();
     }
 
