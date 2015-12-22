@@ -23,6 +23,7 @@ import org.eclipse.che.api.core.rest.OutputProvider;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.internal.Constants;
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,6 +138,10 @@ public class RemoteRunnerProcess {
         conn.setConnectTimeout(60 * 1000);
         conn.setReadTimeout(60 * 1000);
         conn.setRequestMethod(method);
+        final EnvironmentContext context = EnvironmentContext.getCurrent();
+        if (context.getUser() != null && context.getUser().getToken() != null) {
+            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
+        }
         try {
             if (output instanceof HttpOutputMessage) {
                 HttpOutputMessage httpOutput = (HttpOutputMessage)output;
