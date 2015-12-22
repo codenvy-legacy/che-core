@@ -55,7 +55,7 @@ import static org.eclipse.che.ide.util.dom.Elements.disableTextSelection;
 /**
  * PopupMenu is visual component represents all known Popup Menu.
  *
- * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
+ * @author Vitaliy Gulyy
  */
 
 public class PopupMenu extends Composite {
@@ -68,7 +68,6 @@ public class PopupMenu extends Composite {
 
     private final ActionManager                actionManager;
     private final Provider<PerspectiveManager> managerProvider;
-    private final String                       place;
     /** Working variable is needs to indicate when PopupMenu has at list one MenuItem with selected state. */
     private       boolean                      hasCheckedItems;
     /** Callback uses for notify Parent Menu when menu item is selecred. */
@@ -135,7 +134,6 @@ public class PopupMenu extends Composite {
     public PopupMenu(ActionGroup actionGroup,
                      ActionManager actionManager,
                      Provider<PerspectiveManager> managerProvider,
-                     String place,
                      PresentationFactory presentationFactory,
                      MenuLockLayer lockLayer,
                      ActionSelectedHandler actionSelectedHandler,
@@ -143,16 +141,14 @@ public class PopupMenu extends Composite {
                      String itemIdPrefix) {
         this.actionManager = actionManager;
         this.managerProvider = managerProvider;
-        this.place = place;
         this.presentationFactory = presentationFactory;
         this.keyBindingAgent = keyBindingAgent;
         this.itemIdPrefix = itemIdPrefix;
-
         this.lockLayer = lockLayer;
         this.actionSelectedHandler = actionSelectedHandler;
 
         List<Utils.VisibleActionGroup> visibleActionGroupList =
-                Utils.renderActionGroup(actionGroup, presentationFactory, place, actionManager, managerProvider.get());
+                Utils.renderActionGroup(actionGroup, presentationFactory, actionManager, managerProvider.get());
 
         list = new ArrayList<>();
         for (Utils.VisibleActionGroup groupActions : visibleActionGroupList) {
@@ -258,8 +254,7 @@ public class PopupMenu extends Composite {
 
                 if (hasCheckedItems && menuItem instanceof ToggleAction) {
                     ToggleAction toggleAction = (ToggleAction)menuItem;
-                    ActionEvent e = new ActionEvent(place,
-                                                    presentationFactory.getPresentation(toggleAction),
+                    ActionEvent e = new ActionEvent(presentationFactory.getPresentation(toggleAction),
                                                     actionManager,
                                                     managerProvider.get());
                     if (toggleAction.isSelected(e)) {
@@ -299,7 +294,6 @@ public class PopupMenu extends Composite {
                                                          !Utils.hasVisibleChildren((ActionGroup)menuItem,
                                                                                    presentationFactory,
                                                                                    actionManager,
-                                                                                   place,
                                                                                    managerProvider.get()))) {
                     table.setWidget(i, work, new SVGImage(POPUP_RESOURCES.subMenu()));
                     table.getCellFormatter().setStyleName(i, work,
@@ -338,7 +332,7 @@ public class PopupMenu extends Composite {
             Action action = list.get(i);
             if (action instanceof ToggleAction) {
 
-                ActionEvent e = new ActionEvent(place, presentationFactory.getPresentation(action), actionManager, managerProvider.get());
+                ActionEvent e = new ActionEvent(presentationFactory.getPresentation(action), actionManager, managerProvider.get());
                 if (((ToggleAction)action).isSelected(e)) {
                     return true;
                 }
@@ -395,7 +389,6 @@ public class PopupMenu extends Composite {
                                                  !Utils.hasVisibleChildren((ActionGroup)menuItem,
                                                                            presentationFactory,
                                                                            actionManager,
-                                                                           place,
                                                                            managerProvider.get()))) {
             openSubPopupTimer.schedule(300);
         } else {
@@ -420,14 +413,13 @@ public class PopupMenu extends Composite {
                                                 Utils.hasVisibleChildren((ActionGroup)menuItem,
                                                                          presentationFactory,
                                                                          actionManager,
-                                                                         place,
                                                                          managerProvider.get()))) {
             openSubPopup(tr);
         } else {
             if (actionSelectedHandler != null) {
                 actionSelectedHandler.onActionSelected(menuItem);
             }
-            ActionEvent e = new ActionEvent(place, presentationFactory.getPresentation(menuItem), actionManager, managerProvider.get());
+            ActionEvent e = new ActionEvent(presentationFactory.getPresentation(menuItem), actionManager, managerProvider.get());
             menuItem.actionPerformed(e);
         }
     }
@@ -465,7 +457,6 @@ public class PopupMenu extends Composite {
         openedSubPopup = new PopupMenu((ActionGroup)menuItem,
                                        actionManager,
                                        managerProvider,
-                                       place,
                                        presentationFactory,
                                        lockLayer,
                                        actionSelectedHandler,

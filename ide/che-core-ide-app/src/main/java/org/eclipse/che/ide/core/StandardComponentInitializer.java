@@ -23,21 +23,20 @@ import org.eclipse.che.ide.actions.CreateModuleAction;
 import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
 import org.eclipse.che.ide.actions.DownloadItemAction;
-import org.eclipse.che.ide.actions.DownloadProjectAsZipAction;
+import org.eclipse.che.ide.actions.DownloadAsZipAction;
 import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.ExpandNodeAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
-import org.eclipse.che.ide.actions.FullTextSearchAction;
 import org.eclipse.che.ide.actions.GoIntoAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
-import org.eclipse.che.ide.actions.ImportProjectFromLocationAction;
+import org.eclipse.che.ide.actions.ImportProjectAction;
 import org.eclipse.che.ide.actions.LoaderAction;
 import org.eclipse.che.ide.actions.HotKeysListAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
-import org.eclipse.che.ide.actions.NewProjectAction;
+import org.eclipse.che.ide.actions.CreateProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
@@ -53,8 +52,10 @@ import org.eclipse.che.ide.actions.SwitchLeftTabAction;
 import org.eclipse.che.ide.actions.SwitchRightTabAction;
 import org.eclipse.che.ide.actions.UndoAction;
 import org.eclipse.che.ide.actions.UploadFileAction;
-import org.eclipse.che.ide.actions.UploadFolderFromZipAction;
+import org.eclipse.che.ide.actions.UploadFolderAction;
 import org.eclipse.che.ide.actions.find.FindActionAction;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
+import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
@@ -86,12 +87,13 @@ import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
 import static org.eclipse.che.ide.api.constraints.Constraints.FIRST;
 import static org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar.BLANK_CATEGORY;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Initializer for standard components i.e. some basic menu commands (Save, Save As etc)
  *
  * @author Evgen Vidolob
  * @author Dmitry Shnurenko
- * @author Vlad Zhukovskyi
  */
 @Singleton
 public class StandardComponentInitializer {
@@ -210,28 +212,25 @@ public class StandardComponentInitializer {
     private UploadFileAction uploadFileAction;
 
     @Inject
-    private UploadFolderFromZipAction uploadFolderFromZipAction;
+    private UploadFolderAction uploadFolderAction;
 
     @Inject
-    private DownloadProjectAsZipAction downloadProjectAsZipAction;
+    private DownloadAsZipAction downloadAsZipAction;
 
     @Inject
     private DownloadItemAction downloadItemAction;
 
     @Inject
-    private ImportProjectFromLocationAction importProjectFromLocationAction;
+    private ImportProjectAction importProjectAction;
 
     @Inject
     private ImportLocalProjectAction importLocalProjectAction;
 
     @Inject
-    private NewProjectAction newProjectAction;
+    private CreateProjectAction createProjectAction;
 
     @Inject
     private CreateModuleAction createModuleAction;
-
-    @Inject
-    private FullTextSearchAction fullTextSearchAction;
 
     @Inject
     private NewFolderAction newFolderAction;
@@ -265,9 +264,6 @@ public class StandardComponentInitializer {
 
     @Inject
     private HotKeysListAction hotKeysListAction;
-
-    @Inject
-    private OpenRecentFilesAction openRecentFilesAction;
 
     @Inject
     @Named("XMLFileType")
@@ -359,42 +355,178 @@ public class StandardComponentInitializer {
         fileTypeRegistry.registerFileType(jpgFile);
         editorRegistry.registerDefaultEditor(jpgFile, imageViewerProvider);
 
-        // Compose Import Project group
-        DefaultActionGroup importProjectGroup = new DefaultActionGroup("Import Project", true, actionManager);
-        importProjectGroup.getTemplatePresentation().setSVGIcon(resources.importProjectGroup());
-        actionManager.registerAction(IdeActions.GROUP_IMPORT_PROJECT, importProjectGroup);
-        actionManager.registerAction("importProjectFromLocation", importProjectFromLocationAction);
-        actionManager.registerAction("importLocalProjectAction", importLocalProjectAction);
-        importProjectGroup.addAction(importProjectFromLocationAction);
-        importProjectGroup.addAction(importLocalProjectAction);
+        // Workspace (New Menu)
+        DefaultActionGroup workspaceGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_WORKSPACE);
 
-        // Compose New group
+        actionManager.registerAction("importProject", importProjectAction);
+        workspaceGroup.add(importProjectAction);
+
+        actionManager.registerAction("createProject", createProjectAction);
+        workspaceGroup.add(createProjectAction);
+
+        actionManager.registerAction("downloadAsZipAction", downloadAsZipAction);
+        workspaceGroup.add(downloadAsZipAction);
+
+        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
+        workspaceGroup.add(showHiddenFilesAction);
+
+        workspaceGroup.addSeparator();
+
+        workspaceGroup.add(new AbstractPerspectiveAction(null, "Export...", null, null, null) {
+            @Override
+            public void updateInPerspective(@NotNull ActionEvent event) {
+                event.getPresentation().setVisible(true);
+                event.getPresentation().setEnabled(false);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        workspaceGroup.add(new AbstractPerspectiveAction(null, "Import...", null, null, null) {
+            @Override
+            public void updateInPerspective(@NotNull ActionEvent event) {
+                event.getPresentation().setVisible(true);
+                event.getPresentation().setEnabled(false);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        workspaceGroup.add(new AbstractPerspectiveAction(null, "Create Factory...", null, null, null) {
+            @Override
+            public void updateInPerspective(@NotNull ActionEvent event) {
+                event.getPresentation().setVisible(true);
+                event.getPresentation().setEnabled(false);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        workspaceGroup.add(new AbstractPerspectiveAction(null, "Clone...", null, null, null) {
+            @Override
+            public void updateInPerspective(@NotNull ActionEvent event) {
+                event.getPresentation().setVisible(true);
+                event.getPresentation().setEnabled(false);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        workspaceGroup.add(new AbstractPerspectiveAction(null, "Stop...", null, null, null) {
+            @Override
+            public void updateInPerspective(@NotNull ActionEvent event) {
+                event.getPresentation().setVisible(true);
+                event.getPresentation().setEnabled(false);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        // Project (New Menu)
+        DefaultActionGroup projectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT);
+
         DefaultActionGroup newGroup = new DefaultActionGroup("New", true, actionManager);
         newGroup.getTemplatePresentation().setDescription("Create...");
         newGroup.getTemplatePresentation().setSVGIcon(resources.newResource());
         actionManager.registerAction(GROUP_FILE_NEW, newGroup);
-        actionManager.registerAction("newProject", newProjectAction);
+        projectGroup.add(newGroup);
+
+        newGroup.addSeparator();
+
         actionManager.registerAction("newFile", newFileAction);
+        newGroup.addAction(newFileAction);
+
         actionManager.registerAction("newFolder", newFolderAction);
+        newGroup.addAction(newFolderAction);
+
+        newGroup.addSeparator();
+
         actionManager.registerAction("newXmlFile", newXmlFileAction);
         newXmlFileAction.getTemplatePresentation().setSVGIcon(xmlFile.getSVGImage());
-
-        newGroup.addAction(newProjectAction);
-        newGroup.addSeparator();
-        newGroup.addAction(newFileAction);
-        newGroup.addAction(newFolderAction);
-        newGroup.addSeparator();
         newGroup.addAction(newXmlFileAction);
 
+        actionManager.registerAction("createModuleAction", createModuleAction);
+        projectGroup.addAction(createModuleAction);
+
         actionManager.registerAction("uploadFile", uploadFileAction);
-        actionManager.registerAction("uploadFolderFromZip", uploadFolderFromZipAction);
-        actionManager.registerAction("downloadProjectAsZipAction", downloadProjectAsZipAction);
+        projectGroup.add(uploadFileAction);
+
+        actionManager.registerAction("uploadFolder", uploadFolderAction);
+        projectGroup.add(uploadFolderAction);
+
+        projectGroup.add(downloadAsZipAction);
+
+        projectGroup.addSeparator();
+
+        actionManager.registerAction("projectConfiguration", projectConfigurationAction);
+        projectGroup.add(projectConfigurationAction);
+
+        // Edit (New Menu)
+        DefaultActionGroup editGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_EDIT);
+
+        actionManager.registerAction("format", formatterAction);
+        editGroup.add(formatterAction);
+
+        actionManager.registerAction("undo", undoAction);
+        editGroup.add(undoAction);
+
+        actionManager.registerAction("redo", redoAction);
+        editGroup.add(redoAction);
+
+        actionManager.registerAction("cut", cutAction);
+        editGroup.add(cutAction);
+
+        actionManager.registerAction("copy", copyAction);
+        editGroup.add(copyAction);
+
+        actionManager.registerAction("paste", pasteAction);
+        editGroup.add(pasteAction);
+
+        actionManager.registerAction("renameResource", renameItemAction);
+        editGroup.add(renameItemAction);
+
+        actionManager.registerAction("deleteItem", deleteItemAction);
+        editGroup.add(deleteItemAction);
+
+        // Assistant (New Menu)
+        DefaultActionGroup assistantGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_ASSISTANT);
+
+        actionManager.registerAction("findActionAction", findActionAction);
+        assistantGroup.add(findActionAction);
+
+        assistantGroup.add(new AbstractPerspectiveAction(null, "Find Text", null, null, null) {
+            @Override
+            public void updateInPerspective(@NotNull ActionEvent event) {
+                event.getPresentation().setVisible(true);
+                event.getPresentation().setEnabled(false);
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        actionManager.registerAction("hotKeysList", hotKeysListAction);
+        assistantGroup.add(hotKeysListAction);
+
+        assistantGroup.addSeparator();
+
+        actionManager.registerAction("callCompletion", completeAction);
+        assistantGroup.add(completeAction);
+
+        actionManager.registerAction("importLocalProjectAction", importLocalProjectAction);
         actionManager.registerAction("downloadItemAction", downloadItemAction);
         actionManager.registerAction("navigateToFile", navigateToFileAction);
-        actionManager.registerAction("fullTextSearch", fullTextSearchAction);
-        actionManager.registerAction("projectConfiguration", projectConfigurationAction);
-        actionManager.registerAction("createModuleAction", createModuleAction);
-        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
 
         // Compose Save group
         DefaultActionGroup saveGroup = new DefaultActionGroup(actionManager);
@@ -405,61 +537,15 @@ public class StandardComponentInitializer {
         saveGroup.add(saveAction);
         saveGroup.add(saveAllAction);
 
-        actionManager.registerAction("openRecentFiles", openRecentFilesAction);
-
-        DefaultActionGroup editGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_EDIT);
-        editGroup.add(openRecentFilesAction);
-
-        // Compose File menu
-        DefaultActionGroup fileGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_FILE);
-        fileGroup.add(importProjectGroup);
-        fileGroup.add(newGroup);
-        fileGroup.add(projectConfigurationAction);
-        fileGroup.addAction(createModuleAction);
-        fileGroup.add(uploadFileAction);
-        fileGroup.add(uploadFolderFromZipAction);
-        fileGroup.add(downloadProjectAsZipAction);
-        fileGroup.add(navigateToFileAction);
-        fileGroup.add(fullTextSearchAction);
-        fileGroup.add(showHiddenFilesAction);
-
-        fileGroup.add(cutAction);
-        fileGroup.add(copyAction);
-        fileGroup.add(pasteAction);
-
-        fileGroup.add(renameItemAction);
-        fileGroup.add(deleteItemAction);
-        fileGroup.addSeparator();
-        fileGroup.add(collapseAllAction);
-        fileGroup.addSeparator();
-        fileGroup.add(saveGroup);
-
-        // Compose Code menu
-        DefaultActionGroup codeGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_CODE);
-        actionManager.registerAction("format", formatterAction);
-        actionManager.registerAction("undo", undoAction);
-        actionManager.registerAction("redo", redoAction);
-        actionManager.registerAction("callCompletion", completeAction);
-        codeGroup.add(formatterAction);
-        codeGroup.add(undoAction);
-        codeGroup.add(redoAction);
-        codeGroup.add(completeAction);
-
-        // Compose Window menu
-        DefaultActionGroup windowGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_WINDOW);
-        actionManager.registerAction("showPreferences", showPreferencesAction);
-        actionManager.registerAction("setupProjectAction", settingsAction);
-        windowGroup.add(showPreferencesAction);
-        windowGroup.add(settingsAction);
-
         // Compose Help menu
-        DefaultActionGroup helpGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_HELP);
-        actionManager.registerAction("findActionAction", findActionAction);
-        actionManager.registerAction("hotKeysList", hotKeysListAction);
-
-        helpGroup.add(findActionAction);
-        helpGroup.add(hotKeysListAction);
+        DefaultActionGroup helpGroup = (DefaultActionGroup) actionManager.getAction(IdeActions.GROUP_HELP);
         helpGroup.addSeparator();
+
+        actionManager.registerAction("showPreferences", showPreferencesAction);
+        helpGroup.add(showPreferencesAction);
+
+        actionManager.registerAction("setupProjectAction", settingsAction);
+        helpGroup.add(settingsAction);
 
         // Compose main context menu
         DefaultActionGroup resourceOperation = new DefaultActionGroup(actionManager);
@@ -471,7 +557,6 @@ public class StandardComponentInitializer {
         resourceOperation.add(cutAction);
         resourceOperation.add(copyAction);
         resourceOperation.add(pasteAction);
-
         resourceOperation.add(renameItemAction);
         resourceOperation.add(deleteItemAction);
         resourceOperation.addSeparator();
@@ -492,13 +577,6 @@ public class StandardComponentInitializer {
         DefaultActionGroup changeResourceGroup = new DefaultActionGroup(actionManager);
         actionManager.registerAction("changeResourceGroup", changeResourceGroup);
         actionManager.registerAction("openSelectedFile", openSelectedFileAction);
-
-        actionManager.registerAction("cut", cutAction);
-        actionManager.registerAction("copy", copyAction);
-        actionManager.registerAction("paste", pasteAction);
-
-        actionManager.registerAction("renameResource", renameItemAction);
-        actionManager.registerAction("deleteItem", deleteItemAction);
 
         actionManager.registerAction("collapseAll", collapseAllAction);
         actionManager.registerAction("expandAll", expandAllAction);

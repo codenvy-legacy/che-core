@@ -531,7 +531,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
         final Presentation presentation = new PresentationFactory().getPresentation(deleteItemAction);
         final PerspectiveManager manager = managerProvider.get();
-        final ActionEvent event = new ActionEvent("", presentation, actionManager, manager);
+        final ActionEvent event = new ActionEvent(presentation, actionManager, manager);
 
 
         if (deleteItemAction instanceof PromisableAction) {

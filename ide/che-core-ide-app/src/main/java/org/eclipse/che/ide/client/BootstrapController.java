@@ -164,6 +164,7 @@ public class BootstrapController {
                 eventBus.fireEvent(WindowActionEvent.createWindowClosingEvent(event));
             }
         });
+
         Window.addCloseHandler(new CloseHandler<Window>() {
             @Override
             public void onClose(CloseEvent<Window> event) {

@@ -60,7 +60,7 @@ public class UploadFolderFromZipViewImpl extends Window implements UploadFolderF
                                        CoreLocalizationConstant locale,
                                        org.eclipse.che.ide.Resources resources) {
         this.constant = locale;
-        this.setTitle(locale.uploadFileTitle());
+        this.setTitle(locale.uploadZipFolderTitle());
         setWidget(uploadFileViewBinder.createAndBindUi(this));
         bind();
 

@@ -10,14 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.util.ListenerManager;
-import org.eclipse.che.ide.util.UIUtil;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,32 +27,35 @@ import java.util.Map;
  * @author Vlad Zhukovskyi
  */
 public final class Presentation {
-    private Map<String, Object> userMap;
+
+    private Map<String, Object> userMap = new HashMap<>();
+
     /**
      * Defines tool tip for button at tool bar or text for element at menu
      * value: String
      */
     public static final String PROP_TEXT        = "text";
+
     /** value: String */
     public static final String PROP_DESCRIPTION = "description";
+
     /** value: Icon */
     public static final String PROP_ICON        = "icon";
+
     /** value: Boolean */
     public static final String PROP_VISIBLE     = "visible";
+
     /** The actual value is a Boolean. */
     public static final String PROP_ENABLED     = "enabled";
-    public static final int    DEFAULT_WEIGHT   = 0;
-    public static final int    HIGHER_WEIGHT    = 42;
+
     private ListenerManager<PropertyChangeListener> myChangeSupport;
-    private String                                  myText;
+    private String                                  text;
     private String                                  myDescription;
     private ImageResource                           myIcon;
     private SVGResource                             mySVGIcon;
-    private int                                     myMnemonic;
-    private int myDisplayedMnemonicIndex = -1;
+
     private boolean myVisible;
     private boolean myEnabled;
-    private int myWeight = DEFAULT_WEIGHT;
 
     public Presentation() {
         myChangeSupport = ListenerManager.create();
@@ -63,19 +65,7 @@ public final class Presentation {
 
     public Presentation(final String text) {
         this();
-        myText = text;
-    }
-
-    public static String restoreTextWithMnemonic(String text, final int mnemonic) {
-        if (text == null) {
-            return null;
-        }
-        for (int i = 0; i < text.length(); i++) {
-            if (Character.toUpperCase(text.charAt(i)) == mnemonic) {
-                return text.substring(0, i) + "_" + text.substring(i);
-            }
-        }
-        return text;
+        this.text = text;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -87,66 +77,13 @@ public final class Presentation {
     }
 
     public String getText() {
-        return myText;
+        return text;
     }
 
     public void setText(String text) {
-        setText(text, true);
-    }
-
-    public void setText(String text, boolean mayContainMnemonic) {
-        int oldMnemonic = myMnemonic;
-        int oldDisplayedMnemonicIndex = myDisplayedMnemonicIndex;
-        String oldText = myText;
-        myMnemonic = 0;
-        myDisplayedMnemonicIndex = -1;
-
-        if (text != null) {
-            if (text.indexOf(UIUtil.MNEMONIC) >= 0) {
-                text = text.replace(UIUtil.MNEMONIC, '&');
-            }
-
-            if (mayContainMnemonic) {
-                StringBuilder plainText = new StringBuilder();
-                for (int i = 0; i < text.length(); i++) {
-                    char ch = text.charAt(i);
-                    if (myMnemonic == 0 && (ch == '_' || ch == '&')) {
-                        //noinspection AssignmentToForLoopParameter
-                        i++;
-                        if (i >= text.length()) break;
-                        ch = text.charAt(i);
-                        if (ch != '_' && ch != '&') {
-                            if (/*UISettings.getInstance().DISABLE_MNEMONICS_IN_CONTROLS*/ false) {
-                                myMnemonic = 0;
-                                myDisplayedMnemonicIndex = -1;
-                            } else {
-                                myMnemonic = Character.toUpperCase(ch);  // mnemonics are case insensitive
-                                myDisplayedMnemonicIndex = i - 1;
-                            }
-                        }
-                    }
-                    plainText.append(ch);
-                }
-                myText = plainText.length() == 0 ? "" : plainText.toString();
-            } else {
-                myText = text.isEmpty() ? "" : text;
-            }
-        } else {
-            myText = null;
-        }
-
-        firePropertyChange(PROP_TEXT, oldText, myText);
-    }
-
-    public String getTextWithMnemonic() {
-        if (myText != null && myDisplayedMnemonicIndex > -1) {
-            return myText.substring(0, myDisplayedMnemonicIndex) + "_" + myText.substring(myDisplayedMnemonicIndex);
-        }
-        return myText;
-    }
-
-    public void restoreTextWithMnemonic(Presentation presentation) {
-        setText(presentation.getTextWithMnemonic());
+        String oldText = this.text;
+        this.text = text;
+        firePropertyChange(PROP_TEXT, oldText, text);
     }
 
     public String getDescription() {
@@ -217,7 +154,7 @@ public final class Presentation {
         setVisible(enabled);
     }
 
-    void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+    public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         final PropertyChangeEvent event = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
         myChangeSupport.dispatch(new ListenerManager.Dispatcher<PropertyChangeListener>() {
             @Override
@@ -230,29 +167,14 @@ public final class Presentation {
     public Presentation clone() {
         Presentation presentation = new Presentation(getText());
         presentation.myDescription = myDescription;
-        presentation.myDisplayedMnemonicIndex = myDisplayedMnemonicIndex;
         presentation.myEnabled = myEnabled;
         presentation.myIcon = myIcon;
         presentation.mySVGIcon = mySVGIcon;
         presentation.myVisible = myVisible;
-        presentation.myWeight = myWeight;
         return presentation;
     }
 
-    public void copyFrom(Presentation presentation) {
-        setText(presentation.getTextWithMnemonic());
-        setDescription(presentation.getDescription());
-        setIcon(presentation.getIcon());
-        setSVGIcon(presentation.getSVGIcon());
-        setVisible(presentation.isVisible());
-        setEnabled(presentation.isEnabled());
-    }
-
     public void putClientProperty(@NotNull String key, @Nullable Object value) {
-        if (userMap == null) {
-            userMap = new HashMap<>();
-        }
-
         Object oldValue = userMap.get(key);
         userMap.put(key, value);
         firePropertyChange(key, oldValue, value);
@@ -266,29 +188,16 @@ public final class Presentation {
      * @return object, stored by property key
      */
     public Object getClientProperty(String key) {
-        if (userMap == null || key == null) {
+        if (key == null) {
             return null;
         }
 
         return userMap.get(key);
     }
 
-    public int getWeight() {
-        return myWeight;
-    }
-
-    /**
-     * Some action groups (like 'New...') may filter out actions with non-highest priority.
-     *
-     * @param weight
-     *         please use {@link #HIGHER_WEIGHT}
-     */
-    public void setWeight(int weight) {
-        myWeight = weight;
-    }
-
     @Override
     public String toString() {
-        return myText + " (" + myDescription + ")";
+        return text + " (" + myDescription + ")";
     }
+
 }

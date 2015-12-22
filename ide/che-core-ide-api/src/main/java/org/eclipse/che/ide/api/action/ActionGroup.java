@@ -11,31 +11,14 @@
 package org.eclipse.che.ide.api.action;
 
 
-import org.eclipse.che.ide.util.ListenerManager;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /** @author Evgen Vidolob */
 public abstract class ActionGroup extends Action {
-    private boolean myPopup;
-    private final       ListenerManager<PropertyChangeListener> myChangeSupport = ListenerManager.create();
-    public static final ActionGroup                             EMPTY_GROUP     = new ActionGroup() {
-        @Override
-        public Action[] getChildren(ActionEvent e) {
-            return new Action[0];
-        }
-    };
 
-    private Set<Action> mySecondaryActions;
-
-    /** The actual value is a Boolean. */
-    public static final String PROP_POPUP = "popup";
-
-    private Boolean myDumbAware;
+    private boolean popup;
 
     /**
      * Creates a new <code>ActionGroup</code> with shortName set to <code>null</code> and
@@ -85,7 +68,7 @@ public abstract class ActionGroup extends Action {
      * @return <code>true</code> if the group is a popup, <code>false</code> otherwise
      */
     public boolean isPopup() {
-        return myPopup;
+        return popup;
     }
 
     /**
@@ -95,62 +78,16 @@ public abstract class ActionGroup extends Action {
      *         If <code>true</code> the group will be shown as a popup in menus
      */
     public final void setPopup(boolean popup) {
-        boolean oldPopup = myPopup;
-        myPopup = popup;
-        firePropertyChange(PROP_POPUP, oldPopup ? Boolean.TRUE : Boolean.FALSE, myPopup ? Boolean.TRUE : Boolean.FALSE);
-    }
-
-    public final void addPropertyChangeListener(PropertyChangeListener l) {
-        myChangeSupport.add(l);
-    }
-
-    public final void removePropertyChangeListener(PropertyChangeListener l) {
-        myChangeSupport.remove(l);
-    }
-
-    protected final void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        final PropertyChangeEvent event = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
-        myChangeSupport.dispatch(new ListenerManager.Dispatcher<PropertyChangeListener>() {
-            @Override
-            public void dispatch(PropertyChangeListener listener) {
-                listener.onPropertyChange(event);
-            }
-        });
+        this.popup = popup;
     }
 
     /**
      * Returns the children of the group.
      *
-     * @return An array representing children of this group. All returned children must be not <code>null</code>.
+     * @return
+     *      An array representing children of this group. All returned children must be not <code>null</code>.
      */
     public abstract Action[] getChildren(ActionEvent e);
-
-    final void setAsPrimary(Action action, boolean isPrimary) {
-        if (isPrimary) {
-            if (mySecondaryActions != null) {
-                mySecondaryActions.remove(action);
-            }
-        } else {
-            if (mySecondaryActions == null) {
-                mySecondaryActions = new HashSet<>();
-            }
-
-            mySecondaryActions.add(action);
-        }
-    }
-
-    public final boolean isPrimary(Action action) {
-        return mySecondaryActions == null || !mySecondaryActions.contains(action);
-    }
-
-    protected final void replace(Action originalAction, Action newAction) {
-        if (mySecondaryActions != null) {
-            if (mySecondaryActions.contains(originalAction)) {
-                mySecondaryActions.remove(originalAction);
-                mySecondaryActions.add(newAction);
-            }
-        }
-    }
 
     public boolean hideIfNoVisibleChildren() {
         return false;
@@ -159,4 +96,5 @@ public abstract class ActionGroup extends Action {
     public boolean disableIfNoVisibleChildren() {
         return true;
     }
+
 }

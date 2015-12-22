@@ -185,8 +185,7 @@ public class AppStateManager implements WindowActionHandler,
                 continue;
             }
 
-            actionsToPerform.add(new Pair<>(action, new ActionEvent("",
-                                                                    presentationFactory.getPresentation(action),
+            actionsToPerform.add(new Pair<>(action, new ActionEvent(presentationFactory.getPresentation(action),
                                                                     actionManager,
                                                                     perspectiveManagerProvider.get(),
                                                                     actionDescriptor.getParameters())));

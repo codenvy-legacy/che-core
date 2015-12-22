@@ -25,7 +25,6 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.ActionPlaces;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.IdeActions;
@@ -56,7 +55,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
     private final MenuResources                resources;
     private final Provider<PerspectiveManager> managerProvider;
 
-    private final MenuItemPresentationFactory presentationFactory = new MenuItemPresentationFactory();
+    private final PresentationFactory presentationFactory = new PresentationFactory();
     /** Working table, cells of which are contains element of Menu. */
     private final MenuBarTable                table               = new MenuBarTable();
 
@@ -131,7 +130,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
         if (!newMenuVisibleActions.equals(menuVisibleActions)) {
             removeAll();
             for (final Action action : newMenuVisibleActions) {
-                add(ActionPlaces.MAIN_MENU, action, presentationFactory);
+                add(action, presentationFactory);
             }
             menuVisibleActions = newMenuVisibleActions;
         }
@@ -189,7 +188,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
         final Action[] children = mainActionGroup.getChildren(null);
         for (final Action action : children) {
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_MENU, presentation, actionManager, managerProvider.get());
+            final ActionEvent e = new ActionEvent(presentation, actionManager, managerProvider.get());
             action.update(e);
             if (presentation.isVisible()) { // add only visible items
                 newVisibleActions.add(action);
@@ -203,7 +202,7 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
     /**
      * Create and add new item in menu.
      */
-    private void add(String place, Action action, MenuItemPresentationFactory presentationFactory) {
+    private void add(Action action, PresentationFactory presentationFactory) {
         Presentation presentation = presentationFactory.getPresentation(action);
         if (action instanceof ActionGroup) {
             ActionGroup group = (ActionGroup)action;
@@ -213,7 +212,6 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
                                                actionManager,
                                                managerProvider,
                                                presentationFactory,
-                                               place,
                                                element,
                                                this,
                                                keyBindingAgent,
@@ -228,7 +226,6 @@ public class MainMenuViewImpl extends Composite implements MainMenuView, CloseMe
             Element element = table.getCellFormatter().getElement(0, menuBarItems.size());
             menuBarItems.put(element, null);
         }
-
     }
 
     /**

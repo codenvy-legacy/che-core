@@ -20,7 +20,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  * This Lock Layer for Popup Menu uses as root for for Popup Menus and uses for closing all visible popups when user clicked outside one of
  * them.
  *
- * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
+ * @author Vitaliy Guliy
  */
 
 public class MenuLockLayer extends AbsolutePanel {
@@ -67,21 +67,20 @@ public class MenuLockLayer extends AbsolutePanel {
         this.closeMenuCallback = closeMenuCallback;
         this.topOffset = topOffset;
 
+        getElement().setId("menu-lock-layer-id");
         RootPanel.get().add(this, 0, topOffset);
-        int width = Window.getClientWidth();
-        int height = Window.getClientHeight() - topOffset;
-        setWidth("" + width + "px");
-        setHeight("" + height + "px");
-        DOM.setElementAttribute(getElement(), "id", "menu-lock-layer-id");
-        DOM.setStyleAttribute(getElement(), "zIndex", "" + (Integer.MAX_VALUE - 5));
+        getElement().getStyle().setProperty("right", "0px");
+        getElement().getStyle().setProperty("bottom", "0px");
+        getElement().getStyle().setProperty("zIndex", (Integer.MAX_VALUE - 5) + "");
 
         AbsolutePanel blockMouseEventsPanel = new LockLayer();
         blockMouseEventsPanel.setStyleName("exo-lockLayer");
-        int lockWidth = Window.getClientWidth();
-        int lockHeight = Window.getClientHeight() - topOffset;
-        blockMouseEventsPanel.setWidth("" + lockWidth + "px");
-        blockMouseEventsPanel.setHeight("" + lockHeight + "px");
-        add(blockMouseEventsPanel, 0, 0);
+        blockMouseEventsPanel.getElement().getStyle().setProperty("position", "absolute");
+        blockMouseEventsPanel.getElement().getStyle().setProperty("left", "0px");
+        blockMouseEventsPanel.getElement().getStyle().setProperty("top", "0px");
+        blockMouseEventsPanel.getElement().getStyle().setProperty("right", "0px");
+        blockMouseEventsPanel.getElement().getStyle().setProperty("bottom", "0px");
+        add(blockMouseEventsPanel);
     }
 
     public void close() {

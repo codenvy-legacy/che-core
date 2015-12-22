@@ -18,7 +18,6 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.ActionPlaces;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.Presentation;
@@ -40,7 +39,6 @@ import static com.google.gwt.dom.client.Style.Unit.PX;
  * @author Dmitry Shnurenko
  */
 public class DropDownListMenu implements ActionSelectedHandler {
-    private static final String place = ActionPlaces.DROPDOWN_MENU;
 
     private final Resources                    resources;
     private final ActionManager                actionManager;
@@ -88,7 +86,6 @@ public class DropDownListMenu implements ActionSelectedHandler {
         popupMenu = new PopupMenu(actions,
                                   actionManager,
                                   managerProvider,
-                                  place,
                                   presentationFactory,
                                   lockLayer,
                                   this,
@@ -131,7 +128,7 @@ public class DropDownListMenu implements ActionSelectedHandler {
         Action[] children = mainActionGroup.getChildren(null);
         for (Action action : children) {
             Presentation presentation = presentationFactory.getPresentation(action);
-            ActionEvent e = new ActionEvent(ActionPlaces.DROPDOWN_MENU, presentation, actionManager, managerProvider.get());
+            ActionEvent e = new ActionEvent(presentation, actionManager, managerProvider.get());
 
             action.update(e);
             if (presentation.isVisible()) {

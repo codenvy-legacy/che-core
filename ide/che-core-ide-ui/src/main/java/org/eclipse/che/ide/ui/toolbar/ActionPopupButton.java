@@ -46,7 +46,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     private final Element                      tooltipBody;
     private final Element                      tooltipArrow;
     private final Presentation                 presentation;
-    private final String                       place;
 
     private ActionButtonSynchronizer           actionButtonSynchronizer;
     private KeyBindingAgent                    keyBindingAgent;
@@ -67,14 +66,12 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
                              ActionManager actionManager,
                              KeyBindingAgent keyBindingAgent,
                              final PresentationFactory presentationFactory,
-                             String place,
                              Provider<PerspectiveManager> managerProvider,
                              ToolbarResources toolbarResources) {
         this.action = action;
         this.actionManager = actionManager;
         this.keyBindingAgent = keyBindingAgent;
         this.presentationFactory = presentationFactory;
-        this.place = place;
         this.managerProvider = managerProvider;
         this.toolbarResources = toolbarResources;
 
@@ -110,7 +107,8 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
             tooltip.appendChild(tooltipBody);
             panel.getElement().appendChild(tooltip);
         }
-        this.ensureDebugId(place + "/" + action.getTemplatePresentation().getText());
+
+        this.ensureDebugId("PopupButton/" + action.getTemplatePresentation().getText());
     }
 
     /** {@inheritDoc} */
@@ -209,7 +207,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         popupMenu = new PopupMenu(action,
                                   actionManager,
                                   managerProvider,
-                                  place,
                                   presentationFactory,
                                   lockLayer,
                                   this,

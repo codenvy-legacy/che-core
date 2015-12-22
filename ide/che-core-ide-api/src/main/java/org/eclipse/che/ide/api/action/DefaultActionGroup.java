@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * A default implementation of {@link ActionGroup}. Provides the ability
  * to add children actions and separators between them. In most of the
@@ -45,7 +44,6 @@ public class DefaultActionGroup extends ActionGroup {
     private Action[] sortedActions;
 
     private ActionManager actionManager;
-
 
     //TODO: think about removing this field
     private boolean needSorting = false;
@@ -101,8 +99,8 @@ public class DefaultActionGroup extends ActionGroup {
         addAction(action, new Constraints(Anchor.LAST, null));
     }
 
-    public final ActionInGroup addAction(Action action) {
-        return addAction(action, new Constraints(Anchor.LAST, null));
+    public final void addAction(Action action) {
+        addAction(action, new Constraints(Anchor.LAST, null));
     }
 
     /** Adds a separator to the tail. */
@@ -114,8 +112,8 @@ public class DefaultActionGroup extends ActionGroup {
         add(action, constraint, actionManager);
     }
 
-    public final ActionInGroup addAction(Action action, Constraints constraint) {
-        return addAction(action, constraint, actionManager);
+    public final void addAction(Action action, Constraints constraint) {
+        addAction(action, constraint, actionManager);
     }
 
     /**
@@ -135,7 +133,7 @@ public class DefaultActionGroup extends ActionGroup {
         addAction(action, constraint, actionManager);
     }
 
-    public final ActionInGroup addAction(Action action, Constraints constraint, ActionManager actionManager) {
+    public final void addAction(Action action, Constraints constraint, ActionManager actionManager) {
         if (action == this) {
             throw new IllegalArgumentException("Cannot add a group to itself");
         }
@@ -151,7 +149,6 @@ public class DefaultActionGroup extends ActionGroup {
         constraintsList.add(constraint);
 
         needSorting = true;
-        return new ActionInGroup(this, action);
     }
 
     /**

@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 
 import org.eclipse.che.ide.api.action.ActionGroup;
-import org.eclipse.che.ide.api.action.ActionPlaces;
 import org.eclipse.che.ide.api.mvp.Presenter;
 
 
@@ -37,7 +36,6 @@ public class ToolbarPresenter implements Presenter, ToolbarView.ActionDelegate {
     public ToolbarPresenter(ToolbarView view) {
         this.view = view;
         this.view.setDelegate(this);
-        this.view.setPlace(ActionPlaces.MAIN_TOOLBAR);
     }
 
     public void bindMainGroup(ActionGroup group) {

@@ -20,7 +20,6 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.ActionPlaces;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
@@ -44,8 +43,6 @@ import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 @Singleton
 public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
 
-    private static final String place = ActionPlaces.MAIN_CONTEXT_MENU;
-
     private final ActionManager                actionManager;
     private final KeyBindingAgent              keyBindingAgent;
     private final DefaultActionGroup           actions;
@@ -54,7 +51,7 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
     private PopupMenu     popupMenu;
     private MenuLockLayer lockLayer;
 
-    protected final PresentationFactory presentationFactory;
+    protected final PresentationFactory          presentationFactory;
 
     @Inject
     public ContextMenu(ActionManager actionManager, KeyBindingAgent keyBindingAgent, Provider<PerspectiveManager> managerProvider) {
@@ -99,7 +96,6 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
         popupMenu = new PopupMenu(actions,
                                   actionManager,
                                   managerProvider,
-                                  place,
                                   presentationFactory,
                                   lockLayer,
                                   this,
@@ -125,7 +121,7 @@ public class ContextMenu implements CloseMenuHandler, ActionSelectedHandler {
         final Action[] children = mainActionGroup.getChildren(null);
         for (final Action action : children) {
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_CONTEXT_MENU, presentation, actionManager, managerProvider.get());
+            final ActionEvent e = new ActionEvent(presentation, actionManager, managerProvider.get());
 
             action.update(e);
             if (presentation.isVisible()) {

@@ -18,6 +18,7 @@ import java.util.HashMap;
 
 /** @author Evgen Vidolob */
 public class PresentationFactory {
+
     private final HashMap<Action, Presentation> myAction2Presentation;
 
     public PresentationFactory() {
@@ -28,16 +29,9 @@ public class PresentationFactory {
         Presentation presentation = myAction2Presentation.get(action);
         if (presentation == null) {
             presentation = action.getTemplatePresentation().clone();
-            myAction2Presentation.put(action, processPresentation(presentation));
+            myAction2Presentation.put(action, presentation);
         }
         return presentation;
     }
 
-    protected Presentation processPresentation(Presentation presentation) {
-        return presentation;
-    }
-
-    public void reset() {
-        myAction2Presentation.clear();
-    }
 }

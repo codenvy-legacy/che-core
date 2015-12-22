@@ -34,8 +34,6 @@ import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
-import java.util.List;
-
 /**
  * Implementation of the {@link KeyBindingAgent}.
  *
@@ -110,7 +108,7 @@ public class KeyBindingManager implements KeyBindingAgent {
             if (action == null) {
                 continue;
             }
-            ActionEvent e = new ActionEvent("", presentationFactory.getPresentation(action), actionManager, perspectiveManager.get());
+            ActionEvent e = new ActionEvent(presentationFactory.getPresentation(action), actionManager, perspectiveManager.get());
             action.update(e);
 
             if (e.getPresentation().isEnabled() && e.getPresentation().isVisible()) {

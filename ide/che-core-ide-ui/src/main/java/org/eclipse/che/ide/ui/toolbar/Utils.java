@@ -39,8 +39,6 @@ public class Utils {
      *         action group
      * @param presentationFactory
      *         presentation factory
-     * @param place
-     *         position name on the page
      * @param actionManager
      *         action manager
      * @param perspectiveManager
@@ -49,11 +47,10 @@ public class Utils {
      */
     public static List<VisibleActionGroup> renderActionGroup(@NotNull ActionGroup group,
                                                              PresentationFactory presentationFactory,
-                                                             @NotNull String place,
                                                              ActionManager actionManager,
                                                              PerspectiveManager perspectiveManager) {
         Presentation presentation = presentationFactory.getPresentation(group);
-        ActionEvent event = new ActionEvent(place, presentation, actionManager, perspectiveManager);
+        ActionEvent event = new ActionEvent(presentation, actionManager, perspectiveManager);
 
         if (!presentation.isVisible()) { // don't process invisible groups
             return null;
@@ -70,7 +67,7 @@ public class Utils {
             }
 
             presentation = presentationFactory.getPresentation(child);
-            child.update(new ActionEvent(place, presentation, actionManager, perspectiveManager));
+            child.update(new ActionEvent(presentation, actionManager, perspectiveManager));
 
             if (!presentation.isVisible()) { // don't create invisible items in the menu
                 continue;
@@ -83,7 +80,6 @@ public class Utils {
                         final boolean visibleChildren = hasVisibleChildren(actionGroup,
                                                                            presentationFactory,
                                                                            actionManager,
-                                                                           place,
                                                                            perspectiveManager);
                         if (actionGroup.hideIfNoVisibleChildren() && !visibleChildren) {
                             continue;
@@ -94,7 +90,6 @@ public class Utils {
                 } else {
                     List<VisibleActionGroup> newVisibleActionGroupList = renderActionGroup((ActionGroup)child,
                                                                                            presentationFactory,
-                                                                                           place,
                                                                                            actionManager,
                                                                                            perspectiveManager);
                     currentVisibleActionGroupList.addAll(newVisibleActionGroupList);
@@ -122,8 +117,6 @@ public class Utils {
      *         presentation factory
      * @param actionManager
      *         action manager
-     * @param place
-     *         position name on the page
      * @param perspectiveManager
      *         perspective manager
      * @return boolean
@@ -131,9 +124,8 @@ public class Utils {
     public static boolean hasVisibleChildren(ActionGroup group,
                                              PresentationFactory factory,
                                              ActionManager actionManager,
-                                             String place,
                                              PerspectiveManager perspectiveManager) {
-        ActionEvent event = new ActionEvent(place, factory.getPresentation(group), actionManager, perspectiveManager);
+        ActionEvent event = new ActionEvent(factory.getPresentation(group), actionManager, perspectiveManager);
         for (Action anAction : group.getChildren(event)) {
             if (anAction == null) {
                 Log.error(Utils.class, "Null action found in group " + group + ", " + factory.getPresentation(group));
@@ -144,7 +136,7 @@ public class Utils {
             }
 
             final Presentation presentation = factory.getPresentation(anAction);
-            anAction.update(new ActionEvent(place, presentation, actionManager, perspectiveManager));
+            anAction.update(new ActionEvent(presentation, actionManager, perspectiveManager));
             if (anAction instanceof ActionGroup) {
                 ActionGroup childGroup = (ActionGroup)anAction;
 
@@ -155,7 +147,7 @@ public class Utils {
                     }
                 }
 
-                if (hasVisibleChildren(childGroup, factory, actionManager, place, perspectiveManager)) {
+                if (hasVisibleChildren(childGroup, factory, actionManager, perspectiveManager)) {
                     return true;
                 }
             } else if (presentation.isVisible()) {
@@ -172,14 +164,6 @@ public class Utils {
         private List<Action> actionList;
 
         /**
-         * Creates a new <code>VisibleActionGroup</code> with groupId set to <code>null</code> and
-         * actionList set to <code>null</code>.
-         */
-        VisibleActionGroup() {
-            this(null, null);
-        }
-
-        /**
          * Creates a new <code>VisibleActionGroup</code> with the specified groupId
          * and actionList.
          *
@@ -188,7 +172,7 @@ public class Utils {
          * @param actionList
          *         List of actions
          */
-        VisibleActionGroup(String groupId, List<Action> actionList) {
+        public VisibleActionGroup(String groupId, List<Action> actionList) {
             this.groupId = groupId;
             this.actionList = actionList;
         }
@@ -197,16 +181,8 @@ public class Utils {
             return groupId;
         }
 
-        public void setGroupId(String groupId) {
-            this.groupId = groupId;
-        }
-
         public List<Action> getActionList() {
             return actionList;
-        }
-
-        public void setActionList(List<Action> actionList) {
-            this.actionList = actionList;
         }
 
         @Override
@@ -230,4 +206,5 @@ public class Utils {
             return Objects.hash(groupId, actionList);
         }
     }
+
 }

@@ -20,8 +20,8 @@ import org.eclipse.che.commons.annotation.Nullable;
  * An action which has a selected state, and which toggles its selected state when performed.
  * Can be used to represent a menu item with a checkbox, or a toolbar button which keeps its pressed state.
  *
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
+ * @author Vitaliy Guliy
  */
 public abstract class ToggleAction extends Action implements Toggleable {
     public ToggleAction(@Nullable final String text) {
@@ -40,11 +40,10 @@ public abstract class ToggleAction extends Action implements Toggleable {
 
     @Override
     public final void actionPerformed(final ActionEvent e) {
-        final boolean state = !isSelected(e);
-        setSelected(e, state);
-        final Boolean selected = state ? Boolean.TRUE : Boolean.FALSE;
-        final Presentation presentation = e.getPresentation();
-        presentation.putClientProperty(SELECTED_PROPERTY, selected);
+        boolean selected = !isSelected(e);
+        setSelected(e, selected);
+
+        e.getPresentation().firePropertyChange(SELECTED_PROPERTY, Boolean.valueOf(!selected), Boolean.valueOf(selected));
     }
 
     /**
@@ -66,10 +65,4 @@ public abstract class ToggleAction extends Action implements Toggleable {
      */
     public abstract void setSelected(ActionEvent e, boolean state);
 
-    @Override
-    public void update(final ActionEvent e) {
-        final Boolean selected = isSelected(e) ? Boolean.TRUE : Boolean.FALSE;
-        final Presentation presentation = e.getPresentation();
-        presentation.putClientProperty(SELECTED_PROPERTY, selected);
-    }
 }

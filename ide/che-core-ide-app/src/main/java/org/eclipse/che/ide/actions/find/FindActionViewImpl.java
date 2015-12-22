@@ -84,7 +84,7 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
                     TableCellElement group = Elements.createTDElement(css.proposalGroup());
 
                     Presentation presentation = presentationFactory.getPresentation(itemData);
-                    itemData.update(new ActionEvent("find_action", presentation, actionManager, perspectiveManager.get()));
+                    itemData.update(new ActionEvent(presentation, actionManager, perspectiveManager.get()));
                     if (presentation.getIcon() != null) {
                         Image image = new Image(presentation.getIcon());
                         icon.appendChild((Node)image.getElement());

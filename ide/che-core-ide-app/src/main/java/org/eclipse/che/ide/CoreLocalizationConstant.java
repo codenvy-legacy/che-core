@@ -172,6 +172,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("uploadFile.overwrite")
     String uploadFileOverwrite();
 
+    @Key("uploadZipFolder.title")
+    String uploadZipFolderTitle();
+
     @Key("uploadFolderFromZip.name")
     String uploadFolderFromZipName();
 

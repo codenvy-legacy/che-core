@@ -45,7 +45,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     private FlowPanel centerToolbar;
     private FlowPanel rightToolbar;
 
-    private String          place;
     private ActionGroup     leftActionGroup;
     private ActionGroup     centerActionGroup;
     private ActionGroup     rightActionGroup;
@@ -116,11 +115,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     }
 
     @Override
-    public void setPlace(@NotNull String place) {
-        this.place = place;
-    }
-
-    @Override
     public void setLeftActionGroup(@NotNull ActionGroup leftActionGroup) {
         this.leftActionGroup = leftActionGroup;
     }
@@ -141,7 +135,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
     private void updateActions() {
         if (leftActionGroup != null) {
             List<Utils.VisibleActionGroup> newLeftVisibleGroupActions =
-                    Utils.renderActionGroup(leftActionGroup, presentationFactory, place, actionManager, managerProvider.get());
+                    Utils.renderActionGroup(leftActionGroup, presentationFactory, actionManager, managerProvider.get());
             if (newLeftVisibleGroupActions != null && !leftVisibleGroupActions.equals(newLeftVisibleGroupActions)) {
                 leftVisibleGroupActions = newLeftVisibleGroupActions;
                 leftToolbar.clear();
@@ -150,7 +144,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
         }
         if (centerActionGroup != null) {
             List<Utils.VisibleActionGroup> newCenterVisibleGroupActions =
-                    Utils.renderActionGroup(centerActionGroup, presentationFactory, place, actionManager, managerProvider.get());
+                    Utils.renderActionGroup(centerActionGroup, presentationFactory, actionManager, managerProvider.get());
             if (newCenterVisibleGroupActions != null && !centerVisibleGroupActions.equals(newCenterVisibleGroupActions)) {
                 centerVisibleGroupActions = newCenterVisibleGroupActions;
                 centerToolbar.clear();
@@ -159,7 +153,7 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
         }
         if (rightActionGroup != null) {
             List<Utils.VisibleActionGroup> newRightVisibleGroupActions =
-                    Utils.renderActionGroup(rightActionGroup, presentationFactory, place, actionManager, managerProvider.get());
+                    Utils.renderActionGroup(rightActionGroup, presentationFactory, actionManager, managerProvider.get());
             if (newRightVisibleGroupActions != null && !rightVisibleGroupActions.equals(newRightVisibleGroupActions)) {
                 rightVisibleGroupActions = newRightVisibleGroupActions;
                 rightToolbar.clear();
@@ -205,7 +199,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
                                                                      actionManager,
                                                                      keyBindingAgent,
                                                                      presentationFactory,
-                                                                     place,
                                                                      managerProvider,
                                                                      toolbarResources);
                     actionGroupPanel.add(button);
@@ -238,7 +231,6 @@ public class ToolbarViewImpl extends FlowPanel implements ToolbarView {
         return new ActionButton(action,
                                 actionManager,
                                 presentationFactory.getPresentation(action),
-                                place,
                                 managerProvider.get(),
                                 toolbarResources);
     }

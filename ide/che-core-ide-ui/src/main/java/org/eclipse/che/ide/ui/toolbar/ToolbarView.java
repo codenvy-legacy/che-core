@@ -26,8 +26,6 @@ public interface ToolbarView extends View<ToolbarView.ActionDelegate> {
     interface ActionDelegate {
     }
 
-    void setPlace(@NotNull String place);
-
     void setLeftActionGroup(@NotNull ActionGroup actionGroup);
 
     void setCenterActionGroup(@NotNull ActionGroup actionGroup);
