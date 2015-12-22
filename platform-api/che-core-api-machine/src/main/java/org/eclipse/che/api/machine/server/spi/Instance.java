@@ -62,7 +62,7 @@ public interface Instance extends Machine {
      * @throws MachineException
      *         if error occurs on creating process
      */
-    InstanceProcess createProcess(String commandLine) throws MachineException;
+    InstanceProcess createProcess(String commandName, String commandLine) throws MachineException;
 
     /**
      * Save state of the instance

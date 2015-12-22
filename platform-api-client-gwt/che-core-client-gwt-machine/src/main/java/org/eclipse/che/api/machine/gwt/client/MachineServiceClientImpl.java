@@ -99,9 +99,12 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     @Override
     public Promise<MachineProcessDto> executeCommand(@NotNull final String machineId,
+                                                     @NotNull final String commandName,
                                                      @NotNull final String commandLine,
                                                      @Nullable final String outputChannel) {
-        final CommandDto request = dtoFactory.createDto(CommandDto.class).withCommandLine(commandLine);
+        final CommandDto request = dtoFactory.createDto(CommandDto.class)
+                                             .withCommandLine(commandLine)
+                                             .withName(commandName);
         return asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command?outputChannel=" + outputChannel, request)
                                   .header(ACCEPT, APPLICATION_JSON)
                                   .loader(loader, "Executing command...")

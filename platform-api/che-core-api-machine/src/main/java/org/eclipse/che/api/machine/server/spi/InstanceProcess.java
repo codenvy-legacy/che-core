@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.shared.MachineProcess;
@@ -54,4 +55,14 @@ public interface InstanceProcess extends MachineProcess {
      *         if internal error occurs
      */
     void kill() throws MachineException;
+
+    /**
+     * Check if process is alive
+     *
+     * @throws NotFoundException
+     *         if process is not found. It possible if it is finished, was killed.
+     * @throws MachineException
+     *         if internal error occurs
+     */
+    void checkAlive() throws NotFoundException, MachineException;
 }
