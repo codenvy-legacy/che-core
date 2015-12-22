@@ -21,6 +21,7 @@ import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,25 +156,26 @@ public class AttributeFilter {
                                                              ProjectConfig projectConfig) throws ProjectTypeConstraintException,
                                                                                                  ValueStorageException {
         Map<String, List<String>> persistentAttributes = new HashMap<>();
+        if (projectType.isPersisted()) { //TODO: quick fix for IDEX-3725 have plan remove this class totally during improving Project API
+            for (Attribute attribute : projectType.getAttributes()) {
+                if (!attribute.isVariable()) {
+                    persistentAttributes.put(attribute.getName(), attribute.getValue().getList());
+                    continue;
+                }
 
-        for (Attribute attribute : projectType.getAttributes()) {
-            if (!attribute.isVariable()) {
-                persistentAttributes.put(attribute.getName(), attribute.getValue().getList());
+                Variable variable = (Variable)attribute;
+                ValueProviderFactory factory = variable.getValueProviderFactory();
 
-                continue;
+                if (factory == null) {
+                    List<String> value = projectConfig.getAttributes().get(attribute.getName());
+
+                    persistentAttributes.put(variable.getName(), value);
+                }
             }
 
-            Variable variable = (Variable)attribute;
-            ValueProviderFactory factory = variable.getValueProviderFactory();
-
-            if (factory == null) {
-                List<String> value = projectConfig.getAttributes().get(attribute.getName());
-
-                persistentAttributes.put(variable.getName(), value);
-            }
+            return persistentAttributes;
         }
-
-        return persistentAttributes;
+        return Collections.emptyMap();
     }
 
     private Map<String, List<String>> getRuntimeAttributes(ProjectType projectType,
