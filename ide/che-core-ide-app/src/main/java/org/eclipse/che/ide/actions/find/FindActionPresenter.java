@@ -183,7 +183,7 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
 
     @Override
     public void onActionSelected(Action action) {
-        ActionEvent e = new ActionEvent("", presentationFactory.getPresentation(action), actionManager, perspectiveManager.get());
+        ActionEvent e = new ActionEvent(presentationFactory.getPresentation(action), actionManager, perspectiveManager.get());
         action.update(e);
         if (e.getPresentation().isEnabled() && e.getPresentation().isVisible()) {
             view.hide();

@@ -14,7 +14,6 @@ import org.eclipse.che.ide.api.parts.PerspectiveManager;
 
 import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,7 +24,6 @@ import java.util.Map;
  */
 public class ActionEvent {
     private final ActionManager       actionManager;
-    private final String              place;
     private final Presentation        presentation;
     private final PerspectiveManager  perspectiveManager;
     private final Map<String, String> parameters;
@@ -33,8 +31,6 @@ public class ActionEvent {
     /**
      * Create new action event.
      *
-     * @param place
-     *         the identifier of the place in the IDE UI from where the action is invoked or updated
      * @param presentation
      *         the presentation which represents the action in the place from where it is invoked or updated
      * @param actionManager
@@ -42,18 +38,15 @@ public class ActionEvent {
      * @param perspectiveManager
      *         perspective manager which contains information about current perspective
      */
-    public ActionEvent(@NotNull String place,
-                       @NotNull Presentation presentation,
+    public ActionEvent(@NotNull Presentation presentation,
                        @NotNull ActionManager actionManager,
                        @NotNull PerspectiveManager perspectiveManager) {
-        this(place, presentation, actionManager, perspectiveManager, null);
+        this(presentation, actionManager, perspectiveManager, null);
     }
 
     /**
      * Create new action event.
      *
-     * @param place
-     *         the identifier of the place in the IDE UI from where the action is invoked or updated
      * @param presentation
      *         the presentation which represents the action in the place from where it is invoked or updated
      * @param actionManager
@@ -63,26 +56,14 @@ public class ActionEvent {
      * @param parameters
      *         the parameters with which the action is invoked or updated
      */
-    public ActionEvent(@NotNull String place,
-                       @NotNull Presentation presentation,
+    public ActionEvent(@NotNull Presentation presentation,
                        @NotNull ActionManager actionManager,
                        @NotNull PerspectiveManager perspectiveManager,
                        @Nullable Map<String, String> parameters) {
         this.actionManager = actionManager;
-        this.place = place;
         this.presentation = presentation;
         this.perspectiveManager = perspectiveManager;
         this.parameters = parameters;
-    }
-
-    /**
-     * Returns the identifier of the place in the IDE user interface from where the action is invoked or updated.
-     *
-     * @return the place identifier
-     * @see ActionPlaces
-     */
-    public String getPlace() {
-        return place;
     }
 
     /**

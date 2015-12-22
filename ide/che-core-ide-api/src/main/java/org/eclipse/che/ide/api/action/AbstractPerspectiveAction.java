@@ -27,15 +27,19 @@ import java.util.List;
  */
 public abstract class AbstractPerspectiveAction extends Action {
 
-    private final List<String> activePerspectives;
+    /**
+     * A list of perspectives in which the action is enabled.
+     * Null or empty list means the action is enabled everywhere.
+     */
+    private final List<String> perspectives;
 
-    public AbstractPerspectiveAction(@NotNull List<String> activePerspectives,
-                                     @NotNull String tooltip,
+    public AbstractPerspectiveAction(@Nullable List<String> perspectives,
+                                     @NotNull String text,
                                      @NotNull String description,
                                      @Nullable ImageResource resource,
                                      @Nullable SVGResource icon) {
-        super(tooltip, description, resource, icon);
-        this.activePerspectives = activePerspectives;
+        super(text, description, resource, icon);
+        this.perspectives = perspectives;
     }
 
     /** {@inheritDoc} */
@@ -45,11 +49,11 @@ public abstract class AbstractPerspectiveAction extends Action {
 
         Presentation presentation = event.getPresentation();
 
-        boolean isActivePerspective = activePerspectives.contains(manager.getPerspectiveId());
+        boolean inPerspective = perspectives == null || perspectives.isEmpty() ? true : perspectives.contains(manager.getPerspectiveId());
 
-        presentation.setEnabledAndVisible(isActivePerspective);
+        presentation.setEnabledAndVisible(inPerspective);
 
-        if (isActivePerspective) {
+        if (inPerspective) {
             updateInPerspective(event);
         }
     }

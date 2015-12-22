@@ -52,7 +52,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
 
     private final Presentation       presentation;
     private final PerspectiveManager perspectiveManager;
-    private final String             place;
     private final Element            tooltip;
     private final Element            tooltipBody;
     private final Element            tooltipArrow;
@@ -71,7 +70,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
     public ActionButton(Action action,
                         ActionManager actionManager,
                         Presentation presentation,
-                        String place,
                         PerspectiveManager perspectiveManager,
                         ToolbarResources toolbarResources) {
         this.actionManager = actionManager;
@@ -85,7 +83,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
         panel.setStyleName(toolbarResources.toolbar().iconButtonPanel());
         this.action = action;
         this.presentation = presentation;
-        this.place = place;
         addDomHandlers();
         renderImage();
         setEnabled(presentation.isEnabled());
@@ -159,7 +156,7 @@ public class ActionButton extends Composite implements MouseOverHandler,
 
             addStyleName(toolbarResources.toolbar().disabled());
         }
-        this.ensureDebugId(place + "/" + actionManager.getId(action) + "-" + enabled);
+        this.ensureDebugId("ActionButton/" + actionManager.getId(action) + "-" + enabled);
     }
 
     /** {@inheritDoc} */
@@ -221,7 +218,7 @@ public class ActionButton extends Composite implements MouseOverHandler,
         }
 
         //todo handle popup group
-        ActionEvent e = new ActionEvent(place, presentation, actionManager, perspectiveManager);
+        ActionEvent e = new ActionEvent(presentation, actionManager, perspectiveManager);
         if (action instanceof ActionGroup && !(action instanceof CustomComponentAction) && ((ActionGroup)action).isPopup()) {
 
         } else {

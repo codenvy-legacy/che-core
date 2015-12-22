@@ -38,7 +38,6 @@ public class MenuBarItem implements ActionSelectedHandler {
     private final ActionManager                actionManager;
     private final Provider<PerspectiveManager> managerProvider;
     private final PresentationFactory          presentationFactory;
-    private final String                       place;
     /**
      * Working variable:
      * is need to store pressed state.
@@ -65,7 +64,6 @@ public class MenuBarItem implements ActionSelectedHandler {
                        ActionManager actionManager,
                        Provider<PerspectiveManager> managerProvider,
                        PresentationFactory presentationFactory,
-                       String place,
                        Element element,
                        ActionSelectedHandler handler,
                        KeyBindingAgent keyBindingAgent,
@@ -74,7 +72,6 @@ public class MenuBarItem implements ActionSelectedHandler {
         this.actionManager = actionManager;
         this.managerProvider = managerProvider;
         this.presentationFactory = presentationFactory;
-        this.place = place;
         this.element = element;
         this.actionSelectedHandler = handler;
         this.keyBindingAgent = keyBindingAgent;
@@ -82,7 +79,7 @@ public class MenuBarItem implements ActionSelectedHandler {
         Presentation presentation = presentationFactory.getPresentation(group);
         title = presentation.getText();
         element.setInnerText(presentation.getText());
-        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, place, managerProvider.get()));
+        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, managerProvider.get()));
     }
 
     /** Close opened Popup Menu. */
@@ -149,7 +146,6 @@ public class MenuBarItem implements ActionSelectedHandler {
         popupMenu = new PopupMenu(group,
                                   actionManager,
                                   managerProvider,
-                                  place,
                                   presentationFactory,
                                   menuLockLayer,
                                   this,
@@ -171,7 +167,8 @@ public class MenuBarItem implements ActionSelectedHandler {
         } else {
             element.setClassName(css.menuBarItemDisabled());
         }
-        UIObject.ensureDebugId(element, place + "/" + actionManager.getId(group) + "-" + enabled);
+
+        UIObject.ensureDebugId(element, "MenuItem/" + actionManager.getId(group) + "-" + enabled);
     }
 
     /** {@inheritDoc} */
@@ -186,6 +183,6 @@ public class MenuBarItem implements ActionSelectedHandler {
     }
 
     public void update() {
-        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, place, managerProvider.get()));
+        setEnabled(Utils.hasVisibleChildren(group, presentationFactory, actionManager, managerProvider.get()));
     }
 }

@@ -23,7 +23,6 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.action.ActionPlaces;
 import org.eclipse.che.ide.api.action.ActionSelectedHandler;
 import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.IdeActions;
@@ -49,7 +48,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
     private final MenuResources                resources;
     private final Provider<PerspectiveManager> perspectiveManager;
 
-    private final MenuItemPresentationFactory presentationFactory = new MenuItemPresentationFactory();
+    private final PresentationFactory presentationFactory = new PresentationFactory();
 
     private final FlowPanel centerPanel = new FlowPanel();
 
@@ -58,7 +57,6 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
     private final FlowPanel leftPanel = new FlowPanel();
     /** Panel, which contains top menu. */
     private final FlowPanel rootPanel = new FlowPanel();
-
 
     /** Lock layer for displaying popup menus. */
     private MenuLockLayer lockLayer;
@@ -179,7 +177,7 @@ public class StatusPanelGroupViewImpl extends Composite implements StatusPanelGr
         final Action[] children = mainActionGroup.getChildren(null);
         for (final Action action : children) {
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent e = new ActionEvent(ActionPlaces.MAIN_MENU, presentation, actionManager, perspectiveManager.get());
+            final ActionEvent e = new ActionEvent(presentation, actionManager, perspectiveManager.get());
             action.update(e);
             if (presentation.isVisible()) { // add only visible items
                 newVisibleActions.add(action);

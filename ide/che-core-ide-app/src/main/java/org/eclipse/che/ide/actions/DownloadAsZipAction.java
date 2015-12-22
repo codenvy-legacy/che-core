@@ -40,7 +40,7 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
+public class DownloadAsZipAction extends AbstractPerspectiveAction {
 
     private final String BASE_URL;
 
@@ -50,14 +50,14 @@ public class DownloadProjectAsZipAction extends AbstractPerspectiveAction {
     private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
-    public DownloadProjectAsZipAction(@Named("workspaceId") String workspaceId,
-                                      @Named("cheExtensionPath") String extPath,
-                                      AppContext appContext,
-                                      CoreLocalizationConstant locale,
-                                      Resources resources,
-                                      AnalyticsEventLogger eventLogger,
-                                      DownloadContainer downloadContainer,
-                                      ProjectExplorerPresenter projectExplorer) {
+    public DownloadAsZipAction(@Named("workspaceId") String workspaceId,
+                               @Named("cheExtensionPath") String extPath,
+                               AppContext appContext,
+                               CoreLocalizationConstant locale,
+                               Resources resources,
+                               AnalyticsEventLogger eventLogger,
+                               DownloadContainer downloadContainer,
+                               ProjectExplorerPresenter projectExplorer) {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
               locale.downloadProjectAsZipName(),
               locale.downloadProjectAsZipDescription(),

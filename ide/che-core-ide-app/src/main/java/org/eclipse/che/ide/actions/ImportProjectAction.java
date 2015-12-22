@@ -18,9 +18,8 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.selection.Selection;
-import org.eclipse.che.ide.api.selection.SelectionAgent;
-import org.eclipse.che.ide.upload.folder.UploadFolderFromZipPresenter;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardPresenter;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -28,50 +27,45 @@ import java.util.Arrays;
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
- * Upload folder from zip Action
+ * Import project from location action
  *
  * @author Roman Nikitenko
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class UploadFolderFromZipAction extends AbstractPerspectiveAction {
+public class ImportProjectAction extends AbstractPerspectiveAction {
 
-    private final UploadFolderFromZipPresenter presenter;
-    private final SelectionAgent               selectionAgent;
+    private final ImportProjectWizardPresenter presenter;
     private final AnalyticsEventLogger         eventLogger;
+    private final AppContext                   appContext;
 
     @Inject
-    public UploadFolderFromZipAction(UploadFolderFromZipPresenter presenter,
-                                     CoreLocalizationConstant locale,
-                                     SelectionAgent selectionAgent,
-                                     AnalyticsEventLogger eventLogger,
-                                     Resources resources) {
-        super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
-              locale.uploadFolderFromZipName(),
-              locale.uploadFolderFromZipDescription(),
+    public ImportProjectAction(ImportProjectWizardPresenter presenter,
+                               CoreLocalizationConstant locale,
+                               AnalyticsEventLogger eventLogger,
+                               Resources resources,
+                               AppContext appContext) {
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), locale.importProjectFromLocationName(),
+              locale.importProjectFromLocationDescription(),
               null,
-              resources.uploadFile());
+              resources.importProjectFromLocation());
         this.presenter = presenter;
-        this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
+        this.appContext = appContext;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent event) {
         eventLogger.log(this);
-        presenter.showDialog();
+        presenter.show();
     }
 
     /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent event) {
-        event.getPresentation().setVisible(true);
-        boolean enabled = false;
-        Selection<?> selection = selectionAgent.getSelection();
-        if (selection != null) {
-            enabled = selection.getHeadElement() != null;
+        if (appContext.getCurrentProject() == null) {
+            event.getPresentation().setEnabled(appContext.getCurrentUser().isUserPermanent());
         }
-        event.getPresentation().setEnabled(enabled);
     }
 }

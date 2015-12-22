@@ -13,6 +13,7 @@ package org.eclipse.che.ide.actions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
+import org.eclipse.che.api.machine.shared.Group;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
@@ -26,8 +27,6 @@ import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.PromisableAction;
-import org.eclipse.che.ide.api.constraints.Anchor;
-import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.Pair;
@@ -75,34 +74,29 @@ public class ActionManagerImpl implements ActionManager {
         DefaultActionGroup mainMenu = new DefaultActionGroup(this);
         registerAction(IdeActions.GROUP_MAIN_MENU, mainMenu);
 
-        DefaultActionGroup fileGroup = new DefaultActionGroup("File", true, this);
-        registerAction(IdeActions.GROUP_FILE, fileGroup);
-        mainMenu.add(fileGroup);
+        DefaultActionGroup workspaceGroup = new DefaultActionGroup("Workspace", true, this);
+        registerAction(IdeActions.GROUP_WORKSPACE, workspaceGroup);
+        mainMenu.add(workspaceGroup);
+
+        DefaultActionGroup projectGroup = new DefaultActionGroup("Project", true, this);
+        registerAction(IdeActions.GROUP_PROJECT, projectGroup);
+        mainMenu.add(projectGroup);
 
         DefaultActionGroup editGroup = new DefaultActionGroup("Edit", true, this);
         registerAction(IdeActions.GROUP_EDIT, editGroup);
-        Constraints afterFile = new Constraints(Anchor.BEFORE, IdeActions.GROUP_CODE);
-        mainMenu.add(editGroup, afterFile);
+        mainMenu.add(editGroup);
 
-        DefaultActionGroup codeGroup = new DefaultActionGroup("Code", true, this);
-        registerAction(IdeActions.GROUP_CODE, codeGroup);
-        Constraints afterView = new Constraints(Anchor.AFTER, IdeActions.GROUP_FILE);
-        mainMenu.add(codeGroup, afterView);
+        DefaultActionGroup assistantGroup = new DefaultActionGroup("Assistant", true, this);
+        registerAction(IdeActions.GROUP_ASSISTANT, assistantGroup);
+        mainMenu.add(assistantGroup);
 
-        DefaultActionGroup refactorGroup = new DefaultActionGroup("Refactor", true, this);
-        registerAction(IdeActions.GROUP_REFACTORING, refactorGroup);
-        Constraints afterCode = new Constraints(Anchor.AFTER, IdeActions.GROUP_CODE);
-        mainMenu.add(refactorGroup, afterCode);
-
-        DefaultActionGroup windowGroup = new DefaultActionGroup("Window", true, this);
-        registerAction(IdeActions.GROUP_WINDOW, windowGroup);
-        mainMenu.add(windowGroup);
+        DefaultActionGroup runGroup = new DefaultActionGroup("Run", true, this);
+        registerAction(IdeActions.GROUP_RUN, runGroup);
+        mainMenu.add(runGroup);
 
         DefaultActionGroup helpGroup = new DefaultActionGroup("Help", true, this);
         registerAction(IdeActions.GROUP_HELP, helpGroup);
-        Constraints afterWindow = new Constraints(Anchor.AFTER, IdeActions.GROUP_WINDOW);
-        mainMenu.add(helpGroup, afterWindow);
-
+        mainMenu.add(helpGroup);
 
         // register default action groups for context menu
         DefaultActionGroup mainContextMenuGroup = new DefaultActionGroup(IdeActions.GROUP_MAIN_CONTEXT_MENU, false, this);
@@ -199,7 +193,7 @@ public class ActionManagerImpl implements ActionManager {
         final Action action;
         if (actionId != null && (action = getAction(actionId)) != null) {
             final Presentation presentation = presentationFactory.getPresentation(action);
-            final ActionEvent actionEvent = new ActionEvent("", presentation, this, managerProvider.get(), parameters);
+            final ActionEvent actionEvent = new ActionEvent(presentation, this, managerProvider.get(), parameters);
 
             action.update(actionEvent);
 
@@ -270,8 +264,8 @@ public class ActionManagerImpl implements ActionManager {
         }
         if (!(parentGroup instanceof DefaultActionGroup)) {
             reportActionError(pluginId, actionName + ": group with id \"" + groupId + "\" should be instance of " +
-                                        DefaultActionGroup.class.getName() +
-                                        " but was " + parentGroup.getClass());
+                    DefaultActionGroup.class.getName() +
+                    " but was " + parentGroup.getClass());
             return null;
         }
         return parentGroup;
@@ -279,7 +273,6 @@ public class ActionManagerImpl implements ActionManager {
 
     @Override
     public void registerAction(String actionId, Action action, String pluginId) {
-
         if (myId2Action.containsKey(actionId)) {
             reportActionError(pluginId, "action with the ID \"" + actionId + "\" was already registered. Action being registered is " +
                                         action.toString() +

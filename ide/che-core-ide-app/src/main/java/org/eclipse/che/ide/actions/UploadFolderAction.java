@@ -12,15 +12,15 @@ package org.eclipse.che.ide.actions;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.upload.folder.UploadFolderFromZipPresenter;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -28,46 +28,50 @@ import java.util.Arrays;
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
- * Call Project wizard to change project type
+ * Upload folder from zip Action
  *
- * @author Evgen Vidolob
+ * @author Roman Nikitenko
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class ProjectConfigurationAction extends AbstractPerspectiveAction {
+public class UploadFolderAction extends AbstractPerspectiveAction {
 
-    private final AnalyticsEventLogger eventLogger;
-    private final EventBus             eventBus;
-    private final AppContext           appContext;
+    private final UploadFolderFromZipPresenter presenter;
+    private final SelectionAgent               selectionAgent;
+    private final AnalyticsEventLogger         eventLogger;
 
     @Inject
-    public ProjectConfigurationAction(AppContext appContext,
-                                      CoreLocalizationConstant localization,
-                                      AnalyticsEventLogger eventLogger,
-                                      Resources resources,
-                                      EventBus eventBus) {
+    public UploadFolderAction(UploadFolderFromZipPresenter presenter,
+                              CoreLocalizationConstant locale,
+                              SelectionAgent selectionAgent,
+                              AnalyticsEventLogger eventLogger,
+                              Resources resources) {
         super(Arrays.asList(PROJECT_PERSPECTIVE_ID),
-              localization.actionProjectConfigurationTitle(),
-              localization.actionProjectConfigurationDescription(),
+              locale.uploadFolderFromZipName(),
+              locale.uploadFolderFromZipDescription(),
               null,
-              resources.projectConfiguration());
+              resources.uploadFile());
+        this.presenter = presenter;
+        this.selectionAgent = selectionAgent;
         this.eventLogger = eventLogger;
-        this.eventBus = eventBus;
-        this.appContext = appContext;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (appContext.getCurrentProject() == null) {
-            return;
-        }
-
         eventLogger.log(this);
-        eventBus.fireEvent(new ConfigureProjectEvent(appContext.getCurrentProject().getProjectConfig()));
+        presenter.showDialog();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent event) {
-        event.getPresentation().setEnabledAndVisible(true);
+        event.getPresentation().setVisible(true);
+        boolean enabled = false;
+        Selection<?> selection = selectionAgent.getSelection();
+        if (selection != null) {
+            enabled = selection.getHeadElement() != null;
+        }
+        event.getPresentation().setEnabled(enabled);
     }
 }

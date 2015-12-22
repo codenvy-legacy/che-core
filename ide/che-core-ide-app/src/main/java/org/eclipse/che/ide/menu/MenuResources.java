@@ -17,7 +17,7 @@ import com.google.gwt.resources.client.CssResource;
  * @author Evgen Vidolob
  */
 public interface MenuResources extends ClientBundle {
-    public interface Css extends CssResource {
+    interface Css extends CssResource {
 
         String menuBar();
 

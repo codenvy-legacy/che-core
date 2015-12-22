@@ -14,12 +14,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardPresenter;
+import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
@@ -27,41 +26,30 @@ import java.util.Arrays;
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 /**
- * Import project from location action
- *
- * @author Roman Nikitenko
+ * @author Evgen Vidolob
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class ImportProjectFromLocationAction extends AbstractPerspectiveAction {
+public class CreateProjectAction extends AbstractPerspectiveAction {
 
-    private final ImportProjectWizardPresenter presenter;
-    private final AnalyticsEventLogger         eventLogger;
-    private final AppContext                   appContext;
+    private final ProjectWizardPresenter wizard;
+    private final AnalyticsEventLogger   eventLogger;
+    private final AppContext             appContext;
 
     @Inject
-    public ImportProjectFromLocationAction(ImportProjectWizardPresenter presenter,
-                                           CoreLocalizationConstant locale,
-                                           AnalyticsEventLogger eventLogger,
-                                           Resources resources,
-                                           AppContext appContext) {
-        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), locale.importProjectFromLocationName(),
-              locale.importProjectFromLocationDescription(),
-              null,
-              resources.importProjectFromLocation());
-        this.presenter = presenter;
+    public CreateProjectAction(Resources resources, ProjectWizardPresenter wizard, AnalyticsEventLogger eventLogger, AppContext appContext) {
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Create Project...", "Create new project", null, resources.newProject());
+        this.wizard = wizard;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void actionPerformed(ActionEvent event) {
+    public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        presenter.show();
+        wizard.show();
     }
 
-    /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent event) {
         if (appContext.getCurrentProject() == null) {
