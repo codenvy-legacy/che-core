@@ -10,10 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.gwt.client;
 
+import org.eclipse.che.api.factory.server.FactoryService;
 import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.util.Pair;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 /**
  * Client for IDE3 Factory service.
@@ -49,4 +55,25 @@ public interface FactoryServiceClient {
      * @param callback callback which returns snippet of the factory or exception if occurred
      */
     void getFactoryJson(@NotNull String workspaceId, @NotNull String path, @NotNull AsyncRequestCallback<Factory> callback);
+
+    /**
+     * Save factory to storage.
+     *
+     * @see FactoryService#getFactoryJson(String, String)
+     */
+    Promise<Factory> getFactoryJson(@NotNull String workspaceId, @Nullable String path);
+
+    /**
+     * Save factory to storage.
+     *
+     * @see FactoryService#saveFactory(Factory)
+     */
+    Promise<Factory> saveFactory(@NotNull Factory factory);
+
+    /**
+     * Save factory to storage.
+     *
+     * @see FactoryService#getFactoryByAttribute(Integer, Integer, UriInfo)
+     */
+    Promise<List<Factory>> findFactory(Integer skipCount, Integer maxItems, List<Pair<String, String>> params);
 }

@@ -43,7 +43,6 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -78,7 +77,7 @@ public class FactoryBaseValidatorTest {
     private FactoryBuilder builder;
 
     @Mock
-    private HttpServletRequest request;
+    private HttpServletRequest      request;
 
     private TesterFactoryBaseValidator validator;
 
@@ -97,11 +96,9 @@ public class FactoryBaseValidatorTest {
         User user = new User().withId("userid");
 
         member = new Member().withUserId("userid")
-                             .withRoles(Arrays.asList("account/owner"));
-        when(accountDao.getMembers(anyString())).thenReturn(Arrays.asList(member));
+                             .withRoles(Collections.singletonList("account/owner"));
+        when(accountDao.getMembers(anyString())).thenReturn(Collections.singletonList(member));
         when(userDao.getById("userid")).thenReturn(user);
-
-
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
     }
 

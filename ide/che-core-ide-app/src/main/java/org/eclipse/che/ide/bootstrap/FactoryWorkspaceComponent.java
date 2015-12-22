@@ -20,6 +20,7 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
 import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.factory.shared.dto.Policies;
 import org.eclipse.che.api.machine.gwt.client.MachineManager;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
@@ -157,8 +158,8 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
      */
     private Promise<UsersWorkspaceDto> getWorkspaceToStart() {
         final WorkspaceConfigDto workspaceConfigDto = factory.getWorkspace();
-
-        switch (factory.getPolicies().getCreate()) {
+        final String policy = factory.getPolicies() == null ? "perClick" : factory.getPolicies().getCreate();
+        switch (policy) {
             case "perUser":
                 return getWorkspaceByConditionOrCreateNew(workspaceConfigDto, new Function<UsersWorkspaceDto, Boolean>() {
                     @Override
