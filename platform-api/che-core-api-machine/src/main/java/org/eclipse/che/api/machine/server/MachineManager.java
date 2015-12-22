@@ -619,7 +619,12 @@ public class MachineManager {
      *         if other error occur
      */
     public InstanceProcess exec(final String machineId, final Command command, String outputChannel)
-            throws NotFoundException, MachineException {
+            throws NotFoundException, MachineException, BadRequestException {
+        requiredNotNull(machineId, "Machine ID is required");
+        requiredNotNull(command, "Command is required");
+        requiredNotNull(command.getCommandLine(), "Command line is required");
+        requiredNotNull(command.getName(), "Command name is required");
+
         final Instance machine = getMachine(machineId);
         final InstanceProcess instanceProcess = machine.createProcess(command.getName(), command.getCommandLine());
         final int pid = instanceProcess.getPid();
@@ -981,6 +986,22 @@ public class MachineManager {
                           .setName(instance.getName())
                           .setWorkspaceId(instance.getWorkspaceId())
                           .build();
+    }
+
+    /**
+     * Checks object reference is not {@code null}
+     *
+     * @param object
+     *         object reference to check
+     * @param message
+     *         used as subject of exception message "{subject} required"
+     * @throws org.eclipse.che.api.core.BadRequestException
+     *         when object reference is {@code null}
+     */
+    private void requiredNotNull(Object object, String message) throws BadRequestException {
+        if (object == null) {
+            throw new BadRequestException(message);
+        }
     }
 
     @SuppressWarnings("unused")

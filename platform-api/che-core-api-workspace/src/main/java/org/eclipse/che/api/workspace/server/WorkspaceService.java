@@ -310,7 +310,7 @@ public class WorkspaceService extends Service {
     @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto startByName(@QueryParam("name") String name,
+    public UsersWorkspaceDto startByName(@PathParam("name") String name,
                                          @QueryParam("environment") String envName,
                                          @QueryParam("accountId") String accountId)
             throws ServerException, BadRequestException, NotFoundException, ForbiddenException, ConflictException {

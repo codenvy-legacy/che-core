@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.server;
 
 import com.google.common.io.CharStreams;
 
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
@@ -180,7 +181,7 @@ public class MachineService {
     public MachineProcessDto executeCommandInMachine(@PathParam("machineId") String machineId,
                                                      final CommandDto command,
                                                      @QueryParam("outputChannel") String outputChannel)
-            throws NotFoundException, ServerException, ForbiddenException {
+            throws NotFoundException, ServerException, ForbiddenException, BadRequestException {
 
         requiredNotNull(command, "Command description");
         requiredNotNull(command.getCommandLine(), "Commandline");
