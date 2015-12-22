@@ -403,18 +403,6 @@ public class StandardComponentInitializer {
             }
         });
 
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Create Factory...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
         workspaceGroup.add(new AbstractPerspectiveAction(null, "Clone...", null, null, null) {
             @Override
             public void updateInPerspective(@NotNull ActionEvent event) {
