@@ -19,6 +19,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 
 import org.apache.commons.fileupload.FileItem;
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -204,6 +205,35 @@ public class FactoryService extends Service {
             return factory;
         } catch (IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
+            throw new ServerException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    /**
+     * Save factory to storage.
+     *
+     * @param factory
+     *         instance of factory which would be stored
+     * @return decorated factory instance of which has been stored
+     * @throws org.eclipse.che.api.core.ApiException
+     *         @link org.eclipse.che.api.core.BadRequestException} when factory is null
+     *         @link org.eclipse.che.api.core.ConflictException} when problem occurs during factory storing
+     *         @link org.eclipse.che.api.core.ServerException} when internal server error occurs
+     */
+    @RolesAllowed("user")
+    @POST
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Factory saveFactory(Factory factory) throws ApiException {
+        if (factory == null) {
+            throw new BadRequestException("Not null factory required");
+        }
+        processDefaults(factory);
+        createValidator.validateOnCreate(factory);
+        final String factoryId = factoryStore.saveFactory(factory, null);
+        try {
+            return factory.withLinks(linksHelper.createLinks(factoryStore.getFactory(factoryId), uriInfo));
+        } catch (UnsupportedEncodingException e) {
             throw new ServerException(e.getLocalizedMessage(), e);
         }
     }

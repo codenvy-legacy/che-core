@@ -60,20 +60,14 @@ public abstract class FactoryBaseValidator {
      * TODO for now validates only git source
      *
      * @param factory
-     *         - factory to validate
+     *         factory to validate
      * @throws ConflictException
      */
     protected void validateSource(Factory factory) throws ConflictException {
         for (ProjectConfigDto project : factory.getWorkspace().getProjects()) {
-            String type = project.getSource().getType();
             String location = project.getSource().getLocation();
-            String parameterTypeName = "project.storage.type";
             String parameterLocationName = "project.storage.location";
 
-            // check that vcs value is correct
-            if (!("git".equals(type) || "esbwso2".equals(type))) {
-                throw new ConflictException("Parameter '" + parameterTypeName + "' has illegal value.");
-            }
             if (isNullOrEmpty(location)) {
                 throw new ConflictException(
                         format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE, parameterLocationName, location));
