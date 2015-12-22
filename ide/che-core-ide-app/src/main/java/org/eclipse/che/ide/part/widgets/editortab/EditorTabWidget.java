@@ -79,9 +79,10 @@ public class EditorTabWidget extends Composite implements EditorTab, ContextMenu
                            @Assisted String title,
                            PartStackUIResources resources,
                            EditorTabContextMenuFactory editorTabContextMenu) {
+        this.resources = resources;
+
         initWidget(UI_BINDER.createAndBindUi(this));
 
-        this.resources = resources;
         this.editorTabContextMenu = editorTabContextMenu;
         this.file = file;
         this.icon = icon;
