@@ -196,6 +196,8 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
 
         dialogFactory.createConfirmDialog(localizationConstant.actionNewFileAddToIndexTitle(),
                                           localizationConstant.actionNewFileAddToIndexText(fileName),
+                                          "Yes",
+                                          "No",
                                           confirmCallback,
                                           cancelCallback).show();
     }
