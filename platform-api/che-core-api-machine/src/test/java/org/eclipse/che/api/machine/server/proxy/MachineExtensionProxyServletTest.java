@@ -46,6 +46,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_GATEWAY;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -269,7 +271,7 @@ public class MachineExtensionProxyServletTest {
 
         proxyServlet.service(mockRequest, mockResponse);
 
-        assertEquals(mockResponse.getStatus(), 500);
+        assertEquals(mockResponse.getStatus(), SC_BAD_GATEWAY);
         // TODO look like bug in everrest test library, if {@code HttpServletResponse#sendError(int code, String message)}
         // is used no response message in output stream can be found
 //        assertEquals(mockResponse.getOutputContent(), "Request can't be forwarded to machine. No extension server found in machine");
@@ -450,7 +452,7 @@ public class MachineExtensionProxyServletTest {
 
         proxyServlet.service(mockRequest, mockResponse);
 
-        assertEquals(mockResponse.getStatus(), 500, mockResponse.getOutputContent());
+        assertEquals(mockResponse.getStatus(), SC_BAD_GATEWAY, mockResponse.getOutputContent());
     }
 
     @Test
@@ -469,7 +471,7 @@ public class MachineExtensionProxyServletTest {
 
         proxyServlet.service(mockRequest, mockResponse);
 
-        assertEquals(mockResponse.getStatus(), 404, mockResponse.getOutputContent());
+        assertEquals(mockResponse.getStatus(), SC_SERVICE_UNAVAILABLE, mockResponse.getOutputContent());
     }
 
     /**

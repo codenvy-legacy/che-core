@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_GATEWAY;
+import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 
 /**
  * Routes requests to extension API hosted in machine
@@ -77,15 +77,15 @@ public class MachineExtensionProxyServlet extends HttpServlet {
 
                 setResponse(resp, conn);
             } catch (IOException e) {
-                resp.sendError(SC_INTERNAL_SERVER_ERROR, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
+                resp.sendError(SC_BAD_GATEWAY, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
             } finally {
                 conn.disconnect();
             }
 
         } catch (NotFoundException e) {
-            resp.sendError(SC_NOT_FOUND, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
+            resp.sendError(SC_SERVICE_UNAVAILABLE, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
         } catch (ServerException e) {
-            resp.sendError(SC_INTERNAL_SERVER_ERROR, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
+            resp.sendError(SC_BAD_GATEWAY, "Request can't be forwarded to machine. " + e.getLocalizedMessage());
         }
     }
 
