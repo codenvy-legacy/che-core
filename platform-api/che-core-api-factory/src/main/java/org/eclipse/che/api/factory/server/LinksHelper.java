@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.server;
 
+import com.google.common.base.Strings;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.factory.shared.dto.Factory;
@@ -38,7 +39,7 @@ public class LinksHelper {
     private static final String IMAGE_REL_ATT            = "image";
     private static final String RETRIEVE_FACTORY_REL_ATT = "self";
     private static final String SNIPPET_REL_ATT          = "snippet/";
-    private static final String CREATE_WORKSPACE_REL_ATT = "create-project";
+    private static final String CREATE_WORKSPACE_REL_ATT = "create-workspace";
     private static final String ACCEPTED_REL_ATT         = "accepted";
 
     private static List<String> snippetTypes = Collections.unmodifiableList(Arrays.asList("markdown", "url", "html", "iframe"));
@@ -128,6 +129,18 @@ public class LinksHelper {
                                                               .build()
                                                               .toString());
         links.add(createWorkspace);
+        
+        if (!Strings.isNullOrEmpty(factory.getName())) {
+            // uri to accept factory by name and creator
+            final Link createWorkspacebyName =
+                                               createLink(HttpMethod.GET, CREATE_WORKSPACE_REL_ATT, null, MediaType.TEXT_HTML,
+                                                          baseUriBuilder.clone()
+                                                                        .replacePath("f")
+                                                                        .queryParam("name", factory.getName())
+                                                                        .queryParam("user", factory.getCreator().getUserId()).build()
+                                                                        .toString());
+            links.add(createWorkspacebyName);
+        }
 
         // links of analytics
         links.add(createLink(HttpMethod.GET,

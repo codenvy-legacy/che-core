@@ -89,6 +89,7 @@ public class FactoryServiceTest {
     private final String             CORRECT_FACTORY_ID = "correctFactoryId";
     private final String             ILLEGAL_FACTORY_ID = "illegalFactoryId";
     private final String             SERVICE_PATH       = "/factory";
+    private static final String      userId             = "id-2314";
     private final ApiExceptionMapper exceptionMapper    = new ApiExceptionMapper();
 
     private EnvironmentFilter filter = new EnvironmentFilter();
@@ -113,6 +114,8 @@ public class FactoryServiceTest {
     private FactoryService factoryService;
     private DtoFactory     dto;
 
+
+
     @BeforeMethod
     public void setUp() throws Exception {
         dto = DtoFactory.getInstance();
@@ -133,7 +136,7 @@ public class FactoryServiceTest {
 
         public void doFilter(GenericContainerRequest request) {
             EnvironmentContext context = EnvironmentContext.getCurrent();
-            context.setUser(new UserImpl(JettyHttpServer.ADMIN_USER_NAME, "id-2314", "token-2323",
+            context.setUser(new UserImpl(JettyHttpServer.ADMIN_USER_NAME, userId, "token-2323",
                                          Collections.<String>emptyList(), false));
         }
 
@@ -218,7 +221,7 @@ public class FactoryServiceTest {
         Factory factory = prepareFactoryWithGivenStorage("git", "http://github.com/codenvy/platform-api.git");
 
         Link expectedCreateProject =
-                dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces("text/html").withRel("create-project")
+                dto.createDto(Link.class).withMethod(HttpMethod.GET).withProduces("text/html").withRel("create-workspace")
                    .withHref(getServerUrl(context) + "/f?id=" + CORRECT_FACTORY_ID);
 
         FactorySaveAnswer factorySaveAnswer = new FactorySaveAnswer();
@@ -390,8 +393,11 @@ public class FactoryServiceTest {
     @Test
     public void shouldBeAbleToGetFactory(ITestContext context) throws Exception {
         // given
+        String factoryName = "factoryName";
         Factory factory = dto.createDto(Factory.class);
         factory.setId(CORRECT_FACTORY_ID);
+        factory.setName(factoryName);
+        factory.setCreator(dto.createDto(Author.class).withUserId(userId));
         Path path = Paths.get(Thread.currentThread().getContextClassLoader().getResource("100x100_image.jpeg").toURI());
         byte[] data = Files.readAllBytes(path);
         FactoryImage image1 = new FactoryImage(data, "image/jpeg", "image123456789");
@@ -402,7 +408,7 @@ public class FactoryServiceTest {
         Link expectedCreateProject = dto.createDto(Link.class);
         expectedCreateProject.setProduces("text/html");
         expectedCreateProject.setHref(getServerUrl(context) + "/f?id=" + CORRECT_FACTORY_ID);
-        expectedCreateProject.setRel("create-project");
+        expectedCreateProject.setRel("create-workspace");
 
         when(factoryStore.getFactory(CORRECT_FACTORY_ID)).thenReturn(factory);
         when(factoryStore.getFactoryImages(CORRECT_FACTORY_ID, null)).thenReturn(images);
@@ -415,8 +421,15 @@ public class FactoryServiceTest {
         Factory responseFactory = JsonHelper.fromJson(response.getBody().asString(),
                                                          Factory.class, null);
 
-        List<Link> expectedLinks = new ArrayList<>(9);
+        List<Link> expectedLinks = new ArrayList<>(10);
         expectedLinks.add(expectedCreateProject);
+
+        Link expectedCreateProjectByName = dto.createDto(Link.class);
+        expectedCreateProjectByName.setProduces("text/html");
+        expectedCreateProjectByName.setHref(getServerUrl(context) + "/f?name=" + factoryName + "&user=" + userId);
+        expectedCreateProjectByName.setRel("create-workspace");
+        expectedLinks.add(expectedCreateProjectByName);
+
 
         Link self = dto.createDto(Link.class);
         self.setProduces(MediaType.APPLICATION_JSON);
