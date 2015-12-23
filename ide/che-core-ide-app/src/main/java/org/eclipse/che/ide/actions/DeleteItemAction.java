@@ -226,6 +226,8 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
 
         dialogFactory.createConfirmDialog(locale.deleteAddToIndexDialogTitle(),
                                           locale.deleteAddToIndexDialogText(),
+                                          "Yes",
+                                          "No",
                                           confirmCallback,
                                           cancelCallback).show();
     }
