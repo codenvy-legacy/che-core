@@ -17,18 +17,11 @@
     <ui:with field='locale' type='org.eclipse.che.ide.CoreLocalizationConstant'/>
 
     <ui:style field="style">
-        .scrollPanel {
-            width: 100%;
-            height: 100%;
-        }
-
         .main {
             width: 400px;
             height: 450px;
         }
     </ui:style>
 
-    <g:FlowPanel addStyleNames="{style.main}">
-        <g:ScrollPanel ui:field="treeContainer" addStyleNames="{style.scrollPanel}"/>
-    </g:FlowPanel>
+    <g:DockLayoutPanel addStyleNames="{style.main}" ui:field="treeContainer" />
 </ui:UiBinder>

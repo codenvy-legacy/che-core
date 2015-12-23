@@ -153,7 +153,7 @@ public class FullTextSearchViewImpl extends Window implements FullTextSearchView
 
     @Override
     public void setFocus() {
-        focus();
+        accept.setFocus(true);
     }
 
     private void createButtons() {

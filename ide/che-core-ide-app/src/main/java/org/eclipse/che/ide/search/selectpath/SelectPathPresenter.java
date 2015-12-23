@@ -43,9 +43,11 @@ public class SelectPathPresenter implements SelectPathView.ActionDelegate {
      */
     public void show(FullTextSearchView.ActionDelegate searcher) {
         this.searcher = searcher;
-        view.showStructure(projectExplorerPresenter.getRootNodes());
+        view.setStructure(projectExplorerPresenter.getRootNodes());
+        view.show();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setSelectedPath(String path) {
         searcher.setPathDirectory(path);

@@ -14,7 +14,6 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 
 import org.eclipse.che.ide.api.project.node.Node;
@@ -83,7 +82,7 @@ public abstract class AbstractPresentationRenderer<N extends Node> implements Pr
                 jointElement = svgsvgElement.getElement();
         }
 
-        SpanElement wrapper = Document.get().createSpanElement();
+        DivElement wrapper = Document.get().createDivElement();
         wrapper.appendChild(jointElement);
         return jointElement;
     }

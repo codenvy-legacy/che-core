@@ -46,7 +46,7 @@ public class SelectPathPresenterTest {
     @Test
     public void windowShouldBeShown() throws Exception {
         selectPathPresenter.show(searcher);
-        verify(view).showStructure(Matchers.<List<Node>>any());
+        verify(view).setStructure(Matchers.<List<Node>>any());
     }
 
     @Test

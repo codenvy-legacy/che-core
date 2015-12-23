@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.search.presentation;
 
-import elemental.html.SpanElement;
-
-import com.google.gwt.dom.client.Element;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
@@ -23,15 +20,15 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.project.node.AbstractTreeNode;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
-import org.eclipse.che.ide.project.node.NodeManager;
-import org.eclipse.che.ide.ui.smartTree.TreeStyles;
+import org.eclipse.che.ide.search.factory.FindResultNodeFactory;
 import org.eclipse.che.ide.ui.smartTree.presentation.HasPresentation;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
+import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
 import org.eclipse.che.ide.util.Pair;
-import org.eclipse.che.ide.util.dom.Elements;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.eclipse.che.ide.api.theme.Style.getEditorInfoTextColor;
@@ -41,34 +38,32 @@ import static org.eclipse.che.ide.api.theme.Style.getEditorInfoTextColor;
  *
  * @author Valeriy Svydenko
  */
-public class ResultNode extends AbstractTreeNode implements HasPresentation {
+public class FindResultGroupNode extends AbstractTreeNode implements HasPresentation {
 
     private final CoreLocalizationConstant locale;
-    private final NodeManager              nodeManager;
+    private final FindResultNodeFactory    nodeFactory;
 
     private NodePresentation    nodePresentation;
-    private TreeStyles          styles;
     private List<ItemReference> findResults;
     private String              request;
 
     @Inject
-    public ResultNode(TreeStyles styles,
-                      CoreLocalizationConstant locale,
-                      NodeManager nodeManager,
-                      @Assisted List<ItemReference> findResult,
-                      @Assisted String request) {
-        this.styles = styles;
+    public FindResultGroupNode(CoreLocalizationConstant locale,
+                               FindResultNodeFactory nodeFactory,
+                               @Assisted List<ItemReference> findResult,
+                               @Assisted String request) {
         this.locale = locale;
-        this.nodeManager = nodeManager;
+        this.nodeFactory = nodeFactory;
         this.findResults = findResult;
         this.request = request;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Promise<List<Node>> getChildrenImpl() {
         List<Node> fileNodes = new ArrayList<>();
         for (ItemReference itemReference : findResults) {
-            ItemReferenceBasedNode node = nodeManager.wrap(itemReference, null);
+            ItemReferenceBasedNode node = nodeFactory.createNode(itemReference, null, null);
 
             NodePresentation presentation = node.getPresentation(true);
             presentation.setInfoText(itemReference.getPath());
@@ -77,9 +72,14 @@ public class ResultNode extends AbstractTreeNode implements HasPresentation {
 
             fileNodes.add(node);
         }
+
+        //sort nodes by file name
+        Collections.sort(fileNodes, new AlphabeticalFilter());
+
         return Promises.resolve(fileNodes);
     }
 
+    /** {@inheritDoc} */
     @Override
     public NodePresentation getPresentation(boolean update) {
         if (nodePresentation == null) {
@@ -93,27 +93,28 @@ public class ResultNode extends AbstractTreeNode implements HasPresentation {
         return nodePresentation;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getName() {
         return locale.actionFullTextSearch();
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isLeaf() {
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void updatePresentation(@NotNull NodePresentation presentation) {
-        SpanElement spanElement = Elements.createSpanElement(styles.styles().presentableTextContainer());
         StringBuilder resultTitle = new StringBuilder("Find Occurrences of '" + request + "\'  (" + findResults.size() + " occurrence");
         if (findResults.size() > 1) {
             resultTitle.append("s)");
         } else {
             resultTitle.append(")");
         }
-        spanElement.setInnerHTML(resultTitle.toString());
-        presentation.setUserElement((Element)spanElement);
+        presentation.setPresentableText(resultTitle.toString());
     }
 
 }

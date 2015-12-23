@@ -15,12 +15,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.ContextMenuEvent;
-import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -178,18 +174,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         tree.ensureDebugId(PROJECT_TREE_WIDGET_ID);
         tree.setAutoSelect(true);
 
-        ScrollPanel treePanel = new ScrollPanel(tree);
-        treePanel.ensureDebugId(PROJECT_EXPLORER_ID);
-        setContentWidget(treePanel);
-
-        //hook that allow pass right click outer the widget
-        treePanel.addDomHandler(new ContextMenuHandler() {
-            @Override
-            public void onContextMenu(ContextMenuEvent event) {
-                event.preventDefault();
-                tree.onBrowserEvent((Event)event.getNativeEvent());
-            }
-        }, ContextMenuEvent.getType());
+        setContentWidget(tree);
 
         bindExternalNavigationHandler();
         bindScrollFromSourceButtonHandlers();

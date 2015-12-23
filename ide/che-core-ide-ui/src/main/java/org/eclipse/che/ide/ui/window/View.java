@@ -16,6 +16,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -33,9 +35,12 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.FocusPanel;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+
+import org.eclipse.che.ide.util.UIUtil;
 
 /**
  * The view that renders the {@link Window}. The View consists of a glass
@@ -53,8 +58,6 @@ class View extends Composite {
     @UiField
     FlowPanel  contentContainer;
     @UiField
-    FlowPanel  glass;
-    @UiField
     FlowPanel  popup;
     @UiField
     FlowPanel  header;
@@ -67,10 +70,6 @@ class View extends Composite {
     @UiField
     FlowPanel closeButton;
 
-    // the left style attribute in pixels
-    private int leftPosition = -1;
-    // The top style attribute in pixels
-    private int topPosition  = -1;
     private int               windowWidth;
     private int               clientLeft;
     private int               clientTop;
@@ -79,6 +78,16 @@ class View extends Composite {
     private int               dragStartX;
     private int               dragStartY;
     private String            transition;
+    private FocusWidget lastFocused;
+
+    private BlurHandler blurHandler = new BlurHandler() {
+        @Override
+        public void onBlur(BlurEvent event) {
+            if (event.getSource() instanceof FocusWidget) {
+                lastFocused = (FocusWidget)event.getSource();
+            }
+        }
+    };
 
     View(Window.Resources res, boolean showBottomPanel) {
         this.res = res;
@@ -110,12 +119,14 @@ class View extends Composite {
      *         true if showing, false if not.
      */
     protected void setShowing(boolean showing) {
+        //set for each focusable widget blur handler to have ability to store last focused element
+        for (FocusWidget focusWidget : UIUtil.getFocusableChildren(content)) {
+            focusWidget.addBlurHandler(blurHandler);
+        }
+
         if (showing) {
-            glass.addStyleName(css.glassVisible());
             contentContainer.addStyleName(css.contentVisible());
-            focusPanel.setFocus(true);
         } else {
-            glass.removeStyleName(css.glassVisible());
             contentContainer.removeStyleName(css.contentVisible());
         }
     }
@@ -136,7 +147,6 @@ class View extends Composite {
                 }
             }
         };
-
 
         focusPanel.addDomHandler(handler, KeyDownEvent.getType());
 
@@ -232,7 +242,7 @@ class View extends Composite {
 
     /**
      * Sets the popup's position relative to the browser's client area. The
-     * popup's position may be set before calling {@link #show()}.
+     * popup's position may be set before calling {@link #setShowing(boolean)}.
      *
      * @param left
      *         the left position, in pixels
@@ -240,10 +250,6 @@ class View extends Composite {
      *         the top position, in pixels
      */
     public void setPopupPosition(int left, int top) {
-        // Save the position of the popup
-        leftPosition = left;
-        topPosition = top;
-
         // Account for the difference between absolute position and the
         // body's positioning context.
         left -= Document.get().getBodyOffsetLeft();
@@ -274,6 +280,19 @@ class View extends Composite {
 
         public void onMouseUp(MouseUpEvent event) {
             endDragging(event);
+
+            if (lastFocused != null) {
+                lastFocused.setFocus(true);
+            }
+        }
+    }
+
+    /**
+     * Set focus on the specific children element if such exists.
+     */
+    public void focusView() {
+        if (lastFocused != null) {
+            lastFocused.setFocus(true);
         }
     }
 }
