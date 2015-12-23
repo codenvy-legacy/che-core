@@ -115,9 +115,11 @@ public interface FactoryStore {
      * @return id of stored factory
      * @throws org.eclipse.che.api.core.NotFoundException
      *         if factory with given {@code factoryId} is not found
+     * @throws org.eclipse.che.api.core.ConflictException
+     *          if {@code factory} with given name and creator already exists
      * @throws java.lang.RuntimeException
      *          if {@code factory} is null
      */
-    public String updateFactory(String factoryId, Factory factory) throws NotFoundException;
+    public String updateFactory(String factoryId, Factory factory) throws NotFoundException, ConflictException;
 
 }
