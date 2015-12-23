@@ -11,9 +11,9 @@
 package org.eclipse.che.ide.ui.smartTree.presentation;
 
 import com.google.common.base.Strings;
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 
 import org.eclipse.che.ide.api.project.node.Node;
@@ -70,7 +70,7 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
     }
 
     private Element createPresentableTextElement(NodePresentation presentation) {
-        SpanElement textElement = Document.get().createSpanElement();
+        DivElement textElement = Document.get().createDivElement();
 
         textElement.setInnerText(Strings.nullToEmpty(presentation.getPresentableText()));
         textElement.setAttribute("style", presentation.getPresentableTextCss());
@@ -81,7 +81,7 @@ public class DefaultPresentationRenderer<N extends Node> extends AbstractPresent
     }
 
     private Element createInfoTextElement(NodePresentation presentation) {
-        SpanElement textElement = Document.get().createSpanElement();
+        DivElement textElement = Document.get().createDivElement();
 
         StringBuilder sb = new StringBuilder();
 

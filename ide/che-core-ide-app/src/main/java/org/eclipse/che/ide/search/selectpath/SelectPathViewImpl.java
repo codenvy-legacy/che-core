@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.search.selectpath;
 
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -24,6 +25,7 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
+import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.Tree;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
@@ -36,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.eclipse.che.ide.ui.smartTree.TreeSelectionModel.Mode.SINGLE;
+
 /**
  * Implementation of {@link SelectPathView}.
  *
@@ -47,7 +51,7 @@ public class SelectPathViewImpl extends Window implements SelectPathView {
     private ActionDelegate delegate;
 
     @UiField
-    ScrollPanel treeContainer;
+    DockLayoutPanel treeContainer;
 
     interface SelectPathViewImplUiBinder extends UiBinder<Widget, SelectPathViewImpl> {
     }
@@ -58,6 +62,38 @@ public class SelectPathViewImpl extends Window implements SelectPathView {
 
         Widget widget = uiBinder.createAndBindUi(this);
         setWidget(widget);
+
+        UniqueKeyProvider<Node> uniqueKeyProvider = new NodeUniqueKeyProvider() {
+            @NotNull
+            @Override
+            public String getKey(@NotNull Node item) {
+                if (item instanceof HasStorablePath) {
+                    return ((HasStorablePath)item).getStorablePath();
+                } else {
+                    return String.valueOf(item.hashCode());
+                }
+            }
+        };
+        FolderNodeInterceptor interceptor = new FolderNodeInterceptor();
+        Set<NodeInterceptor> interceptors = new HashSet<>();
+        interceptors.add(interceptor);
+        TreeNodeLoader loader = new TreeNodeLoader(interceptors);
+        TreeNodeStorage treeNodeStorage = new TreeNodeStorage(uniqueKeyProvider);
+
+        tree = new Tree(treeNodeStorage, loader);
+        tree.setAutoSelect(true);
+        tree.getSelectionModel().setSelectionMode(SINGLE);
+        treeContainer.add(tree);
+
+        KeyboardNavigationHandler handler = new KeyboardNavigationHandler() {
+            @Override
+            public void onEnter(NativeEvent evt) {
+                evt.preventDefault();
+                acceptButtonClicked();
+            }
+        };
+
+        handler.bind(tree);
 
         Button cancel = createButton(locale.cancel(), "select-path-cancel-button", new ClickHandler() {
             @Override
@@ -88,32 +124,18 @@ public class SelectPathViewImpl extends Window implements SelectPathView {
     }
 
     @Override
-    public void showStructure(List<Node> nodes) {
-        UniqueKeyProvider<Node> uniqueKeyProvider = new NodeUniqueKeyProvider() {
-            @NotNull
-            @Override
-            public String getKey(@NotNull Node item) {
-                if (item instanceof HasStorablePath) {
-                    return ((HasStorablePath)item).getStorablePath();
-                } else {
-                    return String.valueOf(item.hashCode());
-                }
-            }
-        };
-        FolderNodeInterceptor interceptor = new FolderNodeInterceptor();
-        Set<NodeInterceptor> interceptors = new HashSet<>();
-        interceptors.add(interceptor);
-        TreeNodeLoader loader = new TreeNodeLoader(interceptors);
-        TreeNodeStorage treeNodeStorage = new TreeNodeStorage(uniqueKeyProvider);
+    public void show() {
+        super.show(tree);
+        if (!tree.getRootNodes().isEmpty()) {
+            tree.getSelectionModel().select(tree.getRootNodes().get(0), false);
+        }
+    }
 
-        tree = new Tree(treeNodeStorage, loader);
-        treeContainer.setWidget(tree);
-
-        treeNodeStorage.add(nodes);
-        show();
-
-        if (!nodes.isEmpty()) {
-            tree.getSelectionModel().select(nodes.get(0), false);
+    @Override
+    public void setStructure(List<Node> nodes) {
+        tree.getNodeStorage().clear();
+        for (Node node : nodes) {
+            tree.getNodeStorage().add(node);
         }
     }
 

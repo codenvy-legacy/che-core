@@ -15,13 +15,13 @@ import elemental.js.dom.JsElement;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
@@ -188,11 +188,11 @@ public abstract class Window implements IsWidget {
 
     /** Set focus to current window. */
     public void focus() {
-        getWidget().getParent().getParent().getElement().focus();
+        view.focusView();
     }
 
     /**
-     * See {@link #show(com.google.gwt.dom.client.InputElement)}.
+     * See {@link #show(Focusable)}.
      */
     public void show() {
         show(null);
@@ -202,10 +202,10 @@ public abstract class Window implements IsWidget {
      * Displays the {@link Window} popup. The popup will animate into view.
      *
      * @param selectAndFocusElement
-     *         an {@link com.google.gwt.dom.client.InputElement} to select and focus on when the panel is
+     *         an {@link Focusable} to select and focus on when the panel is
      *         shown. If null, no element will be given focus
      */
-    public void show(@Nullable final InputElement selectAndFocusElement) {
+    public void show(@Nullable final Focusable selectAndFocusElement) {
         setBlocked(false);
 
         if (isShowing) {
@@ -232,8 +232,7 @@ public abstract class Window implements IsWidget {
                     popup.getStyle().removeProperty("visibility");
                     view.setShowing(true);
                     if (selectAndFocusElement != null) {
-                        selectAndFocusElement.select();
-                        selectAndFocusElement.focus();
+                        selectAndFocusElement.setFocus(true);
                     }
                 }
             }
@@ -310,8 +309,6 @@ public abstract class Window implements IsWidget {
         String contentVisible();
 
         String center();
-
-        String glass();
 
         String glassVisible();
 

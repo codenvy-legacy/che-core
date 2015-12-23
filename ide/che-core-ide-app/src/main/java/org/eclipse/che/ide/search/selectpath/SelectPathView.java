@@ -36,5 +36,10 @@ public interface SelectPathView extends View<SelectPathView.ActionDelegate> {
      * @param nodes
      *         list of the project root nodes
      */
-    void showStructure(List<Node> nodes);
+    void setStructure(List<Node> nodes);
+
+    /**
+     * Show dialog.
+     */
+    void show();
 }

@@ -17,7 +17,6 @@
     <ui:with field='resources' type='org.eclipse.che.ide.ui.window.Window.Resources'/>
     <ui:with field="css" type="org.eclipse.che.ide.ui.window.Window.Css"/>
     <g:FlowPanel ui:field="popup" styleName="{css.popup}">
-        <g:FlowPanel ui:field="glass" styleName="{css.glass}"></g:FlowPanel>
         <g:FocusPanel styleName="{css.positioner}" ui:field="focusPanel">
             <g:FlowPanel ui:field="contentContainer" styleName="{css.content}">
                 <g:FlowPanel ui:field="header" styleName="{css.header}">

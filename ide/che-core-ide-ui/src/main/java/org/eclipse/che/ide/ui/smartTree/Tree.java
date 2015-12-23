@@ -22,7 +22,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiConstructor;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 import org.eclipse.che.commons.annotation.Nullable;
@@ -76,7 +76,7 @@ import static org.eclipse.che.ide.util.dom.Elements.disableTextSelection;
 /**
  * @author Vlad Zhukovskiy
  */
-public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpandItemHandlers, HasBeforeCollapseItemHandlers,
+public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers, HasExpandItemHandlers, HasBeforeCollapseItemHandlers,
                                             HasCollapseItemHandlers, ComponentWithEmptyText, HasBlurHandlers,
                                             HasNodeAddedEventHandlers {
 
@@ -89,7 +89,7 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
 
     private boolean     autoExpand;
     private boolean     autoLoad;
-    private DelayedTask updateTask, cleanTask;
+    private DelayedTask updateTask;
     private boolean trackMouseOver = true;
 
     protected final FocusImpl focusImpl = FocusImpl.getFocusImplForPanel();
@@ -603,61 +603,15 @@ public class Tree extends Widget implements HasBeforeExpandNodeHandlers, HasExpa
                 if (!isRowRendered(i, visible)) {
                     Node parent = nodeStorage.getParent(visible.get(i));
                     Element html = renderChild(visible.get(i), nodeStorage.getDepth(parent));
-                    view.getRootContainer(findNode(visible.get(i))).getFirstChildElement().setInnerHTML(html.getString());
+                    Element rootContainer = view.getRootContainer(findNode(visible.get(i)));
+                    rootContainer.replaceChild(rootContainer.getFirstChildElement(), html);
                 }
             }
-            clean();
         }
     }
-
 
     public List<Node> getRootNodes() {
         return goIntoMode.isActivated() ? Collections.singletonList(goIntoMode.getLastNode()) : nodeStorage.getRootItems();
-    }
-
-    protected void clean() {
-        if (cleanTask == null) {
-            cleanTask = new DelayedTask() {
-                @Override
-                public void onExecute() {
-                    doClean();
-                }
-            };
-        }
-        cleanTask.delay(view.getCleanDelay()); //todo make it configurable
-    }
-
-    protected void doClean() {
-        int count = getVisibleRowCount();
-        if (count > 0) {
-            List<Node> rows = getAllChildNodes(getRootNodes(), true);
-            int[] vr = getVisibleRows(rows, count);
-            vr[0] -= view.getCacheSize();
-            vr[1] += view.getCacheSize();
-
-            int i = 0;
-
-            // if first is less than 0, all rows have been rendered
-            // so lets clean the end...
-            if (vr[0] <= 0) {
-                i = vr[1] + 1;
-            }
-            for (int len = rows.size(); i < len; i++) {
-                // if current row is outside of first and last and
-                // has content, update the innerHTML to nothing
-                if (i < vr[0] || i > vr[1]) {
-                    cleanNode(findNode(rows.get(i)));
-                }
-            }
-        }
-    }
-
-    protected void cleanNode(NodeDescriptor node) {
-        if (node != null && node.getRootContainer() != null) {
-            node.clearElements();
-            Element element = view.getRootContainer(node).getFirstChildElement();
-            removeElementChildren(element);
-        }
     }
 
     protected boolean isRowRendered(int i, List<Node> visible) {

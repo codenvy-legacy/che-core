@@ -12,10 +12,15 @@ package org.eclipse.che.ide.api.parts.base;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -23,6 +28,7 @@ import com.google.gwt.user.client.ui.Widget;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.Focusable;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
+import org.eclipse.che.ide.util.UIUtil;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.validation.constraints.NotNull;
@@ -41,12 +47,22 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
     protected DockLayoutPanel toolBar;
     protected DockLayoutPanel toolbarHeader;
 
-    protected T          delegate;
-    protected ToolButton minimizeButton;
-    protected Label      titleLabel;
+    protected T           delegate;
+    protected ToolButton  minimizeButton;
+    protected Label       titleLabel;
+    protected FocusWidget lastFocused;
 
     /** Indicates whether this view is focused */
     private boolean focused = false;
+
+    private BlurHandler blurHandler = new BlurHandler() {
+        @Override
+        public void onBlur(BlurEvent event) {
+            if (event.getSource() instanceof FocusWidget) {
+                lastFocused = (FocusWidget)event.getSource();
+            }
+        }
+    };
 
     public BaseView(PartStackUIResources resources) {
         container = new DockLayoutPanel(Style.Unit.PX);
@@ -58,6 +74,15 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
         toolBar = new DockLayoutPanel(Style.Unit.PX);
         toolBar.addStyleName(resources.partStackCss().ideBasePartToolbar());
         toolBar.getElement().setAttribute("role", "toolbar");
+        toolBar.addDomHandler(new MouseUpHandler() {
+            @Override
+            public void onMouseUp(MouseUpEvent event) {
+                //activate last focused element if user clicked on part header
+                if (lastFocused != null) {
+                    lastFocused.setFocus(true);
+                }
+            }
+        }, MouseUpEvent.getType());
         container.addNorth(toolBar, 23);
 
         //this hack used for adding box shadow effect to toolbar
@@ -152,6 +177,11 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
      */
     public final void setContentWidget(Widget widget) {
         container.add(widget);
+        for (FocusWidget focusWidget : UIUtil.getFocusableChildren(widget)) {
+            focusWidget.addBlurHandler(blurHandler);
+        }
+
+        focusView();
     }
 
     /**

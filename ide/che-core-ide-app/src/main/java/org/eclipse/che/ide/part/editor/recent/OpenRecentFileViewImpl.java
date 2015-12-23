@@ -12,6 +12,7 @@ package org.eclipse.che.ide.part.editor.recent;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.resources.client.ClientBundle;
@@ -31,6 +32,7 @@ import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
+import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.Tree;
 import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
@@ -138,6 +140,15 @@ public class OpenRecentFileViewImpl extends Window implements OpenRecentFilesVie
             }
         });
 
+        KeyboardNavigationHandler handler = new KeyboardNavigationHandler() {
+            @Override
+            public void onEnter(NativeEvent evt) {
+                hide();
+            }
+        };
+
+        handler.bind(tree);
+
         tree.addDomHandler(new DoubleClickHandler() {
             @Override
             public void onDoubleClick(DoubleClickEvent event) {
@@ -158,6 +169,8 @@ public class OpenRecentFileViewImpl extends Window implements OpenRecentFilesVie
         getFooter().setVisible(false);
 
         getWidget().setStyleName(styles.css().window());
+
+        hideCrossButton();
     }
 
     /** {@inheritDoc} */
@@ -183,7 +196,7 @@ public class OpenRecentFileViewImpl extends Window implements OpenRecentFilesVie
     /** {@inheritDoc} */
     @Override
     public void show() {
-        super.show();
+        super.show(tree);
         if (!tree.getRootNodes().isEmpty()) {
             tree.getSelectionModel().select(tree.getRootNodes().get(0), false);
         }

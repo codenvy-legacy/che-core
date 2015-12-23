@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.search.presentation;
 
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -44,8 +42,6 @@ class FindResultViewImpl extends BaseView<FindResultView.ActionDelegate> impleme
     private final Tree                  tree;
     private final FindResultNodeFactory findResultNodeFactory;
 
-    private ScrollPanel container;
-
     @Inject
     public FindResultViewImpl(PartStackUIResources resources,
                               FindResultNodeFactory findResultNodeFactory,
@@ -70,20 +66,24 @@ class FindResultViewImpl extends BaseView<FindResultView.ActionDelegate> impleme
         TreeNodeLoader loader = new TreeNodeLoader(Collections.<NodeInterceptor>emptySet());
         tree = new Tree(nodeStorage, loader);
 
-        container = new ScrollPanel(tree);
-        setContentWidget(container);
-        tree.getElement().setTabIndex(0);
-        tree.getElement().getStyle().setHeight(100, Style.Unit.PCT);
-        tree.getElement().getParentElement().getStyle().setHeight(100, Style.Unit.PCT);
+        setContentWidget(tree);
+
         tree.setAutoSelect(true);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected void focusView() {
+        tree.setFocus(true);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void showResults(List<ItemReference> nodes, String request) {
         tree.getNodeStorage().clear();
-        ResultNode rootNode = findResultNodeFactory.newResultNode(nodes, request);
-        tree.getNodeStorage().add(rootNode);
+        tree.getNodeStorage().add(findResultNodeFactory.newResultNode(nodes, request));
         tree.expandAll();
-        tree.getSelectionModel().select(rootNode, false);
+        tree.getSelectionModel().select(tree.getRootNodes().get(0), false);
+        focusView();
     }
 }

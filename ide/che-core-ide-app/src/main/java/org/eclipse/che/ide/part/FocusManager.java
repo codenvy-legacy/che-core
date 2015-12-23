@@ -17,7 +17,6 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.parts.Focusable;
-import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
@@ -26,8 +25,9 @@ import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
 /**
  * FocusManager is responsible for granting a focus for a stack when requested.
  *
- * @author <a href="mailto:nzamosenchuk@exoplatform.com">Nikolay Zamosenchuk</a>
+ * @author Nikolay Zamosenchuk
  * @author Dmitry Shnurenko
+ * @author Vlad Zhukovskyi
  */
 @Singleton
 public class FocusManager {
@@ -67,9 +67,8 @@ public class FocusManager {
                 }
 
                 /** unfocus active part */
-                if (activePart != null &&
-                    activePart instanceof HasView && ((HasView)activePart).getView() instanceof Focusable) {
-                    ((Focusable)((HasView)activePart).getView()).setFocus(false);
+                if (activePart != null && activePart.getView() instanceof Focusable) {
+                    ((Focusable)activePart.getView()).setFocus(false);
                 }
 
                 /** remember active part stack and part */
@@ -81,11 +80,11 @@ public class FocusManager {
 
                 /** focus part if it has view and focusable */
                 if (activePart != null) {
-                    if (activePart instanceof HasView && ((HasView)activePart).getView() instanceof Focusable) {
+                    if (activePart.getView() instanceof Focusable) {
                         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
                             @Override
                             public void execute() {
-                                ((Focusable)((HasView)activePart).getView()).setFocus(true);
+                                ((Focusable)activePart.getView()).setFocus(true);
                             }
                         });
                     }
