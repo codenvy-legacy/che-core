@@ -28,6 +28,8 @@ import org.eclipse.che.ide.debug.Breakpoint;
 import org.eclipse.che.ide.debug.BreakpointManager;
 import org.eclipse.che.ide.debug.BreakpointRenderer;
 import org.eclipse.che.ide.debug.BreakpointRenderer.LineChangeAction;
+import org.eclipse.che.ide.debug.BreakpointStateEvent;
+import org.eclipse.che.ide.debug.BreakpointStateEventHandler;
 import org.eclipse.che.ide.debug.Debugger;
 import org.eclipse.che.ide.debug.DebuggerManager;
 import org.eclipse.che.ide.debug.DebuggerStateEvent;
@@ -397,7 +399,6 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     /**
      * Registers events handlers.
      */
-
     private void registerEventHandlers(EventBus eventBus) {
         eventBus.addHandler(EditorOpenedEvent.TYPE, new EditorOpenedEventHandler() {
             @Override
@@ -419,6 +420,44 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
                 }
             }
         });
+
+        eventBus.addHandler(BreakpointStateEvent.TYPE, new BreakpointStateEventHandler() {
+            @Override
+            public void onStateChanged(BreakpointStateEvent event) {
+                onBreakpointStateChanged(event.getState(), event.getFilePath(), event.getLineNumber());
+            }
+        });
+    }
+
+    /**
+     * VM has changed breakpoint state. Sets respective mark.
+     */
+    private void onBreakpointStateChanged(BreakpointStateEvent.BreakpointState state, String filePath, int lineNumber) {
+        if (state == BreakpointStateEvent.BreakpointState.ACTIVE) {
+            List<Breakpoint> breakpointsForPath = breakpoints.get(filePath);
+            if (breakpointsForPath == null) {
+                return;
+            }
+
+            for (int i = 0; i < breakpointsForPath.size(); i++) {
+                Breakpoint breakpoint = breakpointsForPath.get(i);
+
+                if (breakpoint.getLineNumber() == lineNumber) {
+                    Breakpoint newActiveBreakpoint = new Breakpoint(breakpoint.getType(),
+                                                                    breakpoint.getLineNumber(),
+                                                                    breakpoint.getPath(),
+                                                                    breakpoint.getFile(),
+                                                                    breakpoint.getMessage(),
+                                                                    true);
+                    breakpointsForPath.set(i, newActiveBreakpoint);
+
+                    BreakpointRenderer breakpointRenderer = getBreakpointRendererForFile(breakpoint.getFile());
+                    if (breakpointRenderer != null) {
+                        breakpointRenderer.setBreakpointActive(breakpoint.getLineNumber(), true);
+                    }
+                }
+            }
+        }
     }
 
     /**
