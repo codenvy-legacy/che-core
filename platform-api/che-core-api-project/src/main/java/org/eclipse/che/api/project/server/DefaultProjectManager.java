@@ -653,7 +653,7 @@ public final class DefaultProjectManager implements ProjectManager {
                 }
 
             } catch (ValueStorageException e) {
-                LOG.warn(e.getLocalizedMessage(), e);
+                LOG.warn(e.getLocalizedMessage());
             }
 
         }
