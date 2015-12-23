@@ -529,6 +529,7 @@ public class StandardComponentInitializer {
         actionManager.registerAction("importLocalProjectAction", importLocalProjectAction);
         actionManager.registerAction("downloadItemAction", downloadItemAction);
         actionManager.registerAction("navigateToFile", navigateToFileAction);
+        assistantGroup.add(navigateToFileAction);
 
         // Compose Save group
         DefaultActionGroup saveGroup = new DefaultActionGroup(actionManager);
