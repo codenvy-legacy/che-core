@@ -20,10 +20,11 @@ import org.eclipse.che.ide.actions.CollapseAllAction;
 import org.eclipse.che.ide.actions.CompleteAction;
 import org.eclipse.che.ide.actions.CopyAction;
 import org.eclipse.che.ide.actions.CreateModuleAction;
+import org.eclipse.che.ide.actions.CreateProjectAction;
 import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
-import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.DownloadAsZipAction;
+import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.ExpandNodeAction;
@@ -32,12 +33,11 @@ import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
 import org.eclipse.che.ide.actions.FullTextSearchAction;
 import org.eclipse.che.ide.actions.GoIntoAction;
+import org.eclipse.che.ide.actions.HotKeysListAction;
 import org.eclipse.che.ide.actions.ImportLocalProjectAction;
 import org.eclipse.che.ide.actions.ImportProjectAction;
 import org.eclipse.che.ide.actions.LoaderAction;
-import org.eclipse.che.ide.actions.HotKeysListAction;
 import org.eclipse.che.ide.actions.NavigateToFileAction;
-import org.eclipse.che.ide.actions.CreateProjectAction;
 import org.eclipse.che.ide.actions.OpenFileAction;
 import org.eclipse.che.ide.actions.OpenSelectedFileAction;
 import org.eclipse.che.ide.actions.PasteAction;
@@ -56,6 +56,7 @@ import org.eclipse.che.ide.actions.UploadFileAction;
 import org.eclipse.che.ide.actions.UploadFolderAction;
 import org.eclipse.che.ide.actions.find.FindActionAction;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
+import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.DefaultActionGroup;
@@ -71,24 +72,24 @@ import org.eclipse.che.ide.connection.WsConnectionListener;
 import org.eclipse.che.ide.imageviewer.ImageViewerProvider;
 import org.eclipse.che.ide.newresource.NewFileAction;
 import org.eclipse.che.ide.newresource.NewFolderAction;
-import org.eclipse.che.ide.part.editor.recent.OpenRecentFilesAction;
 import org.eclipse.che.ide.part.editor.actions.CloseAction;
 import org.eclipse.che.ide.part.editor.actions.CloseAllAction;
 import org.eclipse.che.ide.part.editor.actions.CloseAllExceptPinnedAction;
 import org.eclipse.che.ide.part.editor.actions.CloseOtherAction;
 import org.eclipse.che.ide.part.editor.actions.PinEditorTabAction;
 import org.eclipse.che.ide.part.editor.actions.ReopenClosedFileAction;
+import org.eclipse.che.ide.part.editor.recent.OpenRecentFilesAction;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 import org.eclipse.che.ide.util.input.KeyCodeMap;
 import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
+import javax.validation.constraints.NotNull;
+
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
 import static org.eclipse.che.ide.api.constraints.Constraints.FIRST;
 import static org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar.BLANK_CATEGORY;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * Initializer for standard components i.e. some basic menu commands (Save, Save As etc)
@@ -632,6 +633,8 @@ public class StandardComponentInitializer {
         centerToolbarGroup.add(loaderToolbarGroup);
         loaderToolbarGroup.add(loaderAction);
 
+        actionManager.registerAction("noOpAction", new NoOpAction());
+
         // Define hot-keys
         keyBinding.getGlobal().addKey(new KeyBuilder().action().alt().charCode('n').build(), "navigateToFile");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('F').build(), "fullTextSearch");
@@ -643,6 +646,13 @@ public class StandardComponentInitializer {
         keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode(KeyCodeMap.ARROW_LEFT).build(), "switchLeftTab");
         keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode(KeyCodeMap.ARROW_RIGHT).build(), "switchRightTab");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('e').build(), "openRecentFiles");
+        keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('s').build(), "noOpAction");
     }
 
+    /** Action that does nothing. It's just for disabling (catching) browser's hot key. */
+    private class NoOpAction extends Action {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+    }
 }
