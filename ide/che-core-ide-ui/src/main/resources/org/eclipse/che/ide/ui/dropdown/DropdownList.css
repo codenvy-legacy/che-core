@@ -47,41 +47,19 @@
     min-width: 148px;
 }
 
-.dropDownListMenu > table > tbody {
-    background-color: toolbarBackgroundColor;
-    border: 1px solid activeTabBorderColor;
-    box-shadow: activeTabTextShadow;
-}
-
 .dropDownListMenu > table > tbody > tr > td {
-    color: selectCommandActionColor;
-}
-
-.dropDownListMenu > table > tbody > tr > td {
-    height: 20px;
     padding: 0;
 }
 
-.dropDownListMenu > table > tbody > tr > td hr {
-    margin: 0 4px 0 4px;
-    border-color: activeTabBorderColor;
+.dropDownListMenu > table > tbody > tr > td > div {
+    margin-left: 10px;
+    text-transform: uppercase;
 }
 
 .dropDownListMenu > table > tbody > tr > td:first-child {
-    text-align: center;
-    min-width: 16px;
-    height: inherit;
+    width: 16px;
 }
 
 .dropDownListMenu > table > tbody > tr > td:last-child {
     width: 0;
-}
-
-.dropDownListMenu > table > tbody > tr > td > svg {
-    display: inline;
-    max-width: 16px;
-    max-height: 16px;
-    fill: toolbarIconColor;
-    stroke: toolbarIconColor;
-    vertical-align: baseline;
 }

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dropdown;
 
-import org.vectomatic.dom.svg.ui.SVGResource;
+import com.google.inject.assistedinject.Assisted;
 
 import javax.validation.constraints.NotNull;
 
@@ -34,14 +34,14 @@ public interface DropDownListFactory {
      * Create an instance of {@link SimpleListElementAction} with given name amd icon for displaying it and header which is configured this
      * element.
      *
+     * @param id
+     *         id of action
      * @param name
      *         name of action
-     * @param image
-     *         icon of action
      * @param header
      *         header widget of custom list
      * @return an instance of {@link SimpleListElementAction}
      */
     @NotNull
-    SimpleListElementAction createElement(@NotNull String name, @NotNull SVGResource image, @NotNull DropDownHeaderWidget header);
+    SimpleListElementAction createElement(@NotNull @Assisted("id") String id, @NotNull @Assisted("name") String name, DropDownHeaderWidget header);
 }

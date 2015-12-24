@@ -32,10 +32,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
+import org.eclipse.che.commons.annotation.Nullable;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 
 /**
  * Class provides general view representation for header of drop down list.
@@ -62,17 +62,17 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     @UiField
     FlowPanel marker;
     @UiField
-    Label             selectedElementName;
+    Label     selectedElementName;
     @UiField
-    FlowPanel         selectedElement;
+    FlowPanel selectedElement;
 
     @UiField
-    FlowPanel         listHeader;
+    FlowPanel listHeader;
 
     private final DropDownListMenu dropDownListMenu;
     private final String           listId;
-
-    private String selectedName;
+    private       String           selectedName;
+    private       ActionDelegate   delegate;
 
     @AssistedInject
     public DropDownHeaderWidgetImpl(DropDownListMenu dropDownListMenu, @NotNull @Assisted String listId) {
@@ -96,7 +96,7 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     /** {@inheritDoc} */
     @Override
     public void setDelegate(@NotNull ActionDelegate delegate) {
-        //do nothing
+        this.delegate = delegate;
     }
 
     /** {@inheritDoc} */
@@ -104,6 +104,7 @@ public class DropDownHeaderWidgetImpl extends Composite implements ClickHandler,
     public void selectElement(@NotNull String title) {
         selectedName = title;
         selectedElementName.setText(title);
+        delegate.onSelect();
     }
 
     /** {@inheritDoc} */

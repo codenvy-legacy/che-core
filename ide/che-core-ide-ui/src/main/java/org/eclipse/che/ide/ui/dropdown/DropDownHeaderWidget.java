@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dropdown;
 
-import javax.validation.constraints.NotNull;
 import org.eclipse.che.commons.annotation.Nullable;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Provides methods which allow change visual representation of header of the list.
@@ -28,12 +29,14 @@ public interface DropDownHeaderWidget {
 
     /**
      * Sets title and image of selected element.
+     *
      * @param title
      *         title of the selected element
      */
     void selectElement(@NotNull String title);
 
     interface ActionDelegate {
+        void onSelect();
     }
 
 }

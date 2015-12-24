@@ -29,6 +29,7 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.inject.Provider;
@@ -56,6 +57,7 @@ import static org.eclipse.che.ide.util.dom.Elements.disableTextSelection;
  * PopupMenu is visual component represents all known Popup Menu.
  *
  * @author Vitaliy Gulyy
+ * @author Oleksii Orel
  */
 
 public class PopupMenu extends Composite {
@@ -223,16 +225,19 @@ public class PopupMenu extends Composite {
         table.setStyleName(POPUP_RESOURCES.popup().popupMenuTable());
         table.setCellPadding(0);
         table.setCellSpacing(0);
-        table.getElement().setAttribute("border", "0");
 
         for (int i = 0; i < list.size(); i++) {
             Action menuItem = list.get(i);
 
             if (menuItem instanceof Separator) {
-                if (i > 0 && i < list.size() - 1) {
-                    table.getFlexCellFormatter().setColSpan(i, 0, hasCheckedItems ? 5 : 4);
+                final String separatorText = ((Separator)menuItem).getText();
+                if (separatorText == null) {
                     table.getCellFormatter().setStyleName(i, 0, POPUP_RESOURCES.popup().popupMenuDelimiter());
+                } else {
+                    table.setWidget(i, 0, new Label(separatorText));
+                    table.getCellFormatter().setStyleName(i, 0, POPUP_RESOURCES.popup().popupMenuTextDelimiter());
                 }
+                table.getFlexCellFormatter().setColSpan(i, 0, hasCheckedItems ? 5 : 4);
             } else {
                 Presentation presentation = presentationFactory.getPresentation(menuItem);
 
@@ -523,6 +528,8 @@ public class PopupMenu extends Composite {
         String popupMenuIconField();
 
         String popupMenuDelimiter();
+
+        String popupMenuTextDelimiter();
 
         String popupMenuIconFieldDisabled();
 

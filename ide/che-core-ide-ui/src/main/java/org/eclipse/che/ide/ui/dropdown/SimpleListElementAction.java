@@ -10,14 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.dropdown;
 
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 
+import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ProjectAction;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
-import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 
@@ -25,51 +22,40 @@ import javax.validation.constraints.NotNull;
  * The action which describes simple element of the custom drop down list.
  *
  * @author Valeriy Svydenko
+ * @author Oleksii Orel
  */
-public class SimpleListElementAction extends ProjectAction {
-
-    private final AppContext           appContext;
+public class SimpleListElementAction extends Action {
+    private final String               id;
     private final String               name;
-    private final SVGResource          image;
     private final DropDownHeaderWidget header;
 
-    @AssistedInject
-    public SimpleListElementAction(AppContext appContext,
-                                   @NotNull @Assisted String name,
-                                   @NotNull @Assisted SVGResource image,
-                                   @NotNull @Assisted DropDownHeaderWidget header) {
-        super(name, name, image);
-
+    @Inject
+    public SimpleListElementAction(@NotNull @Assisted("id") String id,
+                                   @NotNull @Assisted("name") String name,
+                                   @Assisted DropDownHeaderWidget header) {
+        super(name);
+        this.id = id;
         this.name = name;
-        this.image = image;
         this.header = header;
-        this.appContext = appContext;
     }
 
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        header.selectElement(name);
+        if (header != null) {
+            header.selectElement(id);
+        }
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected void updateProjectAction(ActionEvent event) {
-        CurrentProject currentProject = appContext.getCurrentProject();
-
-        event.getPresentation().setEnabledAndVisible(currentProject != null);
+    /** @return id of the element */
+    @NotNull
+    public String getId() {
+        return id;
     }
-
 
     /** @return title of the element */
     @NotNull
     public String getName() {
         return name;
-    }
-
-    /** @return icon of the element */
-    @NotNull
-    public SVGResource getImage() {
-        return image;
     }
 }

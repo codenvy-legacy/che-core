@@ -13,8 +13,7 @@ package org.eclipse.che.ide.api.action;
 /**
  * Represents a separator.
  *
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
- * @version $Id:
+ * @author Evgen Vidolob
  */
 public class Separator extends Action {
     private static final Separator ourInstance = new Separator();
@@ -22,6 +21,8 @@ public class Separator extends Action {
     private String myText;
 
     public Separator() {
+        //It is necessary because otherwise we have some problems with myText==null after compiling GWT
+        this(null);
     }
 
     public Separator(final String text) {

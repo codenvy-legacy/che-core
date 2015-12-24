@@ -17,7 +17,6 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
-import org.eclipse.che.ide.collections.ListHelper;
 import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
@@ -26,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author <a href="mailto:evidolob@codenvy.com">Evgen Vidolob</a>
+ * @author Evgen Vidolob
  * @author Dmitry Shnurenko
  * @author Oleksii Orel
  */
@@ -95,7 +94,8 @@ public class Utils {
                     currentVisibleActionGroupList.addAll(newVisibleActionGroupList);
                 }
             } else if (child instanceof Separator) {
-                if (!currentActionList.isEmpty() && !(currentActionList.get(currentActionList.size() - 1) instanceof Separator)) {
+                if ((((Separator)child).getText() != null) ||
+                    (!currentActionList.isEmpty() && !(currentActionList.get(currentActionList.size() - 1) instanceof Separator))) {
                     currentActionList.add(child);
                 }
             } else {
