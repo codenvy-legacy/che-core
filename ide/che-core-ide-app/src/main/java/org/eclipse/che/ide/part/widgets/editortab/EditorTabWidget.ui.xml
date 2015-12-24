@@ -44,6 +44,10 @@
             cursor: default;
             margin-bottom: 1px;
 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+
             -webkit-transition: all 0.3s ease-in-out,
                                 fill 0.3s ease-in-out,
                                 stroke 0.3s ease-in-out;
