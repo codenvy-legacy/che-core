@@ -615,6 +615,8 @@ public class MachineManager {
      * @return {@link org.eclipse.che.api.machine.server.spi.InstanceProcess} that represents started process in machine
      * @throws NotFoundException
      *         if machine with specified id not found
+     * @throws BadRequestException
+     *         if value of required parameter is invalid
      * @throws MachineException
      *         if other error occur
      */
