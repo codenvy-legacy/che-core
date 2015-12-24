@@ -12,18 +12,15 @@
 -->
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-             xmlns:g='urn:import:com.google.gwt.user.client.ui'
-             xmlns:cellview="urn:import:com.google.gwt.user.cellview.client">
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <ui:with field="res" type="org.eclipse.che.ide.hotkeys.HotKeyResources"/>
 
-    <ui:style>
-
-    </ui:style>
-
-    <g:SimplePanel>
-        <g:DockLayoutPanel unit="PX" width="400px" height="189px">
-            <g:center>
-                <cellview:DataGrid ui:field="dataGrid" debugId="hot-keys-dialog"/>
-            </g:center>
-        </g:DockLayoutPanel>
-    </g:SimplePanel>
+    <g:DockLayoutPanel unit="PX" width="675px" height="450px" addStyleNames="{res.css.blackBorder}">
+        <g:north size="28">
+            <g:TextBox ui:field="filterInput" addStyleNames="{res.css.filter}"/>
+        </g:north>
+        <g:center>
+            <g:FlowPanel ui:field="category" addStyleNames="{res.css.categories}"/>
+        </g:center>
+    </g:DockLayoutPanel>
 </ui:UiBinder>

@@ -14,12 +14,14 @@ import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.hotkeys.HotKeyItem;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This representation of widget that provides an ability to show hotKeys list for IDE and editor
  * @author Alexander Andrienko
  */
 public interface HotKeysDialogView extends View<HotKeysDialogView.ActionDelegate> {
+
     interface ActionDelegate {
         /**
          * Show list hotKeys
@@ -29,22 +31,33 @@ public interface HotKeysDialogView extends View<HotKeysDialogView.ActionDelegate
         /**
          * Perform some action in response to user's clicking 'Ok' button
          */
-        void onBtnOkClicked();
+        void onOkClicked();
+
+        /**
+         * Filter keybindings by filtered text in the description and keybindings
+         * @param filteredText text for filter keybindings
+         */
+        void onFilterValueChanged(String filteredText);
     }
 
     /**
-     * Show dialog 
+     * Reset filter input and Show dialog
      */
-    void showDialog();
+    void show();
 
     /**
-     * Close dialog
+     * Clear and Render keybinding combination
      */
-    void close();
+    void renderKeybindings();
 
     /**
-     * Set hotKeys list for displaying 
-     * @param data hotKeys list
+     * Hide dialog
      */
-    void setData(List<HotKeyItem> data);
+    void hide();
+
+    /**
+     * Set keybindings map for displaying
+     * @param data map which binds categories keybindings and their keybindings
+     */
+    void setData(Map<String, List<HotKeyItem>> data);
 }

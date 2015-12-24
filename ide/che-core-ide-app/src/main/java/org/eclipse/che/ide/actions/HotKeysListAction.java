@@ -26,7 +26,7 @@ public class HotKeysListAction extends Action {
 
     @Inject
     public HotKeysListAction(HotKeysDialogPresenter hotKeysDialogPresenter, CoreLocalizationConstant locale) {
-        super(locale.hotKeysActionName(), locale.hotKeysActionDescription(), null, null);
+        super(locale.keyBindingsActionName(), locale.keyBindingsActionDescription(), null, null);
         this.hotKeysDialogPresenter = hotKeysDialogPresenter;
     }
 
