@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.shared.dto;
 
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.dto.shared.DTO;
@@ -22,13 +23,7 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface Factory extends FactoryV4_0 {
-    List<Link> getLinks();
-
-    void setLinks(List<Link> links);
-
-    Factory withLinks(List<Link> links);
-
+public interface Factory extends FactoryV4_0, Hyperlinks {
     Factory withV(String v);
 
     Factory withId(String id);
@@ -44,4 +39,7 @@ public interface Factory extends FactoryV4_0 {
     Factory withButton(Button button);
 
     Factory withIde(Ide ide);
+
+    @Override
+    Factory withLinks(List<Link> links);
 }
