@@ -138,6 +138,15 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
+    public Promise<ProjectConfigDto> getProject(String workspaceId, String path) {
+        final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
+        return asyncRequestFactory.createGetRequest(requestUrl)
+                                  .header(ACCEPT, MimeType.APPLICATION_JSON)
+                                  .loader(loader, "Getting project...")
+                                  .send(dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class));
+    }
+
+    @Override
     public void getItem(String workspaceId, String path, AsyncRequestCallback<ItemReference> callback) {
         final String requestUrl = extPath + "/project/" + workspaceId + "/item" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)

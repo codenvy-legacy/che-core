@@ -84,6 +84,15 @@ public interface ProjectServiceClient {
     void getProject(String workspaceId, String path, AsyncRequestCallback<ProjectConfigDto> callback);
 
     /**
+     * Get project.
+     *
+     * @param path
+     *         path to the project
+     * @return promise with project dto
+     */
+    Promise<ProjectConfigDto> getProject(String workspaceId, String path);
+
+    /**
      * Get item.
      *
      * @param workspaceId
