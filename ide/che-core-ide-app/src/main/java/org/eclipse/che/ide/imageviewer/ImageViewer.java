@@ -10,13 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.imageviewer;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
-import org.eclipse.che.ide.api.editor.EditorInput;
-import org.eclipse.che.ide.ui.dialogs.CancelCallback;
-import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -24,10 +17,17 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.inject.Inject;
 
+import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
+import org.eclipse.che.ide.api.editor.EditorInput;
+import org.eclipse.che.ide.ui.dialogs.CancelCallback;
+import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
+import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
@@ -51,6 +51,8 @@ public class ImageViewer extends AbstractEditorPresenter {
         this.resources = resources;
         this.constant = constant;
         this.dialogFactory = dialogFactory;
+
+        resources.imageViewerCss().ensureInjected();
     }
 
     /** {@inheritDoc} */

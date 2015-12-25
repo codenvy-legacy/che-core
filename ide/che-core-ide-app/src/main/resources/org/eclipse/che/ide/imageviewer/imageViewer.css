@@ -9,12 +9,11 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 /* Annotated CSS for the Editor presenter. */
-
-
 @url background imageViewerBackground;
 
 .imageViewer {
-    margin: auto;
-    background-image: background;
     display: block;
+    margin: auto;
+    height: 40%;
+    background-image: background;
 }

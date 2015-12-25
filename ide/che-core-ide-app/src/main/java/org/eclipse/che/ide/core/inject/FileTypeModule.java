@@ -10,14 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.core.inject;
 
-import org.eclipse.che.ide.MimeType;
-import org.eclipse.che.ide.Resources;
-import org.eclipse.che.ide.api.extension.ExtensionGinModule;
-import org.eclipse.che.ide.api.filetypes.FileType;
 import com.google.gwt.inject.client.AbstractGinModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import org.eclipse.che.ide.MimeType;
+import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.api.extension.ExtensionGinModule;
+import org.eclipse.che.ide.api.filetypes.FileType;
 
 /**
  * @author Evgen Vidolob
