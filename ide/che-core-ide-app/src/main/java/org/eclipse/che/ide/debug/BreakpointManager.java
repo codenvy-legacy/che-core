@@ -11,6 +11,8 @@
 
 package org.eclipse.che.ide.debug;
 
+import org.eclipse.che.commons.annotation.Nullable;
+
 import java.util.List;
 
 /**
@@ -34,6 +36,12 @@ public interface BreakpointManager {
      * Indicates if current active file has a breakpoint at giving line.
      */
     boolean isCurrentBreakpoint(int lineNumber);
+    
+    /**
+     * Returns current breakpoint.
+     */
+    @Nullable
+    Breakpoint getCurrentBreakpoint();
 
     /**
      * @return all breakpoints
