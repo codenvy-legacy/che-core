@@ -10,18 +10,21 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.gwt.client;
 
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.inject.name.Named;
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
+import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceEvent;
+import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceHandler;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.inject.name.Named;
-
-import javax.validation.constraints.NotNull;
 import javax.inject.Inject;
-
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
@@ -34,23 +37,29 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Sergii Leschenko
  * @author Artem Zatsarynnyi
  */
-public class VfsServiceClientImpl implements VfsServiceClient {
-    private final String VFS;
-    private final String FIND_REPLACE;
-    private final String GET_ITEM_BY_PATH;
-
+public class VfsServiceClientImpl implements VfsServiceClient, StartWorkspaceHandler {
     private final AsyncRequestLoader  loader;
     private final AsyncRequestFactory asyncRequestFactory;
+    private final String              extPath;
+
+    private String FIND_REPLACE;
+    private String GET_ITEM_BY_PATH;
 
     @Inject
     public VfsServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                @Named("workspaceId") String workspaceId,
+                                EventBus eventBus,
                                 AsyncRequestLoader loader,
                                 AsyncRequestFactory asyncRequestFactory) {
+        this.extPath = extPath;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
 
-        VFS = extPath + "/vfs/" + workspaceId + "/v2";
+        eventBus.addHandler(StartWorkspaceEvent.TYPE, this);
+    }
+
+    @Override
+    public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
+        String VFS = extPath + "/vfs/" + workspace.getId() + "/v2";
         FIND_REPLACE = VFS + "/replace";
         GET_ITEM_BY_PATH = VFS + "/itembypath";
     }

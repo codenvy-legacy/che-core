@@ -36,6 +36,38 @@ public class BrowserQueryFieldRenderer {
     }
 
     /**
+     * Returns value of parameter by name from browser query string. If parameter not found empty string will be returned.
+     *
+     * @param name
+     *         name of value parameter
+     * @return string representation of value parameter
+     */
+    public native String getParameterFromURLByName(String name) /*-{
+        var urlParameterString = window.location.search;
+
+        if (!urlParameterString) {
+            return "";
+        }
+
+        // remove leading question marks
+        while (urlParameterString.indexOf("?") == 0) {
+            urlParameterString = urlParameterString.substring(1);
+        }
+
+        var pairs = urlParameterString.split("&");
+
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split('=');
+
+            if (pair.length == 2 && decodeURIComponent(pair[0]) == name) {
+                return decodeURIComponent(pair[1]);
+            }
+        }
+
+        return "";
+    }-*/;
+
+    /**
      * Sets workspace name to query field in browser.
      *
      * @param workspaceName

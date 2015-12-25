@@ -41,26 +41,25 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
     private final AsyncRequestLoader     loader;
     private final AsyncRequestFactory    asyncRequestFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final String                 baseUrl;
+    private final String                 extPath;
 
     @Inject
     protected ProjectTypeServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                           @Named("workspaceId") String workspaceId,
                                            AsyncRequestLoader loader,
                                            AsyncRequestFactory asyncRequestFactory,
                                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+        this.extPath = extPath;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        baseUrl = extPath + "/project-type/" + workspaceId;
     }
 
     @Override
-    public Promise<List<ProjectTypeDefinition>> getProjectTypes() {
+    public Promise<List<ProjectTypeDefinition>> getProjectTypes(@NotNull final String workspaceId) {
         return newPromise(new RequestCall<List<ProjectTypeDefinition>>() {
             @Override
             public void makeCall(AsyncCallback<List<ProjectTypeDefinition>> callback) {
-                getProjectTypes(callback);
+                getProjectTypes(workspaceId, callback);
             }
         }).then(new Function<List<ProjectTypeDefinition>, List<ProjectTypeDefinition>>() {
             @Override
@@ -74,8 +73,8 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
         });
     }
 
-    private void getProjectTypes(@NotNull AsyncCallback<List<ProjectTypeDefinition>> callback) {
-        final String url = baseUrl;
+    private void getProjectTypes(String workspaceId, @NotNull AsyncCallback<List<ProjectTypeDefinition>> callback) {
+        final String url = extPath + "/project-type/" + workspaceId;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about registered project types...")
@@ -83,17 +82,17 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
     }
 
     @Override
-    public Promise<ProjectTypeDefinition> getProjectType(final String id) {
+    public Promise<ProjectTypeDefinition> getProjectType(final String workspaceId, final String id) {
         return newPromise(new RequestCall<ProjectTypeDefinition>() {
             @Override
             public void makeCall(AsyncCallback<ProjectTypeDefinition> callback) {
-                getProjectType(id, callback);
+                getProjectType(workspaceId, id, callback);
             }
         });
     }
 
-    private void getProjectType(@NotNull String id, @NotNull AsyncCallback<ProjectTypeDefinition> callback) {
-        final String url = baseUrl + '/' + id;
+    private void getProjectType(@NotNull String workspaceId, @NotNull String id, @NotNull AsyncCallback<ProjectTypeDefinition> callback) {
+        final String url = extPath + "/project-type/" + workspaceId + '/' + id;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
                            .loader(loader, "Getting info about project type...")

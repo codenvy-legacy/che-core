@@ -20,6 +20,7 @@ import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInitException;
 import org.eclipse.che.ide.api.editor.EditorInput;
@@ -113,6 +114,7 @@ public class EditorAgentImpl implements EditorAgent {
     private       CoreLocalizationConstant coreLocalizationConstant;
     private final NodeManager              nodeManager;
     private final ProjectServiceClient     projectService;
+    private final AppContext               appContext;
     private final DtoUnmarshallerFactory   unmarshallerFactory;
     private final WindowActionHandler windowActionHandler = new WindowActionHandler() {
         @Override
@@ -137,7 +139,8 @@ public class EditorAgentImpl implements EditorAgent {
                            final NotificationManager notificationManager,
                            CoreLocalizationConstant coreLocalizationConstant,
                            NodeManager nodeManager,
-                           ProjectServiceClient projectService,
+                           ProjectServiceClient projectServiceClient,
+                           AppContext appContext,
                            DtoUnmarshallerFactory unmarshallerFactory) {
         super();
         this.eventBus = eventBus;
@@ -147,7 +150,8 @@ public class EditorAgentImpl implements EditorAgent {
         this.notificationManager = notificationManager;
         this.coreLocalizationConstant = coreLocalizationConstant;
         this.nodeManager = nodeManager;
-        this.projectService = projectService;
+        this.appContext = appContext;
+        this.projectService = projectServiceClient;
         this.unmarshallerFactory = unmarshallerFactory;
         openedEditors = new LinkedHashMap<>();
 
@@ -246,6 +250,7 @@ public class EditorAgentImpl implements EditorAgent {
     }
 
     //todo Warning: this code should be reworked or deleted when folders and maven modules won't being closed after rename
+
     /**
      * Recursive update opened editor parts after renaming their parent folder or parent module
      *
@@ -268,7 +273,7 @@ public class EditorAgentImpl implements EditorAgent {
 
         final String newFilePath = oldFilePath.replaceFirst(oldTargetPath, newTargetPath);
 
-        projectService.getItem(newFilePath, new AsyncRequestCallback<ItemReference>(unmarshaller) {
+        projectService.getItem(appContext.getWorkspace().getId(), newFilePath, new AsyncRequestCallback<ItemReference>(unmarshaller) {
             @Override
             protected void onSuccess(ItemReference result) {
                 FileReferenceNode fileReferenceNode = ((FileReferenceNode)editorPart.getEditorInput().getFile());

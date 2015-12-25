@@ -28,16 +28,18 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.ide.api.ProductInfoDataProvider;
 import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
 import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
 import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
-import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
 import java.util.HashMap;
@@ -60,6 +62,8 @@ public class BootstrapController {
     private final ActionManager                actionManager;
     private final ProductInfoDataProvider      productInfoDataProvider;
     private final Provider<AppStateManager>    appStateManagerProvider;
+    private final AppContext                   appContext;
+    private final BrowserQueryFieldRenderer    queryFieldRenderer;
 
     @Inject
     public BootstrapController(Provider<WorkspacePresenter> workspaceProvider,
@@ -69,7 +73,9 @@ public class BootstrapController {
                                EventBus eventBus,
                                ActionManager actionManager,
                                ProductInfoDataProvider productInfoDataProvider,
-                               Provider<AppStateManager> appStateManagerProvider) {
+                               Provider<AppStateManager> appStateManagerProvider,
+                               AppContext appContext,
+                               BrowserQueryFieldRenderer queryFieldRenderer) {
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
         this.eventBus = eventBus;
@@ -77,6 +83,8 @@ public class BootstrapController {
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.productInfoDataProvider = productInfoDataProvider;
         this.appStateManagerProvider = appStateManagerProvider;
+        this.appContext = appContext;
+        this.queryFieldRenderer = queryFieldRenderer;
 
         dtoRegistrar.registerDtoProviders();
     }
@@ -143,9 +151,6 @@ public class BootstrapController {
         RootLayoutPanel.get().getElement().getStyle().setZIndex(0);
 
         WorkspacePresenter workspacePresenter = workspaceProvider.get();
-
-        // Display 'Update extension' button if IDE is launched in SDK runner
-        workspacePresenter.setUpdateButtonVisibility(Config.getStartupParam("h") != null && Config.getStartupParam("p") != null);
 
         // Display IDE
         workspacePresenter.go(mainPanel);
@@ -216,7 +221,9 @@ public class BootstrapController {
 
             analyticsEventLoggerExt.logEvent("session-usage", parameters);
 
-            if (Config.getCurrentWorkspace() != null && Config.getCurrentWorkspace().isTemporary()) {
+            UsersWorkspace workspace = appContext.getWorkspace();
+
+            if (workspace != null && workspace.isTemporary()) {
                 analyticsEventLoggerExt.logEvent("session-usage", parameters);
             }
 
@@ -225,7 +232,7 @@ public class BootstrapController {
     }
 
     private void processStartupParameters() {
-        final String projectNameToOpen = Config.getProjectName();
+        final String projectNameToOpen = appContext.getWorkspace().getName();
         if (projectNameToOpen != null) {
             eventBus.addHandler(ProjectReadyEvent.TYPE, getStartupActionHandler());
         } else {
@@ -245,8 +252,8 @@ public class BootstrapController {
     }
 
     private void processStartupAction() {
-        final String startupAction = Config.getStartupParam("action");
-        if (startupAction != null) {
+        final String startupAction = queryFieldRenderer.getParameterFromURLByName("action");
+        if (!startupAction.isEmpty()) {
             actionManager.performAction(startupAction, null);
         }
     }

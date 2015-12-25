@@ -103,13 +103,6 @@ import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
-import org.eclipse.che.ide.part.editor.recent.RecentFileActionFactory;
-import org.eclipse.che.ide.part.editor.recent.RecentFileList;
-import org.eclipse.che.ide.part.editor.recent.RecentFileStore;
-import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
-import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerPresenter;
-import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerView;
-import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerViewImpl;
 import org.eclipse.che.ide.filetypes.FileTypeRegistryImpl;
 import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogView;
 import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogViewImpl;
@@ -135,6 +128,10 @@ import org.eclipse.che.ide.part.console.ConsolePartView;
 import org.eclipse.che.ide.part.console.ConsolePartViewImpl;
 import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.editor.EditorPartStackView;
+import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
+import org.eclipse.che.ide.part.editor.recent.RecentFileActionFactory;
+import org.eclipse.che.ide.part.editor.recent.RecentFileList;
+import org.eclipse.che.ide.part.editor.recent.RecentFileStore;
 import org.eclipse.che.ide.part.explorer.project.DefaultNodeInterceptor;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView;
@@ -142,6 +139,12 @@ import org.eclipse.che.ide.part.explorer.project.ProjectExplorerViewImpl;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.preferences.PreferencesView;
 import org.eclipse.che.ide.preferences.PreferencesViewImpl;
+import org.eclipse.che.ide.preferences.pages.appearance.AppearancePresenter;
+import org.eclipse.che.ide.preferences.pages.appearance.AppearanceView;
+import org.eclipse.che.ide.preferences.pages.appearance.AppearanceViewImpl;
+import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerPresenter;
+import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerView;
+import org.eclipse.che.ide.preferences.pages.extensions.ExtensionManagerViewImpl;
 import org.eclipse.che.ide.project.node.NodeManager;
 import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.node.icon.DockerfileIconProvider;
@@ -167,9 +170,6 @@ import org.eclipse.che.ide.settings.common.SettingsPagePresenter;
 import org.eclipse.che.ide.statepersistance.OpenedFilesPersistenceComponent;
 import org.eclipse.che.ide.statepersistance.PersistenceComponent;
 import org.eclipse.che.ide.statepersistance.ShowHiddenFilesPersistenceComponent;
-import org.eclipse.che.ide.preferences.pages.appearance.AppearancePresenter;
-import org.eclipse.che.ide.preferences.pages.appearance.AppearanceView;
-import org.eclipse.che.ide.preferences.pages.appearance.AppearanceViewImpl;
 import org.eclipse.che.ide.theme.DarkTheme;
 import org.eclipse.che.ide.theme.LightTheme;
 import org.eclipse.che.ide.theme.ThemeAgentImpl;
@@ -321,9 +321,9 @@ public class CoreGinModule extends AbstractGinModule {
         bind(AccountServiceClient.class).to(AccountServiceClientImpl.class).in(Singleton.class);
         bind(OAuthServiceClient.class).to(OAuthServiceClientImpl.class).in(Singleton.class);
         bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
+        bind(ProjectServiceClient.class).to(ProjectServiceClientImpl.class).in(Singleton.class);
         bind(WorkspaceServiceClient.class).to(WorkspaceServiceClientImpl.class).in(Singleton.class);
         bind(VfsServiceClient.class).to(VfsServiceClientImpl.class).in(Singleton.class);
-        bind(ProjectServiceClient.class).to(ProjectServiceClientImpl.class).in(Singleton.class);
         bind(ProjectImportersServiceClient.class).to(ProjectImportersServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTypeServiceClient.class).to(ProjectTypeServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTemplateServiceClient.class).to(ProjectTemplateServiceClientImpl.class).in(Singleton.class);
@@ -458,13 +458,6 @@ public class CoreGinModule extends AbstractGinModule {
     @Singleton
     protected PartStackEventHandler providePartStackEventHandler(FocusManager partAgentPresenter) {
         return partAgentPresenter.getPartStackHandler();
-    }
-
-    @Provides
-    @Named("workspaceId")
-    @Singleton
-    protected String provideWorkspaceId() {
-        return Config.getWorkspaceId();
     }
 
     @Provides

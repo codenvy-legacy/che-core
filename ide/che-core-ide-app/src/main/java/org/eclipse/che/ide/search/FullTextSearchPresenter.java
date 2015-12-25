@@ -20,6 +20,7 @@ import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.search.presentation.FindResultPresenter;
 import org.eclipse.che.ide.ui.loaders.requestLoader.IdeLoader;
@@ -34,22 +35,25 @@ import java.util.List;
 @Singleton
 public class FullTextSearchPresenter implements FullTextSearchView.ActionDelegate {
 
-    private final FullTextSearchView     view;
-    private final FindResultPresenter    findResultPresenter;
-    private final DtoFactory             dtoFactory;
-    private final IdeLoader              loader;
-    private final ProjectServiceClient   projectServiceClient;
+    private final FullTextSearchView   view;
+    private final FindResultPresenter  findResultPresenter;
+    private final DtoFactory           dtoFactory;
+    private final IdeLoader            loader;
+    private final AppContext           appContext;
+    private final ProjectServiceClient projectServiceClient;
 
     @Inject
     public FullTextSearchPresenter(FullTextSearchView view,
                                    FindResultPresenter findResultPresenter,
                                    DtoFactory dtoFactory,
                                    IdeLoader loader,
+                                   AppContext appContext,
                                    ProjectServiceClient projectServiceClient) {
         this.view = view;
         this.findResultPresenter = findResultPresenter;
         this.dtoFactory = dtoFactory;
         this.loader = loader;
+        this.appContext = appContext;
         this.projectServiceClient = projectServiceClient;
 
         this.view.setDelegate(this);
@@ -73,7 +77,7 @@ public class FullTextSearchPresenter implements FullTextSearchView.ActionDelegat
             queryExpression.setPath(view.getPathToSearch());
         }
 
-        projectServiceClient.search(queryExpression).then(new Operation<List<ItemReference>>() {
+        projectServiceClient.search(appContext.getWorkspace().getId(), queryExpression).then(new Operation<List<ItemReference>>() {
             @Override
             public void apply(List<ItemReference> result) throws OperationException {
                 view.close();

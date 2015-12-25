@@ -15,6 +15,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.event.FileContentUpdateEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
@@ -46,14 +47,14 @@ public class UploadFilePresenter implements UploadFileView.ActionDelegate {
     @Inject
     public UploadFilePresenter(UploadFileView view,
                                @Named("cheExtensionPath") String restContext,
-                               @Named("workspaceId") String workspaceId,
+                               AppContext appContext,
                                EventBus eventBus,
                                NotificationManager notificationManager,
                                ProjectExplorerPresenter projectExplorer,
                                CoreLocalizationConstant locale) {
 
         this.restContext = restContext;
-        this.workspaceId = workspaceId;
+        this.workspaceId = appContext.getWorkspace().getId();
         this.eventBus = eventBus;
         this.view = view;
         this.projectExplorer = projectExplorer;

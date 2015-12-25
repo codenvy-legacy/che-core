@@ -18,6 +18,7 @@ import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.download.DownloadContainer;
@@ -41,7 +42,7 @@ public class DownloadItemAction extends Action {
 
     @Inject
     public DownloadItemAction(@Named("cheExtensionPath") String extPath,
-                              @Named("workspaceId") String workspaceId,
+                              AppContext appContext,
                               CoreLocalizationConstant locale,
                               AnalyticsEventLogger eventLogger,
                               DownloadContainer downloadContainer,
@@ -51,7 +52,7 @@ public class DownloadItemAction extends Action {
         this.downloadContainer = downloadContainer;
         this.projectExplorer = projectExplorer;
 
-        BASE_URL = extPath + "/project/" + workspaceId + "/export/";
+        BASE_URL = extPath + "/project/" + appContext.getWorkspace().getId() + "/export/";
     }
 
     /** {@inheritDoc} */

@@ -39,6 +39,15 @@ public class AppContext {
     public void setWorkspace(UsersWorkspaceDto workspace) {
         this.workspace = workspace;
     }
+    
+    /** Returns id of current workspace of throws IllegalArgumentException if workspace is null. */
+    public String getWorkspaceId() {
+        if(workspace == null) {
+            throw new IllegalArgumentException(getClass() + " Workspace can not be null.");
+        }
+        
+        return workspace.getId();
+    }
 
     /**
      * Returns {@link CurrentProject} instance that describes the project

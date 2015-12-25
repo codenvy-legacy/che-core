@@ -82,6 +82,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
     private final GitServiceClient         gitService;
     private final CoreLocalizationConstant locale;
     private final NotificationManager      notificationManager;
+    private final String                   workspaceId;
 
     private Callback<Void, Throwable> actionCompletedCallBack;
 
@@ -113,6 +114,8 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
         this.gitService = gitServiceClient;
         this.locale = coreLocalizationConstant;
         this.notificationManager = notificationManager;
+        
+        this.workspaceId = appContext.getWorkspaceId();
     }
 
     /** {@inheritDoc} */
@@ -164,7 +167,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
                 }
 
                 final Unmarshallable<Status> unmarshall = dtoUnmarshallerFactory.newUnmarshaller(Status.class);
-                gitService.status(project, new AsyncRequestCallback<Status>(unmarshall) {
+                gitService.status(workspaceId, project, new AsyncRequestCallback<Status>(unmarshall) {
                     @Override
                     protected void onSuccess(final Status result) {
                         if (!result.getMissing().isEmpty()) {
@@ -200,7 +203,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
             @Override
             public void accepted() {
                 try {
-                    gitService.add(project, false, itemsToAddToIndex, new RequestCallback<Void>() {
+                    gitService.add(workspaceId, project, false, itemsToAddToIndex, new RequestCallback<Void>() {
                         @Override
                         protected void onSuccess(Void result) {
                             notificationManager.notify(locale.deleteAddToIndexIndexUpdated(), locale.deleteAddToIndexDialogNotification());

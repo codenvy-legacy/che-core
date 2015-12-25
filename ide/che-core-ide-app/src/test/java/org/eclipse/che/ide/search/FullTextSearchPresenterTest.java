@@ -19,6 +19,8 @@ import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.search.presentation.FindResultPresenter;
@@ -28,7 +30,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -67,22 +68,35 @@ public class FullTextSearchPresenterTest {
     @Mock
     private PromiseError                 promiseError;
 
+    @Mock
+    private AppContext           appContext;
+    @Mock
+    private UsersWorkspaceDto    workspaceDto;
+
     @Captor
     private ArgumentCaptor<Operation<PromiseError>>        operationErrorCapture;
     @Captor
     private ArgumentCaptor<Operation<List<ItemReference>>> operationSuccessCapture;
 
-    @InjectMocks
     FullTextSearchPresenter fullTextSearchPresenter;
 
     @Before
     public void setUp() throws Exception {
+        when(appContext.getWorkspace()).thenReturn(workspaceDto);
+        when(workspaceDto.getId()).thenReturn("id");
         String MASK = "mask";
         when(view.getFileMask()).thenReturn(MASK);
         String PATH = "path";
         when(view.getPathToSearch()).thenReturn(PATH);
-        when(projectServiceClient.search(Matchers.<QueryExpression>any())).thenReturn(promise);
+        when(projectServiceClient.search(anyString(), Matchers.<QueryExpression>any())).thenReturn(promise);
         when(promise.then(operationSuccessCapture.capture())).thenReturn(promise);
+
+        fullTextSearchPresenter = new FullTextSearchPresenter(view,
+                                                              findResultPresenter,
+                                                              dtoFactory,
+                                                              loader,
+                                                              appContext,
+                                                              projectServiceClient);
     }
 
     @Test

@@ -11,16 +11,18 @@
 package org.eclipse.che.api.project.gwt.client;
 
 import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
+import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceEvent;
+import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceHandler;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 
-import javax.validation.constraints.NotNull;
 import javax.inject.Named;
-import java.util.List;
-
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
@@ -31,19 +33,29 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
  *
  * @author Artem Zatsarynnyi
  */
-public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceClient {
-    private final String              baseUrl;
+public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceClient, StartWorkspaceHandler {
+
     private final AsyncRequestFactory asyncRequestFactory;
     private final AsyncRequestLoader  loader;
+    private final String              extPath;
+
+    private String baseUrl;
 
     @Inject
     protected ProjectTemplateServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                               @Named("workspaceId") String workspaceId,
+                                               EventBus eventBus,
                                                AsyncRequestFactory asyncRequestFactory,
                                                AsyncRequestLoader loader) {
+        this.extPath = extPath;
         this.asyncRequestFactory = asyncRequestFactory;
         this.loader = loader;
-        baseUrl = extPath + "/project-template/" + workspaceId +"/";
+
+        eventBus.addHandler(StartWorkspaceEvent.TYPE, this);
+    }
+
+    @Override
+    public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
+        baseUrl = extPath + "/project-template/" + workspace.getId() + "/";
     }
 
     @Override

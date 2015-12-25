@@ -12,7 +12,6 @@
 package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.core.client.Callback;
-import java.util.HashSet;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -20,7 +19,6 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.factory.gwt.client.FactoryServiceClient;
 import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.factory.shared.dto.Policies;
 import org.eclipse.che.api.machine.gwt.client.MachineManager;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
@@ -44,13 +42,13 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -110,7 +108,7 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
     @Override
     public void start(final Callback<Component, Exception> callback) {
         this.callback = callback;
-        String factoryParams = Config.getStartupParam("factory");
+        String factoryParams = browserQueryFieldRenderer.getParameterFromURLByName("factory");
         factoryServiceClient.getFactory(factoryParams, true,
                                         new AsyncRequestCallback<Factory>(dtoUnmarshallerFactory.newUnmarshaller(Factory.class)) {
                                             @Override
@@ -147,13 +145,13 @@ public class FactoryWorkspaceComponent extends WorkspaceComponent implements Com
 
     /**
      * Gets {@link Promise} of workspace according to {@code factory} {@link org.eclipse.che.api.factory.shared.dto.Policies}.
-     *
+     * <p/>
      * <p>Return policy for workspace:
      * <p><i>perClick</i> - every click from any user always creates a new workspace every time and if policy is not specified<br/>
      * it will be used by default.
-     *
+     * <p/>
      * <p><i>perUser</i> - create one workspace for a user, a 2nd click from same user reloads the same workspace.
-     *
+     * <p/>
      * <p><i>perAccount</i> - only create workspace for all users. A 2nd click from any user reloads the same workspace<br/>
      * Note that if location = owner, then only 1 workspace ever is created. If location = acceptor<br/>
      * it's one workspace for each unique user.

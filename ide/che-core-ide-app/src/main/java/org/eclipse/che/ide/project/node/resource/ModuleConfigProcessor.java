@@ -20,6 +20,7 @@ import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
@@ -32,10 +33,17 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
  * @author Dmitry Shnurenko
  */
 public class ModuleConfigProcessor extends AbstractResourceProcessor<ProjectConfigDto> {
+    
+    private final String workspaceId;
 
     @Inject
-    public ModuleConfigProcessor(EventBus eventBus, ProjectServiceClient projectService, DtoUnmarshallerFactory unmarshallerFactory) {
-        super(eventBus, projectService, unmarshallerFactory);
+    public ModuleConfigProcessor(EventBus eventBus,
+                                 ProjectServiceClient projectServiceClient,
+                                 AppContext appContext,
+                                 DtoUnmarshallerFactory unmarshallerFactory) {
+        super(eventBus, projectServiceClient, unmarshallerFactory);
+        
+        workspaceId = appContext.getWorkspace().getId();
     }
 
     @Override
@@ -52,7 +60,7 @@ public class ModuleConfigProcessor extends AbstractResourceProcessor<ProjectConf
             return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<ProjectConfigDto>() {
                 @Override
                 public void makeCall(final AsyncCallback<ProjectConfigDto> callback) {
-                    projectService.deleteModule(parentPath, modulePath, new AsyncRequestCallback<Void>() {
+                    projectService.deleteModule(workspaceId, parentPath, modulePath, new AsyncRequestCallback<Void>() {
                         @Override
                         protected void onSuccess(Void result) {
                             callback.onSuccess(node.getData());

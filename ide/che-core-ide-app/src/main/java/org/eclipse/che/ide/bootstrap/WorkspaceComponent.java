@@ -43,7 +43,6 @@ import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
 import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
-import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
@@ -54,7 +53,7 @@ import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
-import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
+import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceEvent;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StopWorkspaceEvent;
 
@@ -177,7 +176,6 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
      *         workspace which will be current
      */
     public void setCurrentWorkspace(UsersWorkspaceDto workspace) {
-        Config.setCurrentWorkspace(workspace);
         appContext.setWorkspace(workspace);
 
         if (needToReloadComponents) {

@@ -10,24 +10,23 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard.mainpage;
 
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
-
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardView;
-
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
+import org.eclipse.che.ide.projectimport.wizard.presenter.ImportProjectWizardView;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.NameUtils;
-
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.inject.Inject;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,24 +43,28 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAI
  */
 public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements MainPageView.ActionDelegate {
 
-    private final MainPageView                                 view;
-    private final DtoUnmarshallerFactory                       dtoUnmarshallerFactory;
-    private final NotificationManager                          notificationManager;
-    private final CoreLocalizationConstant                     locale;
-    private final ImportWizardRegistry                         importWizardRegistry;
-    private       ImporterSelectionListener                    importerSelectionListener;
-    private       ProjectImportersServiceClient                projectImportersService;
-    private       ProjectImporterDescriptor                    selectedProjectImporter;
-    private       ImportProjectWizardView.EnterPressedDelegate enterPressedDelegate;
+    private final AppContext                    appContext;
+    private final MainPageView                  view;
+    private final DtoUnmarshallerFactory        dtoUnmarshallerFactory;
+    private final NotificationManager           notificationManager;
+    private final CoreLocalizationConstant      locale;
+    private final ImportWizardRegistry          importWizardRegistry;
+    private final ProjectImportersServiceClient projectImportersService;
+
+    private ImporterSelectionListener                    importerSelectionListener;
+    private ProjectImporterDescriptor                    selectedProjectImporter;
+    private ImportProjectWizardView.EnterPressedDelegate enterPressedDelegate;
 
     @Inject
-    public MainPagePresenter(ProjectImportersServiceClient projectImportersService,
+    public MainPagePresenter(AppContext appContext,
+                             ProjectImportersServiceClient projectImportersService,
                              DtoUnmarshallerFactory dtoUnmarshallerFactory,
                              NotificationManager notificationManager,
                              CoreLocalizationConstant locale,
                              MainPageView view,
                              ImportWizardRegistry importWizardRegistry) {
         super();
+        this.appContext = appContext;
         this.view = view;
         this.projectImportersService = projectImportersService;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
@@ -119,41 +122,45 @@ public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> impl
 
         final Unmarshallable<List<ProjectImporterDescriptor>> unmarshaller =
                 dtoUnmarshallerFactory.newListUnmarshaller(ProjectImporterDescriptor.class);
-        projectImportersService.getProjectImporters(new AsyncRequestCallback<List<ProjectImporterDescriptor>>(unmarshaller) {
-            @Override
-            protected void onSuccess(List<ProjectImporterDescriptor> result) {
-                for (ProjectImporterDescriptor importer : result) {
-                    if (importer.isInternal() ||
-                        importer.getCategory() == null ||
-                        importWizardRegistry.getWizardRegistrar(importer.getId()) == null) {
-                        continue;
-                    }
 
-                    if (importersByCategory.containsKey(importer.getCategory())) {
-                        importersByCategory.get(importer.getCategory()).add(importer);
-                    } else {
-                        Set<ProjectImporterDescriptor> importersSet = new HashSet<>();
-                        importersSet.add(importer);
-                        importersByCategory.put(importer.getCategory(), importersSet);
-                    }
-                }
-
-                new Timer() {
+        AsyncRequestCallback<List<ProjectImporterDescriptor>> callback =
+                new AsyncRequestCallback<List<ProjectImporterDescriptor>>(unmarshaller) {
                     @Override
-                    public void run() {
-                        view.setImporters(importersByCategory);
-                        if (importersByCategory.keySet().iterator().hasNext()) {
-                            view.selectImporter(importersByCategory.get(importersByCategory.keySet().iterator().next()).iterator().next());
-                        }
-                    }
-                }.schedule(300);
-            }
+                    protected void onSuccess(List<ProjectImporterDescriptor> result) {
+                        for (ProjectImporterDescriptor importer : result) {
+                            if (importer.isInternal() || importer.getCategory() == null
+                                || importWizardRegistry.getWizardRegistrar(importer.getId()) == null) {
+                                continue;
+                            }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                notificationManager.notify(locale.failedToImportProject(), FAIL, true);
-            }
-        });
+                            if (importersByCategory.containsKey(importer.getCategory())) {
+                                importersByCategory.get(importer.getCategory()).add(importer);
+                            } else {
+                                Set<ProjectImporterDescriptor> importersSet = new HashSet<>();
+                                importersSet.add(importer);
+                                importersByCategory.put(importer.getCategory(), importersSet);
+                            }
+                        }
+
+                        new Timer() {
+                            @Override
+                            public void run() {
+                                view.setImporters(importersByCategory);
+                                if (importersByCategory.keySet().iterator().hasNext()) {
+                                    view.selectImporter(importersByCategory.get(importersByCategory.keySet().iterator().next())
+                                                                           .iterator().next());
+                                }
+                            }
+                        }.schedule(300);
+                    }
+
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        notificationManager.notify(locale.failedToImportProject(), FAIL, true);
+                    }
+                };
+
+        projectImportersService.getProjectImporters(appContext.getWorkspace().getId(), callback);
     }
 
     /** {@inheritDoc} */
