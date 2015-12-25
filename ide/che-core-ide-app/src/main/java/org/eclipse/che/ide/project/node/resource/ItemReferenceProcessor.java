@@ -22,6 +22,7 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -35,11 +36,17 @@ import static org.eclipse.che.api.promises.client.callback.PromiseHelper.*;
  * @author Vlad Zhukovskiy
  */
 public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemReference> {
+    
+    private final String workspaceId;
+    
     @Inject
     public ItemReferenceProcessor(EventBus eventBus,
-                                  ProjectServiceClient projectService,
+                                  AppContext appContext,
+                                  ProjectServiceClient projectServiceClient,
                                   DtoUnmarshallerFactory unmarshallerFactory) {
-        super(eventBus, projectService, unmarshallerFactory);
+        super(eventBus, projectServiceClient, unmarshallerFactory);
+        
+        this.workspaceId = appContext.getWorkspace().getId();
     }
 
     @Override
@@ -47,7 +54,7 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
         return AsyncPromiseHelper.createFromAsyncRequest(new RequestCall<ItemReference>() {
             @Override
             public void makeCall(final AsyncCallback<ItemReference> callback) {
-                projectService.delete(node.getData().getPath(), new AsyncRequestCallback<Void>() {
+                projectService.delete(workspaceId, node.getData().getPath(), new AsyncRequestCallback<Void>() {
                     @Override
                     protected void onSuccess(Void result) {
                         callback.onSuccess(node.getData());
@@ -68,7 +75,7 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
-                projectService.rename(parent.getStorablePath() + "/" + node.getData().getName(), newName, null, newCallback(callback));
+                projectService.rename(workspaceId, parent.getStorablePath() + "/" + node.getData().getName(), newName, null, newCallback(callback));
             }
         }).thenPromise(new Function<Void, Promise<ItemReference>>() {
             @Override
@@ -76,7 +83,7 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
                 return newPromise(new RequestCall<ItemReference>() {
                     @Override
                     public void makeCall(AsyncCallback<ItemReference> callback) {
-                        projectService.getItem(parent.getStorablePath() + "/" + newName, newCallback(callback, unmarshallerFactory.newUnmarshaller(ItemReference.class)));
+                        projectService.getItem(workspaceId, parent.getStorablePath() + "/" + newName, newCallback(callback, unmarshallerFactory.newUnmarshaller(ItemReference.class)));
                     }
                 });
             }

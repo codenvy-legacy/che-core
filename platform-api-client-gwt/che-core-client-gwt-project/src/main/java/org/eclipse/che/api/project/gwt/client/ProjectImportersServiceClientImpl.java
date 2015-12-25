@@ -25,21 +25,18 @@ import java.util.List;
  */
 public class ProjectImportersServiceClientImpl implements ProjectImportersServiceClient {
 
-    private String extPath;
-    private String workspaceId;
-    private AsyncRequestFactory asyncRequestFactory;
+    private final String              extPath;
+    private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
     public ProjectImportersServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                             @Named("workspaceId") String workspaceId,
                                              AsyncRequestFactory asyncRequestFactory) {
         this.extPath = extPath;
-        this.workspaceId = workspaceId;
         this.asyncRequestFactory = asyncRequestFactory;
     }
 
     @Override
-    public void getProjectImporters(AsyncRequestCallback<List<ProjectImporterDescriptor>> callback) {
+    public void getProjectImporters(String workspaceId, AsyncRequestCallback<List<ProjectImporterDescriptor>> callback) {
         asyncRequestFactory.createGetRequest(extPath + "/project-importers/" + workspaceId)
                            .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .send(callback);

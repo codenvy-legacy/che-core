@@ -18,7 +18,9 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -27,11 +29,11 @@ import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.message.MessageDialog;
 import org.eclipse.che.test.GwtReflectionUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -82,6 +84,8 @@ public class LocalZipImporterPagePresenterTest {
     @Mock
     private DialogFactory                       dialogFactory;
     @Mock
+    private AppContext                          appContext;
+    @Mock
     private EventBus                            eventBus;
     @Mock
     private CoreLocalizationConstant            locale;
@@ -89,8 +93,26 @@ public class LocalZipImporterPagePresenterTest {
     private ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
     @Mock
     private LocalZipImporterPageView            view;
-    @InjectMocks
-    private LocalZipImporterPagePresenter       presenter;
+    @Mock
+    private UsersWorkspaceDto                   workspace;
+
+    private LocalZipImporterPagePresenter presenter;
+
+    @Before
+    public void setUp() {
+        when(appContext.getWorkspace()).thenReturn(workspace);
+
+        presenter = new LocalZipImporterPagePresenter(view,
+                                                      dtoFactory,
+                                                      locale,
+                                                      appContext,
+                                                      "extPath",
+                                                      eventBus,
+                                                      vfsServiceClient,
+                                                      projectServiceClient,
+                                                      dialogFactory,
+                                                      importProjectNotificationSubscriber);
+    }
 
     @Test
     public void showDialogTest() {

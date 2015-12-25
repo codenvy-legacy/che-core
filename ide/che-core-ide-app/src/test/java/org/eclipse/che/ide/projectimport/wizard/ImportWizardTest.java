@@ -13,6 +13,7 @@ package org.eclipse.che.ide.projectimport.wizard;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
@@ -22,9 +23,10 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
@@ -40,7 +42,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -85,6 +86,8 @@ public class ImportWizardTest {
     @Mock
     private Promise<ProjectTypeDefinition>      definitionPromise;
     @Mock
+    private AppContext                          appContext;
+    @Mock
     private SourceEstimation                    estimation;
     @Mock
     private ProjectTypeDefinition               projectTypeDefinition;
@@ -110,19 +113,33 @@ public class ImportWizardTest {
     private ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
     @Mock
     private NotificationManager                 notificationManager;
+    @Mock
+    private UsersWorkspaceDto                   workspace;
 
     @Mock
     private Wizard.CompleteCallback completeCallback;
 
-    @InjectMocks
     private ImportWizard wizard;
 
     @Before
     public void setUp() {
+        when(appContext.getWorkspace()).thenReturn(workspace);
+        when(workspace.getId()).thenReturn("id");
         when(projectConfig.getName()).thenReturn(PROJECT_NAME);
         when(projectConfig.getSource()).thenReturn(source);
         when(dataObject.getName()).thenReturn(PROJECT_NAME);
         when(dataObject.getSource()).thenReturn(source);
+
+        wizard = new ImportWizard(dataObject,
+                                  projectServiceClient,
+                                  projectTypeServiceClient,
+                                  dtoUnmarshallerFactory,
+                                  dtoFactory,
+                                  vfsServiceClient,
+                                  eventBus,
+                                  localizationConstant,
+                                  importProjectNotificationSubscriber,
+                                  appContext);
     }
 
     @Test
@@ -140,7 +157,7 @@ public class ImportWizardTest {
     @Test
     public void shouldImportAndOpenProject() throws Exception {
         when(projectTypeDefinition.getPrimaryable()).thenReturn(true);
-        when(projectTypeServiceClient.getProjectType(anyString())).thenReturn(definitionPromise);
+        when(projectTypeServiceClient.getProjectType(anyString(), anyString())).thenReturn(definitionPromise);
 
         wizard.complete(completeCallback);
 
@@ -158,7 +175,7 @@ public class ImportWizardTest {
 
         when(projectTypeDefinition.getPrimaryable()).thenReturn(true);
         when(projectConfig.getProblems()).thenReturn(Arrays.asList(problem));
-        when(projectTypeServiceClient.getProjectType(anyString())).thenReturn(definitionPromise);
+        when(projectTypeServiceClient.getProjectType(anyString(), anyString())).thenReturn(definitionPromise);
 
         wizard.complete(completeCallback);
 
@@ -178,16 +195,16 @@ public class ImportWizardTest {
         AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnFailure(itemCallback, throwable);
 
-        verify(projectServiceClient).importProject(eq(PROJECT_NAME), eq(false), eq(source), callbackCaptorForProject.capture());
+        verify(projectServiceClient).importProject(anyString(), eq(PROJECT_NAME), eq(false), eq(source), callbackCaptorForProject.capture());
         GwtReflectionUtils.callOnSuccessVoidParameter(callbackCaptorForProject.getValue());
 
-        verify(projectServiceClient).resolveSources(anyString(), estimationCaptor.capture());
+        verify(projectServiceClient).resolveSources(anyString(), anyString(), estimationCaptor.capture());
         GwtReflectionUtils.callOnSuccess(estimationCaptor.getValue(), Arrays.asList(estimation));
 
         verify(definitionPromise).then(typeDefinitionCaptor.capture());
         typeDefinitionCaptor.getValue().apply(projectTypeDefinition);
 
-        verify(projectServiceClient).updateProject(anyString(), Matchers.<ProjectConfigDto>anyObject(), asyncDescriptorCaptor.capture());
+        verify(projectServiceClient).updateProject(anyString(), anyString(), Matchers.<ProjectConfigDto>anyObject(), asyncDescriptorCaptor.capture());
         GwtReflectionUtils.callOnSuccess(asyncDescriptorCaptor.getValue(), projectConfig);
     }
 }

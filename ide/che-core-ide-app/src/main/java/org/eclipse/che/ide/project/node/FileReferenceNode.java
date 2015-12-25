@@ -21,6 +21,7 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
@@ -48,15 +49,20 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
      * If you want to display another name different from origin, just set into attributes of this node this parameter.
      */
     public static final String DISPLAY_NAME_ATTR = "display";
+    
+    private final String workspaceId;
 
     @Inject
     public FileReferenceNode(@Assisted ItemReference itemReference,
                              @Assisted ProjectConfigDto projectConfig,
                              @Assisted NodeSettings nodeSettings,
                              EventBus eventBus,
+                             AppContext appContext,
                              NodeManager nodeManager,
                              ItemReferenceProcessor resourceProcessor) {
         super(itemReference, projectConfig, nodeSettings, eventBus, nodeManager, resourceProcessor);
+        
+        this.workspaceId = appContext.getWorkspace().getId();
     }
 
     @Override
@@ -120,7 +126,7 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
         return newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
-                nodeManager.projectService.updateFile(getStorablePath(), content, newCallback(callback));
+                nodeManager.projectService.updateFile(workspaceId, getStorablePath(), content, newCallback(callback));
             }
         });
     }
@@ -135,7 +141,7 @@ public class FileReferenceNode extends ItemReferenceBasedNode implements Virtual
         return newPromise(new AsyncPromiseHelper.RequestCall<String>() {
             @Override
             public void makeCall(AsyncCallback<String> callback) {
-                nodeManager.projectService.getFileContent(getStorablePath(), newCallback(callback, new StringUnmarshaller()));
+                nodeManager.projectService.getFileContent(workspaceId, getStorablePath(), newCallback(callback, new StringUnmarshaller()));
             }
         });
     }

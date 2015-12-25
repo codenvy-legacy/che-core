@@ -18,6 +18,7 @@ import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
@@ -39,10 +40,12 @@ public class FindResultNode extends FileReferenceNode {
     public FindResultNode(@Assisted ItemReference itemReference,
                           @Assisted ProjectConfigDto projectConfig,
                           @Assisted NodeSettings nodeSettings,
-                          EventBus eventBus, NodeManager nodeManager,
+                          EventBus eventBus,
+                          AppContext appContext,
+                          NodeManager nodeManager,
                           ItemReferenceProcessor resourceProcessor,
                           ProjectExplorerPresenter projectExplorer) {
-        super(itemReference, projectConfig, nodeSettings, eventBus, nodeManager, resourceProcessor);
+        super(itemReference, projectConfig, nodeSettings, eventBus, appContext, nodeManager, resourceProcessor);
         this.projectExplorer = projectExplorer;
     }
 

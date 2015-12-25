@@ -12,7 +12,10 @@ package org.eclipse.che.ide.core.editor;
 
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
+import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
@@ -24,10 +27,11 @@ import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.project.node.NodeManager;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -38,7 +42,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- *
  * @author Alexander Andrienko
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -59,6 +62,12 @@ public class EditorAgentImplTest {
     private NotificationManager      notificationManager;
     @Mock
     private CoreLocalizationConstant coreLocalizationConstant;
+    @Mock
+    private NodeManager              nodeManager;
+    @Mock
+    private DtoUnmarshallerFactory   dtoUnmarshallerFactory;
+    @Mock
+    private ProjectServiceClient     projectServiceClient;
 
     @Mock
     private VirtualFile                    file;
@@ -76,11 +85,14 @@ public class EditorAgentImplTest {
     private EditorPartPresenter            editor;
     @Mock
     private EditorInput                    editorInput;
+    @Mock
+    private UsersWorkspaceDto              workspaceDto;
+    @Mock
+    private AppContext                     appContext;
 
 //    @Captor
 //    private ArgumentCaptor<DeleteModuleEventHandler> deleteModuleHandlerCaptor;
 
-    @InjectMocks
     private EditorAgentImpl editorAgent;
 
     @Before
@@ -94,6 +106,17 @@ public class EditorAgentImplTest {
         when(newFileNode.getPath()).thenReturn(TEXT + 1);
 
         when(editor.getEditorInput()).thenReturn(editorInput);
+
+        editorAgent = new EditorAgentImpl(eventBus,
+                                          fileTypeRegistry,
+                                          editorRegistry,
+                                          workspace,
+                                          notificationManager,
+                                          coreLocalizationConstant,
+                                          nodeManager,
+                                          projectServiceClient,
+                                          appContext,
+                                          dtoUnmarshallerFactory);
     }
 
     @Test

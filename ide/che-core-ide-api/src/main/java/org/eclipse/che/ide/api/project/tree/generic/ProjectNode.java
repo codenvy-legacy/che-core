@@ -19,6 +19,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.event.project.CloseCurrentProjectEvent;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
@@ -43,22 +44,27 @@ public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements S
     protected final ProjectServiceClient   projectServiceClient;
     protected final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     protected final EventBus               eventBus;
-    private final   GenericTreeStructure   treeStructure;
-    private         boolean                opened;
+
+    private final GenericTreeStructure treeStructure;
+    private final String               workspaceId;
+
+    private boolean opened;
 
     @Inject
     public ProjectNode(@Assisted TreeNode<?> parent,
                        @Assisted ProjectConfigDto data,
                        @Assisted GenericTreeStructure treeStructure,
+                       AppContext appContext,
                        EventBus eventBus,
-                       ProjectServiceClient projectServiceClient,
+                       ProjectServiceClient projectService,
                        DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus);
 
         this.treeStructure = treeStructure;
         this.eventBus = eventBus;
-        this.projectServiceClient = projectServiceClient;
+        this.projectServiceClient = projectService;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.workspaceId = appContext.getWorkspace().getId();
     }
 
     /** {@inheritDoc} */
@@ -126,7 +132,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements S
     /** {@inheritDoc} */
     @Override
     public void rename(final String newName, final RenameCallback renameCallback) {
-        projectServiceClient.rename(getPath(), newName, null, new AsyncRequestCallback<Void>() {
+        projectServiceClient.rename(workspaceId, getPath(), newName, null, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 final String parentPath = ((StorableNode)getParent()).getPath();
@@ -144,7 +150,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements S
     /** {@inheritDoc} */
     public void updateData(final AsyncCallback<Void> asyncCallback, String newPath) {
         Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
-        projectServiceClient.getProject(newPath, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
+        projectServiceClient.getProject(workspaceId, newPath, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
             @Override
             protected void onSuccess(ProjectConfigDto result) {
                 setData(result);
@@ -199,7 +205,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements S
 
     protected void getModules(ProjectConfigDto project, final AsyncCallback<List<ProjectConfigDto>> callback) {
         final Unmarshallable<List<ProjectConfigDto>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ProjectConfigDto.class);
-        projectServiceClient.getModules(project.getPath(), new AsyncRequestCallback<List<ProjectConfigDto>>(unmarshaller) {
+        projectServiceClient.getModules(workspaceId, project.getPath(), new AsyncRequestCallback<List<ProjectConfigDto>>(unmarshaller) {
             @Override
             protected void onSuccess(List<ProjectConfigDto> result) {
                 callback.onSuccess(result);
@@ -246,7 +252,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements S
     /** {@inheritDoc} */
     @Override
     public void delete(final DeleteCallback callback) {
-        projectServiceClient.delete(getPath(), new AsyncRequestCallback<Void>() {
+        projectServiceClient.delete(workspaceId, getPath(), new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 if (isRootProject()) {
@@ -277,7 +283,7 @@ public class ProjectNode extends AbstractTreeNode<ProjectConfigDto> implements S
     protected void getChildren(String path, final AsyncCallback<List<ItemReference>> callback) {
         final List<ItemReference> children = new ArrayList<>();
         final Unmarshallable<List<ItemReference>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(ItemReference.class);
-        projectServiceClient.getChildren(path, new AsyncRequestCallback<List<ItemReference>>(unmarshaller) {
+        projectServiceClient.getChildren(workspaceId, path, new AsyncRequestCallback<List<ItemReference>>(unmarshaller) {
             @Override
             protected void onSuccess(List<ItemReference> result) {
                 final boolean isShowHiddenItems = getTreeStructure().getSettings().isShowHiddenItems();

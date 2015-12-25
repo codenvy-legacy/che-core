@@ -47,7 +47,6 @@ import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -126,7 +125,8 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
             throw new IllegalStateException("Invalid parent node.");
         }
 
-        projectServiceClient.createFile(((HasStorablePath)parent).getStorablePath(),
+        projectServiceClient.createFile(appContext.getWorkspace().getId(),
+                                        ((HasStorablePath)parent).getStorablePath(),
                                         name,
                                         getDefaultContent(),
                                         createCallback(parent));
@@ -167,7 +167,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
                 String filePath = path.substring(project.getName().length() + 2);
                 try {
                     gitServiceClient
-                            .add(project, false, Collections.singletonList(filePath),
+                            .add(appContext.getWorkspaceId(), project, false, Collections.singletonList(filePath),
                                  new RequestCallback<Void>() {
                                      @Override
                                      protected void onSuccess(Void result) {

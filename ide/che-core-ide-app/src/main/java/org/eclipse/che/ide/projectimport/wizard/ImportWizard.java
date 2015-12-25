@@ -26,6 +26,7 @@ import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
@@ -57,23 +58,9 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     private final EventBus                            eventBus;
     private final CoreLocalizationConstant            localizationConstant;
     private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    private final String                              workspaceId;
+    
 
-    /**
-     * Creates project wizard.
-     *
-     * @param dataObject
-     *         wizard's data-object
-     * @param projectServiceClient
-     *         GWT-client for Project service
-     * @param dtoUnmarshallerFactory
-     *         {@link DtoUnmarshallerFactory} instance
-     * @param dtoFactory
-     *         {@link DtoFactory} instance
-     * @param eventBus
-     *         {@link EventBus} instance
-     * @param localizationConstant
-     *         {@link CoreLocalizationConstant} instance
-     */
     @Inject
     public ImportWizard(@Assisted ProjectConfigDto dataObject,
                         ProjectServiceClient projectServiceClient,
@@ -83,7 +70,8 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
                         VfsServiceClient vfsServiceClient,
                         EventBus eventBus,
                         CoreLocalizationConstant localizationConstant,
-                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber) {
+                        ImportProjectNotificationSubscriber importProjectNotificationSubscriber,
+                        AppContext appContext) {
         super(dataObject);
         this.projectServiceClient = projectServiceClient;
         this.projectTypeServiceClient = projectTypeServiceClient;
@@ -93,6 +81,8 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         this.eventBus = eventBus;
         this.localizationConstant = localizationConstant;
         this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
+        
+        this.workspaceId = appContext.getWorkspace().getId();
     }
 
     /** {@inheritDoc} */
@@ -121,7 +111,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         final String projectName = dataObject.getName();
         importProjectNotificationSubscriber.subscribe(projectName);
 
-        projectServiceClient.importProject(projectName, false, dataObject.getSource(), new RequestCallback<Void>() {
+        projectServiceClient.importProject(workspaceId, projectName, false, dataObject.getSource(), new RequestCallback<Void>() {
             @Override
             protected void onSuccess(final Void result) {
                 resolveProject(callback);
@@ -143,12 +133,13 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     private void resolveProject(final CompleteCallback callback) {
         final String projectName = dataObject.getName();
         Unmarshallable<List<SourceEstimation>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(SourceEstimation.class);
-        projectServiceClient.resolveSources(projectName, new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
+        projectServiceClient.resolveSources(workspaceId, projectName, new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
 
             @Override
             protected void onSuccess(List<SourceEstimation> result) {
                 for (SourceEstimation estimation : result) {
-                    final Promise<ProjectTypeDefinition> projectTypePromise = projectTypeServiceClient.getProjectType(estimation.getType());
+                    final Promise<ProjectTypeDefinition> projectTypePromise =
+                            projectTypeServiceClient.getProjectType(workspaceId, estimation.getType());
                     projectTypePromise.then(new Operation<ProjectTypeDefinition>() {
                         @Override
                         public void apply(ProjectTypeDefinition typeDefinition) throws OperationException {
@@ -172,7 +163,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     private void createProject(final CompleteCallback callback, ProjectConfigDto projectConfig) {
         final String projectName = dataObject.getName();
         Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
-        projectServiceClient.updateProject(projectName, projectConfig, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
+        projectServiceClient.updateProject(workspaceId, projectName, projectConfig, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
 
             @Override
             protected void onSuccess(ProjectConfigDto result) {
@@ -210,7 +201,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private void deleteProject(final String name) {
-        projectServiceClient.delete(name, new AsyncRequestCallback<Void>() {
+        projectServiceClient.delete(workspaceId, name, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 Log.info(ImportWizard.class, "Project " + name + " deleted.");

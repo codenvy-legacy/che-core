@@ -33,15 +33,24 @@ public interface ProjectServiceClient {
     /**
      * Get all projects in current workspace.
      *
+     * @param workspaceId
+     *         id of current workspace
+     * @param includeAttributes
+     *         the flag which defines include project attributes or not
      * @param callback
      *         the callback to use for the response
      */
-    void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectConfigDto>> callback);
+    void getProjects(String workspaceId, boolean includeAttributes, AsyncRequestCallback<List<ProjectConfigDto>> callback);
 
     /**
      * Get all projects in current workspace.
+     *
+     * @param workspaceId
+     *         id of current workspace
+     * @param includeAttributes
+     *         the flag which defines include project attributes or not
      */
-    Promise<List<ProjectConfigDto>> getProjects(boolean includeAttributes);
+    Promise<List<ProjectConfigDto>> getProjects(String workspaceId, boolean includeAttributes);
 
     /**
      * Get all projects in specific workspace.
@@ -65,26 +74,32 @@ public interface ProjectServiceClient {
     /**
      * Get project.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the project to get
      * @param callback
      *         the callback to use for the response
      */
-    void getProject(String path, AsyncRequestCallback<ProjectConfigDto> callback);
+    void getProject(String workspaceId, String path, AsyncRequestCallback<ProjectConfigDto> callback);
 
     /**
      * Get item.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the item to get
      * @param callback
      *         the callback to use for the response
      */
-    void getItem(String path, AsyncRequestCallback<ItemReference> callback);
+    void getItem(String workspaceId, String path, AsyncRequestCallback<ItemReference> callback);
 
     /**
      * Create project.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param name
      *         name of the project to create
      * @param projectConfig
@@ -92,12 +107,14 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback);
+    void createProject(String workspaceId, String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback);
 
 
     /**
      * Estimates if the folder supposed to be project of certain type.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path of the project to estimate
      * @param projectType
@@ -105,33 +122,39 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback);
+    void estimateProject(String workspaceId, String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback);
 
 
     /**
      * Gets list of {@link SourceEstimation} for all supposed project types.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path of the project to resolve
      * @param callback
      *         the callback to use for the response
      */
-    void resolveSources(String path, AsyncRequestCallback<List<SourceEstimation>> callback);
+    void resolveSources(String workspaceId, String path, AsyncRequestCallback<List<SourceEstimation>> callback);
 
 
     /**
      * Get sub-project.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the parent project
      * @param callback
      *         the callback to use for the response
      */
-    void getModules(String path, AsyncRequestCallback<List<ProjectConfigDto>> callback);
+    void getModules(String workspaceId, String path, AsyncRequestCallback<List<ProjectConfigDto>> callback);
 
     /**
      * Create sub-project.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param parentProjectPath
      *         path to the parent project
      * @param projectConfig
@@ -139,11 +162,16 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void createModule(String parentProjectPath, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback);
+    void createModule(String workspaceId,
+                      String parentProjectPath,
+                      ProjectConfigDto projectConfig,
+                      AsyncRequestCallback<ProjectConfigDto> callback);
 
     /**
      * Update project.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the project to get
      * @param descriptor
@@ -151,11 +179,13 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void updateProject(String path, ProjectConfigDto descriptor, AsyncRequestCallback<ProjectConfigDto> callback);
+    void updateProject(String workspaceId, String path, ProjectConfigDto descriptor, AsyncRequestCallback<ProjectConfigDto> callback);
 
     /**
      * Create new file in the specified folder.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param parentPath
      *         path to parent for new file
      * @param name
@@ -165,21 +195,25 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void createFile(String parentPath, String name, String content, AsyncRequestCallback<ItemReference> callback);
+    void createFile(String workspaceId, String parentPath, String name, String content, AsyncRequestCallback<ItemReference> callback);
 
     /**
      * Get file content.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to file
      * @param callback
      *         the callback to use for the response
      */
-    void getFileContent(String path, AsyncRequestCallback<String> callback);
+    void getFileContent(String workspaceId, String path, AsyncRequestCallback<String> callback);
 
     /**
      * Update file content.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to file
      * @param content
@@ -187,31 +221,37 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void updateFile(String path, String content, AsyncRequestCallback<Void> callback);
+    void updateFile(String workspaceId, String path, String content, AsyncRequestCallback<Void> callback);
 
     /**
      * Create new folder in the specified folder.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to parent for new folder
      * @param callback
      *         the callback to use for the response
      */
-    void createFolder(String path, AsyncRequestCallback<ItemReference> callback);
+    void createFolder(String workspaceId, String path, AsyncRequestCallback<ItemReference> callback);
 
     /**
      * Delete item.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to item to delete
      * @param callback
      *         the callback to use for the response
      */
-    void delete(String path, AsyncRequestCallback<Void> callback);
+    void delete(String workspaceId, String path, AsyncRequestCallback<Void> callback);
 
     /**
      * Delete module.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param pathToParent
      *         path to module's parent
      * @param modulePath
@@ -219,11 +259,13 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void deleteModule(String pathToParent, String modulePath, AsyncRequestCallback<Void> callback);
+    void deleteModule(String workspaceId, String pathToParent, String modulePath, AsyncRequestCallback<Void> callback);
 
     /**
      * Copy an item with new name to the specified target path. Original item name is used if new name isn't set.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the item to copy
      * @param newParentPath
@@ -233,11 +275,13 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback);
+    void copy(String workspaceId, String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback);
 
     /**
      * Move an item to the specified target path. Set new name to rename the resource when moving.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the item to move
      * @param newParentPath
@@ -247,11 +291,13 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback);
+    void move(String workspaceId, String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback);
 
     /**
      * Rename and/or set new media type for item.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the item to rename
      * @param newName
@@ -261,11 +307,13 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void rename(String path, String newName, String newMediaType, AsyncRequestCallback<Void> callback);
+    void rename(String workspaceId, String path, String newName, String newMediaType, AsyncRequestCallback<Void> callback);
 
     /**
      * Import sources into project.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the project to import sources
      * @param force
@@ -275,11 +323,13 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void importProject(String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback);
+    void importProject(String workspaceId, String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback);
 
     /**
      * Import sources into project.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to the project to import sources
      * @param force
@@ -287,21 +337,25 @@ public interface ProjectServiceClient {
      * @param sourceStorage
      *         {@link SourceStorageDto}
      */
-    Promise<Void> importProject(String path, boolean force, SourceStorageDto sourceStorage);
+    Promise<Void> importProject(String workspaceId, String path, boolean force, SourceStorageDto sourceStorage);
 
     /**
      * Get children for the specified path.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to get its children
      * @param callback
      *         the callback to use for the response
      */
-    void getChildren(String path, AsyncRequestCallback<List<ItemReference>> callback);
+    void getChildren(String workspaceId, String path, AsyncRequestCallback<List<ItemReference>> callback);
 
     /**
      * Get folders tree starts from the specified path.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param path
      *         path to get its folder tree
      * @param depth
@@ -309,25 +363,15 @@ public interface ProjectServiceClient {
      * @param callback
      *         the callback to use for the response
      */
-    void getTree(String path, int depth, AsyncRequestCallback<TreeElement> callback);
+    void getTree(String workspaceId, String path, int depth, AsyncRequestCallback<TreeElement> callback);
 
     /**
      * Search an item(s) by the specified criteria.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param expression
      *         search query expression
      */
-    Promise<List<ItemReference>> search(QueryExpression expression);
-
-    /**
-     * Switch visibility(public/private) of the project represented by it's path.
-     *
-     * @param path
-     *         path of the project to change visibility
-     * @param visibility
-     *         visibility to set
-     * @param callback
-     *         the callback to use for the response
-     */
-    void switchVisibility(String path, String visibility, AsyncRequestCallback<Void> callback);
+    Promise<List<ItemReference>> search(String workspaceId, QueryExpression expression);
 }

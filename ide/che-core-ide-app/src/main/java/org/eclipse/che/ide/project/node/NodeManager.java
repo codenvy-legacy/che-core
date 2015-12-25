@@ -65,6 +65,7 @@ public class NodeManager {
     protected final DtoFactory             dtoFactory;
     protected final Set<NodeIconProvider>  nodeIconProvider;
     protected final AppContext             appContext;
+    protected final String                 workspaceId;
 
     private ModuleNode moduleNode;
 
@@ -85,6 +86,8 @@ public class NodeManager {
         this.dtoFactory = dtoFactory;
         this.nodeIconProvider = nodeIconProvider;
         this.appContext = appContext;
+        
+        this.workspaceId = appContext.getWorkspace().getId();
     }
 
     /** Children operations ********************* */
@@ -108,7 +111,7 @@ public class NodeManager {
         return newPromise(new RequestCall<List<ItemReference>>() {
             @Override
             public void makeCall(AsyncCallback<List<ItemReference>> callback) {
-                projectService.getChildren(path, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ItemReference.class)));
+                projectService.getChildren(workspaceId, path, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ItemReference.class)));
             }
         }).thenPromise(filterItemReference())
           .thenPromise(createItemReferenceNodes(projectConfigDto, nodeSettings))
@@ -130,7 +133,7 @@ public class NodeManager {
         return new RequestCall<List<ItemReference>>() {
             @Override
             public void makeCall(AsyncCallback<List<ItemReference>> callback) {
-                projectService.getChildren(path, _callback(callback, dtoUnmarshaller.newListUnmarshaller(ItemReference.class)));
+                projectService.getChildren(workspaceId, path, _callback(callback, dtoUnmarshaller.newListUnmarshaller(ItemReference.class)));
             }
         };
     }
@@ -229,7 +232,7 @@ public class NodeManager {
         return new RequestCall<ProjectConfigDto>() {
             @Override
             public void makeCall(AsyncCallback<ProjectConfigDto> callback) {
-                projectService.getProject(path, _callback(callback, dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class)));
+                projectService.getProject(workspaceId, path, _callback(callback, dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class)));
             }
         };
     }
@@ -244,7 +247,7 @@ public class NodeManager {
         return newPromise(new RequestCall<List<ProjectConfigDto>>() {
             @Override
             public void makeCall(AsyncCallback<List<ProjectConfigDto>> callback) {
-                projectService.getProjects(true, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectConfigDto.class)));
+                projectService.getProjects(workspaceId, true, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectConfigDto.class)));
             }
         }).then(new Function<List<ProjectConfigDto>, List<Node>>() {
             @Override
@@ -278,7 +281,7 @@ public class NodeManager {
         return new RequestCall<String>() {
             @Override
             public void makeCall(AsyncCallback<String> callback) {
-                projectService.getFileContent(vFile.getPath(), _callback(callback, dtoUnmarshaller.newUnmarshaller(String.class)));
+                projectService.getFileContent(workspaceId, vFile.getPath(), _callback(callback, dtoUnmarshaller.newUnmarshaller(String.class)));
             }
         };
     }
@@ -293,7 +296,8 @@ public class NodeManager {
         return new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
-                projectService.updateFile(vFile.getPath(),
+                projectService.updateFile(workspaceId, 
+                                          vFile.getPath(),
                                           content,
                                           _callback(callback, dtoUnmarshaller.newUnmarshaller(Void.class)));
             }

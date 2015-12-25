@@ -20,6 +20,7 @@ import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
@@ -37,6 +38,7 @@ import javax.validation.constraints.NotNull;
  */
 public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.ActionDelegate {
 
+    private final AppContext                          appContext;
     private final CoreLocalizationConstant            locale;
     private final LocalZipImporterPageView            view;
     private final DtoFactory                          dtoFactory;
@@ -52,7 +54,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
     public LocalZipImporterPagePresenter(LocalZipImporterPageView view,
                                          DtoFactory dtoFactory,
                                          CoreLocalizationConstant locale,
-                                         @Named("workspaceId") String workspaceId,
+                                         AppContext appContext,
                                          @Named("cheExtensionPath") String extPath,
                                          EventBus eventBus,
                                          VfsServiceClient vfsServiceClient,
@@ -62,10 +64,11 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         this.view = view;
         this.locale = locale;
         this.dtoFactory = dtoFactory;
-        this.workspaceId = workspaceId;
+        this.workspaceId = appContext.getWorkspace().getId();
         this.extPath = extPath;
         this.eventBus = eventBus;
         this.vfsServiceClient = vfsServiceClient;
+        this.appContext = appContext;
         this.projectServiceClient = projectServiceClient;
         this.dialogFactory = dialogFactory;
         this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
@@ -182,7 +185,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
     }
 
     private void deleteProject(final String name) {
-        projectServiceClient.delete(name, new AsyncRequestCallback<Void>() {
+        projectServiceClient.delete(appContext.getWorkspace().getId(), name, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 Log.info(LocalZipImporterPagePresenter.class, "Project " + name + " deleted.");

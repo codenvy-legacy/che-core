@@ -22,12 +22,12 @@ import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.PromiseHelper;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
-import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -62,50 +62,43 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Valeriy Svydenko
  */
 public class ProjectServiceClientImpl implements ProjectServiceClient {
-    private final String                   extPath;
-    private final String                   workspaceId;
-    private final String                   projectServicePath;
-    private       ExtServerStateController extServerStateController;
+    private final ExtServerStateController extServerStateController;
     private final AsyncRequestLoader       loader;
     private final AsyncRequestFactory      asyncRequestFactory;
     private final DtoFactory               dtoFactory;
     private final DtoUnmarshallerFactory   dtoUnmarshaller;
-    private final String                   baseHttpUrl;
+
+    private final String extPath;
 
     @Inject
-    protected ProjectServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                       @Named("workspaceId") String workspaceId,
-                                       ExtServerStateController extServerStateController,
+    protected ProjectServiceClientImpl(ExtServerStateController extServerStateController,
                                        AsyncRequestLoader loader,
                                        AsyncRequestFactory asyncRequestFactory,
                                        DtoFactory dtoFactory,
-                                       DtoUnmarshallerFactory dtoUnmarshaller) {
+                                       DtoUnmarshallerFactory dtoUnmarshaller,
+                                       @Named("cheExtensionPath") String extPath) {
         this.extPath = extPath;
-        this.workspaceId = workspaceId;
-        this.projectServicePath = "/project/" + workspaceId;
         this.extServerStateController = extServerStateController;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoFactory = dtoFactory;
-        this.dtoUnmarshaller= dtoUnmarshaller;
-
-        baseHttpUrl = extPath + projectServicePath;
+        this.dtoUnmarshaller = dtoUnmarshaller;
     }
 
     @Override
-    public void getProjects(boolean includeAttributes, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
-        asyncRequestFactory.createGetRequest(baseHttpUrl + "?includeAttributes=" + includeAttributes)
+    public void getProjects(String workspaceId, boolean includeAttributes, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
+        asyncRequestFactory.createGetRequest(extPath + "/project/" + workspaceId + "?includeAttributes=" + includeAttributes)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting projects...")
                            .send(callback);
     }
 
     @Override
-    public Promise<List<ProjectConfigDto>> getProjects(boolean includeAttributes) {
+    public Promise<List<ProjectConfigDto>> getProjects(final String workspaceId, boolean includeAttributes) {
         return newPromise(new AsyncPromiseHelper.RequestCall<List<ProjectConfigDto>>() {
             @Override
             public void makeCall(AsyncCallback<List<ProjectConfigDto>> callback) {
-                getProjects(false, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectConfigDto.class)));
+                getProjects(workspaceId, false, newCallback(callback, dtoUnmarshaller.newListUnmarshaller(ProjectConfigDto.class)));
             }
         });
     }
@@ -120,11 +113,11 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void cloneProjectToCurrentWorkspace(String srcWorkspaceId,
+    public void cloneProjectToCurrentWorkspace(String workspaceId,
                                                String srcProjectPath,
                                                String newNameForProject,
                                                AsyncRequestCallback<String> callback) {
-        final String requestUrl = extPath + "/vfs/" + workspaceId + "/v2/clone" + "?srcVfsId=" + srcWorkspaceId +
+        final String requestUrl = extPath + "/vfs/" + workspaceId + "/v2/clone" + "?srcVfsId=" + workspaceId +
                                   "&srcPath=" + srcProjectPath +
                                   "&parentPath=/" +
                                   "&name=" + newNameForProject;
@@ -136,8 +129,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getProject(String path, AsyncRequestCallback<ProjectConfigDto> callback) {
-        final String requestUrl = baseHttpUrl + normalizePath(path);
+    public void getProject(String workspaceId, String path, AsyncRequestCallback<ProjectConfigDto> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting project...")
@@ -145,8 +138,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getItem(String path, AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = baseHttpUrl + "/item" + normalizePath(path);
+    public void getItem(String workspaceId, String path, AsyncRequestCallback<ItemReference> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/item" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Getting item...")
@@ -154,8 +147,11 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void createProject(String name, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback) {
-        final String requestUrl = baseHttpUrl + "?name=" + name;
+    public void createProject(String workspaceId,
+                              String name,
+                              ProjectConfigDto projectConfig,
+                              AsyncRequestCallback<ProjectConfigDto> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "?name=" + name;
         asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating project...")
@@ -163,8 +159,11 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void estimateProject(String path, String projectType, AsyncRequestCallback<Map<String, List<String>>> callback) {
-        final String requestUrl = baseHttpUrl + "/estimate" + normalizePath(path) + "?type=" + projectType;
+    public void estimateProject(String workspaceId,
+                                String path,
+                                String projectType,
+                                AsyncRequestCallback<Map<String, List<String>>> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/estimate" + normalizePath(path) + "?type=" + projectType;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Estimating project...")
@@ -172,8 +171,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void resolveSources(String path, AsyncRequestCallback<List<SourceEstimation>> callback) {
-        final String requestUrl = baseHttpUrl + "/resolve" + normalizePath(path);
+    public void resolveSources(String workspaceId, String path, AsyncRequestCallback<List<SourceEstimation>> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/resolve" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Resolving sources...")
@@ -182,16 +181,19 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
 
     @Override
-    public void getModules(String path, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
-        final String requestUrl = baseHttpUrl + "/modules" + normalizePath(path);
+    public void getModules(String workspaceId, String path, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/modules" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
     }
 
     @Override
-    public void createModule(String parentProjectPath, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback) {
-        final String requestUrl = baseHttpUrl + normalizePath(parentProjectPath);
+    public void createModule(String workspaceId,
+                             String parentProjectPath,
+                             ProjectConfigDto projectConfig,
+                             AsyncRequestCallback<ProjectConfigDto> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(parentProjectPath);
         asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loader, "Creating module...")
@@ -199,8 +201,11 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void updateProject(String path, ProjectConfigDto projectConfig, AsyncRequestCallback<ProjectConfigDto> callback) {
-        final String requestUrl = baseHttpUrl + normalizePath(path);
+    public void updateProject(String workspaceId,
+                              String path,
+                              ProjectConfigDto projectConfig,
+                              AsyncRequestCallback<ProjectConfigDto> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, projectConfig, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
@@ -209,9 +214,12 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void createFile(String parentPath, String name, String content,
+    public void createFile(String workspaceId,
+                           String parentPath,
+                           String name,
+                           String content,
                            AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = baseHttpUrl + "/file" + normalizePath(parentPath) + "?name=" + name;
+        final String requestUrl = extPath + "/project/" + workspaceId + "/file" + normalizePath(parentPath) + "?name=" + name;
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .data(content)
                            .loader(loader, "Creating file...")
@@ -219,48 +227,48 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getFileContent(String path, AsyncRequestCallback<String> callback) {
-        final String requestUrl = baseHttpUrl + "/file" + normalizePath(path);
+    public void getFileContent(String workspaceId, String path, AsyncRequestCallback<String> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/file" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .loader(loader, "Loading file content...")
                            .send(callback);
     }
 
     @Override
-    public void updateFile(String path, String content, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = baseHttpUrl + "/file" + normalizePath(path);
+    public void updateFile(String workspaceId, String path, String content, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/file" + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, null, false)
                            .data(content)
                            .send(callback);
     }
 
     @Override
-    public void createFolder(String path, AsyncRequestCallback<ItemReference> callback) {
-        final String requestUrl = baseHttpUrl + "/folder" + normalizePath(path);
+    public void createFolder(String workspaceId, String path, AsyncRequestCallback<ItemReference> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/folder" + normalizePath(path);
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .loader(loader, "Creating folder...")
                            .send(callback);
     }
 
     @Override
-    public void delete(String path, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = baseHttpUrl + normalizePath(path);
+    public void delete(String workspaceId, String path, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
                            .loader(loader, "Deleting project...")
                            .send(callback);
     }
 
     @Override
-    public void deleteModule(String pathToParent, String modulePath, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = baseHttpUrl + "/module" + normalizePath(pathToParent) + "?module=" + modulePath;
+    public void deleteModule(String workspaceId, String pathToParent, String modulePath, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/module" + normalizePath(pathToParent) + "?module=" + modulePath;
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
                            .loader(loader, "Deleting module...")
                            .send(callback);
     }
 
     @Override
-    public void copy(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = baseHttpUrl + "/copy" + normalizePath(path) + "?to=" + newParentPath;
+    public void copy(String workspaceId, String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/copy" + normalizePath(path) + "?to=" + newParentPath;
 
         final CopyOptions copyOptions = dtoFactory.createDto(CopyOptions.class);
         copyOptions.setName(newName);
@@ -272,8 +280,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void move(String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = baseHttpUrl + "/move" + normalizePath(path) + "?to=" + newParentPath;
+    public void move(String workspaceId, String path, String newParentPath, String newName, AsyncRequestCallback<Void> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/move" + normalizePath(path) + "?to=" + newParentPath;
 
         final MoveOptions moveOptions = dtoFactory.createDto(MoveOptions.class);
         moveOptions.setName(newName);
@@ -285,8 +293,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void rename(String path, String newName, String newMediaType, AsyncRequestCallback<Void> callback) {
-        String requestUrl = baseHttpUrl + "/rename" + normalizePath(path) + "?name=" + newName;
+    public void rename(String workspaceId, String path, String newName, String newMediaType, AsyncRequestCallback<Void> callback) {
+        String requestUrl = extPath + "/project/" + workspaceId + "/rename" + normalizePath(path) + "?name=" + newName;
         if (newMediaType != null) {
             requestUrl += "&mediaType=" + newMediaType;
         }
@@ -296,8 +304,12 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void importProject(String path, boolean force, SourceStorageDto sourceStorage, RequestCallback<Void> callback) {
-        final StringBuilder requestUrl = new StringBuilder(projectServicePath);
+    public void importProject(String workspaceId,
+                              String path,
+                              boolean force,
+                              SourceStorageDto sourceStorage,
+                              RequestCallback<Void> callback) {
+        final StringBuilder requestUrl = new StringBuilder("/project/" + workspaceId);
         requestUrl.append("/import").append(normalizePath(path));
         if (force) {
             requestUrl.append("?force=true");
@@ -314,11 +326,14 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
      * Imports sources project.
      */
     @Override
-    public Promise<Void> importProject(final String path, final boolean force, final SourceStorageDto sourceStorage) {
+    public Promise<Void> importProject(final String workspaceId,
+                                       final String path,
+                                       final boolean force,
+                                       final SourceStorageDto sourceStorage) {
         return PromiseHelper.newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
             @Override
             public void makeCall(final AsyncCallback<Void> callback) {
-                final StringBuilder requestUrl = new StringBuilder(projectServicePath);
+                final StringBuilder requestUrl = new StringBuilder("/project/" + workspaceId);
                 requestUrl.append("/import").append(normalizePath(path));
                 if (force) {
                     requestUrl.append("?force=true");
@@ -326,7 +341,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
                 MessageBuilder builder = new MessageBuilder(POST, requestUrl.toString());
                 builder.data(dtoFactory.toJson(sourceStorage)).header(CONTENTTYPE, APPLICATION_JSON);
-                final Message message =  builder.build();
+                final Message message = builder.build();
                 extServerStateController.getMessageBus().then(new Operation<MessageBus>() {
                     @Override
                     public void apply(MessageBus messageBus) throws OperationException {
@@ -346,8 +361,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
                             callback.onFailure(e);
                         }
                     }
-                })
-                .catchError(new Operation<PromiseError>() {
+                }).catchError(new Operation<PromiseError>() {
                     @Override
                     public void apply(PromiseError arg) throws OperationException {
                         callback.onFailure(arg.getCause());
@@ -371,24 +385,24 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     }
 
     @Override
-    public void getChildren(String path, AsyncRequestCallback<List<ItemReference>> callback) {
-        final String requestUrl = baseHttpUrl + "/children" + normalizePath(path);
+    public void getChildren(String workspaceId, String path, AsyncRequestCallback<List<ItemReference>> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/children" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
     }
 
     @Override
-    public void getTree(String path, int depth, AsyncRequestCallback<TreeElement> callback) {
-        final String requestUrl = baseHttpUrl + "/tree" + normalizePath(path) + "?depth=" + depth;
+    public void getTree(String workspaceId, String path, int depth, AsyncRequestCallback<TreeElement> callback) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/tree" + normalizePath(path) + "?depth=" + depth;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .send(callback);
     }
 
     @Override
-    public Promise<List<ItemReference>> search(QueryExpression expression) {
-        StringBuilder requestUrl = new StringBuilder(baseHttpUrl + "/search");
+    public Promise<List<ItemReference>> search(String workspaceId, QueryExpression expression) {
+        StringBuilder requestUrl = new StringBuilder(extPath + "/project/" + workspaceId + "/search");
         if (expression.getPath() != null) {
             requestUrl.append(normalizePath(expression.getPath()));
         } else {
@@ -413,16 +427,8 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         }
 
         return asyncRequestFactory.createGetRequest(requestUrl.toString() + queryParameters.toString().replaceFirst("&", "?"))
-                           .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .send(dtoUnmarshaller.newListUnmarshaller(ItemReference.class));
-    }
-
-    @Override
-    public void switchVisibility(String path, String visibility, AsyncRequestCallback<Void> callback) {
-        final String requestUrl = baseHttpUrl + "/switch_visibility" + normalizePath(path) + "?visibility=" + visibility;
-        asyncRequestFactory.createPostRequest(requestUrl, null)
-                           .loader(loader, "Switching visibility...")
-                           .send(callback);
+                                  .header(ACCEPT, MimeType.APPLICATION_JSON)
+                                  .send(dtoUnmarshaller.newListUnmarshaller(ItemReference.class));
     }
 
     /**

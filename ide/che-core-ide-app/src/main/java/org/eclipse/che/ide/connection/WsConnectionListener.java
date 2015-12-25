@@ -22,8 +22,8 @@ import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.websocket.events.ConnectionClosedHandler;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.events.WebSocketClosedEvent;
-import org.eclipse.che.ide.workspace.start.StartWorkspaceEvent;
-import org.eclipse.che.ide.workspace.start.StartWorkspaceHandler;
+import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceEvent;
+import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceHandler;
 
 /**
  * @author Evgen Vidolob

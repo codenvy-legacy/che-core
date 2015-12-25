@@ -50,8 +50,7 @@ public class DownloadAsZipAction extends AbstractPerspectiveAction {
     private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
-    public DownloadAsZipAction(@Named("workspaceId") String workspaceId,
-                               @Named("cheExtensionPath") String extPath,
+    public DownloadAsZipAction(@Named("cheExtensionPath") String extPath,
                                AppContext appContext,
                                CoreLocalizationConstant locale,
                                Resources resources,
@@ -68,7 +67,7 @@ public class DownloadAsZipAction extends AbstractPerspectiveAction {
         this.downloadContainer = downloadContainer;
         this.projectExplorer = projectExplorer;
 
-        BASE_URL = extPath + "/project/" + workspaceId + "/export/";
+        BASE_URL = extPath + "/project/" + appContext.getWorkspace().getId() + "/export/";
     }
 
     /** {@inheritDoc} */

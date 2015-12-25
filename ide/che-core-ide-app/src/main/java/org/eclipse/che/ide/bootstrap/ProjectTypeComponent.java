@@ -20,10 +20,9 @@ import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.core.Component;
-
-import java.util.List;
 
 import java.util.List;
 
@@ -36,16 +35,20 @@ public class ProjectTypeComponent implements Component {
 
     private final ProjectTypeServiceClient projectTypeService;
     private final ProjectTypeRegistry      projectTypeRegistry;
+    private final AppContext               appContext;
 
     @Inject
-    public ProjectTypeComponent(ProjectTypeServiceClient projectTypeService, ProjectTypeRegistry projectTypeRegistry) {
+    public ProjectTypeComponent(ProjectTypeServiceClient projectTypeService,
+                                ProjectTypeRegistry projectTypeRegistry,
+                                AppContext appContext) {
         this.projectTypeService = projectTypeService;
         this.projectTypeRegistry = projectTypeRegistry;
+        this.appContext = appContext;
     }
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        projectTypeService.getProjectTypes().then(new Operation<List<ProjectTypeDefinition>>() {
+        projectTypeService.getProjectTypes(appContext.getWorkspace().getId()).then(new Operation<List<ProjectTypeDefinition>>() {
             @Override
             public void apply(List<ProjectTypeDefinition> arg) throws OperationException {
                 projectTypeRegistry.registerAll(arg);

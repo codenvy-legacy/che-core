@@ -22,14 +22,21 @@ import java.util.List;
  */
 public interface ProjectTypeServiceClient {
 
-    /** Get information about all registered project types. */
-    Promise<List<ProjectTypeDefinition>> getProjectTypes();
+    /**
+     * Get information about all registered project types.
+     *
+     * @param workspaceId
+     *         id of current workspace
+     */
+    Promise<List<ProjectTypeDefinition>> getProjectTypes(String workspaceId);
 
     /**
      * Get information about project type with the specified ID.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param id
      *         id of the project type to get
      */
-    Promise<ProjectTypeDefinition> getProjectType(String id);
+    Promise<ProjectTypeDefinition> getProjectType(String workspaceId, String id);
 }

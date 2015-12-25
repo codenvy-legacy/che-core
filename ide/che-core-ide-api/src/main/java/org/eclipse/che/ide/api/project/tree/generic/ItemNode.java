@@ -19,6 +19,10 @@ import org.eclipse.che.ide.api.project.tree.TreeStructure;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
+
+import org.eclipse.che.ide.api.app.AppContext;
+
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -36,6 +40,8 @@ import javax.validation.constraints.NotNull;
 public abstract class ItemNode extends AbstractTreeNode<ItemReference> implements StorableNode<ItemReference>, UpdateTreeNodeDataIterable {
     protected ProjectServiceClient    projectServiceClient;
     protected DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    
+    private final String workspaceId;
 
     /**
      * Creates new node.
@@ -57,11 +63,14 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
                     ItemReference data,
                     TreeStructure treeStructure,
                     EventBus eventBus,
+                    AppContext appContext,
                     ProjectServiceClient projectServiceClient,
                     DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         super(parent, data, treeStructure, eventBus);
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        
+        this.workspaceId = appContext.getWorkspace().getId();
     }
 
     /** {@inheritDoc} */
@@ -106,7 +115,7 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
     /** Rename appropriate {@link ItemReference} using Codenvy Project API. */
     @Override
     public void rename(final String newName, final RenameCallback renameCallback) {
-        projectServiceClient.rename(getPath(), newName, null, new AsyncRequestCallback<Void>() {
+        projectServiceClient.rename(workspaceId, getPath(), newName, null, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(final Void result) {
                 String parentPath = ((StorableNode)getParent()).getPath();
@@ -124,7 +133,7 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
     /** {@inheritDoc} */
     public void updateData(final AsyncCallback<Void> asyncCallback, String newPath) {
         Unmarshallable<ItemReference> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ItemReference.class);
-        projectServiceClient.getItem(newPath, new AsyncRequestCallback<ItemReference>(unmarshaller) {
+        projectServiceClient.getItem(workspaceId, newPath, new AsyncRequestCallback<ItemReference>(unmarshaller) {
             @Override
             protected void onSuccess(ItemReference result) {
                 setData(result);
@@ -147,7 +156,7 @@ public abstract class ItemNode extends AbstractTreeNode<ItemReference> implement
     /** Delete appropriate {@link ItemReference} using Codenvy Project API. */
     @Override
     public void delete(final DeleteCallback callback) {
-        projectServiceClient.delete(getPath(), new AsyncRequestCallback<Void>() {
+        projectServiceClient.delete(workspaceId, getPath(), new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 ItemNode.super.delete(new DeleteCallback() {

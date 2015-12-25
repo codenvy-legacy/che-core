@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.workspace.start;
+package org.eclipse.che.api.workspace.gwt.client.event;
 
 import com.google.gwt.event.shared.GwtEvent;
 

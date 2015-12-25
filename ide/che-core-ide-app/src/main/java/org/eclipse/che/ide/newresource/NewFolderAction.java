@@ -16,6 +16,7 @@ import com.google.inject.Singleton;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.ActionEvent;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
@@ -28,14 +29,16 @@ import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
  */
 @Singleton
 public class NewFolderAction extends AbstractNewResourceAction {
-    private CoreLocalizationConstant localizationConstant;
-
+    private final CoreLocalizationConstant localizationConstant;
+    private final AppContext               appContext;
+    
     @Inject
-    public NewFolderAction(CoreLocalizationConstant localizationConstant, Resources resources) {
+    public NewFolderAction(CoreLocalizationConstant localizationConstant, Resources resources, AppContext appContext) {
         super(localizationConstant.actionNewFolderTitle(),
               localizationConstant.actionNewFolderDescription(),
               resources.defaultFolder());
         this.localizationConstant = localizationConstant;
+        this.appContext = appContext;
     }
 
     @Override
@@ -63,6 +66,6 @@ public class NewFolderAction extends AbstractNewResourceAction {
 
         final String folderPath = ((HasStorablePath)parent).getStorablePath() + '/' + value;
 
-        projectServiceClient.createFolder(folderPath, createCallback(parent));
+        projectServiceClient.createFolder(appContext.getWorkspace().getId(), folderPath, createCallback(parent));
     }
 }

@@ -422,7 +422,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         return newPromise(new AsyncPromiseHelper.RequestCall<ProjectConfigDto>() {
             @Override
             public void makeCall(AsyncCallback<ProjectConfigDto> callback) {
-                projectService.updateProject(project.getName(),
+                projectService.updateProject(appContext.getWorkspace().getId(),
+                                             project.getName(),
                                              project,
                                              newCallback(callback, dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class)));
             }

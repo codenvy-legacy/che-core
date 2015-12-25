@@ -22,6 +22,7 @@ import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.js.JsPromiseError;
 import org.eclipse.che.api.promises.client.js.Promises;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.project.DeleteProjectEvent;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
@@ -38,10 +39,17 @@ import static org.eclipse.che.api.promises.client.callback.PromiseHelper.newProm
  * @author Dmitry Shnurenko
  */
 public class ProjectConfigProcessor extends AbstractResourceProcessor<ProjectConfigDto> {
+    
+    private final String workspaceId;
 
     @Inject
-    public ProjectConfigProcessor(EventBus eventBus, ProjectServiceClient projectService, DtoUnmarshallerFactory unmarshallerFactory) {
-        super(eventBus, projectService, unmarshallerFactory);
+    public ProjectConfigProcessor(EventBus eventBus,
+                                  ProjectServiceClient projectServiceClient,
+                                  AppContext appContext,
+                                  DtoUnmarshallerFactory unmarshallerFactory) {
+        super(eventBus, projectServiceClient, unmarshallerFactory);
+        
+        this.workspaceId = appContext.getWorkspace().getId();
     }
 
     @Override
@@ -50,7 +58,7 @@ public class ProjectConfigProcessor extends AbstractResourceProcessor<ProjectCon
             return newPromise(new AsyncPromiseHelper.RequestCall<Void>() {
                 @Override
                 public void makeCall(AsyncCallback<Void> callback) {
-                    projectService.delete(node.getData().getPath(), newCallback(callback));
+                    projectService.delete(workspaceId, node.getData().getPath(), newCallback(callback));
                 }
             }).then(new Function<Void, ProjectConfigDto>() {
                 @Override

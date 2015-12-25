@@ -45,6 +45,8 @@ public interface GitServiceClient {
     /**
      * Add changes to Git index (temporary storage). Sends request over WebSocket.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param projectConfig
      *         project (root of GIT repository)
      * @param update
@@ -56,14 +58,17 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void add(ProjectConfigDto projectConfig,
+    void add(String workspaceId,
+             ProjectConfigDto projectConfig,
              boolean update,
              List<String> filePattern,
              RequestCallback<Void> callback) throws WebSocketException;
 
     /**
      * Fetch changes from remote repository to local one (sends request over WebSocket).
-     *
+     * 
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project root of GIT repository
      * @param remote
@@ -83,7 +88,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void fetch(ProjectConfigDto project,
+    void fetch(String workspaceId,
+               ProjectConfigDto project,
                String remote,
                List<String> refspec,
                boolean removeDeletedRefs,
@@ -93,19 +99,24 @@ public interface GitServiceClient {
      * Get the list of the branches. For now, all branches cannot be returned at once, so the parameter <code>remote</code> tells to get
      * remote branches if <code>true</code> or local ones (if <code>false</code>).
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param mode
      *         get remote branches
      * @param callback
      */
-    void branchList(ProjectConfigDto project,
+    void branchList(String workspaceId,
+                    ProjectConfigDto project,
                     @Nullable String mode,
                     AsyncRequestCallback<List<Branch>> callback);
 
     /**
      * Delete branch.
-     *
+     * 
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param name
@@ -114,14 +125,17 @@ public interface GitServiceClient {
      *         force if <code>true</code> delete branch {@code name} even if it is not fully merged
      * @param callback
      */
-    void branchDelete(ProjectConfigDto project,
+    void branchDelete(String workspaceId,
+                      ProjectConfigDto project,
                       String name,
                       boolean force,
                       AsyncRequestCallback<String> callback);
 
     /**
      * Checkout the branch with pointed name.
-     *
+     * 
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param oldName
@@ -130,14 +144,17 @@ public interface GitServiceClient {
      *         branch's new name
      * @param callback
      */
-    void branchRename(ProjectConfigDto project,
+    void branchRename(String workspaceId,
+                      ProjectConfigDto project,
                       String oldName,
                       String newName,
                       AsyncRequestCallback<String> callback);
 
     /**
      * Create new branch with pointed name.
-     *
+     * 
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param name
@@ -146,7 +163,8 @@ public interface GitServiceClient {
      *         name of a commit at which to start the new branch
      * @param callback
      */
-    void branchCreate(ProjectConfigDto project,
+    void branchCreate(String workspaceId,
+                      ProjectConfigDto project,
                       String name,
                       @Nullable String startPoint,
                       AsyncRequestCallback<Branch> callback);
@@ -154,13 +172,16 @@ public interface GitServiceClient {
     /**
      * Checkout the branch with pointed name.
      */
-    void checkout(ProjectConfigDto project,
+    void checkout(String workspaceId,
+                  ProjectConfigDto project,
                   CheckoutRequest checkoutRequest,
                   AsyncRequestCallback<String> callback);
 
     /**
      * Get the list of remote repositories for pointed by <code>workDir</code> parameter one.
-     *
+     * 
+     * @param workspaceId
+     *         id of current workspace
      * @param projectConfig
      *         project (root of GIT repository)
      * @param remoteName
@@ -169,14 +190,17 @@ public interface GitServiceClient {
      *         If <code>true</code> show remote url and name otherwise show remote name
      * @param callback
      */
-    void remoteList(ProjectConfigDto projectConfig,
+    void remoteList(String workspaceId,
+                    ProjectConfigDto projectConfig,
                     @Nullable String remoteName,
                     boolean verbose,
                     AsyncRequestCallback<List<Remote>> callback);
 
     /**
      * Adds remote repository to the list of remote repositories.
-     *
+     * 
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param name
@@ -185,7 +209,8 @@ public interface GitServiceClient {
      *         remote repository's URL
      * @param callback
      */
-    void remoteAdd(ProjectConfigDto project,
+    void remoteAdd(String workspaceId,
+                   ProjectConfigDto project,
                    String name,
                    String url,
                    AsyncRequestCallback<String> callback);
@@ -193,19 +218,24 @@ public interface GitServiceClient {
     /**
      * Deletes the pointed(by name) remote repository from the list of repositories.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param name
      *         remote repository name to delete
      * @param callback
      */
-    void remoteDelete(ProjectConfigDto project,
+    void remoteDelete(String workspaceId,
+                      ProjectConfigDto project,
                       String name,
                       AsyncRequestCallback<String> callback);
 
     /**
      * Remove items from the working tree and the index.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param items
@@ -214,7 +244,7 @@ public interface GitServiceClient {
      *         is for removal only from index
      * @param callback
      */
-    void remove(ProjectConfigDto project, List<String> items, boolean cached, AsyncRequestCallback<String> callback);
+    void remove(String workspaceId, ProjectConfigDto project, List<String> items, boolean cached, AsyncRequestCallback<String> callback);
 
     /**
      * Reset current HEAD to the specified state. There two types of the reset: <br>
@@ -222,6 +252,8 @@ public interface GitServiceClient {
      * <code>git reset [paths]</code> is the opposite of <code>git add [paths]</code>. 2. Reset the current branch head to [commit] and
      * possibly updates the index (resetting it to the tree of [commit]) and the working tree depending on [mode].
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param commit
@@ -233,7 +265,8 @@ public interface GitServiceClient {
      *         else reset received files in index.
      * @param callback
      */
-    void reset(ProjectConfigDto project,
+    void reset(String workspaceId,
+               ProjectConfigDto project,
                String commit,
                @Nullable ResetRequest.ResetType resetType,
                @Nullable List<String> filePattern,
@@ -242,6 +275,8 @@ public interface GitServiceClient {
     /**
      * Initializes new Git repository (over WebSocket).
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param bare
@@ -249,11 +284,13 @@ public interface GitServiceClient {
      * @param callback
      *         callback
      */
-    void init(ProjectConfigDto project, boolean bare, RequestCallback<Void> callback) throws WebSocketException;
+    void init(String workspaceId, ProjectConfigDto project, boolean bare, RequestCallback<Void> callback) throws WebSocketException;
 
     /**
      * Pull (fetch and merge) changes from remote repository to local one (sends request over WebSocket).
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param refSpec
@@ -271,7 +308,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void pull(ProjectConfigDto project,
+    void pull(String workspaceId,
+              ProjectConfigDto project,
               String refSpec,
               String remote,
               AsyncRequestCallback<PullResponse> callback);
@@ -279,6 +317,8 @@ public interface GitServiceClient {
     /**
      * Push changes from local repository to remote one (sends request over WebSocket).
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project
      * @param refSpec
@@ -292,7 +332,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void push(ProjectConfigDto project,
+    void push(String workspaceId,
+              ProjectConfigDto project,
               List<String> refSpec,
               String remote, boolean force,
               AsyncRequestCallback<PushResponse> callback);
@@ -300,6 +341,8 @@ public interface GitServiceClient {
     /**
      * Clones one remote repository to local one (over WebSocket).
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param remoteUri
@@ -310,7 +353,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void cloneRepository(ProjectConfigDto project,
+    void cloneRepository(String workspaceId,
+                         ProjectConfigDto project,
                          String remoteUri,
                          String remoteName,
                          RequestCallback<RepoInfo> callback) throws WebSocketException;
@@ -319,6 +363,8 @@ public interface GitServiceClient {
      * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by
      * callback in <code>onSuccess(Revision result)</code>. Sends request over WebSocket.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param message
@@ -331,7 +377,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void commit(ProjectConfigDto project,
+    void commit(String workspaceId,
+                ProjectConfigDto project,
                 String message,
                 boolean all,
                 boolean amend,
@@ -340,6 +387,8 @@ public interface GitServiceClient {
     /**
      * Performs commit for the given files (ignoring git index).
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param projectConfig
      *         project (root of GIT repository)
      * @param message
@@ -352,7 +401,8 @@ public interface GitServiceClient {
      *         callback
      * @throws WebSocketException
      */
-    void commit(ProjectConfigDto projectConfig,
+    void commit(String workspaceId,
+                ProjectConfigDto projectConfig,
                 String message,
                 List<String> files,
                 boolean amend,
@@ -362,6 +412,8 @@ public interface GitServiceClient {
      * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by
      * callback in <code>onSuccess(Revision result)</code>. Sends request over WebSocket.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param projectConfig
      *         project (root of GIT repository)
      * @param all
@@ -369,7 +421,8 @@ public interface GitServiceClient {
      * @param callback
      *         callback for sending asynchronous response
      */
-    void config(ProjectConfigDto projectConfig,
+    void config(String workspaceId,
+                ProjectConfigDto projectConfig,
                 @Nullable List<String> entries,
                 boolean all,
                 AsyncRequestCallback<Map<String, String>> callback);
@@ -377,6 +430,8 @@ public interface GitServiceClient {
     /**
      * Compare two commits, get the diff for pointed file(s) or for the whole project in text format.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param fileFilter
@@ -393,7 +448,8 @@ public interface GitServiceClient {
      *         second commit to be compared
      * @param callback
      */
-    void diff(ProjectConfigDto project,
+    void diff(String workspaceId,
+              ProjectConfigDto project,
               List<String> fileFilter,
               DiffRequest.DiffType type,
               boolean noRenames,
@@ -406,6 +462,8 @@ public interface GitServiceClient {
      * Compare commit with index or working tree (depends on {@code cached}), get the diff for pointed file(s) or for the whole project in
      * text format.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param fileFilter
@@ -422,7 +480,8 @@ public interface GitServiceClient {
      *         if <code>true</code> then compare commit with index, if <code>false</code>, then compare with working tree.
      * @param callback
      */
-    void diff(ProjectConfigDto project,
+    void diff(String workspaceId,
+              ProjectConfigDto project,
               List<String> fileFilter,
               DiffRequest.DiffType type,
               boolean noRenames,
@@ -434,6 +493,8 @@ public interface GitServiceClient {
     /**
      * Get the file content from specified revision or branch.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project configuration of root GIT repository
      * @param file
@@ -443,30 +504,34 @@ public interface GitServiceClient {
      * @param callback
      *         callback for sending asynchronous response with file content
      */
-    void showFileContent(ProjectConfigDto project, String file, String version, AsyncRequestCallback<ShowFileContentResponse> callback);
+    void showFileContent(String workspaceId, ProjectConfigDto project, String file, String version, AsyncRequestCallback<ShowFileContentResponse> callback);
 
     /**
      * Get log of commits. The result is the list of {@link Revision}, which is returned by callback in
      * <code>onSuccess(Revision result)</code>.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param isTextFormat
      *         if <code>true</code> the loq response will be in text format
      * @param callback
      */
-    void log(ProjectConfigDto project, boolean isTextFormat, AsyncRequestCallback<LogResponse> callback);
+    void log(String workspaceId, ProjectConfigDto project, boolean isTextFormat, AsyncRequestCallback<LogResponse> callback);
 
     /**
      * Merge the pointed commit with current HEAD.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param commit
      *         commit's reference to merge with
      * @param callback
      */
-    void merge(ProjectConfigDto project, String commit, AsyncRequestCallback<MergeResult> callback);
+    void merge(String workspaceId, ProjectConfigDto project, String commit, AsyncRequestCallback<MergeResult> callback);
 
     /**
      * Gets the working tree status. The status of added, modified or deleted files is shown is written in {@link String}. The format may
@@ -491,35 +556,41 @@ public interface GitServiceClient {
      * ?? folder/test.css
      * </pre>
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param format
      *         to show in short format or not
      * @param callback
      */
-    void statusText(ProjectConfigDto project, StatusFormat format, AsyncRequestCallback<String> callback);
+    void statusText(String workspaceId, ProjectConfigDto project, StatusFormat format, AsyncRequestCallback<String> callback);
 
     /**
      * Gets the working tree status : list of untracked, changed not commited and changed not updated.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param callback
      */
-    void status(ProjectConfigDto project, AsyncRequestCallback<Status> callback);
+    void status(String workspaceId, ProjectConfigDto project, AsyncRequestCallback<Status> callback);
 
     /**
      * Get the Git ReadOnly Url for the pointed item's location.
      *
+     * @param workspaceId
+     *         id of current workspace
      * @param project
      *         project (root of GIT repository)
      * @param callback
      */
-    void getGitReadOnlyUrl(ProjectConfigDto project, AsyncRequestCallback<String> callback);
+    void getGitReadOnlyUrl(String workspaceId, ProjectConfigDto project, AsyncRequestCallback<String> callback);
 
-    void getCommitters(ProjectConfigDto project, AsyncRequestCallback<Commiters> callback);
+    void getCommitters(String workspaceId, ProjectConfigDto project, AsyncRequestCallback<Commiters> callback);
 
-    void deleteRepository(ProjectConfigDto project, AsyncRequestCallback<Void> callback);
+    void deleteRepository(String workspaceId, ProjectConfigDto project, AsyncRequestCallback<Void> callback);
 
-    void getUrlVendorInfo(String vcsUrl, AsyncRequestCallback<GitUrlVendorInfo> callback);
+    void getUrlVendorInfo(String workspaceId, String vcsUrl, AsyncRequestCallback<GitUrlVendorInfo> callback);
 }

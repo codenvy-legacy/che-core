@@ -16,8 +16,8 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.loging.Log;
+import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 
 /**
  * Checks startup params and calls appropriate {@link FactoryWorkspaceComponent} or {@link DefaultWorkspaceComponent}
@@ -28,18 +28,21 @@ public class StartupComponent implements Component {
 
     private final Provider<DefaultWorkspaceComponent> workspaceComponentProvider;
     private final Provider<FactoryWorkspaceComponent> factoryComponentProvider;
+    private final BrowserQueryFieldRenderer           queryFieldRenderer;
 
     @Inject
     public StartupComponent(Provider<DefaultWorkspaceComponent> workspaceComponentProvider,
-                            Provider<FactoryWorkspaceComponent> factoryComponentProvider) {
+                            Provider<FactoryWorkspaceComponent> factoryComponentProvider,
+                            BrowserQueryFieldRenderer queryFieldRenderer) {
         this.workspaceComponentProvider = workspaceComponentProvider;
         this.factoryComponentProvider = factoryComponentProvider;
+        this.queryFieldRenderer = queryFieldRenderer;
     }
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        String factoryParams = Config.getStartupParam("factory");
-        if (factoryParams != null) {
+        String factoryParams = queryFieldRenderer.getParameterFromURLByName("factory");
+        if (!factoryParams.isEmpty()) {
             Log.info(StartupComponent.class, "Starting factory workspace component");
             factoryComponentProvider.get().start(callback);
         } else {
