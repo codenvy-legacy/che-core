@@ -24,9 +24,10 @@ import java.util.List;
  * @author Artem Zatsarynnyi
  */
 public interface VfsServiceClient {
-    void replaceInCurrentWorkspace(@NotNull String projectPath,
-                                   List<ReplacementSet> replacementSets,
-                                   AsyncRequestCallback<Void> callback);
+    void replace(@NotNull String workspaceId,
+                 @NotNull String projectPath,
+                 List<ReplacementSet> replacementSets,
+                 AsyncRequestCallback<Void> callback);
 
-    void getItemByPath(@NotNull String path, AsyncRequestCallback<Item> callback);
+    void getItemByPath(@NotNull String workspaceId, @NotNull String path, AsyncRequestCallback<Item> callback);
 }

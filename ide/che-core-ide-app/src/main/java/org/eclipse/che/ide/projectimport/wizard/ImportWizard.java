@@ -59,7 +59,6 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     private final CoreLocalizationConstant            localizationConstant;
     private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
     private final String                              workspaceId;
-    
 
     @Inject
     public ImportWizard(@Assisted ProjectConfigDto dataObject,
@@ -81,8 +80,8 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         this.eventBus = eventBus;
         this.localizationConstant = localizationConstant;
         this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
-        
-        this.workspaceId = appContext.getWorkspace().getId();
+
+        this.workspaceId = appContext.getWorkspaceId();
     }
 
     /** {@inheritDoc} */
@@ -94,7 +93,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     private void checkFolderExistenceAndImport(final CompleteCallback callback) {
         // check on VFS because need to check whether the folder with the same name already exists in the root of workspace
         final String projectName = dataObject.getName();
-        vfsServiceClient.getItemByPath(projectName, new AsyncRequestCallback<Item>() {
+        vfsServiceClient.getItemByPath(workspaceId, projectName, new AsyncRequestCallback<Item>() {
             @Override
             protected void onSuccess(Item result) {
                 callback.onFailure(new Exception(localizationConstant.createProjectFromTemplateProjectExists(projectName)));
@@ -163,26 +162,27 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
     private void createProject(final CompleteCallback callback, ProjectConfigDto projectConfig) {
         final String projectName = dataObject.getName();
         Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
-        projectServiceClient.updateProject(workspaceId, projectName, projectConfig, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
+        projectServiceClient
+                .updateProject(workspaceId, projectName, projectConfig, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
 
-            @Override
-            protected void onSuccess(ProjectConfigDto result) {
-                eventBus.fireEvent(new CreateProjectEvent(result));
-                if (!result.getProblems().isEmpty()) {
-                    eventBus.fireEvent(new ConfigureProjectEvent(result));
-                }
-                importProjectNotificationSubscriber.onSuccess();
-                callback.onCompleted();
-            }
+                    @Override
+                    protected void onSuccess(ProjectConfigDto result) {
+                        eventBus.fireEvent(new CreateProjectEvent(result));
+                        if (!result.getProblems().isEmpty()) {
+                            eventBus.fireEvent(new ConfigureProjectEvent(result));
+                        }
+                        importProjectNotificationSubscriber.onSuccess();
+                        callback.onCompleted();
+                    }
 
-            @Override
-            protected void onFailure(Throwable exception) {
-                importProjectNotificationSubscriber.onFailure(exception.getMessage());
-                deleteProject(projectName);
-                String errorMessage = getImportErrorMessage(exception);
-                callback.onFailure(new Exception(errorMessage));
-            }
-        });
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        importProjectNotificationSubscriber.onFailure(exception.getMessage());
+                        deleteProject(projectName);
+                        String errorMessage = getImportErrorMessage(exception);
+                        callback.onFailure(new Exception(errorMessage));
+                    }
+                });
 
 
     }

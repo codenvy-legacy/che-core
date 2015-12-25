@@ -146,7 +146,7 @@ public class ImportWizardTest {
     public void shouldInvokeCallbackWhenFolderAlreadyExists() throws Exception {
         wizard.complete(completeCallback);
 
-        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+        verify(vfsServiceClient).getItemByPath(anyString(), eq(PROJECT_NAME), callbackCaptorForItem.capture());
 
         AsyncRequestCallback<Item> callback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnSuccess(callback, mock(Item.class));
@@ -161,7 +161,7 @@ public class ImportWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+        verify(vfsServiceClient).getItemByPath(anyString(), eq(PROJECT_NAME), callbackCaptorForItem.capture());
 
         callOnSuccessUpdateProject(projectConfig);
 
@@ -179,7 +179,7 @@ public class ImportWizardTest {
 
         wizard.complete(completeCallback);
 
-        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+        verify(vfsServiceClient).getItemByPath(anyString(), eq(PROJECT_NAME), callbackCaptorForItem.capture());
 
         callOnSuccessUpdateProject(projectConfig);
 
@@ -195,7 +195,8 @@ public class ImportWizardTest {
         AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnFailure(itemCallback, throwable);
 
-        verify(projectServiceClient).importProject(anyString(), eq(PROJECT_NAME), eq(false), eq(source), callbackCaptorForProject.capture());
+        verify(projectServiceClient)
+                .importProject(anyString(), eq(PROJECT_NAME), eq(false), eq(source), callbackCaptorForProject.capture());
         GwtReflectionUtils.callOnSuccessVoidParameter(callbackCaptorForProject.getValue());
 
         verify(projectServiceClient).resolveSources(anyString(), anyString(), estimationCaptor.capture());
@@ -204,7 +205,8 @@ public class ImportWizardTest {
         verify(definitionPromise).then(typeDefinitionCaptor.capture());
         typeDefinitionCaptor.getValue().apply(projectTypeDefinition);
 
-        verify(projectServiceClient).updateProject(anyString(), anyString(), Matchers.<ProjectConfigDto>anyObject(), asyncDescriptorCaptor.capture());
+        verify(projectServiceClient)
+                .updateProject(anyString(), anyString(), Matchers.<ProjectConfigDto>anyObject(), asyncDescriptorCaptor.capture());
         GwtReflectionUtils.callOnSuccess(asyncDescriptorCaptor.getValue(), projectConfig);
     }
 }
