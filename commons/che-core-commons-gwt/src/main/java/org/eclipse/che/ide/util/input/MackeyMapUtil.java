@@ -10,12 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.util.input;
 
-import elemental.events.KeyboardEvent;
 import elemental.events.KeyboardEvent.KeyCode;
-
-import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 
 /**
  * Support mac keys

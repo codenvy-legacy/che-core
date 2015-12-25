@@ -10,24 +10,32 @@
  *******************************************************************************/
 package org.eclipse.che.ide.hotkeys.dialog;
 
-import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.cellview.client.DataGrid;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.SelectionChangeEvent;
-import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.inject.Inject;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.hotkeys.HotKeyItem;
+import org.eclipse.che.ide.hotkeys.HotKeyResources;
+import org.eclipse.che.ide.ui.list.CategoriesList;
+import org.eclipse.che.ide.ui.list.Category;
+import org.eclipse.che.ide.ui.list.CategoryRenderer;
 import org.eclipse.che.ide.ui.window.Window;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation {@link HotKeysDialogView}
@@ -37,92 +45,116 @@ public class HotKeysDialogViewImpl extends Window implements HotKeysDialogView {
 
     interface KeyMapViewImplUiBinder extends UiBinder<Widget, HotKeysDialogViewImpl> {
     }
-    
-    private final CoreLocalizationConstant locale;
 
-    private ActionDelegate delegate;
+    private final HotKeyResources hotKeyResources;
+
+    private final Category.CategoryEventDelegate<HotKeyItem> keyBindingsEventDelegate =
+            new Category.CategoryEventDelegate<HotKeyItem>() {
+
+                @Override
+                public void onListItemClicked(Element listItemBase, HotKeyItem hotKeyItem) {
+                }
+            };
+
+    private final CategoryRenderer<HotKeyItem> keyBindingsRenderer =
+            new CategoryRenderer<HotKeyItem>() {
+                @Override
+                public void renderElement(Element element, HotKeyItem hotKeyItem) {
+                    element.setInnerText(hotKeyItem.getActionDescription());
+                    element.addClassName(hotKeyResources.css().description());
+
+                    DivElement hotKeyElem = Document.get().createDivElement();
+                    hotKeyElem.setInnerText(hotKeyItem.getHotKey());
+                    hotKeyElem.addClassName(hotKeyResources.css().hotKey());
+                    hotKeyElem.addClassName(hotKeyResources.css().floatRight());
+
+                    element.appendChild(hotKeyElem);
+                }
+
+                @Override
+                public SpanElement renderCategory(Category<HotKeyItem> category) {
+                    SpanElement spanElement = Document.get().createSpanElement();
+                    spanElement.setInnerText(category.getTitle());
+                    return spanElement;
+                }
+            };
+
+    private CategoriesList    list;
+    private List<Category<?>> categoriesList;
+    private ActionDelegate    delegate;
+    private String            filteredValue;
 
     Button okButton;
-    @UiField(provided = true)
-    DataGrid<HotKeyItem> dataGrid;
+
+    @UiField
+    FlowPanel category;
+
+    @UiField
+    TextBox filterInput;
 
     @Inject
-    public HotKeysDialogViewImpl(KeyMapViewImplUiBinder uiBinder, CoreLocalizationConstant locale, org.eclipse.che.ide.Resources res) {
-        dataGrid = new DataGrid<>(50, res);
-        this.locale = locale;
-        this.setTitle(locale.hotKeysDialogTitle());
+    public HotKeysDialogViewImpl(KeyMapViewImplUiBinder uiBinder,
+                                 CoreLocalizationConstant locale,
+                                 org.eclipse.che.ide.Resources res,
+                                 HotKeyResources hotKeyResources) {
+        hotKeyResources.css().ensureInjected();
+
+        this.hotKeyResources = hotKeyResources;
+
+        this.setTitle(locale.keyBindingsDialogTitle());
         this.setWidget(uiBinder.createAndBindUi(this));
 
-        okButton = createButton(locale.ok(), "hot-keys-dialog-ok-btn", new ClickHandler() {
+        okButton = createButton(locale.ok(), "keybindings-okButton-btn", new ClickHandler() {
             @Override
             public void onClick(ClickEvent clickEvent) {
-                delegate.onBtnOkClicked();
+                delegate.onOkClicked();
             }
         });
         addButtonToFooter(okButton);
-        createTable();
+        okButton.addStyleName(resources.windowCss().primaryButton());
+
+        list = new CategoriesList(res);
+        categoriesList = new ArrayList<>();
+        category.add(list);
+        filterInput.getElement().setAttribute("placeholder", "Search");
     }
 
-    private void createTable() {
-        TextColumn<HotKeyItem> actionColumn = new TextColumn<HotKeyItem>() {
-            @Override
-            public String getValue(HotKeyItem hotKeyItem) {
-                return hotKeyItem.getActionDescription();
-            }
-        };
-        Header<String> actionColumnHeader = new Header<String>(new TextCell()) {
-            @Override
-            public String getValue() {
-                return locale.hotKeysTableActionDescriptionTitle();
-            }
-        };
-        dataGrid.addColumn(actionColumn, actionColumnHeader);
-
-        TextColumn<HotKeyItem> keyColumn = new TextColumn<HotKeyItem>() {
-            @Override
-            public String getValue(HotKeyItem hotKeyItem) {
-                return hotKeyItem.getHotKey();
-            }
-        };
-        Header<String> hotKeyColumnHeader = new Header<String>(new TextCell()) {
-            @Override
-            public String getValue() {
-                return locale.hotKeysTableItemTitle();
-            }
-        };
-        dataGrid.addColumn(keyColumn, hotKeyColumnHeader);
-
-        SingleSelectionModel<HotKeyItem> selectionModel = new SingleSelectionModel<>();
-        selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
-            @Override
-            public void onSelectionChange(SelectionChangeEvent event) {
-            }
-        });
-        dataGrid.setSelectionModel(selectionModel);
-    }
-
-    /** {@inheritDoc} */
     @Override
     public void setDelegate(ActionDelegate delegate) {
         this.delegate = delegate;
     }
-
-    /** {@inheritDoc} */
+    
     @Override
-    public void showDialog() {
-        dataGrid.redraw();
-        this.show();
+    public void hide() {
+        super.hide();
+        resetFilter();
     }
     
-    /** {@inheritDoc} */
     @Override
-    public void close() {
-        this.hide();
+    public void renderKeybindings() {
+        list.clear();
+        list.render(categoriesList);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void setData(List<HotKeyItem> data) {
-        dataGrid.setRowData(data);
+    public void setData(Map<String, List<HotKeyItem>> data) {
+        categoriesList.clear();
+        for (Map.Entry<String, List<HotKeyItem>> elem: data.entrySet()) {
+            categoriesList.add(new Category<>(elem.getKey(), keyBindingsRenderer, elem.getValue(), keyBindingsEventDelegate));
+        }
+    }
+
+    @UiHandler("filterInput")
+    public void onKeyUp(KeyUpEvent keyUpEvent) {
+        String value = filterInput.getText();
+        if (!filterInput.getText().equals(filteredValue)) {
+            filteredValue = value;
+            delegate.onFilterValueChanged(value);
+        }
+    }
+
+    private void resetFilter() {
+        filterInput.setText("");
+        filterInput.setFocus(true);
     }
 }

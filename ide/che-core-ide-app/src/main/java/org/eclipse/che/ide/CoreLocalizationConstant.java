@@ -575,14 +575,14 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("switch.to.right.editor.action")
     String switchToRightEditorAction();
 
-    @Key("hot.keys.action.name")
-    String hotKeysActionName();
+    @Key("key.bindings.action.name")
+    String keyBindingsActionName();
 
-    @Key("hot.keys.action.description")
-    String hotKeysActionDescription();
+    @Key("key.bindings.action.description")
+    String keyBindingsActionDescription();
 
-    @Key("hot.keys.dialog.title")
-    String hotKeysDialogTitle();
+    @Key("key.bindings.dialog.title")
+    String keyBindingsDialogTitle();
 
     @Key("hot.keys.table.action.description.title")
     String hotKeysTableActionDescriptionTitle();

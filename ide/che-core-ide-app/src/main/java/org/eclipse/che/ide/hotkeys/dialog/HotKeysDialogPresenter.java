@@ -18,12 +18,15 @@ import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.hotkeys.HasHotKeyItems;
 import org.eclipse.che.ide.hotkeys.HotKeyItem;
+import org.eclipse.che.ide.util.StringUtils;
 import org.eclipse.che.ide.util.input.CharCodeWithModifiers;
 import org.eclipse.che.ide.util.input.KeyMapUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The class provides displaying list hotKeys for IDE and editor
@@ -32,10 +35,18 @@ import java.util.List;
 @Singleton
 public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate {
 
+    private static final String EDITOR_KEYBINDINGS = "Editor";
+    private static final String IDE_KEYBINDINGS = "IDE";
+
     private final HotKeysDialogView view;
     private final KeyBindingAgent   keyBindingAgent;
     private final ActionManager     actionManager;
     private final EditorAgent       editorAgent;
+
+    private List<HotKeyItem> ideHotKey;
+    private List<HotKeyItem> editorHotKeys;
+
+    private Map<String, List<HotKeyItem>> categories;
 
     @Inject
     public HotKeysDialogPresenter(HotKeysDialogView view,
@@ -47,20 +58,27 @@ public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate 
         this.actionManager = actionManager;
         this.editorAgent = editorAgent;
 
+        categories = new HashMap<>();
         view.setDelegate(this);
     }
 
     /** {@inheritDoc} */
     @Override
     public void showHotKeys() {
-        List<HotKeyItem> ideHotKey = getIDEHotKey();
-        List<HotKeyItem> editorHotKeys = getEditorHotKey();
+        ideHotKey = getIDEHotKey();
+        editorHotKeys = getEditorHotKey();
 
-        if (editorHotKeys != null) {
-            ideHotKey.addAll(editorHotKeys);
+        categories.clear();
+        if (!ideHotKey.isEmpty()) {
+            categories.put(IDE_KEYBINDINGS, ideHotKey);
         }
-        view.setData(ideHotKey);
-        view.showDialog();
+        if (!editorHotKeys.isEmpty()) {
+            categories.put(EDITOR_KEYBINDINGS, editorHotKeys);
+        }
+
+        view.setData(categories);
+        view.renderKeybindings();
+        view.show();
     }
 
     private List<HotKeyItem> getIDEHotKey() {
@@ -87,7 +105,39 @@ public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate 
 
     /** {@inheritDoc} */
     @Override
-    public void onBtnOkClicked() {
-        view.close();
+    public void onOkClicked() {
+        view.hide();
+    }
+
+    @Override
+    public void onFilterValueChanged(String filteredText) {
+        categories.clear();
+
+        List<HotKeyItem> ideFilteredHotKey = filterCategory(ideHotKey, filteredText);
+        if (!ideFilteredHotKey.isEmpty()) {
+            categories.put(IDE_KEYBINDINGS, ideFilteredHotKey);
+        }
+
+        List<HotKeyItem> editorFilteredHotKeys = filterCategory(editorHotKeys, filteredText);
+        if (!editorFilteredHotKeys.isEmpty()) {
+            categories.put(EDITOR_KEYBINDINGS, editorFilteredHotKeys);
+        }
+
+        view.setData(categories);
+        view.renderKeybindings();
+    }
+
+    private List<HotKeyItem> filterCategory(List<HotKeyItem> hotKeyItems, String expectedText) {
+        List<HotKeyItem> result = new ArrayList<>();
+        for (HotKeyItem hotKeyItem: hotKeyItems) {
+            String description = hotKeyItem.getActionDescription();
+            String keyBindings = hotKeyItem.getHotKey();
+            boolean isFound = description != null && (StringUtils.containsIgnoreCase(description, expectedText)
+                              || StringUtils.containsIgnoreCase(keyBindings, expectedText));
+            if (isFound) {
+                result.add(hotKeyItem);
+            }
+        }
+        return result;
     }
 }
