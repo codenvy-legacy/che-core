@@ -21,8 +21,10 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionGroup;
 import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.action.DefaultActionGroup;
 import org.eclipse.che.ide.api.action.IdeActions;
 import org.eclipse.che.ide.api.action.Presentation;
+import org.eclipse.che.ide.api.action.Separator;
 import org.eclipse.che.ide.api.mvp.Presenter;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -30,15 +32,21 @@ import org.eclipse.che.ide.util.StringUtils;
 import org.eclipse.che.ide.util.UnicodeUtils;
 
 import org.eclipse.che.commons.annotation.Nullable;
+
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static java.util.Collections.unmodifiableList;
+
 /**
  * @author Evgen Vidolob
  * @author Dmitry Shnurenko
+ * @author Vlad Zhukovskyi
  */
 @Singleton
 public class FindActionPresenter implements Presenter, FindActionView.ActionDelegate {
@@ -152,9 +160,15 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
             }
         }
 
+        List<String> excludedActionIds = getExcludedActionIds(actionManager);
+
         for (Entry<Action, String> entry : actionsMap.entrySet()) {
             final Action action = entry.getKey();
             final String groupName = entry.getValue();
+
+            if (excludedActionIds.contains(actionManager.getId(action))) {
+                continue;
+            }
 
             Presentation presentation = action.getTemplatePresentation();
             String text = presentation.getText();
@@ -271,5 +285,21 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
             if (c != '*' && c != ' ' && !Character.isUpperCase(c)) return false;
         }
         return true;
+    }
+
+    private List<String> getExcludedActionIds(ActionManager actionManager) {
+        List<String> ids = new ArrayList<>();
+
+        DefaultActionGroup editGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_RECENT_FILES);
+        Action[] children = editGroup.getChildActionsOrStubs();
+        for (Action child : children) {
+            if (child instanceof Separator) {
+                continue;
+            }
+
+            ids.add(actionManager.getId(child));
+        }
+
+        return unmodifiableList(ids);
     }
 }
