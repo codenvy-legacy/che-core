@@ -230,7 +230,7 @@ public class LocalZipImporterPagePresenterTest {
 
         presenter.onImportClicked();
 
-        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+        verify(vfsServiceClient).getItemByPath(anyString(), eq(PROJECT_NAME), callbackCaptorForItem.capture());
         AsyncRequestCallback<Item> callback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnSuccess(callback, mock(Item.class));
 
@@ -250,7 +250,7 @@ public class LocalZipImporterPagePresenterTest {
 
         presenter.onImportClicked();
 
-        verify(vfsServiceClient).getItemByPath(eq(PROJECT_NAME), callbackCaptorForItem.capture());
+        verify(vfsServiceClient).getItemByPath(anyString(), eq(PROJECT_NAME), callbackCaptorForItem.capture());
         AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnFailure(itemCallback, mock(Throwable.class));
 

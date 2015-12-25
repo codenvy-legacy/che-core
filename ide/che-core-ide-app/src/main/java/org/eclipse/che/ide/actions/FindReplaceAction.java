@@ -72,18 +72,19 @@ public class FindReplaceAction extends Action {
                                                                                              .withReplace(replace)
                                                                                              .withReplacemode(mode)));
 
-        vfsServiceClient.replaceInCurrentWorkspace(appContext.getCurrentProject().getRootProject().getPath(),
-                                                   Arrays.asList(replacementSet),
-                                                   new AsyncRequestCallback<Void>() {
-                                                       @Override
-                                                       protected void onSuccess(Void result) {
-                                                           //TODO Send event described in IDEX-1743
-                                                       }
+        vfsServiceClient.replace(appContext.getWorkspaceId(),
+                                 appContext.getCurrentProject().getRootProject().getPath(),
+                                 Arrays.asList(replacementSet),
+                                 new AsyncRequestCallback<Void>() {
+                                     @Override
+                                     protected void onSuccess(Void result) {
+                                         //TODO Send event described in IDEX-1743
+                                     }
 
-                                                       @Override
-                                                       protected void onFailure(Throwable exception) {
+                                     @Override
+                                     protected void onFailure(Throwable exception) {
 
-                                                       }
-                                                   });
+                                     }
+                                 });
     }
 }

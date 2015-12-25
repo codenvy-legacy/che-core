@@ -132,7 +132,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
     public void onImportClicked() {
         // check on VFS because need to check whether the folder with the same name already exists in the root of workspace
         final String projectName = view.getProjectName();
-        vfsServiceClient.getItemByPath(projectName, new AsyncRequestCallback<Item>() {
+        vfsServiceClient.getItemByPath(appContext.getWorkspaceId(), projectName, new AsyncRequestCallback<Item>() {
             @Override
             protected void onSuccess(Item result) {
                 view.setEnabledImportButton(false);

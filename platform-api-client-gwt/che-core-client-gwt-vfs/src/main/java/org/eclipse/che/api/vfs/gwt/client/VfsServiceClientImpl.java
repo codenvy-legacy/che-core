@@ -12,13 +12,9 @@ package org.eclipse.che.api.vfs.gwt.client;
 
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.inject.name.Named;
-import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
-import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceEvent;
-import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceHandler;
-import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -37,38 +33,26 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Sergii Leschenko
  * @author Artem Zatsarynnyi
  */
-public class VfsServiceClientImpl implements VfsServiceClient, StartWorkspaceHandler {
+public class VfsServiceClientImpl implements VfsServiceClient {
     private final AsyncRequestLoader  loader;
     private final AsyncRequestFactory asyncRequestFactory;
     private final String              extPath;
 
-    private String FIND_REPLACE;
-    private String GET_ITEM_BY_PATH;
-
     @Inject
     public VfsServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                EventBus eventBus,
                                 AsyncRequestLoader loader,
                                 AsyncRequestFactory asyncRequestFactory) {
         this.extPath = extPath;
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
-
-        eventBus.addHandler(StartWorkspaceEvent.TYPE, this);
     }
 
     @Override
-    public void onWorkspaceStarted(UsersWorkspaceDto workspace) {
-        String VFS = extPath + "/vfs/" + workspace.getId() + "/v2";
-        FIND_REPLACE = VFS + "/replace";
-        GET_ITEM_BY_PATH = VFS + "/itembypath";
-    }
-
-    @Override
-    public void replaceInCurrentWorkspace(@NotNull String projectPath,
-                                          List<ReplacementSet> replacementSets,
-                                          AsyncRequestCallback<Void> callback) {
-        String path = FIND_REPLACE + normalizePath(projectPath);
+    public void replace(@NotNull String workspaceId,
+                        @NotNull String projectPath,
+                        List<ReplacementSet> replacementSets,
+                        AsyncRequestCallback<Void> callback) {
+        String path = extPath + "/vfs/" + workspaceId + "/replace/v2" + normalizePath(projectPath);
 
         asyncRequestFactory.createRequest(RequestBuilder.POST, path, replacementSets, false)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
@@ -77,8 +61,8 @@ public class VfsServiceClientImpl implements VfsServiceClient, StartWorkspaceHan
     }
 
     @Override
-    public void getItemByPath(@NotNull String path, AsyncRequestCallback<Item> callback) {
-        final String url = GET_ITEM_BY_PATH + normalizePath(path);
+    public void getItemByPath(@NotNull String workspaceId, @NotNull String path, AsyncRequestCallback<Item> callback) {
+        final String url = extPath + "/vfs/" + workspaceId + "/itembypath/v2" + normalizePath(path);
 
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
