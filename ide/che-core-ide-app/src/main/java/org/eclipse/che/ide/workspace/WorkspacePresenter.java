@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.workspace;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -135,31 +134,5 @@ public class WorkspacePresenter implements Presenter, WorkspaceView.ActionDelega
      */
     public PartStack getPartStack(PartStackType type) {
         return activePerspective.getPartStack(type);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onUpdateClicked() {
-        final String host = Window.Location.getParameter("h");
-        final String port = Window.Location.getParameter("p");
-        updateExtension(host, port);
-    }
-
-    /** Update already launched Codenvy extension. */
-    private static native void updateExtension(String host, String port) /*-{
-        $wnd.__gwt_bookmarklet_params = {server_url: 'http://' + host + ':' + port + '/', module_name: '_app'};
-        var s = $doc.createElement('script');
-        s.src = 'http://' + host + ':' + port + '/dev_mode_on.js';
-        void($doc.getElementsByTagName('head')[0].appendChild(s));
-    }-*/;
-
-    /**
-     * Sets whether 'Update extension' button is visible.
-     *
-     * @param visible
-     *         <code>true</code> to show the button, <code>false</code> to hide it
-     */
-    public void setUpdateButtonVisibility(boolean visible) {
-        view.setUpdateButtonVisibility(visible);
     }
 }

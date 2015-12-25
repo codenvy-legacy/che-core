@@ -11,14 +11,10 @@
 package org.eclipse.che.ide.workspace;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.SimpleLayoutPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -47,8 +43,7 @@ public class WorkspaceViewImpl extends LayoutPanel implements WorkspaceView {
 
     @UiField
     DockLayoutPanel topMenuLayoutPanel;
-    @UiField
-    FlowPanel       updateExtensionPanel;
+
     @UiField
     SimplePanel     menuPanel;
 
@@ -58,9 +53,6 @@ public class WorkspaceViewImpl extends LayoutPanel implements WorkspaceView {
     @UiField
     SimplePanel actionsPanel, statusPanel;
 
-    @UiField
-    Button btnUpdate;
-
     ActionDelegate delegate;
 
     /** Create view. */
@@ -68,7 +60,6 @@ public class WorkspaceViewImpl extends LayoutPanel implements WorkspaceView {
     protected WorkspaceViewImpl() {
         add(uiBinder.createAndBindUi(this));
         getElement().setId("codenvyIdeWorkspaceViewImpl");
-        topMenuLayoutPanel.setWidgetHidden(updateExtensionPanel, true);
         ideMainDockPanel.setWidgetHidden(noToolbarPanel, true);
         ideMainDockPanel.setWidgetHidden(actionsPanel, true);
         ideMainDockPanel.setWidgetHidden(statusPanel, true);
@@ -101,17 +92,5 @@ public class WorkspaceViewImpl extends LayoutPanel implements WorkspaceView {
     @Override
     public AcceptsOneWidget getStatusPanel() {
         return statusPanel;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setUpdateButtonVisibility(boolean visible) {
-        topMenuLayoutPanel.setWidgetHidden(updateExtensionPanel, !visible);
-        btnUpdate.setVisible(visible);
-    }
-
-    @UiHandler("btnUpdate")
-    public void onUpdateClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
-        delegate.onUpdateClicked();
     }
 }

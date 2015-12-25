@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import org.eclipse.che.ide.api.mvp.View;
 
-
 /**
  * The view of {@link WorkspacePresenter}.
  *
@@ -23,9 +22,7 @@ import org.eclipse.che.ide.api.mvp.View;
  */
 public interface WorkspaceView extends View<WorkspaceView.ActionDelegate> {
     /** Required for delegating functions in the view. */
-    public interface ActionDelegate {
-        /** Performs any actions in response to click on Update button */
-        void onUpdateClicked();
+    interface ActionDelegate {
     }
 
     /** @return central panel */
@@ -43,13 +40,4 @@ public interface WorkspaceView extends View<WorkspaceView.ActionDelegate> {
      * @return status panel
      */
     AcceptsOneWidget getStatusPanel();
-
-
-    /**
-     * Sets whether 'Update extension' button is visible.
-     *
-     * @param visible
-     *         <code>true</code> to show the button, <code>false</code> to hide it
-     */
-    void setUpdateButtonVisibility(boolean visible);
 }
