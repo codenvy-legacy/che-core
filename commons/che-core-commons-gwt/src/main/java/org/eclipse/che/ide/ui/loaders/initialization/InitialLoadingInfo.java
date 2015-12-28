@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders.initializationLoader;
+package org.eclipse.che.ide.ui.loaders.initialization;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -16,10 +16,10 @@ import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.WAITING;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.WAITING;
+import static org.eclipse.che.ide.ui.loaders.initialization.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
 
 /**
  * Contains information about the operations of initial loading in IDE.

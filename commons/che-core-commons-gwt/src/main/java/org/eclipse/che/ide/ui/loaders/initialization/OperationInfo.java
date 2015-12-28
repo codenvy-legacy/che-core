@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders.initializationLoader;
+package org.eclipse.che.ide.ui.loaders.initialization;
 
 /**
  * Contains the information about the operation.

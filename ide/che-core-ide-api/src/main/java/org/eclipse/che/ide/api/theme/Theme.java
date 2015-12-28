@@ -1363,4 +1363,10 @@ public interface Theme {
 
     String editorTabPinBackgroundColor();
     String editorTabPinDropShadow();
+
+    String loaderBackgroundColor();
+    String loaderBorderColor();
+    String loaderBoxShadow();
+    String loaderSVGFill();
+    String loaderLabelColor();
 }

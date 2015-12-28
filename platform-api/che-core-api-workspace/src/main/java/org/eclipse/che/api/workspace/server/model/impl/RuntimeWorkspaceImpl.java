@@ -141,7 +141,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
     public void setActiveEnvName(String activeEnvName) {
         this.activeEnvName = activeEnvName;
     }
-    
+
     public EnvironmentStateImpl getActiveEnvironment() {
         return getEnvironments().get(activeEnvName);
     }
@@ -176,20 +176,22 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         private List<? extends Machine> machines;
 
         public RuntimeWorkspaceImpl build() {
-            return new RuntimeWorkspaceImpl(id,
-                                            name,
-                                            owner,
-                                            attributes,
-                                            commands,
-                                            projects,
-                                            environments,
-                                            defaultEnvName,
-                                            description,
-                                            devMachine,
-                                            machines,
-                                            rootFolder,
-                                            activeEnvName,
-                                            status);
+            final RuntimeWorkspaceImpl workspace = new RuntimeWorkspaceImpl(id,
+                                                                            name,
+                                                                            owner,
+                                                                            attributes,
+                                                                            commands,
+                                                                            projects,
+                                                                            environments,
+                                                                            defaultEnvName,
+                                                                            description,
+                                                                            devMachine,
+                                                                            machines,
+                                                                            rootFolder,
+                                                                            activeEnvName,
+                                                                            status);
+            workspace.setTemporary(isTemporary);
+            return workspace;
         }
 
         public RuntimeWorkspaceBuilder fromWorkspace(UsersWorkspace workspace) {
@@ -202,6 +204,8 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
             this.projects = workspace.getProjects();
             this.environments = workspace.getEnvironments();
             this.attributes = workspace.getAttributes();
+            this.isTemporary = workspace.isTemporary();
+            this.status = workspace.getStatus();
             return this;
         }
 

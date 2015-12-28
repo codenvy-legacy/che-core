@@ -8,30 +8,27 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders.requestLoader;
-
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
+package org.eclipse.che.ide.ui.loaders.request;
 
 /**
- * @author Vitaliy Gulyy
+ * Loader factory.
+ *
+ * @author Vlad Zhukovskiy
  */
-public class EmptyLoader implements AsyncRequestLoader {
+public interface LoaderFactory {
+    /**
+     * Create new loader with default message.
+     *
+     * @return new loader
+     */
+    MessageLoader newLoader();
 
-    @Override
-    public void hide() {
-    }
-
-    @Override
-    public void hide(String message) {
-
-    }
-
-    @Override
-    public void show() {
-    }
-
-    @Override
-    public void show(String message) {
-
-    }
+    /**
+     * Create new loader with initial message.
+     *
+     * @param message
+     *         initial message
+     * @return new loader with initial message
+     */
+    MessageLoader newLoader(String message);
 }

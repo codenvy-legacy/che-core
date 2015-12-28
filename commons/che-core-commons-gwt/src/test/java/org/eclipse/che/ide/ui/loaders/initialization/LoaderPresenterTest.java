@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders.initializationLoader;
+package org.eclipse.che.ide.ui.loaders.initialization;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,12 +27,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter.State.WORKING;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter.State.COMPLETED;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter.LoaderStateListener;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter.State.WORKING;
+import static org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter.State.COMPLETED;
+import static org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter.LoaderStateListener;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.ERROR;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.SUCCESS;
 
 
 /**

@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders.initializationLoader;
+package org.eclipse.che.ide.ui.loaders.initialization;
 
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
@@ -16,11 +16,11 @@ import com.google.inject.Singleton;
 
 import java.util.List;
 
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter.State.WORKING;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter.State.COMPLETED;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter.State.WORKING;
+import static org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter.State.COMPLETED;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.SUCCESS;
 
 /**
  * Loader for displaying information about a process of loading.

@@ -79,6 +79,7 @@ import org.eclipse.che.ide.part.editor.actions.CloseOtherAction;
 import org.eclipse.che.ide.part.editor.actions.PinEditorTabAction;
 import org.eclipse.che.ide.part.editor.actions.ReopenClosedFileAction;
 import org.eclipse.che.ide.part.editor.recent.OpenRecentFilesAction;
+import org.eclipse.che.ide.ui.loaders.request.MessageLoaderResources;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 import org.eclipse.che.ide.util.input.KeyCodeMap;
@@ -274,6 +275,9 @@ public class StandardComponentInitializer {
     private OpenRecentFilesAction openRecentFilesAction;
 
     @Inject
+    private MessageLoaderResources messageLoaderResources;
+
+    @Inject
     @Named("XMLFileType")
     private FileType xmlFile;
 
@@ -331,6 +335,9 @@ public class StandardComponentInitializer {
     }
 
     public void initialize() {
+        //initialize loader resources
+        messageLoaderResources.Css().ensureInjected();
+
         fileTypeRegistry.registerFileType(xmlFile);
 
         fileTypeRegistry.registerFileType(txtFile);

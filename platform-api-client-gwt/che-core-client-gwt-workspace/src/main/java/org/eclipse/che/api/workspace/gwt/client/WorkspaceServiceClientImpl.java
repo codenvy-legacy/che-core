@@ -28,9 +28,9 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -55,17 +55,17 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
 
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
-    private final AsyncRequestLoader     loader;
+    private final LoaderFactory          loaderFactory;
     private final String                 baseHttpUrl;
 
     @Inject
     private WorkspaceServiceClientImpl(@RestContext String restContext,
                                        DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        AsyncRequestFactory asyncRequestFactory,
-                                       AsyncRequestLoader loader) {
+                                       LoaderFactory loaderFactory) {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
-        this.loader = loader;
+        this.loaderFactory = loaderFactory;
         this.baseHttpUrl = restContext + "/workspace";
     }
 
@@ -89,7 +89,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         asyncRequestFactory.createPostRequest(url, newWorkspace)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Creating workspace...")
+                           .loader(loaderFactory.newLoader("Creating workspace..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -107,7 +107,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         final String url = baseHttpUrl + '/' + wsId;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about workspace...")
+                           .loader(loaderFactory.newLoader("Getting info about workspace..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -139,7 +139,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         final String url = baseHttpUrl;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about workspaces...")
+                           .loader(loaderFactory.newLoader("Getting info about workspaces..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -156,7 +156,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
                 final String url = baseHttpUrl + "/" + workspaceId;
                 asyncRequestFactory.createGetRequest(url)
                                    .header(ACCEPT, APPLICATION_JSON)
-                                   .loader(loader, "Getting info about workspace...")
+                                   .loader(loaderFactory.newLoader("Getting info about workspace..."))
                                    .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
             }
         });
@@ -188,7 +188,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         asyncRequestFactory.createPostRequest(baseHttpUrl + "/runtime", cfg)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Creating machine from recipe...")
+                           .loader(loaderFactory.newLoader("Creating machine from recipe..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -212,7 +212,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         asyncRequestFactory.createPostRequest(url, null)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Starting workspace...")
+                           .loader(loaderFactory.newLoader("Starting workspace..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -229,7 +229,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
                 asyncRequestFactory.createDeleteRequest(url)
-                                   .loader(loader, "Stopping workspace...")
+                                   .loader(loaderFactory.newLoader("Stopping workspace..."))
                                    .send(newCallback(callback));
             }
         });
@@ -262,7 +262,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         asyncRequestFactory.createPostRequest(url, newCommand)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Adding command...")
+                           .loader(loaderFactory.newLoader("Adding command..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -283,7 +283,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         asyncRequestFactory.createRequest(PUT, url, commandUpdate, false)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Updating command...")
+                           .loader(loaderFactory.newLoader("Updating command..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -303,7 +303,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         final String url = baseHttpUrl + '/' + wsId + "/command/" + commandName;
         asyncRequestFactory.createDeleteRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Deleting command...")
+                           .loader(loaderFactory.newLoader("Deleting command..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
     }
 
@@ -354,7 +354,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
         asyncRequestFactory.createPostRequest(url, newMachine)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Creating machine...")
+                           .loader(loaderFactory.newLoader("Creating machine..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(MachineStateDto.class)));
     }
 
@@ -366,7 +366,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
                 final String url = baseHttpUrl + '/' + workspaceId + "/snapshot";
                 asyncRequestFactory.createGetRequest(url)
                                    .header(ACCEPT, APPLICATION_JSON)
-                                   .loader(loader, "Getting workspace's snapshot")
+                                   .loader(loaderFactory.newLoader("Getting workspace's snapshot"))
                                    .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(SnapshotDto.class)));
             }
         });
@@ -380,7 +380,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
                 final String url = baseHttpUrl + '/' + workspaceId + "/snapshot";
                 asyncRequestFactory.createPostRequest(url, null)
                                    .header(ACCEPT, APPLICATION_JSON)
-                                   .loader(loader, "Creating workspace's snapshot")
+                                   .loader(loaderFactory.newLoader("Creating workspace's snapshot"))
                                    .send(newCallback(callback));
             }
         });
@@ -394,7 +394,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
                 final String url = baseHttpUrl + '/' + workspaceId + "/runtime/snapshot?environment=" + envName;
                 asyncRequestFactory.createPostRequest(url, null)
                                    .header(ACCEPT, APPLICATION_JSON)
-                                   .loader(loader, "Recovering workspace from snapshot")
+                                   .loader(loaderFactory.newLoader("Recovering workspace from snapshot"))
                                    .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
             }
         });

@@ -19,8 +19,8 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
+import org.eclipse.che.ide.ui.loaders.initialization.InitialLoadingInfo;
+import org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
@@ -30,10 +30,10 @@ import org.eclipse.che.ide.websocket.events.ConnectionErrorHandler;
 import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.events.WebSocketClosedEvent;
 
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.EXTENSION_SERVER_BOOTING;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.InitialLoadingInfo.Operations.EXTENSION_SERVER_BOOTING;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.ERROR;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.SUCCESS;
 
 /**
  * @author Roman Nikitenko
