@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server;
 
-
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
@@ -27,6 +27,8 @@ import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.commons.user.UserImpl;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
@@ -35,10 +37,13 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
+import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STARTING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
@@ -54,8 +59,7 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-
-//TODO cover WorkspaceManager with tests when API is established
+import static org.testng.Assert.assertTrue;
 
 /**
  * Covers main cases of {@link WorkspaceManager}.
@@ -65,36 +69,39 @@ import static org.testng.Assert.assertNotNull;
 @Listeners(value = {MockitoTestNGListener.class})
 public class WorkspaceManagerTest {
 
-    @Mock
-    EventService             eventService;
-    @Mock
-    WorkspaceDao             workspaceDao;
-    @Mock
-    WorkspaceConfigValidator workspaceConfigValidator;
-    @Mock
-    MachineManager           client;
-    @Mock
-    WorkspaceHooks           workspaceHooks;
-    @Mock
-    MachineManager           machineManager;
-    @Mock
-    RuntimeWorkspaceRegistry registry;
+    private static final String USER_ID = "user123";
 
-    WorkspaceManager   manager;
-    EnvironmentContext environmentContext;
+    @Mock
+    private EventService                       eventService;
+    @Mock
+    private WorkspaceDao                       workspaceDao;
+    @Mock
+    private WorkspaceConfigValidator           workspaceConfigValidator;
+    @Mock
+    private MachineManager                     client;
+    @Mock
+    private WorkspaceHooks                     workspaceHooks;
+    @Mock
+    private MachineManager                     machineManager;
+    @Mock
+    private RuntimeWorkspaceRegistry           registry;
+    @Captor
+    private ArgumentCaptor<UsersWorkspaceImpl> workspaceCaptor;
+
+    private WorkspaceManager workspaceManager;
 
     @BeforeMethod
     public void setUpManager() throws Exception {
-        manager = spy(new WorkspaceManager(workspaceDao, registry, workspaceConfigValidator, eventService, machineManager));
-        manager.setHooks(workspaceHooks);
+        workspaceManager = spy(new WorkspaceManager(workspaceDao, registry, workspaceConfigValidator, eventService, machineManager));
+        workspaceManager.setHooks(workspaceHooks);
 
         when(workspaceDao.create(any(UsersWorkspaceImpl.class))).thenAnswer(invocation -> invocation.getArguments()[0]);
         when(workspaceDao.update(any(UsersWorkspaceImpl.class))).thenAnswer(invocation -> invocation.getArguments()[0]);
 
-        EnvironmentContext.setCurrent(environmentContext = new EnvironmentContext() {
+        EnvironmentContext.setCurrent(new EnvironmentContext() {
             @Override
             public User getUser() {
-                return new UserImpl("name", "id", "token", new ArrayList<>(), false);
+                return new UserImpl("name", USER_ID, "token", new ArrayList<>(), false);
             }
         });
     }
@@ -103,7 +110,7 @@ public class WorkspaceManagerTest {
     public void shouldBeAbleToCreateWorkspace() throws Exception {
         final WorkspaceConfig cfg = createConfig();
 
-        final UsersWorkspaceImpl workspace = manager.createWorkspace(cfg, "user123", "account");
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(cfg, "user123", "account");
 
         assertNotNull(workspace);
         assertFalse(isNullOrEmpty(workspace.getId()));
@@ -116,74 +123,327 @@ public class WorkspaceManagerTest {
     }
 
     @Test
+    public void shouldGenerateWorkspaceNameIfItIsNotPresentInConfiguration() throws Exception {
+        final WorkspaceConfigDto config = createConfig().withName(null);
+        when(workspaceDao.get(any())).thenThrow(new NotFoundException("Not found"));
+
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(config, "user123", "account");
+
+        assertNotNull(workspace.getName());
+    }
+
+    @Test
+    public void shouldBeAbleToGetWorkspaceById() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
+        when(registry.get(any())).thenThrow(new NotFoundException(""));
+
+        final UsersWorkspaceImpl result = workspaceManager.getWorkspace(workspace.getId());
+
+        assertEquals(result, workspace);
+    }
+
+    @Test
+    public void getWorkspaceByIdShouldReturnWorkspaceWithStatusEqualToItsRuntimeStatus() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
+        final RuntimeWorkspaceImpl runtime = createRuntime(workspace);
+        runtime.setStatus(STARTING);
+        when(registry.get(workspace.getId())).thenReturn(runtime);
+
+        final UsersWorkspaceImpl result = workspaceManager.getWorkspace(workspace.getId());
+
+        assertEquals(result.getStatus(), STARTING, "Workspace status must be taken from the runtime instance");
+    }
+
+    @Test
+    public void shouldBeAbleToGetWorkspaceByName() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getName(), workspace.getOwner())).thenReturn(workspace);
+        when(registry.get(any())).thenThrow(new NotFoundException(""));
+
+        final UsersWorkspaceImpl result = workspaceManager.getWorkspace(workspace.getName(), workspace.getOwner());
+
+        assertEquals(result, workspace);
+    }
+
+    @Test
+    public void getWorkspaceByNameShouldReturnWorkspaceWithStatusEqualToItsRuntimeStatus() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getName(), workspace.getOwner())).thenReturn(workspace);
+        final RuntimeWorkspaceImpl runtime = createRuntime(workspace);
+        runtime.setStatus(STARTING);
+        when(registry.get(workspace.getId())).thenReturn(runtime);
+
+        final UsersWorkspaceImpl result = workspaceManager.getWorkspace(workspace.getName(), workspace.getOwner());
+
+        assertEquals(result.getStatus(), STARTING, "Workspace status must be taken from the runtime instance");
+    }
+
+    @Test(expectedExceptions = NotFoundException.class)
+    public void getWorkspaceShouldThrowNotFoundExceptionWhenWorkspaceDoesNotExist() throws Exception {
+        when(workspaceDao.get(any())).thenThrow(new NotFoundException("not found"));
+
+        workspaceManager.getWorkspace("workspace123");
+    }
+
+
+    @Test
+    public void shouldBeAbleToGetWorkspacesByOwner() throws Exception {
+        // given
+        final WorkspaceConfig config = createConfig();
+
+        final UsersWorkspaceImpl workspace1 = workspaceManager.createWorkspace(config, "user123", null);
+        workspace1.setStatus(STARTING);
+        workspace1.setTemporary(true);
+
+        final UsersWorkspaceImpl workspace2 = workspaceManager.createWorkspace(config, "user123", null);
+        final RuntimeWorkspaceImpl workspace2Runtime = createRuntime(workspace2);
+        workspace2Runtime.setStatus(RUNNING);
+        when(registry.getByOwner("user123")).thenReturn(singletonList(workspace2Runtime));
+
+        when(workspaceDao.getByOwner("user123")).thenReturn(asList(workspace1, workspace2));
+
+        // when
+        final List<UsersWorkspaceImpl> result = workspaceManager.getWorkspaces("user123");
+
+        // then
+        assertEquals(result.size(), 2);
+
+        final UsersWorkspaceImpl res1 = result.get(0);
+        assertEquals(res1.getStatus(), STOPPED, "Workspace status wasn't changed from STARTING to STOPPED");
+        assertFalse(res1.isTemporary(), "Workspace must be permanent");
+        assertNotNull(res1.getEnvironments()
+                          .get(res1.getDefaultEnvName())
+                          .getMachineConfigs()
+                          .get(0)
+                          .getChannels());
+
+        final UsersWorkspaceImpl res2 = result.get(1);
+        assertEquals(res2.getStatus(), workspace2Runtime.getStatus(), "Workspace status wasn't changed to the runtime instance status");
+        assertFalse(res2.isTemporary(), "Workspace must be permanent");
+        assertNotNull(res2.getEnvironments()
+                          .get(res1.getDefaultEnvName())
+                          .getMachineConfigs()
+                          .get(0)
+                          .getChannels());
+    }
+
+    @Test
     public void shouldBeAbleToUpdateWorkspace() throws Exception {
-        final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "user123", "account");
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
         when(registry.get(any())).thenThrow(new NotFoundException(""));
         final WorkspaceConfig update = createConfig();
 
-        UsersWorkspace updated = manager.updateWorkspace(workspace.getId(), update);
+        final UsersWorkspace updated = workspaceManager.updateWorkspace(workspace.getId(), update);
 
         verify(workspaceDao).update(any(UsersWorkspaceImpl.class));
-        assertNotNull(updated.getStatus());
+        assertEquals(updated.getStatus(), STOPPED);
+        assertFalse(updated.isTemporary());
+        assertNotNull(updated.getEnvironments()
+                             .get(updated.getDefaultEnvName())
+                             .getMachineConfigs()
+                             .get(0)
+                             .getChannels());
     }
 
     @Test
-    public void shouldBeAbleToDeleteWorkspace() throws Exception {
-        manager.removeWorkspace("workspace123");
-
-        verify(workspaceDao).remove("workspace123");
-        verify(workspaceHooks).afterRemove("workspace123");
-    }
-
-    @Test
-    public void shouldBeAbleToStartWorkspace() throws Exception {
-        final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "user123", "account");
+    public void workspaceUpdateShouldReturnWorkspaceWithStatusEqualToItsRuntimeStatus() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
-        doReturn(workspace).when(manager).startWorkspaceAsync(any(), anyString(), anyBoolean());
+        final RuntimeWorkspaceImpl runtime = createRuntime(workspace);
+        runtime.setStatus(STARTING);
+        when(registry.get(workspace.getId())).thenReturn(runtime);
+        final WorkspaceConfig update = createConfig();
+
+        UsersWorkspace updated = workspaceManager.updateWorkspace(workspace.getId(), update);
+
+        verify(workspaceDao).update(any(UsersWorkspaceImpl.class));
+        assertEquals(updated.getStatus(), STARTING);
+    }
+
+    @Test
+    public void shouldRemoveWorkspace() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
+
+        workspaceManager.removeWorkspace(workspace.getId());
+
+        verify(workspaceDao).remove(workspace.getId());
+        verify(workspaceHooks).afterRemove(workspace.getId());
+    }
+
+    @Test(expectedExceptions = ConflictException.class)
+    public void shouldNotRemoveWorkspaceIfItIsNotStopped() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(registry.hasRuntime(workspace.getId())).thenReturn(true);
+
+        workspaceManager.removeWorkspace(workspace.getId());
+    }
+
+    @Test
+    public void shouldBeAbleToGetRuntimeWorkspaceById() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account123");
+        final RuntimeWorkspaceImpl runtime = createRuntime(workspace);
+        when(registry.get(runtime.getId())).thenReturn(runtime);
+
+        final RuntimeWorkspaceImpl result = workspaceManager.getRuntimeWorkspace(runtime.getId());
+
+        assertNotNull(result.getEnvironments()
+                            .get(result.getDefaultEnvName())
+                            .getMachineConfigs()
+                            .get(0)
+                            .getChannels());
+    }
+
+    @Test
+    public void shouldBeAbleToGetRuntimeWorkspaces() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account123");
+        final RuntimeWorkspaceImpl runtime = createRuntime(workspace);
+        when(registry.getByOwner("user123")).thenReturn(asList(runtime, runtime));
+
+        final List<RuntimeWorkspaceImpl> result = workspaceManager.getRuntimeWorkspaces("user123");
+
+        assertEquals(result, asList(runtime, runtime));
+    }
+
+    @Test
+    public void shouldBeAbleToStartWorkspaceById() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
+        doReturn(createRuntime(workspace)).when(workspaceManager).performSyncStart(any(), anyString(), anyBoolean(), anyString());
         when(registry.get(any())).thenThrow(new NotFoundException(""));
 
-        final UsersWorkspace workspace2 = manager.startWorkspaceById(workspace.getId(), null, null);
+        final UsersWorkspace result = workspaceManager.startWorkspaceById(workspace.getId(),
+                                                                          workspace.getDefaultEnvName(),
+                                                                          "account");
 
-        assertEquals(workspace2.getStatus(), STARTING);
-        verify(manager).startWorkspaceAsync(workspace, workspace.getDefaultEnvName(), false);
-        verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnvName(), null);
+        assertEquals(result.getStatus(), STARTING);
+        assertFalse(result.isTemporary());
+        assertNotNull(result.getEnvironments()
+                            .get(result.getDefaultEnvName())
+                            .getMachineConfigs()
+                            .get(0)
+                            .getChannels());
+        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
+    }
+
+    @Test
+    public void shouldBeAbleToStartWorkspaceByName() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getName(), "user123")).thenReturn(workspace);
+        doReturn(createRuntime(workspace)).when(workspaceManager).performSyncStart(any(), anyString(), anyBoolean(), anyString());
+        when(registry.get(any())).thenThrow(new NotFoundException(""));
+
+        final UsersWorkspace result = workspaceManager.startWorkspaceByName(workspace.getName(),
+                                                                            "user123",
+                                                                            workspace.getDefaultEnvName(),
+                                                                            "account");
+
+        assertEquals(result.getStatus(), STARTING);
+        assertFalse(result.isTemporary());
+        assertNotNull(result.getEnvironments()
+                            .get(result.getDefaultEnvName())
+                            .getMachineConfigs()
+                            .get(0)
+                            .getChannels());
+        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
     }
 
     @Test(expectedExceptions = ConflictException.class,
           expectedExceptionsMessageRegExp = "Could not start workspace '.*' because its status is '.*'")
     public void shouldNotBeAbleToStartWorkspaceIfItIsRunning() throws Exception {
-        final UsersWorkspaceImpl workspace = manager.createWorkspace(createConfig(), "user123", "account");
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
         when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
         when(registry.get(workspace.getId())).thenReturn(mock(RuntimeWorkspaceImpl.class));
 
-        manager.startWorkspaceById(workspace.getId(), null, null);
+        workspaceManager.startWorkspaceById(workspace.getId(), null, null);
+    }
+
+    @Test
+    public void shouldStartWorkspaceWhenPerformingSyncStart() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(registry.start(any(), anyString(), anyBoolean())).thenReturn(createRuntime(workspace));
+
+        workspaceManager.performSyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
+
+        verify(registry).start(workspace, workspace.getDefaultEnvName(), false);
+        verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnvName(), "account");
+    }
+
+    @Test(expectedExceptions = ServerException.class,
+          expectedExceptionsMessageRegExp = "registry exception")
+    public void syncStartShouldRethrowRegistryExceptions() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(registry.start(any(), anyString(), anyBoolean())).thenThrow(new ServerException("registry exception"));
+
+        workspaceManager.performSyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
     }
 
     @Test
     public void shouldBeAbleToStartTemporaryWorkspace() throws Exception {
-        final WorkspaceConfig config = createConfig();
-        final UsersWorkspace workspace = manager.createWorkspace(config, "user123", "account");
-        doReturn(workspace).when(manager).fromConfig(config);
-        final RuntimeWorkspaceImpl runtime = mock(RuntimeWorkspaceImpl.class);
-        when(registry.start(any(), anyString(), anyBoolean())).thenReturn(runtime);
+        final WorkspaceConfigDto config = createConfig();
+        final UsersWorkspace workspace = workspaceManager.createWorkspace(config, "user123", "account");
+        when(registry.start(workspaceCaptor.capture(), anyString(), anyBoolean())).thenReturn(createRuntime(workspace));
 
-        final RuntimeWorkspaceImpl workspace2 = manager.startTemporaryWorkspace(config, "account");
+        final RuntimeWorkspaceImpl runtime = workspaceManager.startTemporaryWorkspace(config, "account");
 
-        assertEquals(runtime, workspace2);
-        verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnvName(), "account");
+        final UsersWorkspaceImpl captured = workspaceCaptor.getValue();
+        assertTrue(captured.isTemporary());
+        assertNotNull(captured.getEnvironments()
+                              .get(captured.getDefaultEnvName())
+                              .getMachineConfigs()
+                              .get(0)
+                              .getChannels());
+        verify(workspaceHooks).beforeCreate(captured, "account");
+        verify(workspaceHooks).afterCreate(runtime, "account");
+    }
+
+    @Test
+    public void shouldBeAbleToRecoverWorkspace() throws Exception {
+        final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
+        when(workspaceDao.get(workspace.getId())).thenReturn(workspace);
+        doReturn(createRuntime(workspace)).when(workspaceManager).performSyncStart(any(), anyString(), anyBoolean(), anyString());
+        when(registry.get(any())).thenThrow(new NotFoundException(""));
+
+        final UsersWorkspace result = workspaceManager.recoverWorkspace(workspace.getId(),
+                                                                        workspace.getDefaultEnvName(),
+                                                                        "account");
+
+        assertEquals(result.getStatus(), STARTING);
+        assertFalse(result.isTemporary());
+        assertNotNull(result.getEnvironments()
+                            .get(result.getDefaultEnvName())
+                            .getMachineConfigs()
+                            .get(0)
+                            .getChannels());
+        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnvName(), true, "account");
     }
 
     @Test
     public void shouldBeAbleToStopWorkspace() throws Exception {
-        doNothing().when(manager).stopWorkspaceAsync("workspace123");
+        doNothing().when(workspaceManager).performAsyncStop(any());
 
-        manager.stopWorkspace("workspace123");
+        workspaceManager.stopWorkspace("workspace123");
 
-        verify(manager).stopWorkspaceAsync("workspace123");
+        verify(workspaceManager).performAsyncStop(any());
     }
 
-    private static WorkspaceConfig createConfig() {
+    @Test
+    public void shouldBeAbleToGetSnapshots() throws Exception {
+        when(machineManager.getSnapshots("user123", "workspace123")).thenReturn(singletonList(any()));
+
+        assertEquals(workspaceManager.getSnapshot("workspace123").size(), 1);
+    }
+
+    private RuntimeWorkspaceImpl createRuntime(UsersWorkspace workspace) {
+        return RuntimeWorkspaceImpl.builder()
+                                   .fromWorkspace(workspace)
+                                   .build();
+    }
+
+    private static WorkspaceConfigDto createConfig() {
         MachineConfigDto devMachine = newDto(MachineConfigDto.class).withDev(true)
                                                                     .withName("dev-machine")
                                                                     .withType("docker")
