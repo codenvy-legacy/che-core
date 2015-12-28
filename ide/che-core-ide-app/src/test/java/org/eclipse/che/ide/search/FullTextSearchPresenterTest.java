@@ -24,7 +24,6 @@ import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.search.presentation.FindResultPresenter;
-import org.eclipse.che.ide.ui.loaders.requestLoader.IdeLoader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,8 +59,6 @@ public class FullTextSearchPresenterTest {
     @Mock
     private DtoUnmarshallerFactory       dtoUnmarshallerFactory;
     @Mock
-    private IdeLoader                    loader;
-    @Mock
     private ProjectServiceClient         projectServiceClient;
     @Mock
     private Promise<List<ItemReference>> promise;
@@ -94,7 +91,6 @@ public class FullTextSearchPresenterTest {
         fullTextSearchPresenter = new FullTextSearchPresenter(view,
                                                               findResultPresenter,
                                                               dtoFactory,
-                                                              loader,
                                                               appContext,
                                                               projectServiceClient);
     }
@@ -120,7 +116,6 @@ public class FullTextSearchPresenterTest {
 
         fullTextSearchPresenter.search(SEARCHED_TEXT);
 
-        verify(loader).show();
         verify(view, times(2)).getPathToSearch();
         verify(view, times(2)).getFileMask();
 
@@ -129,7 +124,6 @@ public class FullTextSearchPresenterTest {
 
         verify(view).close();
         verify(findResultPresenter).handleResponse(result, SEARCHED_TEXT);
-        verify(loader).hide();
     }
 
     @Test
@@ -141,14 +135,12 @@ public class FullTextSearchPresenterTest {
 
         fullTextSearchPresenter.search(SEARCHED_TEXT);
 
-        verify(loader).show();
         verify(view, times(2)).getPathToSearch();
         verify(view, times(2)).getFileMask();
 
         verify(promise).catchError(operationErrorCapture.capture());
         operationErrorCapture.getValue().apply(promiseError);
 
-        verify(loader).hide();
         verify(view).showErrorMessage(SEARCHED_TEXT);
     }
 }

@@ -10,21 +10,36 @@
  *******************************************************************************/
 package org.eclipse.che.ide.rest;
 
-/** Something to show while request is calling */
-
+/**
+ * Loader which display progress information of specific long live process.
+ *
+ * @author Vlad Zhukovskyi
+ */
 public interface AsyncRequestLoader {
 
-    /** show something with default message */
+    /**
+     * Show loader.
+     */
     void show();
 
-    /** show something with custom message */
+    /**
+     * Show loader with specific message.
+     *
+     * @param message
+     *         loader message
+     */
     void show(String message);
 
-
-    /** hide this with default message */
+    /**
+     * Hide loader.
+     */
     void hide();
 
-    /** hide this with custom message */
-    void hide(String message);
-
+    /**
+     * Set message to current loader.
+     *
+     * @param message
+     *         loader message
+     */
+    void setMessage(String message);
 }

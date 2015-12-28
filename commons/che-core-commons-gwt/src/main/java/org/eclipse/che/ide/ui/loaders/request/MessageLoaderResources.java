@@ -8,12 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders.requestLoader;
+package org.eclipse.che.ide.ui.loaders.request;
 
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.DataResource;
-import com.google.gwt.resources.client.DataResource.MimeType;
+
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
  * Resources for request loader.
@@ -21,23 +21,20 @@ import com.google.gwt.resources.client.DataResource.MimeType;
  * @author Andrey Plotnikov
  * @author Oleksii Orel
  */
-public interface RequestLoaderResources extends ClientBundle {
+public interface MessageLoaderResources extends ClientBundle {
 
     interface LoaderCss extends CssResource {
         String loader();
 
-        String glassStyle();
-                                                                                                                                                
-        String pinionPanel();
+        String loaderSvg();
 
-        String textField();
+        String label();
 
-        String hide();
+        String glass();
     }
 
-    @MimeType("image/png")
-    @Source("pinion-icon.png")
-    DataResource pinionIcon();
+    @Source("progress.svg")
+    SVGResource loader();
 
     @Source({"RequestLoader.css", "org/eclipse/che/ide/api/ui/style.css"})
     LoaderCss Css();

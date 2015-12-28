@@ -33,8 +33,8 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
+import org.eclipse.che.ide.ui.loaders.initialization.InitialLoadingInfo;
+import org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
@@ -43,7 +43,6 @@ import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 
 import java.util.List;
 
-import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
 
 /**

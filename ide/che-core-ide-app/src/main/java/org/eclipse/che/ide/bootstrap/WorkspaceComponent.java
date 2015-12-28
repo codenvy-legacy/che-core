@@ -41,8 +41,8 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
+import org.eclipse.che.ide.ui.loaders.initialization.InitialLoadingInfo;
+import org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.MessageBus;
 import org.eclipse.che.ide.websocket.MessageBusProvider;
@@ -61,10 +61,10 @@ import java.util.List;
 
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.ERROR;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.IN_PROGRESS;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status.SUCCESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.InitialLoadingInfo.Operations.WORKSPACE_BOOTING;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.ERROR;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.IN_PROGRESS;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status.SUCCESS;
 
 /**
  * @author Evgen Vidolob

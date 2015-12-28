@@ -8,11 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.loaders.initializationLoader;
+package org.eclipse.che.ide.ui.loaders.initialization;
 
 import java.util.List;
 
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.OperationInfo.Status;
+import static org.eclipse.che.ide.ui.loaders.initialization.OperationInfo.Status;
 
 /**
  * Contains information about the operations of loading.

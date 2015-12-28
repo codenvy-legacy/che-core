@@ -13,6 +13,7 @@ package org.eclipse.che.ide.jseditor.client.texteditor;
 import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
 import org.eclipse.che.ide.jseditor.client.document.DocumentStorage.EmbeddedDocumentCallback;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 /**
  * Composite callback that waits for both the editor module initialization and the document content.
@@ -39,10 +40,10 @@ abstract class EditorInitCallback<T extends EditorWidget> implements EmbeddedDoc
      * @param loader loader used to wait for editor impl initialization
      */
     public EditorInitCallback(final boolean moduleAlreadyReady,
-                              final AsyncRequestLoader loader,
+                              final LoaderFactory loaderFactory,
                               final JsEditorConstants constants) {
         this.editorModuleReady = moduleAlreadyReady;
-        this.loader = loader;
+        this.loader = loaderFactory.newLoader();
         this.waitEditorMessageString = constants.waitEditorInitMessage();
     }
 
@@ -55,7 +56,7 @@ abstract class EditorInitCallback<T extends EditorWidget> implements EmbeddedDoc
     @Override
     public void onEditorModuleError() {
         if (this.loaderWasShown) {
-            this.loader.hide(this.waitEditorMessageString);
+            this.loader.hide();
         }
         onError();
     }
@@ -73,7 +74,7 @@ abstract class EditorInitCallback<T extends EditorWidget> implements EmbeddedDoc
     @Override
     public void onDocumentLoadFailure(final Throwable cause) {
         if (this.loaderWasShown) {
-            this.loader.hide(this.waitEditorMessageString);
+            this.loader.hide();
         }
         onFileError();
     }
@@ -81,7 +82,7 @@ abstract class EditorInitCallback<T extends EditorWidget> implements EmbeddedDoc
     private void checkReadyAndContinue() {
         if (this.receivedContent != null && this.editorModuleReady) {
             if (this.loaderWasShown) {
-                this.loader.hide(this.waitEditorMessageString);
+                this.loader.hide();
             }
             onReady(this.receivedContent);
         } else if (! this.editorModuleReady) {

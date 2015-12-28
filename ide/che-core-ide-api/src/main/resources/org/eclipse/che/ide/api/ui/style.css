@@ -354,3 +354,9 @@
 @eval checkBoxDisabledFontColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledFontColor();
 @eval checkBoxDisabledBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.checkBoxDisabledBackgroundColor();
 
+/*Loader*/
+@eval loaderBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.loaderBackgroundColor();
+@eval loaderBorderColor org.eclipse.che.ide.api.theme.Style.theme.loaderBorderColor();
+@eval loaderBoxShadow org.eclipse.che.ide.api.theme.Style.theme.loaderBoxShadow();
+@eval loaderSVGFill org.eclipse.che.ide.api.theme.Style.theme.loaderSVGFill();
+@eval loaderLabelColor org.eclipse.che.ide.api.theme.Style.theme.loaderLabelColor();

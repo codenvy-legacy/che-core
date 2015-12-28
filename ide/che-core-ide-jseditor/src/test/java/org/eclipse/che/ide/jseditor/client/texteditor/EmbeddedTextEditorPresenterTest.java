@@ -22,10 +22,13 @@ import org.eclipse.che.ide.jseditor.client.document.DocumentStorage;
 import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
 import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
+
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
+import org.eclipse.che.ide.ui.loaders.request.MessageLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -75,6 +78,10 @@ public class EmbeddedTextEditorPresenterTest {
     private TextEditorConfiguration           configuration;
     @Mock
     private NotificationManager               notificationManager;
+    @Mock
+    private LoaderFactory                     loaderFactory;
+    @Mock
+    private MessageLoader loader;
 
     @Mock
     private ContentFormatter                 contentFormatter;
@@ -197,10 +204,11 @@ public class EmbeddedTextEditorPresenterTest {
 
         ArgumentCaptor<EditorInitCallback> callBackCaptor =
                 ArgumentCaptor.forClass(EditorInitCallback.class);
-
+        doReturn(loader).when(loaderFactory).newLoader();
         doReturn(editorWidget).when(editorWidgetFactory).createEditorWidget(Matchers.<List<String>>anyObject());
         doReturn(document).when(editorWidget).getDocument();
 
+        embeddedTextEditorPresenter.injectAsyncLoader(loaderFactory);
         embeddedTextEditorPresenter.initialize(configuration, notificationManager);
         embeddedTextEditorPresenter.init(editorInput);
 

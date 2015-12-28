@@ -71,11 +71,11 @@ import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView.Delegate;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.inject.Inject;
@@ -127,7 +127,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     private Document                 document;
     private CursorModelWithHandler   cursorModel;
     private HasKeybindings keyBindingsManager = new TemporaryKeybindingsManager();
-    private AsyncRequestLoader  loader;
+    private LoaderFactory       loaderFactory;
     private NotificationManager notificationManager;
     /** The editor's error state. */
     private EditorState         errorState;
@@ -190,7 +190,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                     return;
                 }
                 final boolean moduleReady = editorModule.isReady();
-                EditorInitCallback<T> dualCallback = new EditorInitCallback<T>(moduleReady, loader, constant) {
+                EditorInitCallback<T> dualCallback = new EditorInitCallback<T>(moduleReady, loaderFactory, constant) {
                     @Override
                     public void onReady(final String content) {
                         createEditor(content);
@@ -322,8 +322,8 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     }
 
     @Inject
-    public void injectAsyncLoader(final AsyncRequestLoader loader) {
-        this.loader = loader;
+    public void injectAsyncLoader(final LoaderFactory loaderFactory) {
+        this.loaderFactory = loaderFactory;
     }
 
     @Override

@@ -20,8 +20,8 @@ import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -38,18 +38,18 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
  * @author Artem Zatsarynnyi
  */
 public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
-    private final AsyncRequestLoader     loader;
+    private final LoaderFactory          loaderFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final String                 extPath;
 
     @Inject
     protected ProjectTypeServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                           AsyncRequestLoader loader,
+                                           LoaderFactory loaderFactory,
                                            AsyncRequestFactory asyncRequestFactory,
                                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.extPath = extPath;
-        this.loader = loader;
+        this.loaderFactory = loaderFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
@@ -77,7 +77,7 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
         final String url = extPath + "/project-type/" + workspaceId;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about registered project types...")
+                           .loader(loaderFactory.newLoader("Getting info about registered project types..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(ProjectTypeDefinition.class)));
     }
 
@@ -95,7 +95,7 @@ public class ProjectTypeServiceClientImpl implements ProjectTypeServiceClient {
         final String url = extPath + "/project-type/" + workspaceId + '/' + id;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting info about project type...")
+                           .loader(loaderFactory.newLoader("Getting info about project type..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(ProjectTypeDefinition.class)));
     }
 }

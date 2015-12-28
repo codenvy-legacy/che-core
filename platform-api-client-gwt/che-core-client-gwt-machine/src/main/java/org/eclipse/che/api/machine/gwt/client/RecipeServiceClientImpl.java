@@ -22,13 +22,15 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.StringUnmarshaller;
 
 import javax.validation.constraints.NotNull;
+
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,22 +49,19 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  * @author Valeriy Svydenko
  */
 public class RecipeServiceClientImpl implements RecipeServiceClient {
-    private final DtoFactory             dtoFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
-    private final AsyncRequestLoader     loader;
+    private final LoaderFactory          loaderFactory;
     private final String                 baseHttpUrl;
 
     @Inject
     protected RecipeServiceClientImpl(@RestContext String restContext,
-                                      DtoFactory dtoFactory,
                                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                       AsyncRequestFactory asyncRequestFactory,
-                                      AsyncRequestLoader loader) {
-        this.dtoFactory = dtoFactory;
+                                      LoaderFactory loaderFactory) {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
-        this.loader = loader;
+        this.loaderFactory = loaderFactory;
         this.baseHttpUrl = restContext + "/recipe";
     }
 
@@ -81,7 +80,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         asyncRequestFactory.createPostRequest(baseHttpUrl, newRecipe)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Creating recipe...")
+                           .loader(loaderFactory.newLoader("Creating recipe..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(RecipeDescriptor.class)));
     }
 
@@ -100,7 +99,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         final String url = baseHttpUrl + '/' + id + "/script";
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting recipe script...")
+                           .loader(loaderFactory.newLoader("Getting recipe script..."))
                            .send(newCallback(callback, new StringUnmarshaller()));
     }
 
@@ -119,7 +118,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         final String url = baseHttpUrl + '/' + id;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting recipe...")
+                           .loader(loaderFactory.newLoader("Getting recipe..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(RecipeDescriptor.class)));
     }
 
@@ -171,7 +170,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting recipes...")
+                           .loader(loaderFactory.newLoader("Getting recipes..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(RecipeDescriptor.class)));
     }
 
@@ -218,6 +217,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
                            "&maxItems=" + maxItems;
         asyncRequestFactory.createGetRequest(url)
                            .header(ACCEPT, APPLICATION_JSON)
+                           .loader(loaderFactory.newLoader("Searching recipes..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newListUnmarshaller(RecipeDescriptor.class)));
     }
 
@@ -237,7 +237,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
         asyncRequestFactory.createRequest(PUT, url, recipeUpdate, false)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Updating recipe...")
+                           .loader(loaderFactory.newLoader("Updating recipe..."))
                            .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(RecipeDescriptor.class)));
     }
 
@@ -254,7 +254,7 @@ public class RecipeServiceClientImpl implements RecipeServiceClient {
 
     private void removeRecipe(@NotNull String id, @NotNull AsyncCallback<Void> callback) {
         asyncRequestFactory.createRequest(DELETE, baseHttpUrl + '/' + id, null, false)
-                           .loader(loader, "Deleting recipe...")
+                           .loader(loaderFactory.newLoader("Deleting recipe..."))
                            .send(newCallback(callback));
     }
 }

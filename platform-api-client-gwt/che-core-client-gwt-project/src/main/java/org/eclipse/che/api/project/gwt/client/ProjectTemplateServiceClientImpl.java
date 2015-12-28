@@ -20,6 +20,7 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 import javax.inject.Named;
 import javax.validation.constraints.NotNull;
@@ -45,10 +46,10 @@ public class ProjectTemplateServiceClientImpl implements ProjectTemplateServiceC
     protected ProjectTemplateServiceClientImpl(@Named("cheExtensionPath") String extPath,
                                                EventBus eventBus,
                                                AsyncRequestFactory asyncRequestFactory,
-                                               AsyncRequestLoader loader) {
+                                               LoaderFactory loaderFactory) {
         this.extPath = extPath;
         this.asyncRequestFactory = asyncRequestFactory;
-        this.loader = loader;
+        this.loader = loaderFactory.newLoader();
 
         eventBus.addHandler(StartWorkspaceEvent.TYPE, this);
     }
