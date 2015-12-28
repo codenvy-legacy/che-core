@@ -18,7 +18,6 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
@@ -32,8 +31,8 @@ import org.eclipse.che.api.project.server.handlers.GetItemHandler;
 import org.eclipse.che.api.project.server.handlers.GetModulesHandler;
 import org.eclipse.che.api.project.server.handlers.PostImportProjectHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
-import org.eclipse.che.api.project.server.type.AbstractProjectType;
 import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
@@ -176,13 +175,13 @@ public class ProjectServiceTest {
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
 
         // PTs for test
-        AbstractProjectType chuck = new AbstractProjectType("chuck_project_type", "chuck_project_type", true, false) {
+        ProjectTypeDef chuck = new ProjectTypeDef("chuck_project_type", "chuck_project_type", true, false) {
             {
                 addConstantDefinition("x", "attr description", new AttributeValue(Arrays.asList("a", "b")));
             }
         };
 
-        Set<ProjectType> projectTypes = new HashSet<>();
+        Set<ProjectTypeDef> projectTypes = new HashSet<>();
         final LocalProjectType myProjectType = new LocalProjectType("my_project_type", "my project type");
         projectTypes.add(myProjectType);
         projectTypes.add(new LocalProjectType("module_type", "module type"));
@@ -293,7 +292,7 @@ public class ProjectServiceTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testGetModules() throws Exception {
-        AbstractProjectType pt = new AbstractProjectType("testGetModules", "my module type", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("testGetModules", "my module type", true, false) {
             {
                 addConstantDefinition("my_module_attribute", "attr description", "attribute value 1");
             }
@@ -337,7 +336,7 @@ public class ProjectServiceTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testGetModulesWithHandler() throws Exception {
-        AbstractProjectType pt = new AbstractProjectType("testGetModules", "my module type", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("testGetModules", "my module type", true, false) {
             {
                 addConstantDefinition("my_module_attribute", "attr description", "attribute value 1");
             }
@@ -439,7 +438,7 @@ public class ProjectServiceTest {
 
     @Test(enabled = false)
     public void testGetModule() throws Exception {
-        AbstractProjectType pt = new AbstractProjectType("my_module_type", "my module type", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("my_module_type", "my module type", true, false) {
             {
                 addConstantDefinition("my_module_attribute", "attr description", "attribute value 1");
             }
@@ -498,7 +497,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
 
-        AbstractProjectType pt = new AbstractProjectType("testCreateProject", "my project type", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("testCreateProject", "my project type", true, false) {
             {
                 addConstantDefinition("new_project_attribute", "attr description", "to be or not to be");
             }
@@ -663,7 +662,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
 
-        AbstractProjectType pt = new AbstractProjectType("testUpdateProject", "my project type", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("testUpdateProject", "my project type", true, false) {
         };
         pm.getProjectTypeRegistry().registerProjectType(pt);
 
@@ -2350,7 +2349,7 @@ public class ProjectServiceTest {
             }
         };
 
-        AbstractProjectType pt = new AbstractProjectType("testEstimateProjectPT", "my testEstimateProject type", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("testEstimateProjectPT", "my testEstimateProject type", true, false) {
             {
                 addVariableDefinition("calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
@@ -2412,7 +2411,7 @@ public class ProjectServiceTest {
             }
         };
 
-        AbstractProjectType pt = new AbstractProjectType("testEstimateProjectPT", "my testEstimateProject type", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("testEstimateProjectPT", "my testEstimateProject type", true, false) {
             {
                 addVariableDefinition("calculated_attribute", "attr description", true, vpf1);
                 addVariableDefinition("my_property_1", "attr description", true);
@@ -2543,7 +2542,7 @@ public class ProjectServiceTest {
         project.getBaseFolder().getVirtualFile().updateACL(Collections.<AccessControlEntry>emptyList(), true, null);
     }
 
-    private class LocalProjectType extends AbstractProjectType {
+    private class LocalProjectType extends ProjectTypeDef {
         private LocalProjectType(String typeId, String typeName) {
             super(typeId, typeName, true, false);
             addConstantDefinition("my_attribute", "Constant", "attribute value 1");

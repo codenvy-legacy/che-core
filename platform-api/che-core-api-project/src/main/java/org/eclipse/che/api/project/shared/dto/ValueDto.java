@@ -8,24 +8,26 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.project.type;
+package org.eclipse.che.api.project.shared.dto;
+
+import org.eclipse.che.api.core.model.project.type.Value;
+import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
 
 /**
- * Attribute value
+ * Data transfer object (DTO) for Value
+ *
  * @author gazarenkov
  */
-public interface Value {
+@DTO
+public interface ValueDto extends Value {
 
-    /**
-     * @return value as String. If attribute has multiple values it returns first one.
-     */
+    @Override
     String getString();
 
-    /**
-     * @return value as list of strings
-     */
+    @Override
     List<String> getList();
 
+    ValueDto withList(List<String> list);
 }

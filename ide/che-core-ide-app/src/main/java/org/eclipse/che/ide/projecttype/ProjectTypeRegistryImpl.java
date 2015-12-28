@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype;
 
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 
-    private final List<ProjectTypeDefinition> types;
+    private final List<ProjectTypeDto> types;
 
     public ProjectTypeRegistryImpl() {
         this.types = new ArrayList<>();
@@ -32,12 +32,12 @@ public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 
     @Nullable
     @Override
-    public ProjectTypeDefinition getProjectType(@NotNull String id) {
+    public ProjectTypeDto getProjectType(@NotNull String id) {
         if (types.isEmpty()) {
             return null;
         }
 
-        for (ProjectTypeDefinition type : types) {
+        for (ProjectTypeDto type : types) {
             if (id.equals(type.getId())) {
                 return type;
             }
@@ -47,17 +47,17 @@ public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
     }
 
     @Override
-    public List<ProjectTypeDefinition> getProjectTypes() {
+    public List<ProjectTypeDto> getProjectTypes() {
         return types;
     }
 
     @Override
-    public void register(ProjectTypeDefinition projectType) {
+    public void register(ProjectTypeDto projectType) {
         types.add(projectType);
     }
 
     @Override
-    public void registerAll(List<ProjectTypeDefinition> projectTypesList) {
+    public void registerAll(List<ProjectTypeDto> projectTypesList) {
         types.addAll(projectTypesList);
     }
 }

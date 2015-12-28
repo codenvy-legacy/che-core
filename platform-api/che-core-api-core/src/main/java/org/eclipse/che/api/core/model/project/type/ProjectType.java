@@ -13,27 +13,48 @@ package org.eclipse.che.api.core.model.project.type;
 import java.util.List;
 
 /**
+ * Model interface for Project Type
+ *
  * @author gazarenkov
  */
 public interface ProjectType {
 
-    boolean isPersisted();
-
+    /**
+     * @return unique ID
+     */
     String getId();
 
+    /**
+     * @return project type display name
+     */
     String getDisplayName();
 
+    /**
+     * @return true if this project type can be mixed in
+     */
+    boolean isMixable();
+
+    /**
+     * @return true if this project type can be used as primary
+     */
+    boolean isPrimaryable();
+
+    /**
+     * @return true if this project type explicitly stored as is in the project description
+     * otherwise it is considered as "runtime" and can be calculated runtime using
+     * defined mandatory attributes thanks to Value Provider mechanism
+     */
+    boolean isPersisted();
+
+    /**
+     * @return attributes
+     */
     List<? extends Attribute> getAttributes();
 
-    List<ProjectType> getParents();
+    /**
+     * @return parent project type IDs
+     */
+    List<String> getParents();
 
-    String getDefaultRecipe();
 
-    boolean isTypeOf(String typeId);
-
-    Attribute getAttribute(String name);
-
-    boolean canBeMixin();
-
-    boolean canBePrimary();
 }

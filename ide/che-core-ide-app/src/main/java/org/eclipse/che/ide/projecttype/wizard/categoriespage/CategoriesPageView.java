@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype.wizard.categoriespage;
 
-import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
-import org.eclipse.che.ide.api.mvp.View;
 import com.google.inject.ImplementedBy;
+import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
+import org.eclipse.che.ide.api.mvp.View;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +27,7 @@ public interface CategoriesPageView extends View<CategoriesPageView.ActionDelega
 
     void selectProjectType(String projectTypeId);
 
-    void setCategories(Map<String, Set<ProjectTypeDefinition>> typesByCategory,
+    void setCategories(Map<String, Set<ProjectTypeDto>> typesByCategory,
                        Map<String, Set<ProjectTemplateDescriptor>> templatesByCategory);
 
     void updateCategories(boolean includeTemplates);
@@ -48,7 +48,7 @@ public interface CategoriesPageView extends View<CategoriesPageView.ActionDelega
 
     void focusName();
 
-    void setProjectTypes(List<ProjectTypeDefinition> availableProjectTypes);
+    void setProjectTypes(List<ProjectTypeDto> availableProjectTypes);
 
     interface ActionDelegate {
 
@@ -58,6 +58,6 @@ public interface CategoriesPageView extends View<CategoriesPageView.ActionDelega
 
         void projectTemplateSelected(ProjectTemplateDescriptor template);
 
-        void projectTypeSelected(ProjectTypeDefinition typeDescriptor);
+        void projectTypeSelected(ProjectTypeDto typeDescriptor);
     }
 }

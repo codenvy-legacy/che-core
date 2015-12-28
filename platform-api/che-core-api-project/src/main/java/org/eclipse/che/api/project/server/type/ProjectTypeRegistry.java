@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.server.ProjectTypeConstraintException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,145 +23,257 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
+ * Registry for Project Type definitions on server
+ *
+ * All the Project Types definitions should be registered here
+ *
  * @author gazarenkov
  */
 @Singleton
 public class ProjectTypeRegistry {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectTypeRegistry.class);
-
-    public static final ProjectType BASE_TYPE = new BaseProjectType();
+    public static final ProjectTypeDef BASE_TYPE = new BaseProjectType();
 
     public static final ChildToParentComparator CHILD_TO_PARENT_COMPARATOR = new ChildToParentComparator();
 
-    private final static Pattern NAME_PATTERN = Pattern.compile("[^a-zA-Z0-9-_.]");
+    private static final Logger LOG = LoggerFactory.getLogger(ProjectTypeRegistry.class);
 
-    private final Map<String, ProjectType> projectTypes = new HashMap<>();
+    private static final Pattern NAME_PATTERN = Pattern.compile("[^a-zA-Z0-9-_.]");
 
-    private Set<String> allIds = new HashSet<>();
+    private final Map<String, ProjectTypeDef> projectTypes = new HashMap<>();
 
+    private Map<String, ProjectTypeDef> validatedData = new HashMap<>();
+
+    /**
+     * Initialises Set of Project Type definitions
+     *
+     * @param types
+     */
     @Inject
-    public ProjectTypeRegistry(Set<ProjectType> projTypes) {
+    public ProjectTypeRegistry(Set<ProjectTypeDef> types) {
 
-        if (!projTypes.contains(BASE_TYPE)) {
-            allIds.add(BASE_TYPE.getId());
-            projectTypes.put(BASE_TYPE.getId(), BASE_TYPE);
-        }
+        validate(types);
 
-        for (ProjectType pt : projTypes) {
-            if (pt.getId() != null && !pt.getId().isEmpty()) {
-                allIds.add(pt.getId());
+        for (ProjectTypeDef type : validatedData.values()) {
 
-                // add Base Type as a parent if not pointed
-                if (pt.getParents() != null && pt.getParents().isEmpty() && !pt.getId().equals(BASE_TYPE.getId())) {
-                    LOG.debug("BASE added as parent of: " + pt.getId());
-                    pt.getParents().add(BASE_TYPE);
-                }
+            try {
+                init(type);
+
+            } catch (ProjectTypeConstraintException e) {
+                LOG.error(e.getMessage());
             }
-        }
 
-        for (ProjectType pt : projTypes) {
-            if (pt.getId() != null && !pt.getId().isEmpty()) {
-                try {
-                    init(pt);
-                    this.projectTypes.put(pt.getId(), pt);
-                } catch (ProjectTypeConstraintException e) {
-                    LOG.error(e.getMessage());
-                }
-            }
         }
-
     }
 
-    public ProjectType getProjectType(String id) /*throws NotFoundException*/ {
-        ProjectType pt = projectTypes.get(id);
-        // TODO add this exception
-//        if(pt == null)
-//            throw new NotFoundException("Project Type "+id+" not found in the registry");
+    /**
+     * Registers single projectType
+     * May be deprecated in future
+     *
+     * @param projectType
+     * @throws ProjectTypeConstraintException
+     */
+    public void registerProjectType(ProjectTypeDef projectType) throws ProjectTypeConstraintException {
+
+        if (isNameValid(projectType) && isParentValid(projectType, validatedData)) {
+            validatedData.put(projectType.getId(), projectType);
+            init(projectType);
+        }
+    }
+
+    /**
+     * @param id
+     * @return project type by id
+     */
+    public ProjectTypeDef getProjectType(String id) throws NotFoundException {
+        ProjectTypeDef pt = projectTypes.get(id);
+
+        if (pt == null)
+            throw new NotFoundException("Project Type " + id + " not found in the registry");
         return pt;
     }
 
-    public Collection<ProjectType> getProjectTypes() {
+    /**
+     * @return all project types
+     */
+    public Collection<ProjectTypeDef> getProjectTypes() {
         return projectTypes.values();
     }
 
 
-    public List<ProjectType> getProjectTypes(Comparator<ProjectType> comparator) {
+    /**
+     * @param comparator
+     * @return all project types sorted with specified comparator
+     * @see ProjectTypeRegistry.ChildToParentComparator
+     */
+    public List<ProjectTypeDef> getProjectTypes(Comparator<ProjectTypeDef> comparator) {
 
-        List<ProjectType> list = new ArrayList<>();
+        List<ProjectTypeDef> list = new ArrayList<>();
 
-        for (ProjectType pt : projectTypes.values()) {
+        for (ProjectTypeDef pt : projectTypes.values()) {
             list.add(pt);
         }
-
 
         Collections.sort(list, comparator);
 
         return list;
     }
 
-    // maybe for test only?
-    public void registerProjectType(AbstractProjectType projectType) throws ProjectTypeConstraintException {
 
-        init(projectType);
-        this.projectTypes.put(projectType.getId(), projectType);
-
+    /**
+     * project type comparator which sorts collection of project types in child-to-parent order
+     */
+    public static class ChildToParentComparator implements Comparator<ProjectTypeDef> {
+        @Override
+        public int compare(ProjectTypeDef o1, ProjectTypeDef o2) {
+            if (o1.isTypeOf(o2.getId())) {
+                return -1;
+            }
+            if (o2.isTypeOf(o1.getId())) {
+                return 1;
+            }
+            return 0;
+        }
     }
 
 
-    private void init(ProjectType pt) throws ProjectTypeConstraintException {
+    /**
+     * Validates incoming set of Project Type definitions
+     * and forms preliminary collection of validated data to be initialized
+     *
+     * @param types
+     */
+    protected final void validate(Collection<? extends ProjectTypeDef> types) {
 
-        if (pt.getId() == null || pt.getId().isEmpty()) {
-            throw new ProjectTypeConstraintException("Could not register Project Type with null or empty ID: " + pt.getClass().getName());
+        Map<String, ProjectTypeDef> pass1 = new HashMap<>();
+
+        if (!types.contains(BASE_TYPE)) {
+            pass1.put(BASE_TYPE.getId(), BASE_TYPE);
         }
 
-        // ID spelling (no spaces, only alphanumeric)
-        if (NAME_PATTERN.matcher(pt.getId()).find()) {
-            throw new ProjectTypeConstraintException(
-                    "Could not register Project Type with invalid ID (only Alphanumeric, dash, point and underscore allowed): " +
-                    pt.getClass().getName() + " ID: '" + pt.getId() + "'");
-        }
+        for (ProjectTypeDef type : types) {
 
-        if (pt.getDisplayName() == null || pt.getDisplayName().isEmpty()) {
-            throw new ProjectTypeConstraintException("Could not register Project Type with null or empty display name: " + pt.getId());
-        }
+            if (isNameValid(type))
+                pass1.put(type.getId(), type);
 
-        for (Attribute attr : pt.getAttributes()) {
-
-            // ID spelling (no spaces, only alphanumeric)
-            if (NAME_PATTERN.matcher(attr.getName()).find()) {
-                throw new ProjectTypeConstraintException(
-                        "Could not register Project Type with invalid attribute Name (only Alphanumeric, dash and underscore allowed): " +
-                        attr.getClass().getName() + " ID: '" + attr.getId() + "'");
-            }
         }
 
         // look for parents
-        for (ProjectType parent : pt.getParents()) {
-            if (!allIds.contains(parent.getId())) {
-                throw new ProjectTypeConstraintException(
-                        "Could not register Project Type: " + pt.getId() + " : Unregistered parent Type: " + parent.getId());
+        for (ProjectTypeDef type : pass1.values()) {
+
+            if (isParentValid(type, pass1))
+                validatedData.put(type.getId(), type);
+
+        }
+
+    }
+
+    /**
+     * Checks if incomimg Project Type definition has valid ID (Pattern.compile("[^a-zA-Z0-9-_.]")
+     * and display name (should not be null or empty)
+     *
+     * @param type
+     * @return true if valid
+     */
+    private boolean isNameValid(ProjectTypeDef type) {
+
+        boolean valid = true;
+
+        if (type.getId() == null || type.getId().isEmpty() || NAME_PATTERN.matcher(type.getId()).find()) {
+            LOG.error("Could not register Project Type ID is null or invalid (only Alphanumeric, dash, point and underscore allowed): "
+                      + type.getClass().getName());
+            valid = false;
+        }
+
+
+        if (type.getDisplayName() == null || type.getDisplayName().isEmpty()) {
+            LOG.error("Could not register Project Type with null or empty display name: " + type.getId());
+            valid = false;
+        }
+
+        for (Attribute attr : type.getAttributes()) {
+
+            // ID spelling (no spaces, only alphanumeric)
+            if (NAME_PATTERN.matcher(attr.getName()).find()) {
+                LOG.error("Could not register Project Type with invalid attribute Name (only Alphanumeric, dash and underscore allowed): " +
+                          attr.getClass().getName() + " ID: '" + attr.getId() + "'"
+                );
+                valid = false;
             }
         }
 
-        initAttributesRecursively(pt, pt);
+        return valid;
+    }
 
-        // Builders and Runners
+    /**
+     * Validates if Project Tye definition has  parent names which are already registered
+     *
+     * @param type
+     * @param pass1
+     * @return
+     */
+    private boolean isParentValid(ProjectTypeDef type, Map<String, ProjectTypeDef> pass1) {
+
+        boolean contains = true;
+
+        for (String parent : type.getParents()) {
+            if (!pass1.keySet().contains(parent)) {
+                LOG.error("Could not register Project Type: " + type.getId() + " : Unregistered parent Type: " + parent);
+                contains = false;
+            }
+        }
+
+        // add Base Type as a parent if not pointed
+        if (type.getParents() != null && type.getParents().isEmpty() && !type.getId().equals(BASE_TYPE.getId())) {
+            type.addParent(BASE_TYPE.getId());
+        }
+
+        return contains;
 
     }
 
 
-    private void initAttributesRecursively(ProjectType myType, ProjectType type)
+    /**
+     * validates and initializes concrete project type
+     *
+     * @param type
+     * @throws ProjectTypeConstraintException
+     */
+    protected final void init(ProjectTypeDef type) throws ProjectTypeConstraintException {
+
+        initRecursively(type, type.getId());
+
+        this.projectTypes.put(type.getId(), type);
+
+        LOG.debug("Project Type registered: " + type.getId());
+
+    }
+
+
+    /**
+     * initializes all the attributes defined in myType and its ancestors recursively
+     *
+     * @param myType
+     * @param typeId
+     *         - temporary type for recursive (started with initial type)
+     * @throws ProjectTypeConstraintException
+     */
+    private final void initRecursively(ProjectTypeDef myType, String typeId)
             throws ProjectTypeConstraintException {
 
-        for (ProjectType supertype : type.getParents()) {
+        ProjectTypeDef type = validatedData.get(typeId);
+
+        for (String supertypeId : type.getParents()) {
+
+            myType.addAncestor(supertypeId);
+
+            ProjectTypeDef supertype = validatedData.get(supertypeId);
 
             for (Attribute attr : supertype.getAttributes()) {
 
@@ -174,27 +286,11 @@ public class ProjectTypeRegistry {
                                                                  " is duplicated in its ancestor(s).");
                     }
                 }
-                ((AbstractProjectType)myType).addAttributeDefinition(attr);
+                myType.addAttributeDefinition(attr);
             }
-            //myType.addParent(supertype);
-            initAttributesRecursively(myType, supertype);
+            initRecursively(myType, supertypeId);
         }
 
     }
-
-
-    public static class ChildToParentComparator implements Comparator<ProjectType> {
-        @Override
-        public int compare(ProjectType o1, ProjectType o2) {
-            if (o1.isTypeOf(o2.getId())) {
-                return -1;
-            }
-            if (o2.isTypeOf(o1.getId())) {
-                return 1;
-            }
-            return 0;
-        }
-    }
-
 
 }

@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import org.eclipse.che.api.core.model.project.type.ProjectType;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -45,9 +46,9 @@ public class ProjectTypeService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_PROJECT_TYPES)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectTypeDefinition> getProjectTypes() {
-        final List<ProjectTypeDefinition> types = new LinkedList<>();
-        for (ProjectType type : registry.getProjectTypes()) {
+    public List<ProjectTypeDto> getProjectTypes() {
+        final List<ProjectTypeDto> types = new LinkedList<>();
+        for (ProjectTypeDef type : registry.getProjectTypes()) {
             types.add(toTypeDefinition(type));
         }
         return types;
@@ -56,8 +57,8 @@ public class ProjectTypeService extends Service {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ProjectTypeDefinition getProjectType(@PathParam("id") String id) {
-        final ProjectType projectType = registry.getProjectType(id);
+    public ProjectTypeDto getProjectType(@PathParam("id") String id) throws NotFoundException {
+        final ProjectTypeDef projectType = registry.getProjectType(id);
         return toTypeDefinition(projectType);
     }
 }

@@ -16,7 +16,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
@@ -79,18 +79,18 @@ public class ImportWizardTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<List<SourceEstimation>>> estimationCaptor;
     @Captor
-    private ArgumentCaptor<Operation<ProjectTypeDefinition>>             typeDefinitionCaptor;
+    private ArgumentCaptor<Operation<ProjectTypeDto>>             typeDefinitionCaptor;
 
     @Mock
     private ProjectServiceClient                projectServiceClient;
     @Mock
-    private Promise<ProjectTypeDefinition>      definitionPromise;
+    private Promise<ProjectTypeDto>      definitionPromise;
     @Mock
     private AppContext                          appContext;
     @Mock
     private SourceEstimation                    estimation;
     @Mock
-    private ProjectTypeDefinition               projectTypeDefinition;
+    private ProjectTypeDto               projectTypeDefinition;
     @Mock
     private ProjectConfigDto                    projectConfig;
     @Mock
@@ -156,7 +156,7 @@ public class ImportWizardTest {
 
     @Test
     public void shouldImportAndOpenProject() throws Exception {
-        when(projectTypeDefinition.getPrimaryable()).thenReturn(true);
+        when(projectTypeDefinition.isPrimaryable()).thenReturn(true);
         when(projectTypeServiceClient.getProjectType(anyString(), anyString())).thenReturn(definitionPromise);
 
         wizard.complete(completeCallback);
@@ -173,7 +173,7 @@ public class ImportWizardTest {
     public void shouldImportAndOpenProjectForConfiguring() throws Exception {
         ProjectProblem problem = mock(ProjectProblem.class);
 
-        when(projectTypeDefinition.getPrimaryable()).thenReturn(true);
+        when(projectTypeDefinition.isPrimaryable()).thenReturn(true);
         when(projectConfig.getProblems()).thenReturn(Arrays.asList(problem));
         when(projectTypeServiceClient.getProjectType(anyString(), anyString())).thenReturn(definitionPromise);
 

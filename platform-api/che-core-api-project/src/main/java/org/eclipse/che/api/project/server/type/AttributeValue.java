@@ -56,4 +56,9 @@ public class AttributeValue implements Value {
         }
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        return values != null ? values.hashCode() : 0;
+    }
 }

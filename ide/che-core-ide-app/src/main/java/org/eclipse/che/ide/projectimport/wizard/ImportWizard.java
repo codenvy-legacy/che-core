@@ -17,7 +17,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
@@ -137,12 +137,12 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
             @Override
             protected void onSuccess(List<SourceEstimation> result) {
                 for (SourceEstimation estimation : result) {
-                    final Promise<ProjectTypeDefinition> projectTypePromise =
+                    final Promise<ProjectTypeDto> projectTypePromise =
                             projectTypeServiceClient.getProjectType(workspaceId, estimation.getType());
-                    projectTypePromise.then(new Operation<ProjectTypeDefinition>() {
+                    projectTypePromise.then(new Operation<ProjectTypeDto>() {
                         @Override
-                        public void apply(ProjectTypeDefinition typeDefinition) throws OperationException {
-                            if (typeDefinition.getPrimaryable()) {
+                        public void apply(ProjectTypeDto typeDefinition) throws OperationException {
+                            if (typeDefinition.isPrimaryable()) {
                                 createProject(callback, dataObject.withType(typeDefinition.getId()));
                             }
                         }

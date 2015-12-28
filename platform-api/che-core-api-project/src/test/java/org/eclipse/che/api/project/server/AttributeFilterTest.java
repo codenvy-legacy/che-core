@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import org.eclipse.che.api.core.model.project.type.ProjectType;
-import org.eclipse.che.api.project.server.type.AbstractProjectType;
 import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -23,12 +22,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -55,9 +49,9 @@ public class AttributeFilterTest {
     @Mock
     private ProjectManager projectManager;
     @Mock
-    private FolderEntry    projectFolder;
+    private FolderEntry projectFolder;
     @Mock
-    private FolderEntry    moduleFolder;
+    private FolderEntry moduleFolder;
 
     private ProjectConfigDto config;
 
@@ -96,10 +90,10 @@ public class AttributeFilterTest {
     private void prepareProjectTypeRegistry() {
         PersistedProjectType projectType = new PersistedProjectType();
 
-        ProjectType mixableType = new AbstractProjectType(MIXABLE_TYPE, MIXABLE_NAME, false, true, true) {
+        ProjectTypeDef mixableType = new ProjectTypeDef(MIXABLE_TYPE, MIXABLE_NAME, false, true, true) {
         };
 
-        Set<ProjectType> projectTypes = new HashSet<>(asList(projectType, mixableType));
+        Set<ProjectTypeDef> projectTypes = new HashSet<>(asList(projectType, mixableType));
 
         ProjectTypeRegistry projectTypeRegistry = new ProjectTypeRegistry(projectTypes);
 
@@ -119,7 +113,7 @@ public class AttributeFilterTest {
         assertThat(config.getMixins().get(0), is(equalTo(MIXABLE_TYPE)));
     }
 
-    private class PersistedProjectType extends AbstractProjectType {
+    private class PersistedProjectType extends ProjectTypeDef {
         PersistedProjectType() {
             super(TYPE, NAME, true, false, true);
 

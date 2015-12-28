@@ -11,8 +11,7 @@
 package org.eclipse.che.api.project.server;
 
 import com.google.common.io.Resources;
-
-import org.eclipse.che.api.core.model.project.type.ProjectType;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.lang.NameGenerator;
@@ -30,10 +29,7 @@ import java.util.Set;
 
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Vitaly Parfonov
@@ -42,7 +38,7 @@ public class ProjectTemplateDescriptionLoaderTest {
 
     ProjectTemplateRegistry templateRegistry;
 
-    private Set<ProjectType> pts;
+    private Set<ProjectTypeDef> pts;
 
     private String embedTypeId = "embed_type";
 
@@ -54,11 +50,11 @@ public class ProjectTemplateDescriptionLoaderTest {
     public void setUp() {
         templateRegistry = mock(ProjectTemplateRegistry.class);
         pts = new HashSet<>();
-        ProjectType embedType = mock(ProjectType.class);
+        ProjectTypeDef embedType = mock(ProjectTypeDef.class);
         when(embedType.getId()).thenReturn(embedTypeId);
-        ProjectType type1 = mock(ProjectType.class);
+        ProjectTypeDef type1 = mock(ProjectTypeDef.class);
         when(type1.getId()).thenReturn(projectType1);
-        ProjectType type2 = mock(ProjectType.class);
+        ProjectTypeDef type2 = mock(ProjectTypeDef.class);
         when(type2.getId()).thenReturn(projectType2);
         pts.add(type1);
         pts.add(type2);
@@ -90,7 +86,7 @@ public class ProjectTemplateDescriptionLoaderTest {
     @Test
     //load templates from given dir
     public void testWithConfig2() {
-        ProjectType type3 = mock(ProjectType.class);
+        ProjectTypeDef type3 = mock(ProjectTypeDef.class);
         when(type3.getId()).thenReturn("type3");
         pts.add(type3);
         URL resource = Resources.getResource(getClass(), "pt-tmpl");
@@ -106,8 +102,8 @@ public class ProjectTemplateDescriptionLoaderTest {
     @Test
     public void testWithConfigAndReplaceLocations() {
         ProjectTemplateRegistry templateRegistry = new ProjectTemplateRegistry();
-        Set<ProjectType> pts = new HashSet<>();
-        ProjectType type2 = mock(ProjectType.class);
+        Set<ProjectTypeDef> pts = new HashSet<>();
+        ProjectTypeDef type2 = mock(ProjectTypeDef.class);
         when(type2.getId()).thenReturn(projectType2);
         pts.add(type2);
         URL resource = Resources.getResource(getClass(), "pt-tmpl");

@@ -18,7 +18,7 @@ package org.eclipse.che.api.project.server.type;
  * it directly.
  * @author gazarenkov
  */
-public abstract class TransientMixin extends AbstractProjectType {
+public abstract class TransientMixin extends ProjectTypeDef {
 
     /**
      * Protected constructor

@@ -12,10 +12,8 @@ package org.eclipse.che.api.project.server;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
-
-import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.server.type.BaseProjectType;
-import org.eclipse.che.api.vfs.server.SystemVirtualFilePathFilter;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 
 /**
  * @author gazarenkov
@@ -24,8 +22,7 @@ public class ProjectApiModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        Multibinder<ProjectType> projectTypesMultibinder = Multibinder.newSetBinder(binder(), ProjectType.class);
+        Multibinder<ProjectTypeDef> projectTypesMultibinder = Multibinder.newSetBinder(binder(), ProjectTypeDef.class);
         projectTypesMultibinder.addBinding().to(BaseProjectType.class);
-        Multibinder.newSetBinder(binder(), SystemVirtualFilePathFilter.class).addBinding().to(ProjectMiscPathFilter.class);
     }
 }

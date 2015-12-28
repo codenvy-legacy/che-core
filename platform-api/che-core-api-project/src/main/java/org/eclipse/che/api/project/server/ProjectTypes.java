@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * @author gazarenkov
  */
@@ -28,11 +30,12 @@ public class ProjectTypes {
 
     private final Project        project;
     private final ProjectManager manager;
-    private final ProjectType    primary;
-    private final Map<String, ProjectType> mixins = new HashMap<>();
-    private final Map<String, ProjectType> all    = new HashMap<>();
+    private final ProjectTypeDef primary;
+    private final Map<String, ProjectTypeDef> mixins = new HashMap<>();
+    private final Map<String, ProjectTypeDef> all    = new HashMap<>();
 
-    public ProjectTypes(Project project, String pt, List<String> mss, ProjectManager manager) throws ProjectTypeConstraintException {
+    public ProjectTypes(Project project, String pt, List<String> mss, ProjectManager manager) throws ProjectTypeConstraintException,
+                                                                                                     NotFoundException {
         this.project = project;
         this.manager = manager;
 
@@ -41,10 +44,10 @@ public class ProjectTypes {
         }
 
         primary = manager.getProjectTypeRegistry().getProjectType(pt);
-        if (primary == null) {
-            throw new ProjectTypeConstraintException("No project type registered for " + pt);
-        }
-        if (!primary.canBePrimary()) {
+//        if (primary == null) {
+//            throw new ProjectTypeConstraintException("No project type registered for " + pt);
+//        }
+        if (!primary.isPrimaryable()) {
             throw new ProjectTypeConstraintException("Project type " + primary.getId() + " is not allowable to be primary type");
         }
 
@@ -62,11 +65,11 @@ public class ProjectTypes {
 
         for (String m : mss) {
             if (!m.equals(primary.getId())) {
-                ProjectType mixin = manager.getProjectTypeRegistry().getProjectType(m);
+                ProjectTypeDef mixin = manager.getProjectTypeRegistry().getProjectType(m);
                 if (mixin == null) {
                     throw new ProjectTypeConstraintException("No project type registered for " + m);
                 }
-                if (!mixin.canBeMixin()) {
+                if (!mixin.isMixable()) {
                     throw new ProjectTypeConstraintException("Project type " + mixin + " is not allowable to be mixin");
                 }
 
@@ -76,7 +79,8 @@ public class ProjectTypes {
                         throw new ProjectTypeConstraintException(
                                 "Attribute name conflict. Duplicated attributes detected " + project.getPath() +
                                 " Attribute " + attr.getName() + " declared in " + mixin.getId() + " already declared in " +
-                                tmpAttrs.get(attr.getName()).getProjectType());
+                                tmpAttrs.get(attr.getName()).getProjectType()
+                        );
                     }
 
                     tmpAttrs.put(attr.getName(), attr);
@@ -89,21 +93,21 @@ public class ProjectTypes {
         }
     }
 
-    public ProjectType getPrimary() {
+    public ProjectTypeDef getPrimary() {
         return primary;
     }
 
-    public Map<String, ProjectType> getMixins() {
+    public Map<String, ProjectTypeDef> getMixins() {
         return mixins;
     }
 
-    public Map<String, ProjectType> getAll() {
+    public Map<String, ProjectTypeDef> getAll() {
         return all;
     }
 
     void removeTransient() {
         HashSet<String> toRemove = new HashSet<>();
-        for (ProjectType mt : all.values()) {
+        for (ProjectTypeDef mt : all.values()) {
             if (!mt.isPersisted())
                 toRemove.add(mt.getId());
         }
@@ -114,7 +118,7 @@ public class ProjectTypes {
         }
     }
 
-    void addTransient() throws ServerException {
+    void addTransient() throws ServerException, NotFoundException {
         List<SourceEstimation> estimations;
         try {
             estimations = manager.resolveSources(project.getWorkspace(), project.getPath(), true);
@@ -122,10 +126,10 @@ public class ProjectTypes {
             throw new ServerException(e);
         }
         for (SourceEstimation est : estimations) {
-            ProjectType type = manager.getProjectTypeRegistry().getProjectType(est.getType());
+            ProjectTypeDef type = manager.getProjectTypeRegistry().getProjectType(est.getType());
 
             // NOTE: Only mixable types allowed
-            if (type.canBeMixin()) {
+            if (type.isMixable()) {
                 all.put(type.getId(), type);
                 mixins.put(type.getId(), type);
             }

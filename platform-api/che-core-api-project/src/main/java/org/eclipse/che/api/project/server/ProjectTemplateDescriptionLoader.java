@@ -11,8 +11,7 @@
 package org.eclipse.che.api.project.server;
 
 import com.google.inject.Inject;
-
-import org.eclipse.che.api.core.model.project.type.ProjectType;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -36,7 +35,7 @@ import java.util.Set;
  * Reads project template descriptions that may be described in separate json-files for every project type. This file should be named as
  * &lt;project_type_id&gt;.json.
  *
- * @author Artem Zatsarynnyi
+ * @author Artem Zatsarynnyy
  */
 @Singleton
 public class ProjectTemplateDescriptionLoader {
@@ -61,7 +60,7 @@ public class ProjectTemplateDescriptionLoader {
     private String templateLocationDir;
 
     @Inject
-    private Set<ProjectType> projectTypes;
+    private Set<ProjectTypeDef> projectTypes;
 
     @Inject
     private ProjectTemplateRegistry templateRegistry;
@@ -72,7 +71,7 @@ public class ProjectTemplateDescriptionLoader {
 
     protected ProjectTemplateDescriptionLoader(String templateDescriptionsDir,
                                                String templateLocationDir,
-                                               Set<ProjectType> projectTypes,
+                                               Set<ProjectTypeDef> projectTypes,
                                                ProjectTemplateRegistry templateRegistry) {
         this.templateDescriptionsDir = templateDescriptionsDir;
         this.templateLocationDir = templateLocationDir;
@@ -86,12 +85,12 @@ public class ProjectTemplateDescriptionLoader {
             !Files.isDirectory(Paths.get(templateDescriptionsDir))) {
             LOG.warn("ProjectTemplateDescriptionLoader",
                      "The configuration of project templates descriptors wasn't found or some problem with configuration was found.");
-            for (ProjectType projectType : projectTypes) {
+            for (ProjectTypeDef projectType : projectTypes) {
                 load(projectType.getId());
             }
         } else {
             Path dirPath = Paths.get(templateDescriptionsDir);
-            for (ProjectType projectType : projectTypes) {
+            for (ProjectTypeDef projectType : projectTypes) {
                 load(dirPath, projectType.getId());
             }
         }

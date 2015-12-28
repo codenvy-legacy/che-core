@@ -14,15 +14,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.multibindings.Multibinder;
-
-import org.eclipse.che.api.core.model.project.type.ProjectType;
-import org.eclipse.che.api.project.server.FolderEntry;
-import org.eclipse.che.api.project.server.InvalidValueException;
-import org.eclipse.che.api.project.server.ProjectApiModule;
-import org.eclipse.che.api.project.server.ProjectTypeService;
-import org.eclipse.che.api.project.server.ValueProvider;
-import org.eclipse.che.api.project.server.ValueProviderFactory;
-import org.eclipse.che.api.project.server.ValueStorageException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.project.server.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +49,7 @@ public class ProjectTypeTest {
                 Multibinder<ValueProviderFactory> valueProviderMultibinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
                 valueProviderMultibinder.addBinding().to(MyVPFactory.class);
 
-                Multibinder<ProjectType> projectTypesMultibinder = Multibinder.newSetBinder(binder(), ProjectType.class);
+                Multibinder<ProjectTypeDef> projectTypesMultibinder = Multibinder.newSetBinder(binder(), ProjectTypeDef.class);
                 projectTypesMultibinder.addBinding().to(MyProjectType.class);
 
                 bind(ProjectTypeRegistry.class);
@@ -77,11 +70,11 @@ public class ProjectTypeTest {
     public void testProjectTypeDefinition() throws Exception {
         ProjectTypeRegistry registry = injector.getInstance(ProjectTypeRegistry.class);
 
-        ProjectType type = registry.getProjectType("my");
+        ProjectTypeDef type = registry.getProjectType("my");
 
         assertNotNull(type);
         assertEquals(1, type.getParents().size());
-        assertEquals(BaseProjectType.ID, type.getParents().get(0).getId());
+        assertEquals(BaseProjectType.ID, type.getParents().get(0));
         assertNotNull(((Variable)type.getAttribute("var")).getValueProviderFactory());
         Assert.assertNull(type.getAttribute("var").getValue());
         assertEquals(3, type.getAttributes().size());
@@ -95,10 +88,10 @@ public class ProjectTypeTest {
 
     @Test
     public void testInvalidPTDefinition() throws Exception {
-        AbstractProjectType pt = new AbstractProjectType("my", "second", true, false) {
+        ProjectTypeDef pt = new ProjectTypeDef("my", "second", true, false) {
         };
 
-        Set<ProjectType> pts = new HashSet<>();
+        Set<ProjectTypeDef> pts = new HashSet<>();
         pts.add(new MyProjectType(null));
         pts.add(pt);
         ProjectTypeRegistry reg = new ProjectTypeRegistry(pts);
@@ -108,26 +101,26 @@ public class ProjectTypeTest {
 
         // Invalid names
         pts.clear();
-        pts.add(new AbstractProjectType(null, "null id", true, false) {
+        pts.add(new ProjectTypeDef(null, "null id", true, false) {
         });
-        pts.add(new AbstractProjectType("", "empty id", true, false) {
+        pts.add(new ProjectTypeDef("", "empty id", true, false) {
         });
-        pts.add(new AbstractProjectType("invalid id", "invalid id", true, false) {
+        pts.add(new ProjectTypeDef("invalid id", "invalid id", true, false) {
         });
-        pts.add(new AbstractProjectType("id1", null, true, false) {
+        pts.add(new ProjectTypeDef("id1", null, true, false) {
         });
-        pts.add(new AbstractProjectType("id2", "", true, false) {
+        pts.add(new ProjectTypeDef("id2", "", true, false) {
         });
         reg = new ProjectTypeRegistry(pts);
         // BASE only
         assertEquals(1, reg.getProjectTypes().size());
 
         // Invalid parent
-        final AbstractProjectType invalidParent = new AbstractProjectType("parent", "parent", true, false) {
+        final ProjectTypeDef invalidParent = new ProjectTypeDef("i-parent", "parent", true, false) {
         };
-        pts.add(new AbstractProjectType("notRegParent", "not reg parent", true, false) {
+        pts.add(new ProjectTypeDef("notRegParent", "not reg parent", true, false) {
             {
-                addParent(invalidParent);
+                addParent("i-parent");
             }
         });
         reg = new ProjectTypeRegistry(pts);
@@ -137,16 +130,16 @@ public class ProjectTypeTest {
 
     @Test
     public void testPTInheritance() throws Exception {
-        Set<ProjectType> pts = new HashSet<>();
-        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
+        Set<ProjectTypeDef> pts = new HashSet<>();
+        final ProjectTypeDef parent = new ProjectTypeDef("parent", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
+        final ProjectTypeDef child = new ProjectTypeDef("child", "child", true, false) {
             {
-                addParent(parent);
+                addParent("parent");
                 addConstantDefinition("child_const", "Constant", "const_value");
             }
         };
@@ -157,6 +150,7 @@ public class ProjectTypeTest {
         ProjectTypeRegistry reg = new ProjectTypeRegistry(pts);
         assertEquals(3, reg.getProjectTypes().size());
         assertEquals(1, child.getParents().size());
+        assertEquals(2, child.getAncestors().size());
         assertEquals(2, reg.getProjectType("child").getAttributes().size());
         assertEquals(1, reg.getProjectType("parent").getAttributes().size());
         Assert.assertTrue(reg.getProjectType("child").isTypeOf("parent"));
@@ -164,16 +158,16 @@ public class ProjectTypeTest {
 
     @Test
     public void testAttributeNameConflict() throws Exception {
-        Set<ProjectType> pts = new HashSet<>();
-        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
+        Set<ProjectTypeDef> pts = new HashSet<>();
+        final ProjectTypeDef parent = new ProjectTypeDef("parent", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
+        final ProjectTypeDef child = new ProjectTypeDef("child", "child", true, false) {
             {
-                addParent(parent);
+                addParent("parent");
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
         };
@@ -184,29 +178,36 @@ public class ProjectTypeTest {
         ProjectTypeRegistry reg = new ProjectTypeRegistry(pts);
 
         assertNotNull(reg.getProjectType("parent"));
-        Assert.assertNull(reg.getProjectType("child"));
+        //Assert.assertNull(reg.getProjectType("child"));
+
+        try {
+            reg.getProjectType("child");
+            Assert.fail("NotFoundException should be thrown");
+        } catch (NotFoundException e) {
+        }
+
         assertEquals(2, reg.getProjectTypes().size());
     }
 
     @Test
     public void testMultiInheritance() throws Exception {
-        Set<ProjectType> pts = new HashSet<>();
-        final AbstractProjectType parent1 = new AbstractProjectType("parent1", "parent", true, false) {
+        Set<ProjectTypeDef> pts = new HashSet<>();
+        final ProjectTypeDef parent1 = new ProjectTypeDef("parent1", "parent", true, false) {
             {
                 addConstantDefinition("parent1_const", "Constant", "const_value");
             }
 
         };
-        final AbstractProjectType parent2 = new AbstractProjectType("parent2", "parent", true, false) {
+        final ProjectTypeDef parent2 = new ProjectTypeDef("parent2", "parent", true, false) {
             {
                 addConstantDefinition("parent2_const", "Constant", "const_value");
             }
 
         };
-        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
+        final ProjectTypeDef child = new ProjectTypeDef("child", "child", true, false) {
             {
-                addParent(parent1);
-                addParent(parent2);
+                addParent("parent1");
+                addParent("parent2");
                 addConstantDefinition("child_const", "Constant", "const_value");
             }
         };
@@ -223,23 +224,23 @@ public class ProjectTypeTest {
 
     @Test
     public void testMultiInheritanceAttributeConflict() throws Exception {
-        Set<ProjectType> pts = new HashSet<>();
-        final AbstractProjectType parent1 = new AbstractProjectType("parent1", "parent", true, false) {
+        Set<ProjectTypeDef> pts = new HashSet<>();
+        final ProjectTypeDef parent1 = new ProjectTypeDef("parent1", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final AbstractProjectType parent2 = new AbstractProjectType("parent2", "parent", true, false) {
+        final ProjectTypeDef parent2 = new ProjectTypeDef("parent2", "parent", true, false) {
             {
                 addConstantDefinition("parent_const", "Constant", "const_value");
             }
 
         };
-        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
+        final ProjectTypeDef child = new ProjectTypeDef("child", "child", true, false) {
             {
-                addParent(parent1);
-                addParent(parent2);
+                addParent("parent1");
+                addParent("parent2");
                 addConstantDefinition("child_const", "Constant", "const_value");
             }
         };
@@ -252,31 +253,37 @@ public class ProjectTypeTest {
 
         assertNotNull(reg.getProjectType("parent1"));
         assertNotNull(reg.getProjectType("parent2"));
-        Assert.assertNull(reg.getProjectType("child"));
+
+        try {
+            reg.getProjectType("child");
+            Assert.fail("NotFoundException should be thrown");
+        } catch (NotFoundException e) {
+        }
+        //Assert.assertNull(reg.getProjectType("child"));
     }
 
     @Test
     public void testTypeOf() throws Exception {
-        Set<ProjectType> pts = new HashSet<>();
-        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
+        Set<ProjectTypeDef> pts = new HashSet<>();
+        final ProjectTypeDef parent = new ProjectTypeDef("parent", "parent", true, false) {
         };
 
-        final AbstractProjectType parent1 = new AbstractProjectType("parent1", "parent", true, false) {
+        final ProjectTypeDef parent1 = new ProjectTypeDef("parent1", "parent", true, false) {
         };
 
-        final AbstractProjectType parent2 = new AbstractProjectType("parent2", "parent", true, false) {
+        final ProjectTypeDef parent2 = new ProjectTypeDef("parent2", "parent", true, false) {
         };
 
-        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
+        final ProjectTypeDef child = new ProjectTypeDef("child", "child", true, false) {
             {
-                addParent(parent);
-                addParent(parent2);
+                addParent("parent");
+                addParent("parent2");
             }
         };
 
-        final AbstractProjectType child2 = new AbstractProjectType("child2", "child2", true, false) {
+        final ProjectTypeDef child2 = new ProjectTypeDef("child2", "child2", true, false) {
             {
-                addParent(child);
+                addParent("child");
             }
         };
 
@@ -288,7 +295,8 @@ public class ProjectTypeTest {
 
         ProjectTypeRegistry reg = new ProjectTypeRegistry(pts);
 
-        ProjectType t1 = reg.getProjectType("child2");
+        ProjectTypeDef t1 = reg.getProjectType("child2");
+
 
         Assert.assertTrue(t1.isTypeOf("parent"));
         Assert.assertTrue(t1.isTypeOf("parent2"));
@@ -298,19 +306,19 @@ public class ProjectTypeTest {
 
     @Test
     public void testSortPTs() throws Exception {
-        Set<ProjectType> pts = new HashSet<>();
-        final AbstractProjectType parent = new AbstractProjectType("parent", "parent", true, false) {
+        Set<ProjectTypeDef> pts = new HashSet<>();
+        final ProjectTypeDef parent = new ProjectTypeDef("parent", "parent", true, false) {
         };
 
-        final AbstractProjectType child = new AbstractProjectType("child", "child", true, false) {
+        final ProjectTypeDef child = new ProjectTypeDef("child", "child", true, false) {
             {
-                addParent(parent);
+                addParent("parent");
             }
         };
 
-        final AbstractProjectType child2 = new AbstractProjectType("child2", "child2", true, false) {
+        final ProjectTypeDef child2 = new ProjectTypeDef("child2", "child2", true, false) {
             {
-                addParent(child);
+                addParent("child");
             }
         };
 
@@ -319,7 +327,7 @@ public class ProjectTypeTest {
         pts.add(child2);
 
         ProjectTypeRegistry reg = new ProjectTypeRegistry(pts);
-        List<ProjectType> list = reg.getProjectTypes(new ProjectTypeRegistry.ChildToParentComparator());
+        List<ProjectTypeDef> list = reg.getProjectTypes(new ProjectTypeRegistry.ChildToParentComparator());
 
         assertEquals(list.get(0).getId(), "child2");
         assertEquals(list.get(1).getId(), "child");
@@ -349,7 +357,7 @@ public class ProjectTypeTest {
     }
 
     @Singleton
-    public static class MyProjectType extends AbstractProjectType {
+    public static class MyProjectType extends ProjectTypeDef {
 
         @Inject
         public MyProjectType(MyVPFactory myVPFactory) {
