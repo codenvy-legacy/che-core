@@ -86,6 +86,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 
 
@@ -104,11 +106,12 @@ public class ProjectService extends Service {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectService.class);
 
-    private final FilesBuffer     filesBuffer = FilesBuffer.get();
-    private final ExecutorService executor    = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
-                                                                             new ThreadFactoryBuilder()
-                                                                                     .setNameFormat("ProjectService-IndexingThread-")
-                                                                                     .setDaemon(true).build());
+    private final FilesBuffer     filesBuffer  = FilesBuffer.get();
+    private final ExecutorService executor     = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
+                                                                              new ThreadFactoryBuilder()
+                                                                                      .setNameFormat("ProjectService-IndexingThread-")
+                                                                                      .setDaemon(true).build());
+    private final ForkJoinPool    forkJoinPool = new ForkJoinPool();
     @Inject
     private ProjectManager          projectManager;
     @Inject
@@ -123,6 +126,7 @@ public class ProjectService extends Service {
     @PreDestroy
     void stop() {
         executor.shutdownNow();
+        forkJoinPool.shutdownNow();
     }
 
     @ApiOperation(value = "Gets list of projects in root folder",
@@ -1072,9 +1076,18 @@ public class ProjectService extends Service {
         final FolderEntry folder = asFolder(workspace, path);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
+
+        final List<TreeElement> children;
+
+        if (depth == -1 || depth > 2) {
+            children = forkJoinPool.invoke(new ReadTreeTask(folder, depth, includeFiles, uriBuilder, dtoFactory));
+        } else {
+            children = getTree(folder, depth, includeFiles, uriBuilder, dtoFactory);
+        }
+
         return dtoFactory.createDto(TreeElement.class)
                          .withNode(DtoConverter.toItemReference(folder, uriBuilder.clone(), projectManager))
-                         .withChildren(getTree(folder, depth, includeFiles, uriBuilder, dtoFactory));
+                         .withChildren(children);
     }
 
     @ApiOperation(value = "Get file or folder",
@@ -1373,6 +1386,69 @@ public class ProjectService extends Service {
         @Override
         public ProjectConfig getConfig() throws ServerException, ValueStorageException {
             throw new ServerException("Looks like this is not valid project. We will mark it as broken");
+        }
+    }
+
+    private class ReadTreeTask extends RecursiveTask<List<TreeElement>> {
+        //This element is necessary, because the parent class of the RecursiveTask class,
+        //the ForkJoinTask class, implements the Serializable interface.
+        private static final long serialVersionUID = 1L;
+
+        private final FolderEntry folder;
+        private final int         depth;
+        private final boolean     includeFiles;
+        private final UriBuilder  uriBuilder;
+        private final DtoFactory  dtoFactory;
+
+        public ReadTreeTask(FolderEntry folder,
+                            int depth,
+                            boolean includeFiles,
+                            UriBuilder uriBuilder,
+                            DtoFactory dtoFactory) {
+            this.folder = folder;
+            this.depth = depth;
+            this.includeFiles = includeFiles;
+            this.uriBuilder = uriBuilder;
+            this.dtoFactory = dtoFactory;
+        }
+
+        @Override
+        protected List<TreeElement> compute() {
+            try {
+                final List<? extends VirtualFileEntry> children = folder.getChildFoldersFiles();
+                final Map<FolderEntry, RecursiveTask<List<TreeElement>>> subTasks = new HashMap<>();
+
+                if (depth == 0) {
+                    return Collections.emptyList();
+                }
+
+                final List<TreeElement> nodes = new ArrayList<>(children.size());
+                for (VirtualFileEntry child : children) {
+                    if (child.isFolder()) {
+                        RecursiveTask<List<TreeElement>> subTask = new ReadTreeTask((FolderEntry)child,
+                                                                                    depth - 1,
+                                                                                    includeFiles,
+                                                                                    uriBuilder,
+                                                                                    dtoFactory);
+
+                        subTasks.put((FolderEntry)child, subTask).fork();
+
+                    } else if (includeFiles) { // child.isFile()
+                        nodes.add(dtoFactory.createDto(TreeElement.class)
+                                            .withNode(DtoConverter.toItemReference((FileEntry)child, uriBuilder.clone())));
+                    }
+                }
+
+                for (Map.Entry<FolderEntry, RecursiveTask<List<TreeElement>>> entry : subTasks.entrySet()) {
+                    nodes.add(dtoFactory.createDto(TreeElement.class)
+                                        .withNode(DtoConverter.toItemReference(entry.getKey(), uriBuilder.clone(), projectManager))
+                                        .withChildren(entry.getValue().join()));
+                }
+
+                return nodes;
+            } catch (ServerException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
     }
 }
