@@ -23,7 +23,6 @@ import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.search.presentation.FindResultPresenter;
-import org.eclipse.che.ide.ui.loaders.requestLoader.IdeLoader;
 
 import java.util.List;
 
@@ -38,7 +37,6 @@ public class FullTextSearchPresenter implements FullTextSearchView.ActionDelegat
     private final FullTextSearchView   view;
     private final FindResultPresenter  findResultPresenter;
     private final DtoFactory           dtoFactory;
-    private final IdeLoader            loader;
     private final AppContext           appContext;
     private final ProjectServiceClient projectServiceClient;
 
@@ -46,13 +44,11 @@ public class FullTextSearchPresenter implements FullTextSearchView.ActionDelegat
     public FullTextSearchPresenter(FullTextSearchView view,
                                    FindResultPresenter findResultPresenter,
                                    DtoFactory dtoFactory,
-                                   IdeLoader loader,
                                    AppContext appContext,
                                    ProjectServiceClient projectServiceClient) {
         this.view = view;
         this.findResultPresenter = findResultPresenter;
         this.dtoFactory = dtoFactory;
-        this.loader = loader;
         this.appContext = appContext;
         this.projectServiceClient = projectServiceClient;
 
@@ -67,7 +63,6 @@ public class FullTextSearchPresenter implements FullTextSearchView.ActionDelegat
 
     @Override
     public void search(final String text) {
-        loader.show();
         QueryExpression queryExpression = new QueryExpression();
         queryExpression.setText(text + '*');
         if (!view.getFileMask().isEmpty()) {
@@ -82,12 +77,10 @@ public class FullTextSearchPresenter implements FullTextSearchView.ActionDelegat
             public void apply(List<ItemReference> result) throws OperationException {
                 view.close();
                 findResultPresenter.handleResponse(result, text);
-                loader.hide();
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError arg) throws OperationException {
-                loader.hide();
                 view.showErrorMessage(dtoFactory.createDtoFromJson(arg.getMessage(), ServiceError.class).getMessage());
             }
         });

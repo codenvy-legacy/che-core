@@ -16,8 +16,8 @@ import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
@@ -34,14 +34,14 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
 public class UserProfileServiceClientImpl implements UserProfileServiceClient {
     private final String              PROFILE;
     private final String              PREFS;
-    private final AsyncRequestLoader  loader;
+    private final LoaderFactory       loaderFactory;
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
     protected UserProfileServiceClientImpl(@RestContext String restContext,
-                                           AsyncRequestLoader loader,
+                                           LoaderFactory loaderFactory,
                                            AsyncRequestFactory asyncRequestFactory) {
-        this.loader = loader;
+        this.loaderFactory = loaderFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         PROFILE = restContext + "/profile/";
         PREFS = PROFILE + "prefs";
@@ -52,7 +52,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
     public void getCurrentProfile(AsyncRequestCallback<ProfileDescriptor> callback) {
         asyncRequestFactory.createGetRequest(PROFILE)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Retrieving current user's profile...")
+                           .loader(loaderFactory.newLoader("Retrieving current user's profile..."))
                            .send(callback);
     }
 
@@ -63,7 +63,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
                            .data(JsonHelper.toJson(updates))
-                           .loader(loader, "Updating current user's profile...")
+                           .loader(loaderFactory.newLoader("Updating current user's profile..."))
                            .send(callback);
     }
 
@@ -74,7 +74,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
 
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, APPLICATION_JSON)
-                           .loader(loader, "Getting user's profile...")
+                           .loader(loaderFactory.newLoader("Getting user's profile..."))
                            .send(callback);
     }
 
@@ -83,7 +83,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
         asyncRequestFactory.createGetRequest(PREFS)
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
-                           .loader(loader, "Getting user's preferences...")
+                           .loader(loaderFactory.newLoader("Getting user's preferences..."))
                            .send(callback);
     }
 
@@ -96,7 +96,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
                            .data(JsonHelper.toJson(updates))
-                           .loader(loader, "Updating user's profile...")
+                           .loader(loaderFactory.newLoader("Updating user's profile..."))
                            .send(callback);
     }
 
@@ -108,7 +108,7 @@ public class UserProfileServiceClientImpl implements UserProfileServiceClient {
                            .header(ACCEPT, APPLICATION_JSON)
                            .header(CONTENT_TYPE, APPLICATION_JSON)
                            .data(data)
-                           .loader(loader)
+                           .loader(loaderFactory.newLoader("Updating user's preferences..."))
                            .send(callback);
     }
 

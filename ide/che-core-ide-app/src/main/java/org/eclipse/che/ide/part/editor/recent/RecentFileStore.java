@@ -53,8 +53,9 @@ import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspect
 @Singleton
 public class RecentFileStore implements RecentFileList, FileEventHandler {
 
-    public static final int MAX_FILES_IN_STACK         = 25;
-    public static final int MAX_PATH_LENGTH_TO_DISPLAY = 50;
+    public static final int    MAX_FILES_IN_STACK         = 25;
+    public static final int    MAX_PATH_LENGTH_TO_DISPLAY = 50;
+    public static final String RECENT_GROUP_ID            = "Recent";
 
     private final ProjectExplorerPresenter projectExplorer;
     private final OpenRecentFilesPresenter openRecentFilesPresenter;
@@ -81,7 +82,7 @@ public class RecentFileStore implements RecentFileList, FileEventHandler {
 
         ClearRecentListAction action = new ClearRecentListAction();
 
-        recentGroup = new DefaultActionGroup("Recent", true, actionManager);
+        recentGroup = new DefaultActionGroup(RECENT_GROUP_ID, true, actionManager);
         actionManager.registerAction(IdeActions.GROUP_RECENT_FILES, recentGroup);
 
         actionManager.registerAction("clearRecentList", action);

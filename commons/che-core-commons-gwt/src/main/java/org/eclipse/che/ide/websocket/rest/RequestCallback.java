@@ -15,7 +15,6 @@ import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import org.eclipse.che.ide.rest.HTTPStatus;
 import org.eclipse.che.ide.rest.RequestStatusHandler;
-import org.eclipse.che.ide.ui.loaders.requestLoader.EmptyLoader;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.rest.exceptions.ServerException;
@@ -48,7 +47,6 @@ public abstract class RequestCallback<T> {
 
     public RequestCallback() {
         this.successCodes = DEFAULT_SUCCESS_CODES;
-        this.loader = new EmptyLoader();
         this.unmarshaller = null;
     }
 
@@ -62,7 +60,6 @@ public abstract class RequestCallback<T> {
      */
     public RequestCallback(Unmarshallable<T> unmarshaller) {
         this.successCodes = DEFAULT_SUCCESS_CODES;
-        this.loader = new EmptyLoader();
         this.unmarshaller = unmarshaller;
     }
 

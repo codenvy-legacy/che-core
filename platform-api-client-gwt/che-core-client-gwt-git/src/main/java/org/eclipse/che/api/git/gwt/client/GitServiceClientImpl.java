@@ -59,6 +59,7 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.HTTPHeader;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
@@ -120,13 +121,13 @@ public class GitServiceClientImpl implements GitServiceClient{
 
     @Inject
     protected GitServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                   AsyncRequestLoader loader,
+                                   LoaderFactory loaderFactory,
                                    ExtServerStateController extServerStateController,
                                    DtoFactory dtoFactory,
                                    AsyncRequestFactory asyncRequestFactory,
                                    EventBus eventBus) {
         this.extPath = extPath;
-        this.loader = loader;
+        this.loader = loaderFactory.newLoader();
         this.extServerStateController = extServerStateController;
         this.dtoFactory = dtoFactory;
         this.asyncRequestFactory = asyncRequestFactory;

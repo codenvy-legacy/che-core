@@ -42,7 +42,6 @@ public class AsyncRequest {
     private AsyncRequestCallback<String> asyncRequestCallback;
     private String                       asyncTaskStatusURL;
     private AsyncRequestLoader           loader;
-    private String                       loaderMessage;
     private RequestStatusHandler         asyncTaskStatusHandler;
 
     /**
@@ -67,7 +66,6 @@ public class AsyncRequest {
         }
 
         this.requestBuilder = new RequestBuilder(method, url);
-        this.loader = new EmptyLoader();
         this.async = async;
         this.checkAsyncTaskStatusTimer = new CheckEverRestTaskStatusTimer();
         this.asyncRequestCallback = new EverRestAsyncRequestCallback();
@@ -95,12 +93,6 @@ public class AsyncRequest {
 
     public final AsyncRequest loader(AsyncRequestLoader loader) {
         this.loader = loader;
-        return this;
-    }
-
-    public final AsyncRequest loader(AsyncRequestLoader loader, String loaderMessage) {
-        this.loader = loader;
-        this.loaderMessage = loaderMessage;
         return this;
     }
 
@@ -200,14 +192,12 @@ public class AsyncRequest {
     }
 
     private void sendRequest(AsyncRequestCallback<?> callback) throws RequestException {
-        callback.setLoader(loader, loaderMessage);
+        callback.setLoader(loader);
         callback.setRequest(this);
         requestBuilder.setCallback(callback);
 
-        if (loaderMessage == null) {
+        if (loader != null) {
             loader.show();
-        } else {
-            loader.show(loaderMessage);
         }
 
         requestBuilder.send();
@@ -224,24 +214,6 @@ public class AsyncRequest {
 
     public RequestBuilder getRequestBuilder() {
         return requestBuilder;
-    }
-
-    private class EmptyLoader implements AsyncRequestLoader {
-        @Override
-        public void hide() {
-        }
-
-        @Override
-        public void hide(String message) {
-        }
-
-        @Override
-        public void show() {
-        }
-
-        @Override
-        public void show(String message) {
-        }
     }
 
     /** Timer that checks status of the EverRest asynchronous task caused by this request. */

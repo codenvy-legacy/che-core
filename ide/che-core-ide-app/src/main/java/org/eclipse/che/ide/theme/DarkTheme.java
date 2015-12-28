@@ -1284,4 +1284,29 @@ public class DarkTheme implements Theme {
     public String editorTabPinDropShadow() {
         return "drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.4))";
     }
+
+    @Override
+    public String loaderBackgroundColor() {
+        return "#292c2e";
+    }
+
+    @Override
+    public String loaderBorderColor() {
+        return "#16191d";
+    }
+
+    @Override
+    public String loaderBoxShadow() {
+        return "0 2px 7px rgba(0,0,0,0.4)";
+    }
+
+    @Override
+    public String loaderSVGFill() {
+        return "#4990e2";
+    }
+
+    @Override
+    public String loaderLabelColor() {
+        return "#dbe3e3";
+    }
 }
