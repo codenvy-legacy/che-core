@@ -142,7 +142,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
         return asyncRequestFactory.createGetRequest(requestUrl)
                                   .header(ACCEPT, MimeType.APPLICATION_JSON)
-                                  .loader(loader, "Getting project...")
+                                  .loader(loaderFactory.newLoader("Getting project..."))
                                   .send(dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class));
     }
 
