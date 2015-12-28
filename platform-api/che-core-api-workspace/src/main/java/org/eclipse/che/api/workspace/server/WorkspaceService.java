@@ -22,7 +22,6 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
@@ -33,7 +32,6 @@ import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
-import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
@@ -62,6 +60,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import java.util.ArrayList;
@@ -78,16 +77,18 @@ import static org.eclipse.che.api.core.util.LinksHelper.createLink;
 import static org.eclipse.che.api.workspace.server.Constants.GET_ALL_USER_WORKSPACES;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_CREATE_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_GET_RUNTIMEWORKSPACE;
+import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_GET_WORKSPACES;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_REMOVE_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.LINK_REL_START_WORKSPACE;
 import static org.eclipse.che.api.workspace.server.Constants.START_WORKSPACE;
+import static org.eclipse.che.api.workspace.server.DtoConverter.asDto;
 
 /**
- * Workspace API
+ * Defines Workspace REST API.
  *
  * @author Yevhenii Voevodin
  */
-@Api(value = "/workspace", description = "Workspace service")
+@Api(value = "/workspace", description = "Workspace REST API")
 @Path("/workspace")
 public class WorkspaceService extends Service {
 
@@ -110,39 +111,96 @@ public class WorkspaceService extends Service {
         this.permissionManager = permissionManager;
     }
 
-    @ApiOperation(value = "Create a new workspace",
-            notes = "For 'system/admin' it is required to set new workspace owner, " +
-                    "when for any other kind of 'user' it is not(users identifier will be used for this purpose)")
-    @ApiResponses({@ApiResponse(code = 201, message = "Workspace was created successfully"),
-                   @ApiResponse(code = 400, message = "Missed required parameters"),
-                   @ApiResponse(code = 403, message = "User does not have access to create new workspace"),
-                   @ApiResponse(code = 409, message = "Conflict error was occurred during workspace creation"),
-                   @ApiResponse(code = 500, message = "Internal server error was occurred during workspace creation")})
     @POST
     @Path("/config")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
     @GenerateLink(rel = LINK_REL_CREATE_WORKSPACE)
-    public UsersWorkspaceDto create(@ApiParam(value = "new workspace", required = true) WorkspaceConfigDto newWorkspace,
-                                    @ApiParam("owner id") @QueryParam("owner") String owner,
-                                    @ApiParam("account id") @QueryParam("account") String accountId)
-            throws ConflictException, ServerException, BadRequestException, ForbiddenException, NotFoundException {
-        requiredNotNull(newWorkspace, "New workspace description");
-        if (securityContext.isUserInRole("user")) {
-            owner = getCurrentUserId();
-        }
-        requiredNotNull(owner, "New workspace owner");
-        return injectLinks(DtoConverter.asDto(workspaceManager.createWorkspace(newWorkspace, owner, accountId)));
+    @ApiOperation(value = "Create a new workspace based on the configuration",
+                  notes = "This operation can be performed only by authorized user," +
+                          "this user will be the owner of the created workspace",
+                  response = UsersWorkspaceDto.class)
+    @ApiResponses({@ApiResponse(code = 201, message = "The workspace successfully created"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to create a new workspace"),
+                   @ApiResponse(code = 409, message = "Conflict error occurred during the workspace creation" +
+                                                      "(e.g. The workspace with such name already exists)"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public Response create(@ApiParam(value = "The configuration to create the new workspace", required = true)
+                           WorkspaceConfigDto config,
+                           @ApiParam("The account id related to this operation")
+                           @QueryParam("account")
+                           String accountId) throws ConflictException,
+                                                    ServerException,
+                                                    BadRequestException,
+                                                    ForbiddenException,
+                                                    NotFoundException {
+        requiredNotNull(config, "Workspace configuration required");
+        return Response.status(201)
+                       .entity(injectLinks(asDto(workspaceManager.createWorkspace(config, getCurrentUserId(), accountId))))
+                       .build();
     }
 
-    @DELETE
-    @Path("/{id}/config")
+    @GET
+    @Path("/{id}")
+    @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public void delete(@PathParam("id") String id)
-            throws BadRequestException, ServerException, NotFoundException, ConflictException, ForbiddenException {
-        ensureUserIsWorkspaceOwner(id);
-        workspaceManager.removeWorkspace(id);
+    @ApiOperation(value = "Get the workspace by the id",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested workspace entity"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id does not exist"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto getById(@ApiParam("Workspace ID") @PathParam("id") String id) throws NotFoundException,
+                                                                                                  ServerException,
+                                                                                                  ForbiddenException,
+                                                                                                  BadRequestException {
+        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
+        ensureUserIsWorkspaceOwner(workspace);
+        return injectLinks(asDto(workspace));
+    }
+
+    @GET
+    @Path("/name/{name}")
+    @RolesAllowed("user")
+    @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Get the workspace by the name from the workspaces owned by the current user",
+                  notes = "This operation can be performed only by the authorized user")
+    @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested workspace entity"),
+                   @ApiResponse(code = 404, message = "The workspace with specified name does not exist for current user "),
+                   @ApiResponse(code = 403, message = "The user is not the workspace owner"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto getByName(@ApiParam("The workspace name") @PathParam("name") String name) throws ServerException,
+                                                                                                              BadRequestException,
+                                                                                                              NotFoundException,
+                                                                                                              ForbiddenException {
+        return injectLinks(asDto(workspaceManager.getWorkspace(name, getCurrentUserId())));
+    }
+
+    @GET
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
+    @GenerateLink(rel = LINK_REL_GET_WORKSPACES)
+    @ApiOperation(value = "Get the workspaces owned by the current user",
+                  notes = "This operation can be performed only by authorized user",
+                  response = UsersWorkspaceDto.class,
+                  responseContainer = "List")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspaces successfully fetched"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred during workspaces fetching")})
+    public List<UsersWorkspaceDto> getWorkspaces(@ApiParam("The number of the items to skip")
+                                                 @DefaultValue("0")
+                                                 @QueryParam("skipCount")
+                                                 Integer skipCount,
+                                                 @ApiParam("The limit of the items in the response, default is 30")
+                                                 @DefaultValue("30")
+                                                 @QueryParam("maxItems")
+                                                 Integer maxItems) throws ServerException, BadRequestException {
+        //TODO add maxItems & skipCount to manager
+        return workspaceManager.getWorkspaces(getCurrentUserId())
+                               .stream()
+                               .map(workspace -> injectLinks(asDto(workspace)))
+                               .collect(toList());
     }
 
     @PUT
@@ -150,87 +208,164 @@ public class WorkspaceService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto update(@PathParam("id") String id, WorkspaceConfigDto workspaceCfg)
-            throws BadRequestException, ServerException, ForbiddenException, NotFoundException, ConflictException {
-        requiredNotNull(workspaceCfg, "Workspace configuration");
+    @ApiOperation(value = "Update the workspace by replacing all the existing data with update",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspace successfully updated"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to update the workspace"),
+                   @ApiResponse(code = 409, message = "Conflict error occurred during workspace update" +
+                                                      "(e.g. Workspace with such name already exists)"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto update(@ApiParam("The workspace id")
+                                    @PathParam("id")
+                                    String id,
+                                    @ApiParam(value = "The workspace update", required = true)
+                                    WorkspaceConfigDto update) throws BadRequestException,
+                                                                      ServerException,
+                                                                      ForbiddenException,
+                                                                      NotFoundException,
+                                                                      ConflictException {
+        requiredNotNull(update, "Workspace configuration");
         ensureUserIsWorkspaceOwner(id);
-        return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspaceCfg)));
+        return injectLinks(asDto(workspaceManager.updateWorkspace(id, update)));
     }
 
-    @ApiOperation("Get workspace by id")
-    @ApiResponses({@ApiResponse(code = 200, message = "Response contains requested workspace entity"),
-                   @ApiResponse(code = 404, message = "Workspace with specified id does not exist"),
-                   @ApiResponse(code = 403, message = "User does not have access to requested workspace"),
-                   @ApiResponse(code = 500, message = "Internal server error was occurred during workspace getting")})
-    @GET
-    @Path("/{id}")
-    @Produces(APPLICATION_JSON)
+    @DELETE
+    @Path("/{id}/config")
     @RolesAllowed("user")
-    public UsersWorkspaceDto getById(@ApiParam("Workspace ID") @PathParam("id") String id)
-            throws NotFoundException, ServerException, ForbiddenException, BadRequestException {
-        final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
-        ensureUserIsWorkspaceOwner(workspace);
-        return injectLinks(DtoConverter.asDto(workspace));
-    }
-
-    @GET
-    @Path("/name/{name}")
-    @RolesAllowed("user")
-    @Produces(APPLICATION_JSON)
-    public UsersWorkspaceDto getByName(@PathParam("name") String name)
-            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
-        final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
-        ensureUserIsWorkspaceOwner(workspace);
-        return injectLinks(DtoConverter.asDto(workspace));
-    }
-
-    @GET
-    @Produces(APPLICATION_JSON)
-    @RolesAllowed("user")
-    public List<UsersWorkspaceDto> getWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
-                                                 @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
-            throws ServerException, BadRequestException {
-        //TODO add maxItems & skipCount to manager
-        return workspaceManager.getWorkspaces(getCurrentUserId())
-                               .stream()
-                               .map(workspace -> injectLinks(DtoConverter.asDto(workspace)))
-                               .collect(toList());
-    }
-
-    @GET
-    @Path("/runtime")
-    @Produces(APPLICATION_JSON)
-    @RolesAllowed("user")
-    public List<RuntimeWorkspaceDto> getRuntimeWorkspaces(@DefaultValue("0") @QueryParam("skipCount") Integer skipCount,
-                                                          @DefaultValue("30") @QueryParam("maxItems") Integer maxItems)
-            throws BadRequestException {
-        //TODO add maxItems & skipCount to manager
-        return workspaceManager.getRuntimeWorkspaces(getCurrentUserId())
-                               .stream()
-                               .map(workspace -> injectLinks(DtoConverter.asDto(workspace)))
-                               .collect(toList());
+    @ApiOperation(value = "Removes the workspace",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 204, message = "The workspace successfully removed"),
+                   @ApiResponse(code = 403, message = "The user does not have access to remove the workspace"),
+                   @ApiResponse(code = 404, message = "The workspace doesn't exist"),
+                   @ApiResponse(code = 409, message = "The workspace is not stopped(has runtime)"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public void delete(@ApiParam("The workspace id") @PathParam("id") String id) throws BadRequestException,
+                                                                                        ServerException,
+                                                                                        NotFoundException,
+                                                                                        ConflictException,
+                                                                                        ForbiddenException {
+        ensureUserIsWorkspaceOwner(id);
+        workspaceManager.removeWorkspace(id);
     }
 
     @GET
     @Path("/{id}/runtime")
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public RuntimeWorkspaceDto getRuntimeWorkspaceById(@PathParam("id") String id)
-            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+    @ApiOperation(value = "Get the runtime workspace by the id",
+                  notes = "This operation can be performed only by the authorized user")
+    @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested runtime workspace entity"),
+                   @ApiResponse(code = 404, message = "The runtime workspace with the specified id does not exist"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public RuntimeWorkspaceDto getRuntimeWorkspaceById(@ApiParam("The workspace id")
+                                                       @PathParam("id")
+                                                       String id) throws ServerException,
+                                                                         BadRequestException,
+                                                                         NotFoundException,
+                                                                         ForbiddenException {
         final RuntimeWorkspaceImpl runtimeWorkspace = workspaceManager.getRuntimeWorkspace(id);
         ensureUserIsWorkspaceOwner(runtimeWorkspace);
-        return injectLinks(DtoConverter.asDto(runtimeWorkspace));
+        return injectLinks(asDto(runtimeWorkspace));
     }
 
     @GET
+    @Path("/runtime")
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
+    @ApiOperation(value = "Get the runtime workspaces owned by current user",
+                  notes = "This operation can be performed only by authorized user",
+                  response = RuntimeWorkspaceDto.class,
+                  responseContainer = "List")
+    @ApiResponses(@ApiResponse(code = 200, message = "Workspaces successfully fetched"))
+    public List<RuntimeWorkspaceDto> getRuntimeWorkspaces(@ApiParam("The number of the items to skip")
+                                                          @DefaultValue("0")
+                                                          @QueryParam("skipCount")
+                                                          Integer skipCount,
+                                                          @ApiParam("The limit of the items in the response, default is 30")
+                                                          @DefaultValue("30")
+                                                          @QueryParam("maxItems")
+                                                          Integer maxItems) throws BadRequestException {
+        //TODO add maxItems & skipCount to manager
+        return workspaceManager.getRuntimeWorkspaces(getCurrentUserId())
+                               .stream()
+                               .map(workspace -> injectLinks(asDto(workspace)))
+                               .collect(toList());
+    }
+
+    @POST
+    @Path("/{id}/runtime")
+    @Produces(APPLICATION_JSON)
+    @RolesAllowed("user")
+    @ApiOperation(value = "Start the workspace by the id",
+                  notes = "This operation can be performed only by the workspace owner." +
+                          "The workspace starts asynchronously")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspace is starting"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id doesn't exist"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner." +
+                                                      "The operation is not allowed for the user"),
+                   @ApiResponse(code = 409, message = "Any conflict occurs during the workspace start"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto startById(@ApiParam("The workspace id")
+                                       @PathParam("id")
+                                       String workspaceId,
+                                       @ApiParam("The name of the workspace environment that should be used for start")
+                                       @QueryParam("environment")
+                                       String envName,
+                                       @ApiParam("The account id related to this operation")
+                                       @QueryParam("accountId")
+                                       String accountId) throws ServerException,
+                                                                BadRequestException,
+                                                                NotFoundException,
+                                                                ForbiddenException,
+                                                                ConflictException {
+        ensureUserIsWorkspaceOwner(workspaceId);
+
+        final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
+        params.put("accountId", accountId);
+        params.put("workspaceId", workspaceId);
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
+
+        return injectLinks(asDto(workspaceManager.startWorkspaceById(workspaceId, envName, accountId)));
+    }
+
+    @POST
     @Path("/name/{name}/runtime")
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public RuntimeWorkspace getRuntimeWorkspaceByName(@PathParam("name") String name)
-            throws ServerException, BadRequestException, ForbiddenException {
-        final RuntimeWorkspace workspace = workspaceManager.getRuntimeWorkspace(name, getCurrentUserId());
+    @ApiOperation(value = "Start workspace by name",
+                  notes = "This operation can be performed only by the authorized user." +
+                          "The workspace starts asynchronously")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspace is starting"),
+                   @ApiResponse(code = 400, message = "The workspace name is not valid"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id doesn't exist"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner." +
+                                                      "The operation is not allowed for the user"),
+                   @ApiResponse(code = 409, message = "Any conflict occurs during the workspace start"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto startByName(@ApiParam("The name of the workspace to start")
+                                         @PathParam("name")
+                                         String name,
+                                         @ApiParam("The name of the workspace environment that should be used for start")
+                                         @QueryParam("environment")
+                                         String envName,
+                                         @ApiParam("The account id related to this operation")
+                                         @QueryParam("accountId")
+                                         String accountId) throws ServerException,
+                                                                  BadRequestException,
+                                                                  NotFoundException,
+                                                                  ForbiddenException,
+                                                                  ConflictException {
+        final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
         ensureUserIsWorkspaceOwner(workspace);
-        return injectLinks(DtoConverter.asDto(workspace));
+
+        final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
+        params.put("accountId", accountId);
+        params.put("workspaceId", workspace.getId());
+        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
+
+        return injectLinks(asDto(workspaceManager.startWorkspaceByName(name, getCurrentUserId(), envName, accountId)));
     }
 
     @POST
@@ -238,39 +373,58 @@ public class WorkspaceService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "temp-user"})
-    public UsersWorkspaceDto startTemporary(WorkspaceConfigDto cfg, @QueryParam("account") String accountId)
-            throws BadRequestException, ForbiddenException, NotFoundException, ServerException, ConflictException {
+    @ApiOperation(value = "Start the temporary workspace from the given configuration",
+                  notes = "This operation can be performed only by the authorized user or temp user." +
+                          "The workspace starts synchronously")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspace is starting"),
+                   @ApiResponse(code = 400, message = "The update config is not valid"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id doesn't exist"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner" +
+                                                      "The operation is not allowed for the user"),
+                   @ApiResponse(code = 409, message = "Any conflict occurs during the workspace start" +
+                                                      "(e.g. workspace with such name already exists"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto startTemporary(@ApiParam(value = "The configuration to start the workspace from", required = true)
+                                            WorkspaceConfigDto cfg,
+                                            @ApiParam("The account id related to this operation")
+                                            @QueryParam("account")
+                                            String accountId) throws BadRequestException,
+                                                                     ForbiddenException,
+                                                                     NotFoundException,
+                                                                     ServerException,
+                                                                     ConflictException {
         requiredNotNull(cfg, "Workspace configuration");
         permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), "accountId", accountId);
-        return injectLinks(DtoConverter.asDto(workspaceManager.startTemporaryWorkspace(cfg, accountId)));
-    }
-
-    @POST
-    @Path("/{id}/runtime")
-    @Produces(APPLICATION_JSON)
-    @RolesAllowed("user")
-    public UsersWorkspaceDto startById(@PathParam("id") String workspaceId,
-                                       @QueryParam("environment") String envName,
-                                       @QueryParam("accountId") String accountId)
-            throws ServerException, BadRequestException, NotFoundException, ForbiddenException, ConflictException {
-        ensureUserIsWorkspaceOwner(workspaceId);
-
-        final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
-        params.put("accountId", accountId);
-        params.put("workspaceId", workspaceId);
-        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
-
-        return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceById(workspaceId, envName, accountId)));
+        return injectLinks(asDto(workspaceManager.startTemporaryWorkspace(cfg, accountId)));
     }
 
     @POST
     @Path("/{id}/runtime/snapshot")
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto recoverWorkspace(@PathParam("id") String workspaceId,
-                                              @QueryParam("environment") String envName,
-                                              @QueryParam("accountId") String accountId)
-            throws BadRequestException, ForbiddenException, NotFoundException, ServerException, ConflictException {
+    @ApiOperation(value = "Recover the workspace by the id from the snapshot",
+                  notes = "This operation can be performed only by the workspace owner." +
+                          "The workspace recovers asynchronously")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspace is starting"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id doesn't exist." +
+                                                      "The snapshot from this workspace doesn't exist"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner. " +
+                                                      "The operation is not allowed for the user"),
+                   @ApiResponse(code = 409, message = "Any conflict occurs during the workspace start"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto recoverWorkspace(@ApiParam("The workspace id")
+                                              @PathParam("id")
+                                              String workspaceId,
+                                              @ApiParam("The name of the workspace environment to recover from")
+                                              @QueryParam("environment")
+                                              String envName,
+                                              @ApiParam("The account id related to this operation")
+                                              @QueryParam("accountId")
+                                              String accountId) throws BadRequestException,
+                                                                       ForbiddenException,
+                                                                       NotFoundException,
+                                                                       ServerException,
+                                                                       ConflictException {
         ensureUserIsWorkspaceOwner(workspaceId);
 
         final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
@@ -278,14 +432,42 @@ public class WorkspaceService extends Service {
         params.put("workspaceId", workspaceId);
         permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
 
-        return injectLinks(DtoConverter.asDto(workspaceManager.recoverWorkspace(workspaceId, envName, accountId)));
+        return injectLinks(asDto(workspaceManager.recoverWorkspace(workspaceId, envName, accountId)));
+    }
+
+    @DELETE
+    @Path("/{id}/runtime")
+    @RolesAllowed("user")
+    @ApiOperation(value = "Stop the workspace",
+                  notes = "This operation can be performed only by the workspace owner." +
+                          "The workspace stops asynchronously")
+    @ApiResponses({@ApiResponse(code = 204, message = "The workspace is stopping"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id doesn't exist"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public void stop(@ApiParam("The workspace id") @PathParam("id") String id) throws BadRequestException,
+                                                                                      ForbiddenException,
+                                                                                      NotFoundException,
+                                                                                      ServerException {
+        ensureUserIsWorkspaceOwner(id);
+        workspaceManager.stopWorkspace(id);
     }
 
     @POST
     @Path("/{id}/snapshot")
     @RolesAllowed("user")
-    public void createSnapshot(@PathParam("id") String workspaceId)
-            throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
+    @ApiOperation(value = "Create a snapshot from the workspace",
+                  notes = "This operation can be performed only by the workspace owner.")
+    @ApiResponses({@ApiResponse(code = 200, message = "The snapshot successfully created"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id doesn't exist."),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner. " +
+                                                      "The operation is not allowed for the user"),
+                   @ApiResponse(code = 409, message = "Any conflict occurs during the snapshot creation"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public void createSnapshot(@ApiParam("The workspace id") @PathParam("id") String workspaceId) throws BadRequestException,
+                                                                                                         ForbiddenException,
+                                                                                                         NotFoundException,
+                                                                                                         ServerException {
         ensureUserIsWorkspaceOwner(workspaceId);
 
         workspaceManager.createSnapshot(workspaceId);
@@ -295,8 +477,19 @@ public class WorkspaceService extends Service {
     @Path("/{id}/snapshot")
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public List<SnapshotDto> getSnapshot(@PathParam("id") String workspaceId)
-            throws ServerException, BadRequestException, NotFoundException, ForbiddenException {
+    @ApiOperation(value = "Get the snapshot by the id",
+                  notes = "This operation can be performed only by the workspace owner",
+                  response = SnapshotDto.class,
+                  responseContainer = "List")
+    @ApiResponses({@ApiResponse(code = 200, message = "Snapshots successfully fetched"),
+                   @ApiResponse(code = 404, message = "The workspace with specified id doesn't exist." +
+                                                      "The snapshot doesn't exist for the workspace"),
+                   @ApiResponse(code = 403, message = "The user is not workspace owner"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public List<SnapshotDto> getSnapshot(@ApiParam("The id of the workspace") @PathParam("id") String workspaceId) throws ServerException,
+                                                                                                                          BadRequestException,
+                                                                                                                          NotFoundException,
+                                                                                                                          ForbiddenException {
         ensureUserIsWorkspaceOwner(workspaceId);
 
         return workspaceManager.getSnapshot(workspaceId)
@@ -307,45 +500,32 @@ public class WorkspaceService extends Service {
     }
 
     @POST
-    @Path("/name/{name}/runtime")
-    @Produces(APPLICATION_JSON)
-    @RolesAllowed("user")
-    public UsersWorkspaceDto startByName(@PathParam("name") String name,
-                                         @QueryParam("environment") String envName,
-                                         @QueryParam("accountId") String accountId)
-            throws ServerException, BadRequestException, NotFoundException, ForbiddenException, ConflictException {
-        final UsersWorkspace workspace = workspaceManager.getWorkspace(name, getCurrentUserId());
-        ensureUserIsWorkspaceOwner(workspace);
-
-        final Map<String, String> params = Maps.newHashMapWithExpectedSize(2);
-        params.put("accountId", accountId);
-        params.put("workspaceId", workspace.getId());
-        permissionManager.checkPermission(START_WORKSPACE, getCurrentUserId(), params);
-
-        return injectLinks(DtoConverter.asDto(workspaceManager.startWorkspaceByName(name, envName, getCurrentUserId(), accountId)));
-    }
-
-    @DELETE
-    @Path("/{id}/runtime")
-    @RolesAllowed("user")
-    public void stop(@PathParam("id") String id)
-            throws BadRequestException, ForbiddenException, NotFoundException, ServerException {
-        ensureUserIsWorkspaceOwner(id);
-        workspaceManager.stopWorkspace(id);
-    }
-
-    @POST
     @Path("/{id}/command")
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto addCommand(@PathParam("id") String id, CommandDto newCommand)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Update the workspace by adding a new command to it",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspace successfully updated"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to update the workspace"),
+                   @ApiResponse(code = 404, message = "The workspace not found"),
+                   @ApiResponse(code = 409, message = "The command with such name already exists"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto addCommand(@ApiParam("The workspace id")
+                                        @PathParam("id")
+                                        String id,
+                                        @ApiParam(value = "The new workspace command", required = true)
+                                        CommandDto newCommand) throws ServerException,
+                                                                      BadRequestException,
+                                                                      NotFoundException,
+                                                                      ConflictException,
+                                                                      ForbiddenException {
         requiredNotNull(newCommand, "Command");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
         workspace.getCommands().add(new CommandImpl(newCommand));
-        return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(workspace.getId(), workspace)));
+        return injectLinks(asDto(workspaceManager.updateWorkspace(workspace.getId(), workspace)));
     }
 
     @PUT
@@ -353,8 +533,22 @@ public class WorkspaceService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto updateCommand(@PathParam("id") String id, CommandDto update)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Update the workspace command by replacing the command with a new one",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The command successfully updated"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to update the workspace"),
+                   @ApiResponse(code = 404, message = "The workspace or the command not found"),
+                   @ApiResponse(code = 409, message = "The Command with such name already exists"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto updateCommand(@ApiParam("The workspace id")
+                                           @PathParam("id") String id,
+                                           @ApiParam(value = "The command update", required = true)
+                                           CommandDto update) throws ServerException,
+                                                                     BadRequestException,
+                                                                     NotFoundException,
+                                                                     ConflictException,
+                                                                     ForbiddenException {
         requiredNotNull(update, "Command update");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
@@ -362,14 +556,28 @@ public class WorkspaceService extends Service {
             throw new NotFoundException("Workspace " + id + " doesn't contain command " + update.getName());
         }
         workspace.getCommands().add(new CommandImpl(update));
-        return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(workspace.getId(), workspace)));
+        return injectLinks(asDto(workspaceManager.updateWorkspace(workspace.getId(), workspace)));
     }
 
     @DELETE
     @Path("/{id}/command/{name}")
     @RolesAllowed("user")
-    public void deleteCommand(@PathParam("id") String id, @PathParam("name") String commandName)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Remove the command from the workspace",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 204, message = "The command successfully removed"),
+                   @ApiResponse(code = 403, message = "The user does not have access delete the command"),
+                   @ApiResponse(code = 404, message = "The workspace not found"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public void deleteCommand(@ApiParam("The id of the workspace")
+                              @PathParam("id")
+                              String id,
+                              @ApiParam("The name of the command to remove")
+                              @PathParam("name")
+                              String commandName) throws ServerException,
+                                                         BadRequestException,
+                                                         NotFoundException,
+                                                         ConflictException,
+                                                         ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
         if (workspace.getCommands().removeIf(command -> command.getName().equals(commandName))) {
@@ -382,13 +590,31 @@ public class WorkspaceService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto addEnvironment(@PathParam("id") String id, EnvironmentDto newEnvironment)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Add a new environment to the workspace",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The workspace successfully updated"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to add the environment"),
+                   @ApiResponse(code = 404, message = "The workspace not found"),
+                   @ApiResponse(code = 409, message = "Environment with such name already exists"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto addEnvironment(@ApiParam("The workspace id")
+                                            @PathParam("id")
+                                            String id,
+                                            @ApiParam(value = "The new environment", required = true)
+                                            EnvironmentDto newEnvironment) throws ServerException,
+                                                                                  BadRequestException,
+                                                                                  NotFoundException,
+                                                                                  ConflictException,
+                                                                                  ForbiddenException {
         requiredNotNull(newEnvironment, "New environment");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
+        if (workspace.getEnvironments().containsKey(newEnvironment.getName())) {
+            throw new ConflictException("Environment '" + newEnvironment.getName() + "' already exists");
+        }
         workspace.getEnvironments().put(newEnvironment.getName(), new EnvironmentStateImpl(newEnvironment));
-        return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspace)));
+        return injectLinks(asDto(workspaceManager.updateWorkspace(id, workspace)));
     }
 
     @PUT
@@ -396,8 +622,22 @@ public class WorkspaceService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto updateEnvironment(@PathParam("id") String id, EnvironmentDto update)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Update the workspace environment by replacing it with a new one",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The environment successfully updated"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to update the environment"),
+                   @ApiResponse(code = 404, message = "The workspace or the environment not found"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto updateEnvironment(@ApiParam("The workspace id")
+                                               @PathParam("id")
+                                               String id,
+                                               @ApiParam(value = "The environment update", required = true)
+                                               EnvironmentDto update) throws ServerException,
+                                                                             BadRequestException,
+                                                                             NotFoundException,
+                                                                             ConflictException,
+                                                                             ForbiddenException {
         requiredNotNull(update, "Environment description");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
@@ -405,14 +645,28 @@ public class WorkspaceService extends Service {
             throw new NotFoundException("Workspace " + id + " doesn't contain environment " + update.getName());
         }
         workspace.getEnvironments().put(update.getName(), new EnvironmentStateImpl(update));
-        return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspace)));
+        return injectLinks(asDto(workspaceManager.updateWorkspace(id, workspace)));
     }
 
     @DELETE
     @Path("/{id}/environment/{name}")
     @RolesAllowed("user")
-    public void deleteEnvironment(@PathParam("id") String id, @PathParam("name") String envName)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Remove the environment from the workspace",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 204, message = "The environment successfully removed"),
+                   @ApiResponse(code = 403, message = "The user does not have access remove the environment"),
+                   @ApiResponse(code = 404, message = "The workspace not found"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public void deleteEnvironment(@ApiParam("The workspace id")
+                                  @PathParam("id")
+                                  String id,
+                                  @ApiParam("The name of the environment")
+                                  @PathParam("name")
+                                  String envName) throws ServerException,
+                                                         BadRequestException,
+                                                         NotFoundException,
+                                                         ConflictException,
+                                                         ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
         if (workspace.getEnvironments().containsKey(envName)) {
@@ -426,13 +680,28 @@ public class WorkspaceService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto addProject(@PathParam("id") String id, ProjectConfigDto newProject)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Adds a new project to the workspace",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The project successfully added to the workspace"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to add the project"),
+                   @ApiResponse(code = 404, message = "The workspace not found"),
+                   @ApiResponse(code = 409, message = "Any conflict error occurs"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto addProject(@ApiParam("The workspace id")
+                                        @PathParam("id")
+                                        String id,
+                                        @ApiParam(value = "The new project", required = true)
+                                        ProjectConfigDto newProject) throws ServerException,
+                                                                            BadRequestException,
+                                                                            NotFoundException,
+                                                                            ConflictException,
+                                                                            ForbiddenException {
         requiredNotNull(newProject, "New project config");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
         workspace.getProjects().add(new ProjectConfigImpl(newProject));
-        return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspace)));
+        return injectLinks(asDto(workspaceManager.updateWorkspace(id, workspace)));
     }
 
     @PUT
@@ -440,8 +709,22 @@ public class WorkspaceService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
-    public UsersWorkspaceDto updateProject(@PathParam("id") String id, ProjectConfigDto update)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Update the workspace project by replacing it with a new one",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 200, message = "The project successfully updated"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to update the project"),
+                   @ApiResponse(code = 404, message = "The workspace or the project not found"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public UsersWorkspaceDto updateProject(@ApiParam("The workspace id")
+                                           @PathParam("id")
+                                           String id,
+                                           @ApiParam(value = "The project update", required = true)
+                                           ProjectConfigDto update) throws ServerException,
+                                                                           BadRequestException,
+                                                                           NotFoundException,
+                                                                           ConflictException,
+                                                                           ForbiddenException {
         requiredNotNull(update, "Project config");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
@@ -449,14 +732,28 @@ public class WorkspaceService extends Service {
             throw new NotFoundException("Workspace " + id + " doesn't contain project " + update.getName());
         }
         workspace.getProjects().add(new ProjectConfigImpl(update));
-        return injectLinks(DtoConverter.asDto(workspaceManager.updateWorkspace(id, workspace)));
+        return injectLinks(asDto(workspaceManager.updateWorkspace(id, workspace)));
     }
 
     @DELETE
     @Path("/{id}/project/{name}")
     @RolesAllowed("user")
-    public void deleteProject(@PathParam("id") String id, @PathParam("name") String projectName)
-            throws ServerException, BadRequestException, NotFoundException, ConflictException, ForbiddenException {
+    @ApiOperation(value = "Remove the project from the workspace",
+                  notes = "This operation can be performed only by the workspace owner")
+    @ApiResponses({@ApiResponse(code = 204, message = "The project successfully removed"),
+                   @ApiResponse(code = 403, message = "The user does not have access remove the project"),
+                   @ApiResponse(code = 404, message = "The workspace not found"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public void deleteProject(@ApiParam("The workspace id")
+                              @PathParam("id")
+                              String id,
+                              @ApiParam("The name of the project to remove")
+                              @PathParam("name")
+                              String projectName) throws ServerException,
+                                                         BadRequestException,
+                                                         NotFoundException,
+                                                         ConflictException,
+                                                         ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
         if (workspace.getProjects().removeIf(project -> project.getName().equals(projectName))) {
@@ -469,8 +766,23 @@ public class WorkspaceService extends Service {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public MachineStateDto createMachine(@PathParam("id") String workspaceId, MachineConfigDto machineConfig)
-            throws ForbiddenException, NotFoundException, ServerException, ConflictException, BadRequestException {
+    @ApiOperation(value = "Create a new machine based on the configuration",
+                  notes = "This operation can be performed only by authorized user")
+    @ApiResponses({@ApiResponse(code = 201, message = "The machine successfully created"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have access to create the new machine"),
+                   @ApiResponse(code = 409, message = "Conflict error occurred during the machine creation" +
+                                                      "(e.g. The machine with such name already exists)"),
+                   @ApiResponse(code = 500, message = "Internal server error occurred")})
+    public Response createMachine(@ApiParam("The workspace id")
+                                  @PathParam("id")
+                                  String workspaceId,
+                                  @ApiParam(value = "The new machine configuration", required = true)
+                                  MachineConfigDto machineConfig) throws ForbiddenException,
+                                                                         NotFoundException,
+                                                                         ServerException,
+                                                                         ConflictException,
+                                                                         BadRequestException {
         requiredNotNull(machineConfig, "Machine configuration");
         requiredNotNull(machineConfig.getType(), "Machine type");
         requiredNotNull(machineConfig.getSource(), "Machine source");
@@ -483,7 +795,9 @@ public class WorkspaceService extends Service {
 
         final MachineStateImpl machine = machineManager.createMachineAsync(machineConfig, workspaceId, runtimeWorkspace.getActiveEnvName());
 
-        return org.eclipse.che.api.machine.server.DtoConverter.asDto(machine);
+        return Response.status(201)
+                       .entity(org.eclipse.che.api.machine.server.DtoConverter.asDto(machine))
+                       .build();
     }
 
     /**

@@ -246,6 +246,23 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return hash;
     }
 
+    @Override
+    public String toString() {
+        return "UsersWorkspaceImpl{" +
+               "id='" + id + '\'' +
+               ", name='" + name + '\'' +
+               ", owner='" + owner + '\'' +
+               ", defaultEnvName='" + defaultEnvName + '\'' +
+               ", commands=" + commands +
+               ", projects=" + projects +
+               ", attributes=" + attributes +
+               ", environments=" + environments +
+               ", description='" + description + '\'' +
+               ", isTemporary=" + isTemporary +
+               ", status=" + status +
+               '}';
+    }
+
     /**
      * Helps to build complex {@link UsersWorkspaceImpl users workspace instance}.
      *
@@ -281,6 +298,17 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
             workspace.setStatus(status);
             workspace.setTemporary(isTemporary);
             return workspace;
+        }
+
+        public UsersWorkspaceImplBuilder fromConfig(WorkspaceConfig workspaceConfig) {
+            this.name = workspaceConfig.getName();
+            this.description = workspaceConfig.getDescription();
+            this.defaultEnvName = workspaceConfig.getDefaultEnvName();
+            this.projects = workspaceConfig.getProjects();
+            this.commands = workspaceConfig.getCommands();
+            this.environments = workspaceConfig.getEnvironments();
+            this.attributes = workspaceConfig.getAttributes();
+            return this;
         }
 
         public UsersWorkspaceImplBuilder setId(String id) {
