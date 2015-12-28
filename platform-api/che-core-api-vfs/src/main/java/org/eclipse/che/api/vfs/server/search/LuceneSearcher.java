@@ -30,16 +30,16 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.IOUtils;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
+import org.eclipse.che.api.vfs.server.VirtualFileFilters;
+import org.eclipse.che.api.vfs.server.VirtualFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.LinkedList;
-import java.util.Set;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Lucene based searcher.
@@ -56,32 +58,54 @@ import java.util.Set;
  * @author andrew00x
  */
 public abstract class LuceneSearcher implements Searcher {
-    private static final Logger LOG          = LoggerFactory.getLogger(LuceneSearcher.class);
-    private static final int    RESULT_LIMIT = 1000;
+    private static final Logger LOG = LoggerFactory.getLogger(LuceneSearcher.class);
 
-    private final VirtualFileFilter filter;
+    private static final int RESULT_LIMIT = 1000;
+
+    private final List<VirtualFileFilter> indexFilters;
+    private final CloseCallback           closeCallback;
 
     private IndexWriter     luceneIndexWriter;
     private SearcherManager searcherManager;
-    private boolean         closed;
 
-    public LuceneSearcher(Set<String> indexedMediaTypes) {
-        this(new MediaTypeFilter(indexedMediaTypes));
+    private boolean closed = true;
+
+    protected LuceneSearcher() {
+        this(new MediaTypeFilter(), null);
     }
 
-    public LuceneSearcher(VirtualFileFilter filter) {
-        this.filter = filter;
+    protected LuceneSearcher(CloseCallback closeCallback) {
+        this(new MediaTypeFilter(), closeCallback);
+    }
+
+    /**
+     * @param indexFilter
+     *         common filter for files that should not be indexed. If complex excluding rules needed then few filters might be combined
+     *         with {@link VirtualFileFilters#createAndFilter} or {@link VirtualFileFilters#createOrFilter} methods
+     */
+    protected LuceneSearcher(VirtualFileFilter indexFilter, CloseCallback closeCallback) {
+        this.closeCallback = closeCallback;
+        indexFilters = new CopyOnWriteArrayList<>();
+        indexFilters.add(indexFilter);
+    }
+
+    public boolean addIndexFilter(VirtualFileFilter indexFilter) {
+        return indexFilters.add(indexFilter);
+    }
+
+    public boolean removeIndexFilter(VirtualFileFilter indexFilter) {
+        return indexFilters.remove(indexFilter);
     }
 
     protected Analyzer makeAnalyzer() {
         return new Analyzer() {
-			@Override
-			protected TokenStreamComponents createComponents(String fieldName) {
-				Tokenizer tokenizer = new WhitespaceTokenizer();
-				TokenStream filter = new LowerCaseFilter(tokenizer);
-				return new TokenStreamComponents(tokenizer, filter);
-			}
-		};
+            @Override
+            protected TokenStreamComponents createComponents(String fieldName) {
+                Tokenizer tokenizer = new WhitespaceTokenizer();
+                TokenStream filter = new LowerCaseFilter(tokenizer);
+                return new TokenStreamComponents(tokenizer, filter);
+            }
+        };
     }
 
     protected abstract Directory makeDirectory() throws ServerException;
@@ -89,34 +113,60 @@ public abstract class LuceneSearcher implements Searcher {
     /**
      * Init lucene index. Need call this method if index directory is clean. Scan all files in virtual filesystem and add to index.
      *
-     * @param mountPoint
-     *         MountPoint
+     * @param virtualFileSystem
+     *         VirtualFileSystem
      * @throws ServerException
-     *         if any virtual filesystem error
+     *         if any virtual filesystem error occurs
      */
-    public void init(MountPoint mountPoint) throws ServerException {
+    public void init(VirtualFileSystem virtualFileSystem) throws ServerException {
         doInit();
-        addTree(mountPoint.getRoot());
+        addTree(virtualFileSystem.getRoot());
+    }
+
+    public void initAsynchronously(ExecutorService executor, VirtualFileSystem virtualFileSystem) throws ServerException {
+        doInit();
+        if (!executor.isShutdown()) {
+            executor.execute(() -> {
+                try {
+                    LuceneSearcher.this.addTree(virtualFileSystem.getRoot());
+                } catch (ServerException e) {
+                    LOG.error(e.getMessage());
+                }
+            });
+        }
     }
 
     protected final synchronized void doInit() throws ServerException {
         try {
             luceneIndexWriter = new IndexWriter(makeDirectory(), new IndexWriterConfig(makeAnalyzer()));
             searcherManager = new SearcherManager(luceneIndexWriter, true, new SearcherFactory());
+            closed = false;
         } catch (IOException e) {
             throw new ServerException(e);
         }
     }
 
-    public synchronized void close() {
+    public final synchronized void close() {
         if (!closed) {
             try {
                 IOUtils.close(getIndexWriter(), getIndexWriter().getDirectory(), searcherManager);
+                afterClose();
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             }
             closed = true;
         }
+    }
+
+    protected void afterClose() throws IOException {
+        if (closeCallback != null) {
+            closeCallback.onClose();
+        }
+    }
+
+    @Override
+    public synchronized boolean isClosed() {
+        return closed;
     }
 
     public synchronized IndexWriter getIndexWriter() {
@@ -128,16 +178,12 @@ public abstract class LuceneSearcher implements Searcher {
         final BooleanQuery luceneQuery = new BooleanQuery();
         final String name = query.getName();
         final String path = query.getPath();
-        final String mediaType = query.getMediaType();
         final String text = query.getText();
         if (path != null) {
             luceneQuery.add(new PrefixQuery(new Term("path", path)), BooleanClause.Occur.MUST);
         }
         if (name != null) {
             luceneQuery.add(new WildcardQuery(new Term("name", name)), BooleanClause.Occur.MUST);
-        }
-        if (mediaType != null) {
-            luceneQuery.add(new TermQuery(new Term("mediatype", mediaType)), BooleanClause.Occur.MUST);
         }
         if (text != null) {
             QueryParser qParser = new QueryParser("text", makeAnalyzer());
@@ -208,9 +254,11 @@ public abstract class LuceneSearcher implements Searcher {
 
     protected void addFile(VirtualFile virtualFile) throws ServerException {
         if (virtualFile.exists()) {
-            try (Reader fContentReader = filter.accept(virtualFile) ? new BufferedReader(
-                    new InputStreamReader(virtualFile.getContent())) : null) {
-                getIndexWriter().updateDocument(new Term("path", virtualFile.getPath().toString()), createDocument(virtualFile, fContentReader));
+            try (Reader fContentReader = shouldIndexContent(virtualFile)
+                                         ? new BufferedReader(new InputStreamReader(virtualFile.getContent()))
+                                         : null) {
+                getIndexWriter()
+                        .updateDocument(new Term("path", virtualFile.getPath().toString()), createDocument(virtualFile, fContentReader));
             } catch (OutOfMemoryError oome) {
                 close();
                 throw oome;
@@ -246,8 +294,9 @@ public abstract class LuceneSearcher implements Searcher {
     }
 
     protected void doUpdate(Term deleteTerm, VirtualFile virtualFile) throws ServerException {
-        try (Reader fContentReader = filter.accept(virtualFile) ? new BufferedReader(
-                new InputStreamReader(virtualFile.getContent())) : null) {
+        try (Reader fContentReader = shouldIndexContent(virtualFile)
+                                     ? new BufferedReader(new InputStreamReader(virtualFile.getContent()))
+                                     : null) {
             getIndexWriter().updateDocument(deleteTerm, createDocument(virtualFile, fContentReader));
         } catch (OutOfMemoryError oome) {
             close();
@@ -267,5 +316,14 @@ public abstract class LuceneSearcher implements Searcher {
             doc.add(new TextField("text", reader));
         }
         return doc;
+    }
+
+    private boolean shouldIndexContent(VirtualFile virtualFile) {
+        for (VirtualFileFilter indexFilter : indexFilters) {
+            if (!indexFilter.accept(virtualFile)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -17,7 +17,7 @@ import org.eclipse.che.api.core.ServerException;
  *
  * @author andrew00x
  */
-public interface LocalFSMountStrategy {
+public interface LocalFileSystemMountStrategy {
     /**
      * Get 'mount point' for specified {@code workspaceId}.
      *

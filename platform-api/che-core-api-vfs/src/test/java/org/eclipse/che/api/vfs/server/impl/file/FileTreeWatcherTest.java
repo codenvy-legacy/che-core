@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p/>
+ *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.file;
 
@@ -38,16 +38,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class FileTreeWatcherTest {
-    private File            testDirectory;
-    private FileTreeWatcher fileWatcher;
-    private TestedFileTree  testedFileTree;
+    private File                testDirectory;
+    private FileTreeWatcher     fileWatcher;
+    private FileWatcherTestTree fileWatcherTestTree;
 
     @Before
     public void setUp() throws Exception {
         File targetDir = new File(Thread.currentThread().getContextClassLoader().getResource(".").getPath()).getParentFile();
         testDirectory = new File(targetDir, NameGenerator.generate("watcher-", 4));
         assertTrue(testDirectory.mkdir());
-        testedFileTree = new TestedFileTree(testDirectory);
+        fileWatcherTestTree = new FileWatcherTestTree(testDirectory);
     }
 
     @After
@@ -60,7 +60,7 @@ public class FileTreeWatcherTest {
 
     @Test
     public void watchesCreate() throws Exception {
-        testedFileTree.createDirectory("", "watched");
+        fileWatcherTestTree.createDirectory("", "watched");
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
@@ -68,10 +68,10 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(500);
 
-        Set<String> created = newHashSet(testedFileTree.createDirectory(""),
-                                         testedFileTree.createFile(""),
-                                         testedFileTree.createDirectory("watched"),
-                                         testedFileTree.createFile("watched"));
+        Set<String> created = newHashSet(fileWatcherTestTree.createDirectory(""),
+                                         fileWatcherTestTree.createFile(""),
+                                         fileWatcherTestTree.createDirectory("watched"),
+                                         fileWatcherTestTree.createFile("watched"));
 
         Thread.sleep(3000);
 
@@ -92,7 +92,7 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(500);
 
-        List<String> created = testedFileTree.createTree("", 2, 2);
+        List<String> created = fileWatcherTestTree.createTree("", 2, 2);
 
         Thread.sleep(3000);
 
@@ -113,11 +113,11 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(500);
 
-        String directory = testedFileTree.createDirectory("");
+        String directory = fileWatcherTestTree.createDirectory("");
 
         Thread.sleep(3000);
 
-        String file = testedFileTree.createFile(directory);
+        String file = fileWatcherTestTree.createFile(directory);
 
         Thread.sleep(3000);
 
@@ -132,9 +132,9 @@ public class FileTreeWatcherTest {
 
     @Test
     public void watchesUpdate() throws Exception {
-        testedFileTree.createDirectory("", "watched");
-        String notifiedFile1 = testedFileTree.createFile("");
-        String notifiedFile2 = testedFileTree.createFile("watched");
+        fileWatcherTestTree.createDirectory("", "watched");
+        String notifiedFile1 = fileWatcherTestTree.createFile("");
+        String notifiedFile2 = fileWatcherTestTree.createFile("watched");
         Set<String> updated = newHashSet(notifiedFile1, notifiedFile2);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -143,8 +143,8 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(1000);
 
-        testedFileTree.updateFile(notifiedFile1);
-        testedFileTree.updateFile(notifiedFile2);
+        fileWatcherTestTree.updateFile(notifiedFile1);
+        fileWatcherTestTree.updateFile(notifiedFile2);
 
         Thread.sleep(3000);
 
@@ -159,9 +159,9 @@ public class FileTreeWatcherTest {
 
     @Test
     public void watchesDelete() throws Exception {
-        testedFileTree.createDirectory("", "watched");
-        String deletedDir1 = testedFileTree.createDirectory("watched");
-        String deletedFile1 = testedFileTree.createFile("watched");
+        fileWatcherTestTree.createDirectory("", "watched");
+        String deletedDir1 = fileWatcherTestTree.createDirectory("watched");
+        String deletedFile1 = fileWatcherTestTree.createFile("watched");
         Set<String> deleted = newHashSet("watched", deletedDir1, deletedFile1);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -170,7 +170,7 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(500);
 
-        testedFileTree.delete("watched");
+        fileWatcherTestTree.delete("watched");
 
         Thread.sleep(3000);
 
@@ -185,7 +185,7 @@ public class FileTreeWatcherTest {
 
     @Test
     public void doesNotWatchExcludedDirectories() throws Exception {
-        testedFileTree.createDirectory("", "excluded");
+        fileWatcherTestTree.createDirectory("", "excluded");
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         PathMatcher excludeMatcher =  FileSystems.getDefault().getPathMatcher("glob:excluded");
@@ -194,10 +194,10 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(500);
 
-        String directory = testedFileTree.createDirectory("");
-        String file = testedFileTree.createFile("");
-        testedFileTree.createDirectory("excluded");
-        testedFileTree.createFile("excluded");
+        String directory = fileWatcherTestTree.createDirectory("");
+        String file = fileWatcherTestTree.createFile("");
+        fileWatcherTestTree.createDirectory("excluded");
+        fileWatcherTestTree.createFile("excluded");
 
         Set<String> created = newHashSet(directory, file);
 
@@ -221,9 +221,9 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(500);
 
-        String file = testedFileTree.createFile("");
-        testedFileTree.createFile("", "xxx.bar");
-        testedFileTree.createFile("", "xxx.foo");
+        String file = fileWatcherTestTree.createFile("");
+        fileWatcherTestTree.createFile("", "xxx.bar");
+        fileWatcherTestTree.createFile("", "xxx.foo");
 
         Set<String> created = newHashSet(file);
 
@@ -259,7 +259,7 @@ public class FileTreeWatcherTest {
         fileWatcher.startup();
 
         Thread.sleep(500);
-        testedFileTree.createFile("");
+        fileWatcherTestTree.createFile("");
         Thread.sleep(3000);
 
         verify(notificationListener).errorOccurred(eq(testDirectory), eq(error));

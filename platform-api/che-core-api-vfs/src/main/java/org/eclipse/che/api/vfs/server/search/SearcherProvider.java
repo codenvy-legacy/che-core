@@ -11,7 +11,7 @@
 package org.eclipse.che.api.vfs.server.search;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.server.MountPoint;
+import org.eclipse.che.api.vfs.server.VirtualFileSystem;
 
 /**
  * Manages instances of Searcher.
@@ -20,14 +20,14 @@ import org.eclipse.che.api.vfs.server.MountPoint;
  */
 public interface SearcherProvider {
     /**
-     * Get LuceneSearcher for specified MountPoint.
+     * Get Searcher for specified VirtualFileSystem.
      *
-     * @param mountPoint
-     *         MountPoint
+     * @param virtualFileSystem
+     *         VirtualFileSystem
      * @param create
      *         {@code true} to create new Searcher if necessary; {@code false} to return {@code null} if Searcher is not initialized yet
      * @return {@code Searcher} or {@code null} if {@code create} is {@code false} and the Searcher is not initialized yet
-     * @see org.eclipse.che.api.vfs.server.MountPoint
+     * @see VirtualFileSystem
      */
-    Searcher getSearcher(MountPoint mountPoint, boolean create) throws ServerException;
+    Searcher getSearcher(VirtualFileSystem virtualFileSystem, boolean create) throws ServerException;
 }

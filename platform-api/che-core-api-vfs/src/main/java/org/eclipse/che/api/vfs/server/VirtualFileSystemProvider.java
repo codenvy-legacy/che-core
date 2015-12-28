@@ -8,18 +8,15 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.server.impl.file;
+package org.eclipse.che.api.vfs.server;
 
-import java.io.File;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.commons.env.EnvironmentContext;
 
-public interface FileWatcherNotificationListener {
-    void pathCreated(File watchRoot, String subPath, boolean isDir);
+public interface VirtualFileSystemProvider {
+    VirtualFileSystem getVirtualFileSystem(String workspaceId) throws ServerException;
 
-    void pathDeleted(File watchRoot, String subPath, boolean isDir);
+    VirtualFileSystem getVirtualFileSystem() throws ServerException;
 
-    void pathUpdated(File watchRoot, String subPath, boolean isDir);
-
-    void started(File watchRoot);
-
-    void errorOccurred(File watchRoot, Throwable cause);
+    void close() throws ServerException;
 }

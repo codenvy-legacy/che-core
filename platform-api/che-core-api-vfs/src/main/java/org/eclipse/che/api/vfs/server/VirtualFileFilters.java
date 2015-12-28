@@ -8,13 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.server.util;
+package org.eclipse.che.api.vfs.server;
 
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.VirtualFileFilter;
+import java.util.List;
 
 /**
- * Provides factory method to create AND, OR filters based on set of VirtualFileFilter.
+ * Provides factory methods to create AND, OR filters based on set of VirtualFileFilter.
  *
  * @author andrew00x
  */
@@ -27,6 +26,13 @@ public class VirtualFileFilters {
         VirtualFileFilter[] copy = new VirtualFileFilter[filters.length];
         System.arraycopy(filters, 0, copy, 0, filters.length);
         return new AndFilter(copy);
+    }
+
+    public static VirtualFileFilter createAndFilter(List<VirtualFileFilter> filters) {
+        if (filters == null || filters.size() < 2) {
+            throw new IllegalArgumentException("At least two filters required. ");
+        }
+        return new AndFilter(filters.toArray(new VirtualFileFilter[filters.size()]));
     }
 
     private static class AndFilter implements VirtualFileFilter {
@@ -56,6 +62,13 @@ public class VirtualFileFilters {
         return new OrFilter(copy);
     }
 
+    public static VirtualFileFilter createOrFilter(List<VirtualFileFilter> filters) {
+        if (filters == null || filters.size() < 2) {
+            throw new IllegalArgumentException("At least two filters required. ");
+        }
+        return new OrFilter(filters.toArray(new VirtualFileFilter[filters.size()]));
+    }
+
     private static class OrFilter implements VirtualFileFilter {
         final VirtualFileFilter[] filters;
 
@@ -73,6 +86,12 @@ public class VirtualFileFilters {
             return false;
         }
     }
+
+    public static VirtualFileFilter dotGitFilter() {
+        return DOT_GIT_FILTER;
+    }
+
+    private static final VirtualFileFilter DOT_GIT_FILTER = file -> !(".git".equals(file.getName()));
 
     private VirtualFileFilters() {
     }

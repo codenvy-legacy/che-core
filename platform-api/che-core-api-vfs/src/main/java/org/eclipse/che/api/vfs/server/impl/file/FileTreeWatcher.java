@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p/>
+ *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.file;
 
@@ -52,7 +52,7 @@ import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class FileTreeWatcher {
-    private static final Logger logger = LoggerFactory.getLogger(FileTreeWatcher.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileTreeWatcher.class);
 
     private static final long EVENT_PROCESS_TIMEOUT_SEC = 2;
 
@@ -102,7 +102,7 @@ public class FileTreeWatcher {
             if (!executor.awaitTermination(3, SECONDS)) {
                 executor.shutdownNow();
                 if (!executor.awaitTermination(3, SECONDS)) {
-                    logger.warn("Unable terminate Executor");
+                    LOG.warn("Unable terminate Executor");
                 }
             }
         } catch (InterruptedException e) {
@@ -113,13 +113,13 @@ public class FileTreeWatcher {
         try {
             walkTreeAndRemoveWatches(watchRootPath);
         } catch (IOException e) {
-            logger.warn(e.getMessage());
+            LOG.warn(e.getMessage());
         }
 
         try {
             watchService.close();
         } catch (IOException e) {
-            logger.warn(e.getMessage());
+            LOG.warn(e.getMessage());
         }
 
         if (interrupted) {

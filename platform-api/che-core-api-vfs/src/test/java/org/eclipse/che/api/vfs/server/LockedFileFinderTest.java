@@ -42,7 +42,7 @@ public class LockedFileFinderTest {
     private VirtualFile mockFile(String path) throws Exception {
         VirtualFile file = mock(VirtualFile.class);
         when(file.isFile()).thenReturn(true);
-        when(file.getPath()).thenReturn(Path.fromString(path));
+        when(file.getPath()).thenReturn(Path.of(path));
         when(file.toString()).thenReturn(path);
         accept(file);
         return file;
@@ -57,7 +57,7 @@ public class LockedFileFinderTest {
     private VirtualFile mockFolder(String path, VirtualFile... children) throws Exception {
         VirtualFile folder = mock(VirtualFile.class);
         when(folder.isFolder()).thenReturn(true);
-        when(folder.getPath()).thenReturn(Path.fromString(path));
+        when(folder.getPath()).thenReturn(Path.of(path));
         when(folder.getChildren()).thenReturn(newArrayList(children));
         when(folder.toString()).thenReturn(path);
         accept(folder);

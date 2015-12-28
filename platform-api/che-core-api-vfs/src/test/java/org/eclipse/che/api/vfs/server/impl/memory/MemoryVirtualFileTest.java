@@ -17,38 +17,47 @@ import com.google.common.io.ByteStreams;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.vfs.server.Archiver;
+import org.eclipse.che.api.vfs.server.ArchiverFactory;
 import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileVisitor;
+import org.eclipse.che.api.vfs.server.search.Searcher;
+import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MemoryVirtualFileTest {
     @Rule
@@ -57,19 +66,24 @@ public class MemoryVirtualFileTest {
     private final String DEFAULT_CONTENT       = "__TEST__";
     private final byte[] DEFAULT_CONTENT_BYTES = DEFAULT_CONTENT.getBytes();
 
-    private MemoryMountPoint mountPoint;
+    private Searcher                searcher;
+    private ArchiverFactory         archiverFactory;
+    private MemoryVirtualFileSystem fileSystem;
 
     @Before
     public void setUp() throws Exception {
-        mountPoint = new MemoryMountPoint(new EventService(), new MemoryLuceneSearcherProvider());
+        archiverFactory = mock(ArchiverFactory.class);
+        SearcherProvider searcherProvider = mock(SearcherProvider.class);
+        fileSystem = new MemoryVirtualFileSystem(archiverFactory, searcherProvider);
+        searcher = mock(Searcher.class);
+        when(searcherProvider.getSearcher(eq(fileSystem), eq(true))).thenReturn(searcher);
     }
 
     @Test
     public void getsName() throws Exception {
         String name = generateFileName();
         VirtualFile root = getRoot();
-
-        VirtualFile file = root.createFile(name, "");
+        VirtualFile file = root.createFile(name, DEFAULT_CONTENT);
 
         assertEquals(name, file.getName());
     }
@@ -78,8 +92,7 @@ public class MemoryVirtualFileTest {
     public void getsPath() throws Exception {
         String name = generateFileName();
         VirtualFile root = getRoot();
-
-        VirtualFile file = root.createFile(name, "");
+        VirtualFile file = root.createFile(name, DEFAULT_CONTENT);
 
         assertEquals("/" + file.getName(), file.getPath().toString());
     }
@@ -94,7 +107,7 @@ public class MemoryVirtualFileTest {
     public void checksIsFile() throws Exception {
         VirtualFile root = getRoot();
 
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         assertTrue(file.isFile());
 
         VirtualFile folder = root.createFolder(generateFolderName());
@@ -105,7 +118,7 @@ public class MemoryVirtualFileTest {
     public void checksIsFolder() throws Exception {
         VirtualFile root = getRoot();
 
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         assertFalse(file.isFolder());
 
         VirtualFile folder = root.createFolder(generateFolderName());
@@ -115,14 +128,15 @@ public class MemoryVirtualFileTest {
     @Test
     public void checksFileExistence() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+
         assertTrue(file.exists());
     }
 
     @Test
     public void checksDeletedFileExistence() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
         file.delete();
 
@@ -133,7 +147,7 @@ public class MemoryVirtualFileTest {
     public void checksIsRoot() throws Exception {
         VirtualFile root = getRoot();
 
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         VirtualFile folder = root.createFolder(generateFolderName());
 
         assertFalse(file.isRoot());
@@ -142,15 +156,11 @@ public class MemoryVirtualFileTest {
     }
 
     @Test
-    public void getsCreationDate() throws Exception {
-        // todo
-    }
-
-    @Test
     public void getsLastModificationDate() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         long beforeUpdate = file.getLastModificationDate();
+        Thread.sleep(1000);
 
         file.updateContent("updated content");
 
@@ -161,8 +171,9 @@ public class MemoryVirtualFileTest {
     @Test
     public void getsParent() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
-        assertSame(root, file.getParent());
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        assertEquals(root, file.getParent());
     }
 
     @Test
@@ -172,9 +183,10 @@ public class MemoryVirtualFileTest {
     }
 
     @Test
-    public void getsEmptyPropertiesMapIfFileDoesNotHaveAny() throws Exception {
+    public void getsEmptyPropertiesMapIfFileDoesNotHaveProperties() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+
         assertTrue(file.getProperties().isEmpty());
     }
 
@@ -182,53 +194,29 @@ public class MemoryVirtualFileTest {
     public void getsPropertiesMap() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), "");
-        Map<String, List<String>> properties = ImmutableMap.of("property1", newArrayList("value1", "value2"));
+        Map<String, String> properties = ImmutableMap.of("property1", "value1", "property2", "value2");
         file.updateProperties(properties);
-
         assertEquals(properties, file.getProperties());
     }
 
     @Test
-    public void getsSingleValueOfMultivaluedProperty() throws Exception {
+    public void getsProperty() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), "");
-        file.updateProperties(ImmutableMap.of("property1", newArrayList("value1", "value2")));
+        file.updateProperties(ImmutableMap.of("property1", "value1"));
 
         assertEquals("value1", file.getProperty("property1"));
-    }
-
-    @Test
-    public void getsValuesOfMultivaluedProperty() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
-        file.updateProperties(ImmutableMap.of("property1", newArrayList("value1", "value2")));
-
-        assertEquals(newArrayList("value1", "value2"), file.getProperties("property1"));
     }
 
     @Test
     public void updatesProperties() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), "");
-        file.updateProperties(ImmutableMap.of("property1", newArrayList("value1", "value2")));
-        Map<String, List<String>> expected = ImmutableMap.of("property1", newArrayList("valueX", "valueY"),
-                                                             "new property1", newArrayList("value3", "value4"));
-        Map<String, List<String>> update = ImmutableMap.of("property1", newArrayList("valueX", "valueY"),
-                                                           "new property1", newArrayList("value3", "value4"));
+        file.updateProperties(ImmutableMap.of("property1", "valueX",
+                                              "new property1", "value3"));
 
-        file.updateProperties(update);
-
-        assertEquals(expected, file.getProperties());
-    }
-
-    @Test
-    public void setsProperties() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
-        Map<String, List<String>> expected = ImmutableMap.of("property1", newArrayList("value1", "value2"));
-
-        file.setProperties("property1", newArrayList("value1", "value2"));
-
+        Map<String, String> expected = ImmutableMap.of("property1", "valueX",
+                                                       "new property1", "value3");
         assertEquals(expected, file.getProperties());
     }
 
@@ -236,26 +224,36 @@ public class MemoryVirtualFileTest {
     public void setsProperty() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), "");
-        Map<String, List<String>> expected = ImmutableMap.of("property1", newArrayList("value1"));
 
         file.setProperty("property1", "value1");
 
+        Map<String, String> expected = ImmutableMap.of("property1", "value1");
         assertEquals(expected, file.getProperties());
+    }
+
+    @Test
+    public void removesPropertyBySetValueToNull() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), "");
+        file.setProperty("property1", "value1");
+        Map<String, String> expected = ImmutableMap.of("property1", "value1");
+        assertEquals(expected, file.getProperties());
+
+        file.setProperty("property1", null);
+
+        assertTrue(file.getProperties().isEmpty());
     }
 
     @Test
     public void acceptsVisitor() throws Exception {
         VirtualFile root = getRoot();
-        boolean[] b = new boolean[]{false};
-        VirtualFileVisitor visitor = new VirtualFileVisitor() {
-            @Override
-            public void visit(VirtualFile virtualFile) {
-                assertSame(root, virtualFile);
-                b[0] = true;
-            }
+        boolean[] visitedFlag = new boolean[]{false};
+        VirtualFileVisitor visitor = virtualFile -> {
+            assertSame(root, virtualFile);
+            visitedFlag[0] = true;
         };
         root.accept(visitor);
-        assertTrue("visit(VirtualFile) method was not invoked", b[0]);
+        assertTrue("visit(VirtualFile) method was not invoked", visitedFlag[0]);
     }
 
     @Test
@@ -263,22 +261,30 @@ public class MemoryVirtualFileTest {
         VirtualFile root = getRoot();
         VirtualFile folder = root.createFolder(generateFolderName());
         VirtualFile file1 = folder.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile file2 = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile file2 = folder.createFile(generateFileName(), "xxx");
         root.createFolder(generateFolderName());
-        Set<Pair<String, String>> expected = newHashSet(Pair.of(countMd5Sum(file1), file1.getPath().subPath(1).toString()),
-                                                        Pair.of(countMd5Sum(file2), file2.getPath().subPath(1).toString()));
+        Set<Pair<String, String>> expected = newHashSet(Pair.of(countMd5Sum(file1), file1.getPath().subPath(folder.getPath()).toString()),
+                                                        Pair.of(countMd5Sum(file2), file2.getPath().subPath(folder.getPath()).toString()));
 
         assertEquals(expected, newHashSet(folder.countMd5Sums()));
     }
 
     @Test
+    public void returnsEmptyListWhenCountMd5SumsOnFile() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        assertTrue(file.countMd5Sums().isEmpty());
+    }
+
+    @Test
     public void getsChildren() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file1 = root.createFile(generateFileName(), "");
-        VirtualFile file2 = root.createFile(generateFileName(), "");
-        VirtualFile folder1 = root.createFolder(generateFolderName());
+        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile file1 = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile file2 = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
-        List<VirtualFile> expectedResult = newArrayList(file1, file2, folder1);
+        List<VirtualFile> expectedResult = newArrayList(file1, file2, folder);
         Collections.sort(expectedResult);
 
         assertEquals(expectedResult, root.getChildren());
@@ -287,19 +293,14 @@ public class MemoryVirtualFileTest {
     @Test
     public void getsChildrenWithFilter() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file1 = root.createFile(generateFileName(), "");
-        VirtualFile file2 = root.createFile(generateFileName(), "");
         root.createFolder(generateFolderName());
+        VirtualFile file1 = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile file2 = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
         List<VirtualFile> expectedResult = newArrayList(file1, file2);
         Collections.sort(expectedResult);
 
-        List<VirtualFile> children = root.getChildren(new VirtualFileFilter() {
-            @Override
-            public boolean accept(VirtualFile file) {
-                return file.equals(file1) || file.equals(file2);
-            }
-        });
+        List<VirtualFile> children = root.getChildren(file -> file.equals(file1) || file.equals(file2));
 
         assertEquals(expectedResult, children);
     }
@@ -308,24 +309,36 @@ public class MemoryVirtualFileTest {
     public void getsChild() throws Exception {
         VirtualFile root = getRoot();
         String name = generateFileName();
-        VirtualFile file = root.createFile(name, "");
+        VirtualFile file = root.createFile(name, DEFAULT_CONTENT);
 
-        assertSame(file, root.getChild(Path.fromString(name)));
+        assertEquals(file, root.getChild(Path.of(name)));
     }
 
     @Test
-    public void getsContentOfFileAsStream() throws Exception {
+    public void getsChildByHierarchicalPath() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile folder = root.createFolder("a/b/c/d");
+        String name = generateFileName();
+        VirtualFile file = folder.createFile(name, DEFAULT_CONTENT);
+
+        assertEquals(file, root.getChild(folder.getPath().newPath(name)));
+    }
+
+    @Test
+    public void getsContentAsStream() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
-        InputStream content = file.getContent();
-        byte[] bytes = ByteStreams.toByteArray(content);
+        byte[] bytes;
+        try (InputStream content = file.getContent()) {
+            bytes = ByteStreams.toByteArray(content);
+        }
 
         assertEquals(DEFAULT_CONTENT, new String(bytes));
     }
 
     @Test
-    public void getsContentOfFileAsBytes() throws Exception {
+    public void getsContentAsBytes() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
@@ -335,7 +348,7 @@ public class MemoryVirtualFileTest {
     }
 
     @Test
-    public void getsContentOfFileAsString() throws Exception {
+    public void getsContentAsString() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
@@ -345,7 +358,7 @@ public class MemoryVirtualFileTest {
     }
 
     @Test
-    public void failsGetContentOfFolder() throws Exception {
+    public void failsGetContentOfFolderAsStream() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile folder = root.createFolder(generateFolderName());
 
@@ -375,7 +388,7 @@ public class MemoryVirtualFileTest {
     }
 
     @Test
-    public void updatesContentOfFileByStream() throws Exception {
+    public void updatesContentByStream() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
@@ -385,7 +398,7 @@ public class MemoryVirtualFileTest {
     }
 
     @Test
-    public void updatesContentOfFileByBytes() throws Exception {
+    public void updatesContentByBytes() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
@@ -395,11 +408,44 @@ public class MemoryVirtualFileTest {
     }
 
     @Test
-    public void updatesContentOfFileByString() throws Exception {
+    public void updatesContentByString() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
 
         file.updateContent("updated content");
+
+        assertEquals("updated content", file.getContentAsString());
+    }
+
+    @Test
+    public void updatesContentOfLockedFileByStreamWithLockToken() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        String lockToken = file.lock(0);
+
+        file.updateContent(new ByteArrayInputStream("updated content".getBytes()), lockToken);
+
+        assertEquals("updated content", file.getContentAsString());
+    }
+
+    @Test
+    public void updatesContentOfLockedFileByBytesWithLockToken() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        String lockToken = file.lock(0);
+
+        file.updateContent("updated content".getBytes(), lockToken);
+
+        assertEquals("updated content", file.getContentAsString());
+    }
+
+    @Test
+    public void updatesContentOfLockedFileByStringWithLockToken() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        String lockToken = file.lock(0);
+
+        file.updateContent("updated content", lockToken);
 
         assertEquals("updated content", file.getContentAsString());
     }
@@ -410,9 +456,12 @@ public class MemoryVirtualFileTest {
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         file.lock(0);
 
-        thrown.expect(ForbiddenException.class);
-
-        file.updateContent(new ByteArrayInputStream("updated content".getBytes()));
+        try {
+            file.updateContent(new ByteArrayInputStream("updated content".getBytes()));
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
     }
 
     @Test
@@ -421,9 +470,12 @@ public class MemoryVirtualFileTest {
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         file.lock(0);
 
-        thrown.expect(ForbiddenException.class);
-
-        file.updateContent("updated content".getBytes());
+        try {
+            file.updateContent("updated content".getBytes());
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
     }
 
     @Test
@@ -432,9 +484,54 @@ public class MemoryVirtualFileTest {
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         file.lock(0);
 
-        thrown.expect(ForbiddenException.class);
+        try {
+            file.updateContent("updated content");
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
+    }
 
-        file.updateContent("updated content");
+    @Test
+    public void failsUpdateContentOfLockedFileByStreamWhenLockTokenIsInvalid() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        String invalidLockToken = invalidateLockToken(file.lock(0));
+
+        try {
+            file.updateContent(new ByteArrayInputStream("updated content".getBytes()), invalidLockToken);
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
+    }
+
+    @Test
+    public void failsUpdateContentOfLockedFileByBytesWhenLockTokenIsInvalid() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        String invalidLockToken = invalidateLockToken(file.lock(0));
+
+        try {
+            file.updateContent("updated content".getBytes(), invalidLockToken);
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
+    }
+
+    @Test
+    public void failsUpdateContentOfLockedFileByStringWhenLockTokenIsInvalid() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        String invalidLockToken = invalidateLockToken(file.lock(0));
+
+        try {
+            file.updateContent("updated content", invalidLockToken);
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
     }
 
     @Test
@@ -454,164 +551,328 @@ public class MemoryVirtualFileTest {
     @Test
     public void copiesFile() throws Exception {
         VirtualFile root = getRoot();
-        String fileName = generateFileName();
-        VirtualFile file = root.createFile(fileName, DEFAULT_CONTENT);
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         VirtualFile targetFolder = root.createFolder(generateFolderName());
 
-        file.copyTo(targetFolder);
+        VirtualFile copy = file.copyTo(targetFolder);
 
-        VirtualFile copy = targetFolder.getChild(Path.fromString(fileName));
-        assertNotNull(copy);
         assertEquals(file.getContentAsString(), copy.getContentAsString());
+        assertEquals(file.getProperties(), copy.getProperties());
     }
 
     @Test
-    public void copiesFileWithNewName() throws Exception {
+    public void copiesLockedFile() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.lock(0);
         VirtualFile targetFolder = root.createFolder(generateFolderName());
 
-        file.copyTo(targetFolder, "new name", false);
+        VirtualFile copy = file.copyTo(targetFolder);
 
-        VirtualFile copy = targetFolder.getChild(Path.fromString("new name"));
-        assertNotNull(copy);
+        assertFalse(copy.isLocked());
         assertEquals(file.getContentAsString(), copy.getContentAsString());
+        assertEquals(file.getProperties(), copy.getProperties());
     }
 
     @Test
-    public void copiesFileWithNewNameAndOverwritesExistedFile() throws Exception {
+    public void copiesFileUnderNewName() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
+        VirtualFile targetFolder = root.createFolder(generateFolderName());
+
+        VirtualFile copy = file.copyTo(targetFolder, "new name", false);
+
+        assertEquals(file.getContentAsString(), copy.getContentAsString());
+        assertEquals(file.getProperties(), copy.getProperties());
+    }
+
+    @Test
+    public void copiesFileUnderNewNameAndOverwritesExistedFile() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         VirtualFile targetFolder = root.createFolder(generateFolderName());
         targetFolder.createFile("existed_name", "existed content");
 
-        file.copyTo(targetFolder, "existed_name", true);
+        VirtualFile copy = file.copyTo(targetFolder, "existed_name", true);
 
-        VirtualFile copy = targetFolder.getChild(Path.fromString("existed_name"));
-        assertNotNull(copy);
         assertEquals(file.getContentAsString(), copy.getContentAsString());
+        assertEquals(file.getProperties(), copy.getProperties());
     }
 
     @Test
-    public void failsCopyFileWhenFileWithTheSameNameExistsInTargetFolder() throws Exception {
+    public void failsCopyFileWhenItemWithTheSameNameExistsInTargetFolderAndOverwritingIsDisabled() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         VirtualFile targetFolder = root.createFolder(generateFolderName());
-        VirtualFile existedFile = targetFolder.createFile("existed_name", "existed content");
+        VirtualFile conflictFile = targetFolder.createFile("existed_name", "xxx");
 
         try {
             file.copyTo(targetFolder, "existed_name", false);
             thrown.expect(ConflictException.class);
         } catch (ConflictException e) {
-            assertEquals("existed content", existedFile.getContentAsString());
+            assertEquals("xxx", conflictFile.getContentAsString());
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
+    }
+
+    @Test
+    public void copiesFolder() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        createFileTree(folder, 3);
+        List<VirtualFile> originalTree = getFileTreeAsList(folder);
+        for (int i = 0; i < originalTree.size(); i++) {
+            originalTree.get(i).setProperty("property" + i, "value" + 1);
+        }
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+
+        VirtualFile copiedFolder = folder.copyTo(targetFolder);
+
+        List<VirtualFile> copiedTree = getFileTreeAsList(copiedFolder);
+
+        Iterator<VirtualFile> originalIterator = originalTree.iterator();
+        Iterator<VirtualFile> copiedIterator = copiedTree.iterator();
+        while (originalIterator.hasNext() && copiedIterator.hasNext()) {
+            VirtualFile original = originalIterator.next();
+            VirtualFile copy = copiedIterator.next();
+            assertEquals(String.format("Properties of virtual file %s not copied properly", copy.getPath()),
+                         original.getProperties(), copy.getProperties());
+            if (original.isFile()) {
+                assertEquals(String.format("Content of file %s not copied properly", copy.getPath()),
+                             original.getContentAsString(), copy.getContentAsString());
+            }
+        }
+        assertFalse(originalIterator.hasNext() || copiedIterator.hasNext());
+    }
+
+    @Test
+    public void copiesFolderThatContainsLockedFile() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.lock(0);
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+
+        VirtualFile copiedFolder = folder.copyTo(targetFolder);
+        assertNotNull(getRoot().getChild(copiedFolder.getPath()));
+
+        VirtualFile copiedFile = copiedFolder.getChild(Path.of(file.getName()));
+        assertFalse(copiedFile.isLocked());
+        assertEquals(file.getContentAsString(), copiedFile.getContentAsString());
+    }
+
+    @Test
+    public void copiesFolderUnderNewName() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+
+        VirtualFile copiedFolder = folder.copyTo(targetFolder, "new_name", false);
+        assertNotNull(getRoot().getChild(copiedFolder.getPath()));
+
+        VirtualFile copiedFile = copiedFolder.getChild(Path.of(file.getName()));
+        assertEquals(file.getContentAsString(), copiedFile.getContentAsString());
+    }
+
+    @Test
+    public void copiesFolderAndReplaceExistedItem() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        targetFolder.createFolder(folder.getName());
+
+        VirtualFile copiedFolder = folder.copyTo(targetFolder, null, true);
+        assertNotNull(getRoot().getChild(copiedFolder.getPath()));
+
+        VirtualFile copiedFile = copiedFolder.getChild(Path.of(file.getName()));
+        assertEquals(file.getContentAsString(), copiedFile.getContentAsString());
+    }
+
+    @Test
+    public void copiesFolderUnderNewNameAndReplaceExistedItem() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        targetFolder.createFolder("new_name");
+
+        VirtualFile copiedFolder = folder.copyTo(targetFolder, "new_name", true);
+        assertNotNull(getRoot().getChild(copiedFolder.getPath()));
+
+        VirtualFile copiedFile = copiedFolder.getChild(Path.of(file.getName()));
+        assertEquals(file.getContentAsString(), copiedFile.getContentAsString());
+    }
+
+    @Test
+    public void failsCopyFolderWhenTargetFolderContainsItemWithSameNameAndOverwritingIsDisabled() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        VirtualFile conflictFolder = targetFolder.createFolder(folder.getName());
+
+        try {
+            folder.copyTo(targetFolder);
+            thrown.expect(ConflictException.class);
+        } catch (ConflictException expected) {
+            assertNull(getRoot().getChild(conflictFolder.getPath().newPath(file.getName())));
+        }
+    }
+
+    @Test
+    public void failsCopyFolderUnderNewNameWhenTargetFolderContainsItemWithSameNameAndOverwritingIsDisabled() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        VirtualFile conflictFolder = targetFolder.createFolder("new_name");
+
+        try {
+            folder.copyTo(targetFolder, "new_name", false);
+            thrown.expect(ConflictException.class);
+        } catch (ConflictException expected) {
+            assertNull(getRoot().getChild(conflictFolder.getPath().newPath(file.getName())));
+        }
+    }
+
+    @Test
+    public void failsCopyFolderWhenTargetFolderNeedBeOverwrittenButContainsLockedFile() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        VirtualFile conflictFolder = targetFolder.createFolder(folder.getName());
+        VirtualFile lockedFileInConflictFolder = conflictFolder.createFile(generateFileName(), "xxx");
+        lockedFileInConflictFolder.lock(0);
+
+        try {
+            folder.copyTo(targetFolder, null, true);
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertNull(getRoot().getChild(conflictFolder.getPath().newPath(file.getName())));
+            assertEquals("xxx", lockedFileInConflictFolder.getContentAsString());
         }
     }
 
     @Test
     public void movesFile() throws Exception {
-        VirtualFile root = getRoot();
-        String fileName = generateFileName();
-        VirtualFile file = root.createFile(fileName, DEFAULT_CONTENT);
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
 
-        file.moveTo(targetFolder);
+        VirtualFile movedFile = file.moveTo(targetFolder);
 
-        VirtualFile moved = targetFolder.getChild(Path.fromString(fileName));
-        assertNotNull(moved);
-        assertEquals(file.getContentAsString(), moved.getContentAsString());
-        assertNull(root.getChild(filePath));
+        assertEquals(movedFile, getRoot().getChild(movedFile.getPath()));
+        assertEquals(ImmutableMap.of("property1", "value1"), movedFile.getProperties());
+        assertEquals(DEFAULT_CONTENT, movedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(filePath));
     }
 
     @Test
-    public void movesFileWithNewName() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+    public void movesFileUnderNewName() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
 
-        file.moveTo(targetFolder, "new name", false, null);
+        VirtualFile movedFile = file.moveTo(targetFolder, "new_name", false, null);
 
-        VirtualFile moved = targetFolder.getChild(Path.fromString("new name"));
-        assertNotNull(moved);
-        assertEquals(file.getContentAsString(), moved.getContentAsString());
-        assertNull(root.getChild(filePath));
+        assertEquals(movedFile, getRoot().getChild(movedFile.getPath()));
+        assertEquals(ImmutableMap.of("property1", "value1"), movedFile.getProperties());
+        assertEquals(DEFAULT_CONTENT, movedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(filePath));
     }
 
     @Test
-    public void movesFileWithNewNameAndOverwriteExistedFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+    public void movesFileUnderNewNameAndOverwriteExistedFile() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
-        targetFolder.createFile("existed_name", DEFAULT_CONTENT);
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        targetFolder.createFolder("new_name");
 
-        file.moveTo(targetFolder, "existed_name", true, null);
+        VirtualFile movedFile = file.moveTo(targetFolder, "new_name", true, null);
 
-        VirtualFile moved = targetFolder.getChild(Path.fromString("existed_name"));
-        assertNotNull(moved);
-        assertEquals(file.getContentAsString(), moved.getContentAsString());
-        assertNull(root.getChild(filePath));
+        assertEquals(movedFile, getRoot().getChild(movedFile.getPath()));
+        assertEquals(ImmutableMap.of("property1", "value1"), movedFile.getProperties());
+        assertEquals(DEFAULT_CONTENT, movedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(filePath));
     }
 
     @Test
     public void movesLockedFileWithLockToken() throws Exception {
-        VirtualFile root = getRoot();
-        String fileName = generateFileName();
-        VirtualFile file = root.createFile(fileName, DEFAULT_CONTENT);
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         String lockToken = file.lock(0);
         Path filePath = file.getPath();
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
 
-        file.moveTo(targetFolder, null, false, lockToken);
+        VirtualFile movedFile = file.moveTo(targetFolder, null, false, lockToken);
 
-        VirtualFile moved = targetFolder.getChild(Path.fromString(fileName));
-        assertNotNull(moved);
-        assertEquals(file.getContentAsString(), moved.getContentAsString());
-        assertNull(root.getChild(filePath));
+        assertEquals(movedFile, getRoot().getChild(movedFile.getPath()));
+        assertFalse(movedFile.isLocked());
+        assertEquals(ImmutableMap.of("property1", "value1"), movedFile.getProperties());
+        assertEquals(DEFAULT_CONTENT, movedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(filePath));
     }
 
     @Test
     public void failsMoveLockedFileWithoutLockToken() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
-        Path movedFilePath = targetFolder.getPath().newPath(file.getName());
         file.lock(0);
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        Path movedFilePath = targetFolder.getPath().newPath(file.getName());
 
         try {
             file.moveTo(targetFolder);
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
-            assertEquals(file, root.getChild(filePath));
-            assertNull(root.getChild(movedFilePath));
+            assertNull(getRoot().getChild(movedFilePath));
+
+            assertEquals(file, getRoot().getChild(filePath));
+            assertEquals(ImmutableMap.of("property1", "value1"), file.getProperties());
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
         }
     }
 
     @Test
     public void failsMoveLockedFileWhenLockTokenIsInvalid() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
+        String invalidLockToken = invalidateLockToken(file.lock(0));
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
         Path movedFilePath = targetFolder.getPath().newPath(file.getName());
-        String lockToken = file.lock(0);
 
         try {
-            file.moveTo(targetFolder, null, false, invalidateLockToken(lockToken));
+            file.moveTo(targetFolder, null, false, invalidLockToken);
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
-            assertEquals(file, root.getChild(filePath));
-            assertNull(root.getChild(movedFilePath));
+            assertNull(getRoot().getChild(movedFilePath));
+
+            assertTrue(file.isLocked());
+            assertEquals(file, getRoot().getChild(filePath));
+            assertEquals(ImmutableMap.of("property1", "value1"), file.getProperties());
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
         }
     }
 
     @Test
-    public void failsMoveFileWhenTargetFolderContainsItemWithTheSameName() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
+    public void failsMoveFileWhenTargetFolderContainsItemWithTheSameNameAndOverwritingIsDisabled() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
         Path filePath = file.getPath();
         VirtualFile existedFile = targetFolder.createFile("existed_name", "existed content");
 
@@ -619,183 +880,374 @@ public class MemoryVirtualFileTest {
             file.moveTo(targetFolder, "existed_name", false, null);
             thrown.expect(ConflictException.class);
         } catch (ConflictException e) {
-            assertEquals(file, root.getChild(filePath));
+            assertEquals(file, getRoot().getChild(filePath));
             assertEquals("existed content", existedFile.getContentAsString());
         }
     }
 
     @Test
     public void movesFolder() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
-        Path folderPath = folder.getPath();
-        Path filePath = file.getPath();
-        Path movedFolderPath = targetFolder.getPath().newPath(folder.getName());
-        Path movedFilePath = movedFolderPath.newPath(file.getName());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        createFileTree(folder, 3);
+        List<VirtualFile> originalTree = getFileTreeAsList(folder);
+        for (int i = 0; i < originalTree.size(); i++) {
+            originalTree.get(i).setProperty("property" + i, "value" + i);
+        }
+        List<Path> originalTreePaths = originalTree.stream().map(VirtualFile::getPath).collect(toList());
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
 
-        folder.moveTo(targetFolder);
+        VirtualFile movedFolder = folder.moveTo(targetFolder);
 
-        assertNotNull(root.getChild(movedFolderPath));
-        assertNotNull(root.getChild(movedFilePath));
-        assertEquals(DEFAULT_CONTENT, root.getChild(movedFilePath).getContentAsString());
-        assertNull(root.getChild(folderPath));
-        assertNull(root.getChild(filePath));
+        List<VirtualFile> movedTree = getFileTreeAsList(movedFolder);
+        Iterator<Path> originalPathIterator = originalTreePaths.iterator();
+        Iterator<VirtualFile> movedIterator = movedTree.iterator();
+        int i = 0;
+        while (originalPathIterator.hasNext() && movedIterator.hasNext()) {
+            Path originalPath = originalPathIterator.next();
+            VirtualFile moved = movedIterator.next();
+            assertEquals(originalPath, moved.getPath().subPath(targetFolder.getPath()));
+
+            assertEquals(String.format("Properties of virtual file %s not copied properly", moved.getPath()),
+                         ImmutableMap.of("property" + i, "value" + i), moved.getProperties());
+            if (moved.isFile()) {
+                assertEquals(String.format("Content of file %s not copied properly", moved.getPath()),
+                             DEFAULT_CONTENT, moved.getContentAsString());
+            }
+            assertNull(String.format("Item %s must ne removed", originalPath), getRoot().getChild(originalPath));
+            i++;
+        }
+        assertFalse(originalPathIterator.hasNext() || movedIterator.hasNext());
     }
 
     @Test
-    public void failsMoveFolderThatContainsLockedFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+    public void movesFolderUnderNewName() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
+        String fileName = file.getName();
         Path folderPath = folder.getPath();
-        Path filePath = file.getPath();
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+
+        VirtualFile movedFolder = folder.moveTo(targetFolder, "new_name", false, null);
+        assertNotNull(getRoot().getChild(movedFolder.getPath()));
+
+        VirtualFile movedFile = movedFolder.getChild(Path.of(file.getName()));
+        assertEquals(DEFAULT_CONTENT, movedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(folderPath.newPath(fileName)));
+        assertNull(getRoot().getChild(folderPath));
+    }
+
+    @Test
+    public void movesFolderAndReplaceExistedItem() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        String fileName = file.getName();
+        Path folderPath = folder.getPath();
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        targetFolder.createFolder(folder.getName());
+
+        VirtualFile movedFolder = folder.moveTo(targetFolder, null, true, null);
+        assertNotNull(getRoot().getChild(movedFolder.getPath()));
+
+        VirtualFile movedFile = movedFolder.getChild(Path.of(file.getName()));
+        assertEquals(DEFAULT_CONTENT, movedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(folderPath.newPath(fileName)));
+        assertNull(getRoot().getChild(folderPath));
+    }
+
+    @Test
+    public void movesFolderUnderNewNameAndReplaceExistedItem() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        String fileName = file.getName();
+        Path folderPath = folder.getPath();
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        targetFolder.createFolder("new_name");
+
+        VirtualFile movedFolder = folder.moveTo(targetFolder, "new_name", true, null);
+        assertNotNull(getRoot().getChild(movedFolder.getPath()));
+
+        VirtualFile movedFile = movedFolder.getChild(Path.of(fileName));
+        assertEquals(DEFAULT_CONTENT, movedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(folderPath));
+    }
+
+    @Test
+    public void failsMoveFolderWhenItContainsLockedFile() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile lockedFile = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        lockedFile.lock(0);
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
         Path movedFolderPath = targetFolder.getPath().newPath(folder.getName());
-        file.lock(0);
 
         try {
             folder.moveTo(targetFolder);
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
-            assertNull(root.getChild(movedFolderPath));
-            assertEquals(folder, root.getChild(folderPath));
-            assertEquals(file, root.getChild(filePath));
+            assertNull(getRoot().getChild(movedFolderPath.newPath(lockedFile.getName())));
+            assertNull(getRoot().getChild(movedFolderPath));
+
+            assertNotNull(getRoot().getChild(folder.getPath()));
+            assertEquals(DEFAULT_CONTENT, lockedFile.getContentAsString());
         }
     }
 
     @Test
-    public void failsMoveFolderWhenTargetFolderContainsItemWithTheSameName() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+    public void failsMoveFolderWhenTargetFolderContainsItemWithTheSameNameAndOverwritingIsDisabled() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile targetFolder = root.createFolder(generateFolderName());
-        Path folderPath = folder.getPath();
-        Path filePath = file.getPath();
-        Path movedFolderPath = targetFolder.getPath().newPath(folder.getName());
-        targetFolder.createFile("existed_name", "");
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        VirtualFile conflictFolder = targetFolder.createFolder(folder.getName());
 
         try {
-            folder.moveTo(targetFolder, "existed_name", false, null);
+            folder.moveTo(targetFolder);
             thrown.expect(ConflictException.class);
-        } catch (ConflictException e) {
-            assertNull(root.getChild(movedFolderPath));
-            assertEquals(folder, root.getChild(folderPath));
-            assertEquals(file, root.getChild(filePath));
+        } catch (ConflictException expected) {
+            assertNull(getRoot().getChild(conflictFolder.getPath().newPath(file.getName())));
+
+            assertNotNull(getRoot().getChild(folder.getPath()));
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
+    }
+
+    @Test
+    public void failsMoveFolderUnderNewNameWhenTargetFolderContainsItemWithTheSameNameAndOverwritingIsDisabled() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        VirtualFile conflictFolder = targetFolder.createFolder("new_name");
+
+        try {
+            folder.moveTo(targetFolder, "new_name", false, null);
+            thrown.expect(ConflictException.class);
+        } catch (ConflictException expected) {
+            assertNull(getRoot().getChild(conflictFolder.getPath().newPath(file.getName())));
+
+            assertNotNull(getRoot().getChild(folder.getPath()));
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
+    }
+
+    @Test
+    public void failsMoveFolderWhenTargetFolderNeedBeOverwrittenButContainsLockedFile() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile targetFolder = getRoot().createFolder(generateFolderName());
+        VirtualFile conflictFolder = targetFolder.createFolder(folder.getName());
+        VirtualFile lockedFileInConflictFolder = conflictFolder.createFile(generateFileName(), "xxx");
+        lockedFileInConflictFolder.lock(0);
+
+        try {
+            folder.moveTo(targetFolder, null, true, null);
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertEquals("xxx", lockedFileInConflictFolder.getContentAsString());
+            assertNull(getRoot().getChild(conflictFolder.getPath().newPath(file.getName())));
+
+            assertNotNull(getRoot().getChild(folder.getPath()));
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
         }
     }
 
     @Test
     public void renamesFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
-        Path newPath = folder.getPath().newPath("new name");
 
-        file.rename("new name");
+        VirtualFile renamedFile = file.rename("new name");
 
-        assertNull(root.getChild(filePath));
-        assertEquals(file, root.getChild(newPath));
+        assertEquals(renamedFile, getRoot().getChild(renamedFile.getPath()));
+        assertEquals(ImmutableMap.of("property1", "value1"), renamedFile.getProperties());
+        assertEquals(DEFAULT_CONTENT, renamedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(filePath));
     }
 
     @Test
     public void renamesLockedFileWithLockToken() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
         Path filePath = file.getPath();
-        Path newPath = folder.getPath().newPath("new name");
         String lockToken = file.lock(0);
 
-        file.rename("new name", lockToken);
+        VirtualFile renamedFile = file.rename("new name", lockToken);
 
-        assertNull(root.getChild(filePath));
-        assertEquals(file, root.getChild(newPath));
+        assertFalse(renamedFile.isLocked());
+        assertEquals(renamedFile, getRoot().getChild(renamedFile.getPath()));
+        assertEquals(DEFAULT_CONTENT, renamedFile.getContentAsString());
+
+        assertNull(getRoot().getChild(filePath));
+    }
+
+    @Test
+    public void failsRenameLockedFileWithoutLockToken() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
+        Path filePath = file.getPath();
+        Path newPath = folder.getPath().newPath("new name");
+        file.lock(0);
+
+        try {
+            file.rename("new name");
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException e) {
+            assertNull(getRoot().getChild(newPath));
+
+            assertTrue(file.isLocked());
+            assertEquals(file, getRoot().getChild(filePath));
+            assertEquals(ImmutableMap.of("property1", "value1"), file.getProperties());
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
     }
 
     @Test
     public void failsRenameLockedFileWhenLockTokenIsInvalid() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
         Path newPath = folder.getPath().newPath("new name");
-        String lockToken = file.lock(0);
+        String invalidLockToken = invalidateLockToken(file.lock(0));
 
         try {
-            file.rename("new name", invalidateLockToken(lockToken));
+            file.rename("new name", invalidLockToken);
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
-            assertNotNull(root.getChild(filePath));
-            assertNull(root.getChild(newPath));
+            assertNull(getRoot().getChild(newPath));
+
+            assertTrue(file.isLocked());
+            assertEquals(file, getRoot().getChild(filePath));
+            assertEquals(ImmutableMap.of("property1", "value1"), file.getProperties());
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+        }
+    }
+
+    @Test
+    public void failsRenameFileWhenFolderContainsItemWithSameName() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
+        VirtualFile conflictFile = folder.createFile("existed_name", "xxx");
+        conflictFile.setProperty("property2", "value2");
+
+        try {
+            file.rename("existed_name");
+            thrown.expect(ConflictException.class);
+        } catch (ConflictException e) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+            assertEquals(ImmutableMap.of("property1", "value1"), file.getProperties());
+
+            assertEquals("xxx", conflictFile.getContentAsString());
+            assertEquals(ImmutableMap.of("property2", "value2"), conflictFile.getProperties());
         }
     }
 
     @Test
     public void renamesFolder() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         Path folderPath = folder.getPath();
+        folder.setProperty("property1", "value1");
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
         String fileName = file.getName();
-        Path newPath = root.getPath().newPath("new name");
+        file.setProperty("property2", "value2");
 
-        folder.rename("new name");
+        VirtualFile renamed = folder.rename("new_name");
 
-        assertEquals(folder, root.getChild(newPath));
-        assertEquals(file, root.getChild(newPath.newPath(fileName)));
-        assertNull(root.getChild(folderPath));
-        assertNull(root.getChild(folderPath.newPath(fileName)));
+
+        assertNotNull(getRoot().getChild(renamed.getPath()));
+        assertEquals(ImmutableMap.of("property1", "value1"), renamed.getProperties());
+
+        Path newFilePath = renamed.getPath().newPath(fileName);
+        assertEquals(DEFAULT_CONTENT, getRoot().getChild(newFilePath).getContentAsString());
+        assertEquals(ImmutableMap.of("property2", "value2"), getRoot().getChild(newFilePath).getProperties());
+
+        assertNull(getRoot().getChild(folderPath.newPath(fileName)));
+        assertNull(getRoot().getChild(folderPath));
     }
 
     @Test
-    public void failsRenamesFolderThatContainsLockedFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
-        Path folderPath = folder.getPath();
-        String fileName = file.getName();
-        Path newPath = root.getPath().newPath("new name");
-        file.lock(0);
+    public void failsRenamesFolderWheItContainsLockedFile() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile lockedFile = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        lockedFile.lock(0);
+        Path renamedFolderPath = Path.of("/new_name");
 
         try {
-            folder.rename("new name");
+            folder.rename("new_name");
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
-            assertNull(root.getChild(newPath));
-            assertNull(root.getChild(newPath.newPath(fileName)));
-            assertEquals(folder, root.getChild(folderPath));
-            assertEquals(file, root.getChild(folderPath.newPath(fileName)));
+            assertNull(getRoot().getChild(renamedFolderPath.newPath(lockedFile.getName())));
+            assertNull(getRoot().getChild(renamedFolderPath));
+
+            assertNotNull(getRoot().getChild(folder.getPath()));
+            assertEquals(DEFAULT_CONTENT, lockedFile.getContentAsString());
+            assertTrue(lockedFile.isLocked());
+        }
+    }
+
+    @Test
+    public void failsRenameFolderWhenParentContainsItemWithSameName() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile conflictFolder = getRoot().createFolder("new_name");
+
+        try {
+            folder.rename("new_name");
+            thrown.expect(ConflictException.class);
+        } catch (ConflictException expected) {
+            assertNull(getRoot().getChild(conflictFolder.getPath().newPath(file.getName())));
+
+            assertNotNull(getRoot().getChild(folder.getPath()));
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
         }
     }
 
     @Test
     public void deletesFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
 
         file.delete();
 
-        assertFalse(file.exists());
-        assertNull(root.getChild(filePath));
+        assertNull(getRoot().getChild(filePath));
     }
 
     @Test
     public void deletesLockedFileWithLockToken() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
         String lockToken = file.lock(0);
 
         file.delete(lockToken);
 
-        assertFalse(file.exists());
-        assertNull(root.getChild(filePath));
+        assertNull(getRoot().getChild(filePath));
+    }
+
+    @Test
+    public void failsDeleteLockedFileWithoutLockToken() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
+        Path filePath = file.getPath();
+        file.lock(0);
+
+        try {
+            file.delete();
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException e) {
+            assertEquals(file, getRoot().getChild(filePath));
+            assertTrue(file.isLocked());
+        }
     }
 
     @Test
@@ -803,40 +1255,39 @@ public class MemoryVirtualFileTest {
         VirtualFile root = getRoot();
         VirtualFile folder = root.createFolder(generateFolderName());
         VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
-        String lockToken = file.lock(0);
+        String invalidLockToken = invalidateLockToken(file.lock(0));
 
         try {
-            file.delete(invalidateLockToken(lockToken));
+            file.delete(invalidLockToken);
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
-            assertTrue(file.exists());
-            assertEquals(file, root.getChild(filePath));
+            assertEquals(file, getRoot().getChild(filePath));
+            assertTrue(file.isLocked());
         }
     }
 
     @Test
     public void deletesFolder() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        folder.setProperty("property1", "value1");
         Path folderPath = folder.getPath();
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
         Path filePath = file.getPath();
 
         folder.delete();
 
-        assertFalse(folder.exists());
-        assertFalse(file.exists());
-        assertNull(root.getChild(folderPath));
-        assertNull(root.getChild(filePath));
+        assertNull(getRoot().getChild(folderPath));
+        assertNull(getRoot().getChild(filePath));
     }
 
     @Test
-    public void failsDeleteFolderThatContainsLockedFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
+    public void failsDeleteFolderWhenItContainsLockedFile() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         Path folderPath = folder.getPath();
+        VirtualFile file = folder.createFile(generateFileName(), DEFAULT_CONTENT);
         Path filePath = file.getPath();
         file.lock(0);
 
@@ -844,35 +1295,18 @@ public class MemoryVirtualFileTest {
             folder.delete();
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
-            assertTrue(folder.exists());
-            assertTrue(file.exists());
-            assertEquals(folder, root.getChild(folderPath));
-            assertEquals(file, root.getChild(filePath));
+            assertEquals(folder, getRoot().getChild(folderPath));
+            assertEquals(file, getRoot().getChild(filePath));
         }
     }
 
     @Test
-    public void zipsFolder() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile folderA = folder.createFolder(generateFolderName());
-        VirtualFile folderB = folder.createFolder(generateFolderName());
-        VirtualFile fileA = folder.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile fileB = folder.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile folderAA = folderA.createFolder(generateFolderName());
-        VirtualFile folderBB = folderB.createFolder(generateFolderName());
-        VirtualFile fileAA = folderA.createFile(generateFileName(), DEFAULT_CONTENT);
-        VirtualFile fileBB = folderB.createFile(generateFileName(), DEFAULT_CONTENT);
-        Set<String> expectedItemsInZip = newHashSet(folderA.getPath().subPath(folder.getPath()).toString() + "/",
-                                                    folderB.getPath().subPath(folder.getPath()).toString() + "/",
-                                                    fileA.getPath().subPath(folder.getPath()).toString(),
-                                                    fileB.getPath().subPath(folder.getPath()).toString(),
-                                                    folderAA.getPath().subPath(folder.getPath()).toString() + "/",
-                                                    folderBB.getPath().subPath(folder.getPath()).toString() + "/",
-                                                    fileAA.getPath().subPath(folder.getPath()).toString(),
-                                                    fileBB.getPath().subPath(folder.getPath()).toString());
-        InputStream zip = folder.zip();
-        checkZipItems(expectedItemsInZip, new ZipInputStream(zip));
+    public void compressesFolderToZipArchive() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        Archiver archiver = mock(Archiver.class);
+        when(archiverFactory.createArchiver(eq(folder), eq("zip"))).thenReturn(archiver);
+        folder.zip();
+        verify(archiver).compress(any(OutputStream.class), any(VirtualFileFilter.class));
     }
 
     @Test
@@ -887,133 +1321,66 @@ public class MemoryVirtualFileTest {
 
     @Test
     public void unzipsInFolder() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        byte[] zip = createTestZipArchive();
-        folder.unzip(new ByteArrayInputStream(zip), false, 0);
-
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderA")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderB")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderC")));
-
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderB/fileB.txt")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderC/fileC.txt")));
-
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")).getContentAsString());
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("arc-root/folderB/fileB.txt")).getContentAsString());
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("arc-root/folderC/fileC.txt")).getContentAsString());
-    }
-
-    @Test
-    public void unzipsInFolderAndOverWritesExistedFiles() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile folderA = folder.createFolder("arc-root/folderA");
-        VirtualFile folderB = folder.createFolder("arc-root/folderB");
-        VirtualFile folderX = folder.createFolder("folderX");
-        folderA.createFile("fileA.txt", "should be updated");
-        folderX.createFile("fileX.txt", "untouched");
-
-        byte[] zip = createTestZipArchive();
-        folder.unzip(new ByteArrayInputStream(zip), true, 0);
-
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderA")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderB")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderC")));
-        assertNotNull(folder.getChild(Path.fromString("folderX")));
-
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderB/fileB.txt")));
-        assertNotNull(folder.getChild(Path.fromString("arc-root/folderC/fileC.txt")));
-        assertNotNull(folder.getChild(Path.fromString("folderX/fileX.txt")));
-
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")).getContentAsString());
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("arc-root/folderB/fileB.txt")).getContentAsString());
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("arc-root/folderC/fileC.txt")).getContentAsString());
-        assertEquals("untouched", folder.getChild(Path.fromString("folderX/fileX.txt")).getContentAsString());
-    }
-
-    @Test
-    public void failsUnzipInFolderWhenFileExistsAndOverwritingDisabled() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile folderA = folder.createFolder("arc-root/folderA");
-        folderA.createFile("fileA.txt", "conflict file");
-
-        byte[] zip = createTestZipArchive();
-        try {
-            folder.unzip(new ByteArrayInputStream(zip), false, 0);
-            thrown.expect(ConflictException.class);
-        } catch (ConflictException e) {
-            assertNotNull(folder.getChild(Path.fromString("arc-root/folderA")));
-            assertNotNull(folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")));
-
-            assertEquals("conflict file", folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")).getContentAsString());
-        }
-    }
-
-    @Test
-    public void failsUnzipInFolderWhenFolderContainsLockedFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        VirtualFile folderA = folder.createFolder("arc-root/folderA");
-        VirtualFile fileAA = folderA.createFile("fileA.txt", "locked file");
-        fileAA.lock(0);
-
-        byte[] zip = createTestZipArchive();
-        try {
-            folder.unzip(new ByteArrayInputStream(zip), false, 0);
-            thrown.expect(ForbiddenException.class);
-        } catch (ForbiddenException e) {
-            assertNotNull(folder.getChild(Path.fromString("arc-root/folderA")));
-            assertNotNull(folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")));
-
-            assertEquals("locked file", folder.getChild(Path.fromString("arc-root/folderA/fileA.txt")).getContentAsString());
-        }
-    }
-
-    @Test
-    public void unzipsInFolderAndSkipsRootFolderFromArchive() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
-        byte[] zip = createTestZipArchive();
-        folder.unzip(new ByteArrayInputStream(zip), false, 1);
-
-        assertNotNull(folder.getChild(Path.fromString("folderA")));
-        assertNotNull(folder.getChild(Path.fromString("folderB")));
-        assertNotNull(folder.getChild(Path.fromString("folderC")));
-
-        assertNotNull(folder.getChild(Path.fromString("folderA/fileA.txt")));
-        assertNotNull(folder.getChild(Path.fromString("folderB/fileB.txt")));
-        assertNotNull(folder.getChild(Path.fromString("folderC/fileC.txt")));
-
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("folderA/fileA.txt")).getContentAsString());
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("folderB/fileB.txt")).getContentAsString());
-        assertEquals(DEFAULT_CONTENT, folder.getChild(Path.fromString("folderC/fileC.txt")).getContentAsString());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        Archiver archiver = mock(Archiver.class);
+        when(archiverFactory.createArchiver(eq(folder), eq("zip"))).thenReturn(archiver);
+        folder.unzip(new ByteArrayInputStream(new byte[0]), false, 0);
+        verify(archiver).extract(any(InputStream.class), eq(false), eq(0));
     }
 
     @Test
     public void failsUnzipInFile() throws Exception {
         VirtualFile root = getRoot();
         VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
-        byte[] zip = createTestZipArchive();
         thrown.expect(ForbiddenException.class);
-        file.unzip(new ByteArrayInputStream(zip), false, 0);
+        file.unzip(new ByteArrayInputStream(new byte[0]), false, 0);
+    }
+
+    @Test
+    public void compressFolderToTarArchive() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        Archiver archiver = mock(Archiver.class);
+        when(archiverFactory.createArchiver(eq(folder), eq("tar"))).thenReturn(archiver);
+        folder.tar();
+        verify(archiver).compress(any(OutputStream.class), any(VirtualFileFilter.class));
+    }
+
+    @Test
+    public void failsTarFile() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        thrown.expect(ForbiddenException.class);
+        file.tar();
+    }
+
+    @Test
+    public void untarsInFolder() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        Archiver archiver = mock(Archiver.class);
+        when(archiverFactory.createArchiver(eq(folder), eq("tar"))).thenReturn(archiver);
+        folder.untar(new ByteArrayInputStream(new byte[0]), false, 0);
+        verify(archiver).extract(any(InputStream.class), eq(false), eq(0));
     }
 
     @Test
     public void locksFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
         file.lock(0);
         assertTrue(file.isLocked());
     }
 
     @Test
+    public void lockExpiredAfterTimeout() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        file.lock(500);
+        assertTrue(file.isLocked());
+        Thread.sleep(1000);
+        assertFalse(file.isLocked());
+    }
+
+    @Test
     public void failsLockFolder() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder(generateFolderName());
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
         try {
             folder.lock(0);
             thrown.expect(ForbiddenException.class);
@@ -1024,20 +1391,32 @@ public class MemoryVirtualFileTest {
 
     @Test
     public void unlocksFile() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
         String lockToken = file.lock(0);
         file.unlock(lockToken);
         assertFalse(file.isLocked());
     }
 
     @Test
+    public void failsUnlockFileWhenLockTokenIsNull() throws Exception {
+        VirtualFile root = getRoot();
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        file.lock(0);
+        try {
+            file.unlock(null);
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException e) {
+            assertTrue(file.isLocked());
+        }
+    }
+
+    @Test
     public void failsUnlockFileWhenLockTokenIsInvalid() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
-        String lockToken = file.lock(0);
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
+        String invalidLockToken = invalidateLockToken(file.lock(0));
         try {
-            file.unlock(invalidateLockToken(lockToken));
+            file.unlock(invalidLockToken);
             thrown.expect(ForbiddenException.class);
         } catch (ForbiddenException e) {
             assertTrue(file.isLocked());
@@ -1046,63 +1425,80 @@ public class MemoryVirtualFileTest {
 
     @Test
     public void createsFileWithStringContent() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile("new file", DEFAULT_CONTENT);
-        assertSame(file, root.getChild(Path.fromString("new file")));
+        VirtualFile folder = getRoot().createFolder("a/b/c");
+        VirtualFile file = folder.createFile("new_file", DEFAULT_CONTENT);
+
+        assertEquals(file, folder.getChild(Path.of("new_file")));
+        assertEquals("/a/b/c/new_file", file.getPath().toString());
         assertEquals(DEFAULT_CONTENT, file.getContentAsString());
     }
 
     @Test
     public void createsFileWithBytesContent() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile("new file", DEFAULT_CONTENT_BYTES);
-        assertSame(file, root.getChild(Path.fromString("new file")));
+        VirtualFile folder = getRoot().createFolder("a/b/c");
+        VirtualFile file = folder.createFile("new_file", DEFAULT_CONTENT_BYTES);
+
+        assertEquals(file, folder.getChild(Path.of("new_file")));
+        assertEquals("/a/b/c/new_file", file.getPath().toString());
         assertEquals(DEFAULT_CONTENT, file.getContentAsString());
     }
 
     @Test
     public void createsFileWithStreamContent() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile file = root.createFile("new file", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
-        assertSame(file, root.getChild(Path.fromString("new file")));
+        VirtualFile folder = getRoot().createFolder("a/b/c");
+        VirtualFile file = folder.createFile("new_file", new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+
+        assertEquals(file, folder.getChild(Path.of("new_file")));
+        assertEquals("/a/b/c/new_file", file.getPath().toString());
         assertEquals(DEFAULT_CONTENT, file.getContentAsString());
     }
 
     @Test
     public void failsCreateFileWhenNameOfNewFileConflictsWithExistedFile() throws Exception {
-        VirtualFile root = getRoot();
-        root.createFile("file", DEFAULT_CONTENT);
-        thrown.expect(ConflictException.class);
-        root.createFile("file", DEFAULT_CONTENT);
+        VirtualFile file = getRoot().createFile("file", DEFAULT_CONTENT);
+        file.setProperty("property1", "value1");
+
+        try {
+            getRoot().createFile("file", "xxx");
+            thrown.expect(ConflictException.class);
+        } catch (ConflictException expected) {
+            assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+            assertEquals(ImmutableMap.of("property1", "value1"), file.getProperties());
+        }
     }
 
     @Test
     public void failsCreateFileWhenParenIsNotFolder() throws Exception {
-        VirtualFile root = getRoot();
-        VirtualFile parent = root.createFile("parent", "");
-        thrown.expect(ForbiddenException.class);
-        parent.createFile("file", DEFAULT_CONTENT);
+        VirtualFile parent = getRoot().createFile("parent", "");
+
+        try {
+            parent.createFile("file", DEFAULT_CONTENT);
+            thrown.expect(ForbiddenException.class);
+        } catch (ForbiddenException expected) {
+            assertNull(getRoot().getChild(parent.getPath().newPath("file")));
+        }
     }
 
     @Test
     public void createsFolder() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile folder = root.createFolder("new folder");
-        assertSame(folder, root.getChild(Path.fromString("new folder")));
+        VirtualFile folder = root.createFolder("new_folder");
+
+        assertEquals(folder, root.getChild(Path.of("new_folder")));
     }
 
     @Test
     public void createsFolderHierarchy() throws Exception {
         VirtualFile root = getRoot();
-        root.createFolder("a/b");
-        assertNotNull(root.getChild(Path.fromString("a")));
-        assertNotNull(root.getChild(Path.fromString("a/b")));
+        VirtualFile folder = root.createFolder("a/b");
+
+        assertEquals(folder, root.getChild(Path.of("a/b")));
     }
 
     @Test
     public void convertsToIoFile() throws Exception {
         VirtualFile root = getRoot();
-        VirtualFile file = root.createFile(generateFileName(), "");
+        VirtualFile file = root.createFile(generateFileName(), DEFAULT_CONTENT);
         assertNull(file.toIoFile());
     }
 
@@ -1130,16 +1526,144 @@ public class MemoryVirtualFileTest {
         assertTrue(folderA.compareTo(folderB) < 0);
     }
 
+    @Test
+    public void addsNewlyCreatedFileInSearcher() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        verify(searcher).add(file);
+    }
+
+    @Test
+    public void addsFileThatCopiedFromOtherFileInSearcher() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        Mockito.reset(searcher);
+        VirtualFile copy = file.copyTo(folder);
+        verify(searcher).add(copy);
+    }
+
+    @Test
+    public void addsFolderThatCopiedFromOtherFolderInSearcher() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        VirtualFile newParent = getRoot().createFolder(generateFolderName());
+        VirtualFile copy = folder.copyTo(newParent);
+        verify(searcher).add(copy);
+    }
+
+    @Test
+    public void doesNotAddNewlyCreatedFolderInSearcher() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        verify(searcher, never()).add(folder);
+    }
+
+    @Test
+    public void removesDeletedFileFromSearcher() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        String path = file.getPath().toString();
+        file.delete();
+        verify(searcher).delete(path, true);
+    }
+
+    @Test
+    public void removesDeletedFolderFromSearcher() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        String path = folder.getPath().toString();
+        folder.delete();
+        verify(searcher).delete(path, false);
+    }
+
+    @Test
+    public void updatesFileInSearcherWhenContentUpdatedByStream() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), "");
+        file.updateContent(new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+        verify(searcher).update(file);
+    }
+
+    @Test
+    public void updatesFileInSearcherWhenContentUpdatedByBytes() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), "");
+        file.updateContent(DEFAULT_CONTENT_BYTES);
+        verify(searcher).update(file);
+    }
+
+    @Test
+    public void updatesFileInSearcherWhenContentUpdatedByString() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), "");
+        file.updateContent(DEFAULT_CONTENT);
+        verify(searcher).update(file);
+    }
+
+    @Test
+    public void updatesFileInSearcherWhenItIsRenamed() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        String oldPath = file.getPath().toString();
+        Mockito.reset(searcher);
+        VirtualFile renamed = file.rename("new_name");
+        verify(searcher).add(renamed);
+        verify(searcher).delete(oldPath, true);
+    }
+
+    @Test
+    public void updatesFolderInSearcherWhenItIsRenamed() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        String oldPath = folder.getPath().toString();
+        Mockito.reset(searcher);
+        VirtualFile renamed = folder.rename("new_name");
+        verify(searcher).add(renamed);
+        verify(searcher).delete(oldPath, false);
+    }
+
+    @Test
+    public void updatesFileInSearcherWhenItIsMoved() throws Exception {
+        VirtualFile file = getRoot().createFile(generateFileName(), DEFAULT_CONTENT);
+        VirtualFile newParent = getRoot().createFolder(generateFolderName());
+        String oldPath = file.getPath().toString();
+        Mockito.reset(searcher);
+        VirtualFile moved = file.moveTo(newParent);
+        verify(searcher).add(moved);
+        verify(searcher).delete(oldPath, true);
+    }
+
+    @Test
+    public void updatesFolderInSearcherWhenItIsMoved() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFileName());
+        VirtualFile newParent = getRoot().createFolder(generateFolderName());
+        String oldPath = folder.getPath().toString();
+        Mockito.reset(searcher);
+        VirtualFile moved = folder.moveTo(newParent);
+        verify(searcher).add(moved);
+        verify(searcher).delete(oldPath, false);
+    }
+
+    @Test
+    public void addFolderInSearcherAfterExtractZipArchive() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        Mockito.reset(searcher);
+        Archiver archiver = mock(Archiver.class);
+        when(archiverFactory.createArchiver(eq(folder), eq("zip"))).thenReturn(archiver);
+        folder.unzip(new ByteArrayInputStream(new byte[0]), false, 0);
+        verify(searcher).add(folder);
+    }
+
+    @Test
+    public void addFolderInSearcherAfterExtractTarArchive() throws Exception {
+        VirtualFile folder = getRoot().createFolder(generateFolderName());
+        Mockito.reset(searcher);
+        Archiver archiver = mock(Archiver.class);
+        when(archiverFactory.createArchiver(eq(folder), eq("tar"))).thenReturn(archiver);
+        folder.untar(new ByteArrayInputStream(new byte[0]), false, 0);
+        verify(searcher).add(folder);
+    }
+
     private VirtualFile getRoot() {
-        return mountPoint.getRoot();
+        return fileSystem.getRoot();
     }
 
     private String generateFileName() {
-        return NameGenerator.generate("file", 8);
+        return NameGenerator.generate("file-", 8);
     }
 
     private String generateFolderName() {
-        return NameGenerator.generate("folder", 8);
+        return NameGenerator.generate("folder-", 8);
     }
 
     private String countMd5Sum(VirtualFile file) throws Exception {
@@ -1150,31 +1674,29 @@ public class MemoryVirtualFileTest {
         return new StringBuilder(lockToken).reverse().toString();
     }
 
-    private void checkZipItems(Set<String> expected, ZipInputStream zip) throws Exception {
-        ZipEntry zipEntry;
-        while ((zipEntry = zip.getNextEntry()) != null) {
-            String name = zipEntry.getName();
-            zip.closeEntry();
-            assertTrue(String.format("Unexpected entry %s in zip", name), expected.remove(name));
-        }
-        zip.close();
-        assertTrue(String.format("Expected but were not found in zip %s", expected), expected.isEmpty());
+    private List<VirtualFile> getFileTreeAsList(VirtualFile rootOfTree) throws Exception {
+        List<VirtualFile> list = newArrayList();
+        rootOfTree.accept(new VirtualFileVisitor() {
+            @Override
+            public void visit(VirtualFile virtualFile) throws ServerException {
+                list.add(virtualFile);
+                if (virtualFile.isFolder()) {
+                    for (VirtualFile child : virtualFile.getChildren()) {
+                        child.accept(this);
+                    }
+                }
+            }
+        });
+        return list;
     }
 
-    private byte[] createTestZipArchive() throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        ZipOutputStream zipOut = new ZipOutputStream(bout);
-        zipOut.putNextEntry(new ZipEntry("/arc-root/"));
-        zipOut.putNextEntry(new ZipEntry("/arc-root/folderA/"));
-        zipOut.putNextEntry(new ZipEntry("/arc-root/folderB/"));
-        zipOut.putNextEntry(new ZipEntry("/arc-root/folderC/"));
-        zipOut.putNextEntry(new ZipEntry("/arc-root/folderA/fileA.txt"));
-        zipOut.write(DEFAULT_CONTENT_BYTES);
-        zipOut.putNextEntry(new ZipEntry("/arc-root/folderB/fileB.txt"));
-        zipOut.write(DEFAULT_CONTENT_BYTES);
-        zipOut.putNextEntry(new ZipEntry("/arc-root/folderC/fileC.txt"));
-        zipOut.write(DEFAULT_CONTENT_BYTES);
-        zipOut.close();
-        return bout.toByteArray();
+    private void createFileTree(VirtualFile rootOfTree, int depth) throws Exception {
+        if (depth > 0) {
+            VirtualFile folder = rootOfTree.createFolder(generateFolderName());
+            for (int i = 0; i < 3; i++) {
+                folder.createFile(generateFileName(), DEFAULT_CONTENT);
+            }
+            createFileTree(folder, depth - 1);
+        }
     }
 }

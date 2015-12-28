@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p/>
+ *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.file;
 
@@ -28,10 +28,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardOpenOption.CREATE;
 
-public class TestedFileTree {
+public class FileWatcherTestTree {
     private final java.nio.file.Path root;
 
-    public TestedFileTree(File root) {
+    public FileWatcherTestTree(File root) {
         this.root = root.toPath();
     }
 

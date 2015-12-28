@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p/>
+ *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.file;
 
@@ -35,14 +35,14 @@ import java.util.Objects;
  * @author andrew00x
  */
 public class LocalVirtualFile implements VirtualFile {
-    private final java.io.File    ioFile;
-    private final Path            path;
-    private final LocalMountPoint mountPoint;
+    private final java.io.File           ioFile;
+    private final Path                   path;
+    private final LocalVirtualFileSystem fileSystem;
 
-    LocalVirtualFile(java.io.File ioFile, Path path, LocalMountPoint mountPoint) {
+    LocalVirtualFile(java.io.File ioFile, Path path, LocalVirtualFileSystem fileSystem) {
         this.ioFile = ioFile;
         this.path = path;
-        this.mountPoint = mountPoint;
+        this.fileSystem = fileSystem;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class LocalVirtualFile implements VirtualFile {
 
     @Override
     public boolean exists() {
-        return getIoFile().exists();
+        return toIoFile().exists();
     }
 
     @Override
@@ -67,45 +67,50 @@ public class LocalVirtualFile implements VirtualFile {
 
     @Override
     public boolean isFile() {
-        return getIoFile().isFile();
+        return toIoFile().isFile();
     }
 
     @Override
     public boolean isFolder() {
-        return getIoFile().isDirectory();
+        return toIoFile().isDirectory();
     }
 
     @Override
     public VirtualFile getParent() {
-        return mountPoint.getParent(this);
+        return fileSystem.getParent(this);
     }
 
     @Override
     public List<VirtualFile> getChildren(VirtualFileFilter filter) throws ServerException {
-        return mountPoint.getChildren(this, filter);
+        return fileSystem.getChildren(this, filter);
     }
 
     @Override
     public List<VirtualFile> getChildren() throws ServerException {
-        return mountPoint.getChildren(this, VirtualFileFilter.ALL);
+        return fileSystem.getChildren(this, VirtualFileFilter.ACCEPT_ALL);
+    }
+
+    @Override
+    public boolean hasChild(Path path) throws ServerException {
+        return getChild(path) != null;
     }
 
     @Override
     public VirtualFile getChild(Path path) throws ServerException {
-        return mountPoint.getChild(this, path);
+        return fileSystem.getChild(this, path);
     }
 
     @Override
     public InputStream getContent() throws ForbiddenException, ServerException {
-        return mountPoint.getContent(this);
+        return fileSystem.getContent(this);
     }
 
     @Override
     public byte[] getContentAsBytes() throws ForbiddenException, ServerException {
-        try {
-            return ByteStreams.toByteArray(getContent());
+        try (InputStream content = getContent()) {
+            return ByteStreams.toByteArray(content);
         } catch (IOException e) {
-            throw new ServerException(e); // TODO
+            throw new ServerException(e);
         }
     }
 
@@ -116,94 +121,78 @@ public class LocalVirtualFile implements VirtualFile {
 
     @Override
     public VirtualFile updateContent(InputStream content, String lockToken) throws ForbiddenException, ServerException {
-        mountPoint.updateContent(this, content, lockToken);
+        fileSystem.updateContent(this, content, lockToken);
         return this;
     }
 
     @Override
     public VirtualFile updateContent(InputStream content) throws ForbiddenException, ServerException {
-        return null;
+        return updateContent(content, null);
     }
 
     @Override
     public VirtualFile updateContent(byte[] content, String lockToken) throws ForbiddenException, ServerException {
-        return null;
+        return updateContent(new ByteArrayInputStream(content), lockToken);
     }
 
     @Override
     public VirtualFile updateContent(byte[] content) throws ForbiddenException, ServerException {
-        return null;
+        return updateContent(content, null);
     }
 
     @Override
     public VirtualFile updateContent(String content, String lockToken) throws ForbiddenException, ServerException {
-        return null;
+        return updateContent(content.getBytes(), lockToken);
     }
 
     @Override
     public VirtualFile updateContent(String content) throws ForbiddenException, ServerException {
-        return null;
+        return updateContent(content, null);
     }
-
-//    @Override
-//    public long getCreationDate() {
-//        // Creation date may not be available from underlying file system.
-//        return -1;
-//    }
 
     @Override
     public long getLastModificationDate() {
-        return getIoFile().lastModified();
+        return toIoFile().lastModified();
     }
 
     @Override
     public long getLength() throws ServerException {
-        return getIoFile().length();
+        if (isFolder()) {
+            return 0;
+        }
+        return toIoFile().length();
     }
 
     @Override
-    public Map<String, List<String>> getProperties() throws ServerException {
-        return null;
-    }
-
-    @Override
-    public List<String> getProperties(String name) throws ServerException {
-        return null;
+    public Map<String, String> getProperties() throws ServerException {
+        return fileSystem.getProperties(this);
     }
 
     @Override
     public String getProperty(String name) throws ServerException {
-        return null;
+        return fileSystem.getPropertyValue(this, name);
     }
 
     @Override
-    public VirtualFile updateProperties(Map<String, List<String>> properties, String lockToken) throws ForbiddenException, ServerException {
-        return null;
+    public VirtualFile updateProperties(Map<String, String> properties, String lockToken) throws ForbiddenException, ServerException {
+        fileSystem.updateProperties(this, properties, lockToken);
+        return this;
     }
 
     @Override
-    public VirtualFile updateProperties(Map<String, List<String>> properties) throws ForbiddenException, ServerException {
-        return null;
-    }
-
-    @Override
-    public VirtualFile setProperties(String name, List<String> values, String lockToken) throws ForbiddenException, ServerException {
-        return null;
-    }
-
-    @Override
-    public VirtualFile setProperties(String name, List<String> values) throws ForbiddenException, ServerException {
-        return null;
+    public VirtualFile updateProperties(Map<String, String> properties) throws ForbiddenException, ServerException {
+        return updateProperties(properties, null);
     }
 
     @Override
     public VirtualFile setProperty(String name, String value, String lockToken) throws ForbiddenException, ServerException {
-        return null;
+        fileSystem.setProperty(this, name, value, lockToken);
+        return this;
     }
 
     @Override
     public VirtualFile setProperty(String name, String value) throws ForbiddenException, ServerException {
-        return null;
+        return setProperty(name, value, null);
     }
 
     @Override
@@ -213,7 +202,7 @@ public class LocalVirtualFile implements VirtualFile {
 
     public LocalVirtualFile copyTo(VirtualFile parent, String name, boolean overwrite)
             throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.copy(this, (LocalVirtualFile)parent, name, overwrite);
+        return fileSystem.copy(this, (LocalVirtualFile)parent, name, overwrite);
     }
 
     @Override
@@ -223,23 +212,23 @@ public class LocalVirtualFile implements VirtualFile {
 
     public LocalVirtualFile moveTo(VirtualFile parent, String name, boolean overwrite, String lockToken)
             throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.move(this, (LocalVirtualFile)parent, name, overwrite, lockToken);
+        return fileSystem.move(this, (LocalVirtualFile)parent, name, overwrite, lockToken);
     }
 
     @Override
     public VirtualFile rename(String newName, String lockToken)
             throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.rename(this, newName, lockToken);
+        return fileSystem.rename(this, newName, lockToken);
     }
 
     @Override
     public VirtualFile rename(String newName) throws ForbiddenException, ConflictException, ServerException {
-        return null;
+        return rename(newName, null);
     }
 
     @Override
     public void delete(String lockToken) throws ForbiddenException, ServerException {
-        mountPoint.delete(this, lockToken);
+        fileSystem.delete(this, lockToken);
     }
 
     @Override
@@ -247,40 +236,47 @@ public class LocalVirtualFile implements VirtualFile {
         delete(null);
     }
 
-    //
-
     @Override
     public InputStream zip() throws ForbiddenException, ServerException {
-        return mountPoint.zip(this);
+        return fileSystem.zip(this);
     }
 
     @Override
     public void unzip(InputStream zipped, boolean overwrite, int stripNumber)
             throws ForbiddenException, ConflictException, ServerException {
-        mountPoint.unzip(this, zipped, overwrite, stripNumber);
+        fileSystem.unzip(this, zipped, overwrite, stripNumber);
     }
 
-    //
+    @Override
+    public InputStream tar() throws ForbiddenException, ServerException {
+        return fileSystem.tar(this);
+    }
+
+    @Override
+    public void untar(InputStream tarArchive, boolean overwrite, int stripNumber)
+            throws ForbiddenException, ConflictException, ServerException {
+        fileSystem.untar(this, tarArchive, overwrite, stripNumber);
+    }
 
     @Override
     public String lock(long timeout) throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.lock(this, timeout);
+        return fileSystem.lock(this, timeout);
     }
 
     @Override
     public VirtualFile unlock(String lockToken) throws ForbiddenException, ConflictException, ServerException {
-        mountPoint.unlock(this, lockToken);
+        fileSystem.unlock(this, lockToken);
         return this;
     }
 
     @Override
     public boolean isLocked() throws ServerException {
-        return mountPoint.isLocked(this);
+        return fileSystem.isLocked(this);
     }
 
     @Override
     public VirtualFile createFile(String name, InputStream content) throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.createFile(this, name, content);
+        return fileSystem.createFile(this, name, content);
     }
 
     @Override
@@ -295,14 +291,12 @@ public class LocalVirtualFile implements VirtualFile {
 
     @Override
     public VirtualFile createFolder(String name) throws ForbiddenException, ConflictException, ServerException {
-        return mountPoint.createFolder(this, name);
+        return fileSystem.createFolder(this, name);
     }
 
-    //
-
     @Override
-    public LocalMountPoint getMountPoint() {
-        return mountPoint;
+    public LocalVirtualFileSystem getFileSystem() {
+        return fileSystem;
     }
 
     @Override
@@ -312,7 +306,7 @@ public class LocalVirtualFile implements VirtualFile {
 
     @Override
     public List<Pair<String, String>> countMd5Sums() throws ServerException {
-        return mountPoint.countMd5Sums(this);
+        return fileSystem.countMd5Sums(this);
     }
 
     @Override
@@ -323,7 +317,7 @@ public class LocalVirtualFile implements VirtualFile {
     @Override
     public int compareTo(VirtualFile other) {
         // To get nice order of items:
-        // 1. Regular folders
+        // 1. Folders
         // 2. Files
         if (other == null) {
             throw new NullPointerException();
@@ -336,12 +330,6 @@ public class LocalVirtualFile implements VirtualFile {
         return getName().compareTo(other.getName());
     }
 
-   /* =================== */
-
-    public final java.io.File getIoFile() {
-        return ioFile;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -350,7 +338,7 @@ public class LocalVirtualFile implements VirtualFile {
         if ((o instanceof LocalVirtualFile)) {
             LocalVirtualFile other = (LocalVirtualFile)o;
             return Objects.equals(path, other.path)
-                   && Objects.equals(mountPoint, other.mountPoint);
+                   && Objects.equals(fileSystem, other.fileSystem);
         }
         return false;
 
@@ -358,6 +346,11 @@ public class LocalVirtualFile implements VirtualFile {
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, mountPoint);
+        return Objects.hash(path, fileSystem);
+    }
+
+    @Override
+    public String toString() {
+        return path.toString();
     }
 }

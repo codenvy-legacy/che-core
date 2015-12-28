@@ -11,6 +11,7 @@
 package org.eclipse.che.api.vfs.server.search;
 
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Server;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 
 public interface Searcher {
@@ -36,7 +37,7 @@ public interface Searcher {
     void add(VirtualFile virtualFile) throws ServerException;
 
     /**
-     * Delete VirtualFile to index.
+     * Delete VirtualFile from index.
      *
      * @param path
      *         path of VirtualFile
@@ -57,4 +58,10 @@ public interface Searcher {
 
     /** Close Searcher. */
     void close();
+
+    boolean isClosed();
+
+    interface CloseCallback {
+        void onClose();
+    }
 }

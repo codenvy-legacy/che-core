@@ -18,7 +18,7 @@ import java.io.IOException;
 /**
  * Serializer for locks of VirtualFile.
  *
- * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
+ * @author andrew00x
  * @see FileLock
  */
 public class FileLockSerializer implements DataSerializer<FileLock> {
@@ -31,7 +31,7 @@ public class FileLockSerializer implements DataSerializer<FileLock> {
     @Override
     public FileLock read(DataInput input) throws IOException {
         String lockToken = input.readUTF();
-        long expired = Long.MAX_VALUE; // Timeout added after start use in production. Need respect looks without timeout.
+        long expired = Long.MAX_VALUE;
         try {
             expired = input.readLong();
         } catch (EOFException ignored) {

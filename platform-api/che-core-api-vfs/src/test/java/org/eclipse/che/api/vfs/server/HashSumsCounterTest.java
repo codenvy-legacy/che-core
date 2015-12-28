@@ -37,8 +37,8 @@ public class HashSumsCounterTest {
         VirtualFile fileBA = mockFile("/a/b/file", "file2".getBytes());
         VirtualFile folderB = mockFolder("/a/b", fileBA);
         VirtualFile folderA = mockFolder("/a", folderB, fileAB);
-        Set<Pair<String, String>> expected = newHashSet(Pair.of(countMd5Sum("file1".getBytes()), "/file"),
-                                                        Pair.of(countMd5Sum("file2".getBytes()), "/b/file"));
+        Set<Pair<String, String>> expected = newHashSet(Pair.of(countMd5Sum("file1".getBytes()), "file"),
+                                                        Pair.of(countMd5Sum("file2".getBytes()), "b/file"));
 
         Set<Pair<String, String>> hashSums = newHashSet(new HashSumsCounter(folderA, Hashing.md5()).countHashSums());
 
@@ -52,7 +52,7 @@ public class HashSumsCounterTest {
     private VirtualFile mockFile(String path, byte[] content) throws Exception {
         VirtualFile file = mock(VirtualFile.class);
         when(file.isFile()).thenReturn(true);
-        when(file.getPath()).thenReturn(Path.fromString(path));
+        when(file.getPath()).thenReturn(Path.of(path));
         when(file.toString()).thenReturn(path);
         when(file.getContent()).thenReturn(new ByteArrayInputStream(content));
         accept(file);
@@ -62,7 +62,7 @@ public class HashSumsCounterTest {
     private VirtualFile mockFolder(String path, VirtualFile... children) throws Exception {
         VirtualFile folder = mock(VirtualFile.class);
         when(folder.isFolder()).thenReturn(true);
-        when(folder.getPath()).thenReturn(Path.fromString(path));
+        when(folder.getPath()).thenReturn(Path.of(path));
         when(folder.getChildren()).thenReturn(newArrayList(children));
         when(folder.toString()).thenReturn(path);
         accept(folder);

@@ -17,7 +17,7 @@ import java.io.IOException;
 /**
  * Writes object to stream and restores object from stream. Implementation has full control over format of serialization.
  *
- * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
+ * @author andrew00x
  */
 public interface DataSerializer<T> {
     /**

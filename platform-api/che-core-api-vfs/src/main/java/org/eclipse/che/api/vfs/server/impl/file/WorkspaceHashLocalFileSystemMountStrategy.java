@@ -21,10 +21,10 @@ import javax.inject.Singleton;
  * Implementation of LocalFSMountStrategy that uses hash of workspace id for resolving path on local filesystem.
  *
  * @author andrew00x
- * @see LocalMountPoint
+ * @see LocalVirtualFileSystem
  */
 @Singleton
-public class WorkspaceHashLocalFSMountStrategy implements LocalFSMountStrategy {
+public class WorkspaceHashLocalFileSystemMountStrategy implements LocalFileSystemMountStrategy {
     private static final String[] segments = new String[]
             {
                     "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f",
@@ -49,8 +49,8 @@ public class WorkspaceHashLocalFSMountStrategy implements LocalFSMountStrategy {
     private final java.io.File mountTempRoot;
 
     @Inject
-    public WorkspaceHashLocalFSMountStrategy(@Named("vfs.local.fs_root_dir") java.io.File mountRoot,
-                                             @Named("vfs.local.tmp_workspace_fs_root_dir") java.io.File mountTempRoot) {
+    public WorkspaceHashLocalFileSystemMountStrategy(@Named("vfs.local.fs_root_dir") java.io.File mountRoot,
+                                                     @Named("vfs.local.tmp_workspace_fs_root_dir") java.io.File mountTempRoot) {
         this.mountRoot = mountRoot;
         this.mountTempRoot = mountTempRoot;
     }

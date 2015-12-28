@@ -17,7 +17,6 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.commons.lang.Pair;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -58,12 +57,6 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      */
     boolean isFolder();
 
-//    /**
-//     * Gets creation time in long format or {@code -1} if creation time is unknown.
-//     */
-//    // TODO : Do we need this ?? Can move this to project api. Seems that is important for project only.
-//    long getCreationDate();
-
     /**
      * Gets time of last modification in long format or {@code -1} if time is unknown.
      */
@@ -93,6 +86,8 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         if an error occurs
      */
     List<VirtualFile> getChildren() throws ServerException;
+
+    boolean hasChild(Path path) throws ServerException;
 
     /**
      * Gets child by relative path. If this VirtualFile is not folder this method returns {@code null}.
@@ -269,18 +264,10 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ServerException
      *         if an error occurs
      */
-    Map<String, List<String>> getProperties() throws ServerException;
+    Map<String, String> getProperties() throws ServerException;
 
     /**
-     * Gets multiple values of property.
-     *
-     * @throws ServerException
-     *         if an error occurs
-     */
-    List<String> getProperties(String name) throws ServerException;
-
-    /**
-     * Gets value of property. If property has multiple values this method returns the first value in the set.
+     * Gets value of property.
      *
      * @throws ServerException
      *         if an error occurs
@@ -304,7 +291,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ServerException
      *         if other error occurs
      */
-    VirtualFile updateProperties(Map<String, List<String>> properties, String lockToken) throws ForbiddenException, ServerException;
+    VirtualFile updateProperties(Map<String, String> properties, String lockToken) throws ForbiddenException, ServerException;
 
     /**
      * Updates properties of the file.
@@ -321,47 +308,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @throws ServerException
      *         if other error occurs
      */
-    VirtualFile updateProperties(Map<String, List<String>> properties) throws ForbiddenException, ServerException;
-
-    /**
-     * Set multivalued property of the file.
-     *
-     * @param name
-     *         name of property
-     * @param values
-     *         values of multivalued property
-     * @param lockToken
-     *         lock token. This parameter is required if the file is locked
-     * @return VirtualFile after updating property
-     * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this item is locked file and {@code lockToken} is {@code null} or does not match</li>
-     *         <li>property can't be updated cause to any constraint, e.g. property is read only</li>
-     *         </ul>
-     * @throws ServerException
-     *         if other error occurs
-     */
-    VirtualFile setProperties(String name, List<String> values, String lockToken) throws ForbiddenException, ServerException;
-
-    /**
-     * Set multivalued property of the file.
-     *
-     * @param name
-     *         name of property
-     * @param values
-     *         values of multivalued property
-     * @return VirtualFile after updating property
-     * @throws ForbiddenException
-     *         if any of following conditions are met:
-     *         <ul>
-     *         <li>this item is locked file</li>
-     *         <li>property can't be updated cause to any constraint, e.g. property is read only</li>
-     *         </ul>
-     * @throws ServerException
-     *         if other error occurs
-     */
-    VirtualFile setProperties(String name, List<String> values) throws ForbiddenException, ServerException;
+    VirtualFile updateProperties(Map<String, String> properties) throws ForbiddenException, ServerException;
 
     /**
      * Set property of the file.
@@ -543,7 +490,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     void delete() throws ForbiddenException, ServerException;
 
     /**
-     * Gets zipped content of folder denoted by this VirtualFile.
+     * Gets content of folder denoted by this VirtualFile as zip archive.
      *
      * @return zipped content of folder denoted by this VirtualFile
      * @throws ForbiddenException
@@ -554,12 +501,12 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     InputStream zip() throws ForbiddenException, ServerException;
 
     /**
-     * Imports zipped content to the folder denoted by this VirtualFile.
+     * Extracts zip archive to the folder denoted by this VirtualFile.
      *
      * @param zipped
-     *         ZIP content
+     *         ZIP archive
      * @param overwrite
-     *         overwrite or not existing files
+     *         overwrite existing files
      * @param stripNumber
      *         strip number leading components from file names on extraction.
      * @throws ForbiddenException
@@ -569,11 +516,44 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         <li>this folder contains at least one locked child that need to be updated</li>
      *         </ul>
      * @throws ConflictException
-     *         if {@code overwrite} is {@code false} and any item in zipped content causes name conflict
+     *         if {@code overwrite} is {@code false} and any item in zip archive causes name conflict
      * @throws ServerException
      *         if other error occurs
      */
     void unzip(InputStream zipped, boolean overwrite, int stripNumber) throws ForbiddenException, ConflictException, ServerException;
+
+    /**
+     * Gets content of folder denoted by this VirtualFile as TAR archive.
+     *
+     * @return content of folder denoted by this VirtualFile as TAR archive
+     * @throws ForbiddenException
+     *         if this item does not denote a folder
+     * @throws ServerException
+     *         if other error occurs
+     */
+    InputStream tar() throws ForbiddenException, ServerException;
+
+    /**
+     * Extracts tar archive to the folder denoted by this VirtualFile.
+     *
+     * @param tarArchive
+     *         TAR archive
+     * @param overwrite
+     *         overwrite existing files
+     * @param stripNumber
+     *         strip number leading components from file names on extraction.
+     * @throws ForbiddenException
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item does not denote a folder</li>
+     *         <li>this folder contains at least one locked child that need to be updated</li>
+     *         </ul>
+     * @throws ConflictException
+     *         if {@code overwrite} is {@code false} and any item in tar archive causes name conflict
+     * @throws ServerException
+     *         if other error occurs
+     */
+    void untar(InputStream tarArchive, boolean overwrite, int stripNumber) throws ForbiddenException, ConflictException, ServerException;
 
     /**
      * Locks this VirtualFile.
@@ -683,11 +663,11 @@ public interface VirtualFile extends Comparable<VirtualFile> {
     VirtualFile createFolder(String name) throws ForbiddenException, ConflictException, ServerException;
 
     /**
-     * Gets {@link MountPoint} to which this VirtualFile belongs.
+     * Gets {@link VirtualFileSystem} to which this VirtualFile belongs.
      *
-     * @return MountPoint
+     * @return VirtualFileSystem
      */
-    MountPoint getMountPoint();
+    VirtualFileSystem getFileSystem();
 
     /**
      * Accepts an {@code VirtualFileVisitor}. Calls the {@link VirtualFileVisitor#visit(VirtualFile)} method.

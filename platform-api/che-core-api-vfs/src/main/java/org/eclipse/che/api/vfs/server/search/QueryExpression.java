@@ -14,7 +14,6 @@ package org.eclipse.che.api.vfs.server.search;
 public class QueryExpression {
     private String name;
     private String path;
-    private String mediaType;
     private String text;
 
     public String getPath() {
@@ -35,15 +34,6 @@ public class QueryExpression {
         return this;
     }
 
-    public String getMediaType() {
-        return mediaType;
-    }
-
-    public QueryExpression setMediaType(String mediaType) {
-        this.mediaType = mediaType;
-        return this;
-    }
-
     public String getText() {
         return text;
     }
@@ -58,7 +48,6 @@ public class QueryExpression {
         return "QueryExpression{" +
                "name='" + name + '\'' +
                ", path='" + path + '\'' +
-               ", mediaType='" + mediaType + '\'' +
                ", text='" + text + '\'' +
                '}';
     }

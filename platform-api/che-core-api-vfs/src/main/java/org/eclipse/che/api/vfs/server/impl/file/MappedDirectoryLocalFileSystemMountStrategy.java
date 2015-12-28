@@ -34,24 +34,24 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author andrew00x
  */
 @Singleton
-public class MappedDirectoryLocalFSMountStrategy implements LocalFSMountStrategy {
-    private static final Logger                    LOG     = LoggerFactory.getLogger(MappedDirectoryLocalFSMountStrategy.class);
+public class MappedDirectoryLocalFileSystemMountStrategy implements LocalFileSystemMountStrategy {
+    private static final Logger                    LOG     = LoggerFactory.getLogger(MappedDirectoryLocalFileSystemMountStrategy.class);
 
     private final        Map<String, java.io.File> mapping = new ConcurrentHashMap<>();
 
     private final java.io.File mappingFile;
 
-    public MappedDirectoryLocalFSMountStrategy(Map<String, java.io.File> mapping) {
+    public MappedDirectoryLocalFileSystemMountStrategy(Map<String, java.io.File> mapping) {
         this.mappingFile = null;
         this.mapping.putAll(mapping);
     }
 
-    public MappedDirectoryLocalFSMountStrategy() {
+    public MappedDirectoryLocalFileSystemMountStrategy() {
         this.mappingFile = null;
     }
 
     @Inject
-    private MappedDirectoryLocalFSMountStrategy(@Named("vfs.local.directory_mapping_file") java.io.File mappingFile) {
+    private MappedDirectoryLocalFileSystemMountStrategy(@Named("vfs.local.directory_mapping_file") java.io.File mappingFile) {
         this.mappingFile = mappingFile;
     }
 

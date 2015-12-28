@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p/>
+ *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.file;
 
@@ -35,16 +35,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class FileTreeWatcherMassiveIoOperationTest {
-    private FileTreeWatcher fileTreeWatcher;
-    private File            testDirectory;
-    private TestedFileTree  testedFileTree;
+    private FileTreeWatcher     fileTreeWatcher;
+    private File                testDirectory;
+    private FileWatcherTestTree fileWatcherTestTree;
 
     @Before
     public void setUp() throws Exception {
         File targetDir = new File(Thread.currentThread().getContextClassLoader().getResource(".").getPath()).getParentFile();
         testDirectory = new File(targetDir, NameGenerator.generate("watcher-", 4));
         assertTrue(testDirectory.mkdir());
-        testedFileTree = new TestedFileTree(testDirectory);
+        fileWatcherTestTree = new FileWatcherTestTree(testDirectory);
     }
 
     @After
@@ -62,7 +62,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileTreeWatcher.startup();
         Thread.sleep(500);
 
-        List<String> allFilesAndDirs = testedFileTree.createTree("", 7, 5);
+        List<String> allFilesAndDirs = fileWatcherTestTree.createTree("", 7, 5);
 
         Thread.sleep(3000);
 
@@ -77,7 +77,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
 
     @Test
     public void watchesTreeDeletion() throws Exception {
-        List<String> allFilesAndDirs = testedFileTree.createTree("", 7, 5);
+        List<String> allFilesAndDirs = fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -85,7 +85,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileTreeWatcher.startup();
         Thread.sleep(3000);
 
-        assertTrue(testedFileTree.delete(""));
+        assertTrue(fileWatcherTestTree.delete(""));
 
         Thread.sleep(3000);
 
@@ -100,7 +100,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
 
     @Test
     public void watchesUpdatesAllFilesInTree() throws Exception {
-        testedFileTree.createTree("", 7, 5);
+        fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -108,10 +108,10 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileTreeWatcher.startup();
         Thread.sleep(3000);
 
-        List<String> updated = testedFileTree.findAllFilesInTree("");
+        List<String> updated = fileWatcherTestTree.findAllFilesInTree("");
 
         for (String file : updated) {
-            testedFileTree.updateFile(file);
+            fileWatcherTestTree.updateFile(file);
         }
 
         Thread.sleep(3000);
@@ -128,7 +128,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
 
     @Test
     public void watchesUpdatesFilesInTree() throws Exception {
-        testedFileTree.createTree("", 7, 5);
+        fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -136,11 +136,11 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileTreeWatcher.startup();
         Thread.sleep(3000);
 
-        List<String> updated = testedFileTree.findAllFilesInTree("").stream()
-                                             .filter(path -> path.hashCode() % 2 == 0).collect(Collectors.toList());
+        List<String> updated = fileWatcherTestTree.findAllFilesInTree("").stream()
+                                                  .filter(path -> path.hashCode() % 2 == 0).collect(Collectors.toList());
 
         for (String file : updated) {
-            testedFileTree.updateFile(file);
+            fileWatcherTestTree.updateFile(file);
         }
 
         Thread.sleep(3000);
@@ -156,7 +156,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
 
     @Test
     public void watchesMixedActionsInTree() throws Exception {
-        testedFileTree.createTree("", 7, 5);
+        fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -164,25 +164,25 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileTreeWatcher.startup();
         Thread.sleep(3000);
 
-        List<String> allFiles = testedFileTree.findAllFilesInTree("");
+        List<String> allFiles = fileWatcherTestTree.findAllFilesInTree("");
         List<String> updated = newArrayList(allFiles.subList(0, allFiles.size() / 2));
         List<String> deleted = newArrayList(allFiles.subList(allFiles.size() / 2, allFiles.size()));
-        List<String> directories = testedFileTree.findAllDirectoriesInTree("");
+        List<String> directories = fileWatcherTestTree.findAllDirectoriesInTree("");
         List<String> created = newArrayList();
 
         for (String directory : directories) {
-            created.add(testedFileTree.createFile(directory));
+            created.add(fileWatcherTestTree.createFile(directory));
         }
 
         for (String file : deleted) {
-            testedFileTree.delete(file);
+            fileWatcherTestTree.delete(file);
         }
 
         Thread.sleep(3000);
 
         updated.addAll(created.subList(0, created.size() / 2));
         for (String file : updated) {
-            testedFileTree.updateFile(file);
+            fileWatcherTestTree.updateFile(file);
         }
 
         Thread.sleep(3000);

@@ -10,38 +10,39 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.search;
 
-import org.eclipse.che.api.core.util.ContentTypeGuesser;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
 
 /**
- * Filter based on media type of file.
+ * Filter based on media type of the file.
  *
- * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
+ * @author Valeriy Svydenko
  */
 public class MediaTypeFilter implements VirtualFileFilter {
-    private final Set<String> mediaTypes;
+    private final Set<MediaType> mediaTypes;
 
-    public MediaTypeFilter(Collection<String> mediaTypes) {
-        this.mediaTypes = new HashSet<>(mediaTypes);
+    public MediaTypeFilter() {
+        this.mediaTypes = MediaType.set(MediaType.TEXT_HTML, MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML);
     }
 
     @Override
     public boolean accept(VirtualFile file) {
-        return mediaTypes.contains(getMediaType(file));
-    }
-
-    /** Get virtual file media type. Any additional parameters (e.g. 'charset') are removed. */
-    private String getMediaType(VirtualFile virtualFile) {
-        String mediaType = ContentTypeGuesser.guessContentType(virtualFile.getName());
-        final int paramStartIndex = mediaType.indexOf(';');
-        if (paramStartIndex != -1) {
-            mediaType = mediaType.substring(0, paramStartIndex).trim();
+        try (InputStream content = file.getContent()) {
+            TikaConfig tikaConfig = new TikaConfig();
+            MediaType mimeType = tikaConfig.getDetector().detect(content, new Metadata());
+            return mediaTypes.contains(mimeType);
+        } catch (TikaException | ForbiddenException | ServerException | IOException e) {
+            return false;
         }
-        return mediaType;
     }
 }

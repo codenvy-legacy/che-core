@@ -4,15 +4,15 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p/>
+ *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server.impl.file.inotify;
 
 import org.eclipse.che.api.core.util.ProcessUtil;
 import org.eclipse.che.api.vfs.server.impl.file.FileWatcherNotificationListener;
-import org.eclipse.che.api.vfs.server.impl.file.TestedFileTree;
+import org.eclipse.che.api.vfs.server.impl.file.FileWatcherTestTree;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.junit.After;
@@ -42,14 +42,14 @@ import static org.mockito.Mockito.verify;
 public class InotifyToolsFileWatcherTest {
     private File                    testDirectory;
     private InotifyToolsFileWatcher fileWatcher;
-    private TestedFileTree          testedFileTree;
+    private FileWatcherTestTree     fileWatcherTestTree;
 
     @Before
     public void setUp() throws Exception {
         File targetDir = new File(Thread.currentThread().getContextClassLoader().getResource(".").getPath()).getParentFile();
         testDirectory = new File(targetDir, NameGenerator.generate("watcher-", 4));
         assertTrue(testDirectory.mkdir());
-        testedFileTree = new TestedFileTree(testDirectory);
+        fileWatcherTestTree = new FileWatcherTestTree(testDirectory);
     }
 
     @After
@@ -71,9 +71,9 @@ public class InotifyToolsFileWatcherTest {
 
         Thread.sleep(300);
 
-        testedFileTree.createDirectory("ignored");
-        testedFileTree.createFile("ignored");
-        Set<String> created = newHashSet(testedFileTree.createFile(""), testedFileTree.createFile(""));
+        fileWatcherTestTree.createDirectory("ignored");
+        fileWatcherTestTree.createFile("ignored");
+        Set<String> created = newHashSet(fileWatcherTestTree.createFile(""), fileWatcherTestTree.createFile(""));
 
         Thread.sleep(300);
 
@@ -89,8 +89,8 @@ public class InotifyToolsFileWatcherTest {
     public void watchesUpdateNotRecursively() throws Exception {
         File ignored = new File(testDirectory, "ignored");
         assertTrue(ignored.mkdir());
-        String notifiedFile = testedFileTree.createFile("");
-        String ignoredFile = testedFileTree.createFile("ignored");
+        String notifiedFile = fileWatcherTestTree.createFile("");
+        String ignoredFile = fileWatcherTestTree.createFile("ignored");
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         fileWatcher = new InotifyToolsFileWatcher(testDirectory, newArrayList(), notificationListener, false);
@@ -98,8 +98,8 @@ public class InotifyToolsFileWatcherTest {
 
         Thread.sleep(300);
 
-        testedFileTree.updateFile(notifiedFile);
-        testedFileTree.updateFile(ignoredFile);
+        fileWatcherTestTree.updateFile(notifiedFile);
+        fileWatcherTestTree.updateFile(ignoredFile);
         Set<String> updated = newHashSet(notifiedFile);
 
         Thread.sleep(300);
@@ -117,10 +117,10 @@ public class InotifyToolsFileWatcherTest {
     public void watchesDeleteNotRecursively() throws Exception {
         File ignored = new File(testDirectory, "ignored");
         assertTrue(ignored.mkdir());
-        String notifiedDir = testedFileTree.createDirectory("");
-        String notifiedFile = testedFileTree.createFile("");
-        String ignoredDir = testedFileTree.createDirectory("ignored");
-        String ignoredFile = testedFileTree.createFile("ignored");
+        String notifiedDir = fileWatcherTestTree.createDirectory("");
+        String notifiedFile = fileWatcherTestTree.createFile("");
+        String ignoredDir = fileWatcherTestTree.createDirectory("ignored");
+        String ignoredFile = fileWatcherTestTree.createFile("ignored");
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         fileWatcher = new InotifyToolsFileWatcher(testDirectory, newArrayList(), notificationListener, false);
@@ -128,10 +128,10 @@ public class InotifyToolsFileWatcherTest {
 
         Thread.sleep(300);
 
-        testedFileTree.delete(ignoredDir);
-        testedFileTree.delete(ignoredFile);
-        testedFileTree.delete(notifiedDir);
-        testedFileTree.delete(notifiedFile);
+        fileWatcherTestTree.delete(ignoredDir);
+        fileWatcherTestTree.delete(ignoredFile);
+        fileWatcherTestTree.delete(notifiedDir);
+        fileWatcherTestTree.delete(notifiedFile);
 
         Set<String> deleted = newHashSet(notifiedDir, notifiedFile);
 
@@ -157,10 +157,10 @@ public class InotifyToolsFileWatcherTest {
 
         Thread.sleep(300);
 
-        Set<String> created = newHashSet(testedFileTree.createDirectory(""),
-                                         testedFileTree.createFile(""),
-                                         testedFileTree.createDirectory("watched"),
-                                         testedFileTree.createFile("watched"));
+        Set<String> created = newHashSet(fileWatcherTestTree.createDirectory(""),
+                                         fileWatcherTestTree.createFile(""),
+                                         fileWatcherTestTree.createDirectory("watched"),
+                                         fileWatcherTestTree.createFile("watched"));
 
         Thread.sleep(300);
 
@@ -181,7 +181,7 @@ public class InotifyToolsFileWatcherTest {
 
         Thread.sleep(300);
 
-        List<String> created = testedFileTree.createTree("", 4, 4);
+        List<String> created = fileWatcherTestTree.createTree("", 4, 4);
 
         Thread.sleep(1000);
 
@@ -197,8 +197,8 @@ public class InotifyToolsFileWatcherTest {
     public void watchesUpdateRecursively() throws Exception {
         File watched = new File(testDirectory, "watched");
         assertTrue(watched.mkdir());
-        String notifiedFile1 = testedFileTree.createFile("");
-        String notifiedFile2 = testedFileTree.createFile("watched");
+        String notifiedFile1 = fileWatcherTestTree.createFile("");
+        String notifiedFile2 = fileWatcherTestTree.createFile("watched");
         Set<String> updated = newHashSet(notifiedFile1, notifiedFile2);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -207,8 +207,8 @@ public class InotifyToolsFileWatcherTest {
 
         Thread.sleep(300);
 
-        testedFileTree.updateFile(notifiedFile1);
-        testedFileTree.updateFile(notifiedFile2);
+        fileWatcherTestTree.updateFile(notifiedFile1);
+        fileWatcherTestTree.updateFile(notifiedFile2);
 
         Thread.sleep(300);
 
@@ -225,8 +225,8 @@ public class InotifyToolsFileWatcherTest {
     public void watchesDeleteRecursively() throws Exception {
         File watched = new File(testDirectory, "watched");
         assertTrue(watched.mkdir());
-        String deletedDir1 = testedFileTree.createDirectory("watched");
-        String deletedFile1 = testedFileTree.createFile("watched");
+        String deletedDir1 = fileWatcherTestTree.createDirectory("watched");
+        String deletedFile1 = fileWatcherTestTree.createFile("watched");
         Set<String> deleted = newHashSet("watched", deletedDir1, deletedFile1);
 
         FileWatcherNotificationListener notificationListener = aNotificationListener();
@@ -235,7 +235,7 @@ public class InotifyToolsFileWatcherTest {
 
         Thread.sleep(300);
 
-        testedFileTree.delete("watched");
+        fileWatcherTestTree.delete("watched");
 
         Thread.sleep(300);
 
@@ -287,7 +287,7 @@ public class InotifyToolsFileWatcherTest {
         fileWatcher.startup();
 
         Thread.sleep(100);
-        testedFileTree.createFile("");
+        fileWatcherTestTree.createFile("");
         Thread.sleep(100);
 
         verify(notificationListener).errorOccurred(eq(testDirectory), eq(error));

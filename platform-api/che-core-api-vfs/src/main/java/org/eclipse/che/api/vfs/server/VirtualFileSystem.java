@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.server;
 
-import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 
 /**
@@ -19,7 +19,7 @@ import org.eclipse.che.api.vfs.server.search.SearcherProvider;
  *
  * @author andrew00x
  */
-public interface MountPoint {
+public interface VirtualFileSystem {
     /**
      * Get root folder of virtual file system. Any files in higher level than root are not accessible through virtual file system API.
      *
@@ -27,12 +27,16 @@ public interface MountPoint {
      */
     VirtualFile getRoot();
 
-    /** Get searcher provider associated with this MountPoint. Method may return {@code null} if implementation doesn't support searching. */
+    /**
+     * Get searcher provider associated with this VirtualFileSystem. Method may return {@code null} if implementation doesn't support
+     * searching.
+     */
     SearcherProvider getSearcherProvider();
 
-    /** Get EventService. EventService may be used for propagation events about updates of any items associated with this MountPoint. */
-    EventService getEventService();
+    /** Release used resources, e.g. clear caches, searcher index, etc */
+    void close() throws ServerException;
 
-    /** Call after unmount this MountPoint to release used resources, e.g. clear caches */
-    void reset();
+    interface CloseCallback {
+        void onClose();
+    }
 }

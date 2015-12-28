@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class PathLockFactoryTest extends TestCase {
     private final int  maxThreads = 3;
-    private final Path path       = Path.fromString("/a/b/c"); // Path not need to be real path on file system
+    private final Path path       = Path.of("/a/b/c"); // Path not need to be real path on file system
 
     private PathLockFactory pathLockFactory;
 

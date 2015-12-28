@@ -13,7 +13,7 @@ package org.eclipse.che.api.vfs.server.impl.file;
 /**
  * Lock of VirtualFile.
  *
- * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
+ * @author andrew00x
  */
 public class FileLock {
     private final String lockToken;
