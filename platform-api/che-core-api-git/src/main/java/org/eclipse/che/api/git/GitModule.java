@@ -13,9 +13,9 @@ package org.eclipse.che.api.git;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 
-import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.server.ProjectImporter;
 import org.eclipse.che.api.project.server.ValueProviderFactory;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.inject.DynaModule;
 
 /**
@@ -31,7 +31,7 @@ public class GitModule extends AbstractModule {
     protected void configure() {
         Multibinder<ProjectImporter> projectImporterMultibinder = Multibinder.newSetBinder(binder(), ProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
-        Multibinder.newSetBinder(binder(), ProjectType.class).addBinding().to(GitProjectType.class);
+        Multibinder.newSetBinder(binder(), ProjectTypeDef.class).addBinding().to(GitProjectType.class);
         bind(GitConfigurationChecker.class).asEagerSingleton();
 
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
