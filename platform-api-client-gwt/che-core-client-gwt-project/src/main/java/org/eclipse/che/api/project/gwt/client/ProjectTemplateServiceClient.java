@@ -25,10 +25,12 @@ public interface ProjectTemplateServiceClient {
     /**
      * Get information about all registered project templates for the specified {@code projectTypeId}.
      *
+     * @param tags
+     *         tags which associated with project templates
      * @param callback
      *         the callback to use for the response
      */
-    void getProjectTemplates(@NotNull String projectTypeId, @NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
+    void getProjectTemplates(@NotNull List<String> tags, @NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
 
     /**
      * Get information about all registered project templates.

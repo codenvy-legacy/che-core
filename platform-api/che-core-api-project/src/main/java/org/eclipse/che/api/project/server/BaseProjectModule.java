@@ -32,10 +32,7 @@ public class BaseProjectModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), ProjectHandler.class); /* empty binding */
         bind(ProjectService.class);
         bind(ProjectTypeService.class);
-        bind(ProjectTemplateService.class);
         bind(ProjectImportersService.class);
-        bind(ProjectTemplateDescriptionLoader.class);
-        bind(ProjectTemplateRegistry.class);
         bind(WatcherService.class);
 
         ProjectImporterInterceptor projectImporterInterceptor = new ProjectImporterInterceptor();

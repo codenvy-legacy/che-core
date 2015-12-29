@@ -10,49 +10,30 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.shared.dto;
 
-import org.eclipse.che.api.core.model.project.SourceStorage;
+import org.eclipse.che.api.core.model.workspace.ProjectProblem;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.dto.shared.DTO;
+
+import java.util.List;
+import java.util.Map;
 
 /** @author Vitaly Parfonov */
 @DTO
 public interface ProjectTemplateDescriptor {
 
-    /** Get project type of project template. */
-    String getProjectType();
+    String getName();
 
-    /** Set project type of project template. */
-    void setProjectType(String projectType);
+    void setName(String name);
 
-    ProjectTemplateDescriptor withProjectType(String projectType);
+    ProjectTemplateDescriptor withName(String name);
 
-    /** Get category of project template. */
-    String getCategory();
+    String getPath();
 
-    /** Set category of project template. */
-    void setCategory(String category);
+    void setPath(String path);
 
-    ProjectTemplateDescriptor withCategory(String category);
-
-    //
-
-    SourceStorageDto getSource();
-
-    void setSource(SourceStorageDto sources);
-
-    ProjectTemplateDescriptor withSource(SourceStorageDto sources);
-
-    //
-
-    /** Get display name of project template. */
-    String getDisplayName();
-
-    /** Set display name of project template. */
-    void setDisplayName(String displayName);
-
-    ProjectTemplateDescriptor withDisplayName(String displayName);
-
-    //
+    ProjectTemplateDescriptor withPath(String path);
 
     /** Get description of project template. */
     String getDescription();
@@ -62,12 +43,70 @@ public interface ProjectTemplateDescriptor {
 
     ProjectTemplateDescriptor withDescription(String description);
 
-    //
+    /** Get project type of project template. */
+    String getProjectType();
 
-    String getRecipe();
+    /** Set project type of project template. */
+    void setProjectType(String projectType);
 
-    void setRecipe(String recipe);
+    ProjectTemplateDescriptor withProjectType(String projectType);
 
-    ProjectTemplateDescriptor withRecipe(String recipe);
+    List<String> getMixins();
 
+    void setMixins(List<String> mixins);
+
+    ProjectTemplateDescriptor withMixins(List<String> mixins);
+
+    Map<String, List<String>> getAttributes();
+
+    void setAttributes(Map<String, List<String>> attributes);
+
+    ProjectTemplateDescriptor withAttributes(Map<String, List<String>> attributes);
+
+    List<ProjectConfigDto> getModules();
+
+    void setModules(List<ProjectConfigDto> modules);
+
+    ProjectTemplateDescriptor withModules(List<ProjectConfigDto> modules);
+
+    List<ProjectProblem> getProblems();
+
+    /** @see #getProblems */
+    void setProblems(List<ProjectProblem> problems);
+
+    ProjectTemplateDescriptor withProblems(List<ProjectProblem> problems);
+
+    SourceStorageDto getSource();
+
+    void setSource(SourceStorageDto sources);
+
+    ProjectTemplateDescriptor withSource(SourceStorageDto sources);
+
+    List<Link> getLinks();
+
+    void setLinks(List<Link> links);
+
+    ProjectTemplateDescriptor withLinks(List<Link> links);
+
+    /** Get display name of project template. */
+    String getDisplayName();
+
+    /** Set display name of project template. */
+    void setDisplayName(String displayName);
+
+    ProjectTemplateDescriptor withDisplayName(String displayName);
+
+    /** Get category of project template. */
+    String getCategory();
+
+    /** Set category of project template. */
+    void setCategory(String category);
+
+    ProjectTemplateDescriptor withCategory(String category);
+
+    List<String> getTags();
+
+    void setTags(List<String> tags);
+
+    ProjectTemplateDescriptor withTags(List<String> tags);
 }
