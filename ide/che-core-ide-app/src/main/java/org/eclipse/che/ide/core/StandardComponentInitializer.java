@@ -16,6 +16,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.ide.Resources;
+import org.eclipse.che.ide.actions.CloseCurrentFile;
 import org.eclipse.che.ide.actions.CollapseAllAction;
 import org.eclipse.che.ide.actions.CompleteAction;
 import org.eclipse.che.ide.actions.CopyAction;
@@ -82,6 +83,7 @@ import org.eclipse.che.ide.part.editor.recent.OpenRecentFilesAction;
 import org.eclipse.che.ide.ui.loaders.request.MessageLoaderResources;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
+import org.eclipse.che.ide.util.browser.UserAgent;
 import org.eclipse.che.ide.util.input.KeyCodeMap;
 import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -273,6 +275,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private OpenRecentFilesAction openRecentFilesAction;
+
+    @Inject
+    private CloseCurrentFile closeCurrentFile;
 
     @Inject
     private MessageLoaderResources messageLoaderResources;
@@ -480,6 +485,11 @@ public class StandardComponentInitializer {
         actionManager.registerAction("openRecentFiles", openRecentFilesAction);
         editGroup.add(openRecentFilesAction);
 
+        editGroup.addSeparator();
+
+        actionManager.registerAction("closeCurrentFile", closeCurrentFile);
+        editGroup.add(closeCurrentFile);
+
         actionManager.registerAction("format", formatterAction);
         editGroup.add(formatterAction);
 
@@ -655,6 +665,13 @@ public class StandardComponentInitializer {
         keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode(KeyCodeMap.ARROW_RIGHT).build(), "switchRightTab");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('e').build(), "openRecentFiles");
         keyBinding.getGlobal().addKey(new KeyBuilder().action().charCode('s').build(), "noOpAction");
+
+        if (UserAgent.isMac()) {
+            keyBinding.getGlobal().addKey(new KeyBuilder().control().charCode('w').build(), "closeCurrentFile");
+        } else {
+            keyBinding.getGlobal().addKey(new KeyBuilder().alt().charCode('w').build(), "closeCurrentFile");
+        }
+
     }
 
     /** Action that does nothing. It's just for disabling (catching) browser's hot key. */
