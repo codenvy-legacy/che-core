@@ -103,7 +103,6 @@ public class SlaveRunnerService extends Service {
 
     @GET
     @Path("status/{runner:.*}/{id}")
-    @RolesAllowed({"user", "tmp_user"})
     @Produces(MediaType.APPLICATION_JSON)
     public ApplicationProcessDescriptor getStatus(@PathParam("runner") String runner, @PathParam("id") Long id) throws Exception {
         final Runner myRunner = getRunner(runner);
