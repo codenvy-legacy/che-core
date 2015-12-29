@@ -25,32 +25,39 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Singleton
 public class ProjectTemplateRegistry {
 
-    private final  Map<String, List<ProjectTemplateDescriptor>> templates = new ConcurrentHashMap<>();
+    private final Map<List<String>, List<ProjectTemplateDescriptor>> templates = new ConcurrentHashMap<>();
 
-    public void register(String projectTypeId, ProjectTemplateDescriptor template) {
-        List<ProjectTemplateDescriptor> templateList = templates.get(projectTypeId);
+    public void register(List<String> tags, ProjectTemplateDescriptor template) {
+        List<ProjectTemplateDescriptor> templateList = templates.get(tags);
         if (templateList == null) {
-            templates.put(projectTypeId, templateList = new CopyOnWriteArrayList<>());
+            templates.put(tags, templateList = new CopyOnWriteArrayList<>());
         }
         templateList.add(template);
     }
 
-    public void register(String projectTypeId, List<ProjectTemplateDescriptor> templates) {
-        List<ProjectTemplateDescriptor> templateList = this.templates.get(projectTypeId);
+    public void register(List<String> tags, List<ProjectTemplateDescriptor> templates) {
+        List<ProjectTemplateDescriptor> templateList = this.templates.get(tags);
         if (templateList == null) {
-            this.templates.put(projectTypeId, new CopyOnWriteArrayList<>(templates));
+            this.templates.put(tags, new CopyOnWriteArrayList<>(templates));
         } else {
             templateList.addAll(templates);
         }
     }
 
-    public List<ProjectTemplateDescriptor> getTemplates(String projectType) {
-        return templates.get(projectType);
+    public List<ProjectTemplateDescriptor> getTemplates(List<String> tags) {
+        List<ProjectTemplateDescriptor> templateDescriptors = new ArrayList<>();
+
+        templates.entrySet()
+                 .stream()
+                 .filter(entry -> entry.getKey().containsAll(tags))
+                 .forEach(entry -> templateDescriptors.addAll(entry.getValue()));
+
+        return templateDescriptors;
     }
 
     public List<ProjectTemplateDescriptor> getAllTemplates() {
         List<ProjectTemplateDescriptor> allTemplates = new ArrayList<>();
-        for (Map.Entry<String, List<ProjectTemplateDescriptor>> entry : templates.entrySet()) {
+        for (Map.Entry<List<String>, List<ProjectTemplateDescriptor>> entry : templates.entrySet()) {
             allTemplates.addAll(entry.getValue());
         }
         return allTemplates;
