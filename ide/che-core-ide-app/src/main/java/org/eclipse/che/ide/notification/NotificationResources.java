@@ -61,6 +61,10 @@ public interface NotificationResources extends ClientBundle {
         String notificationPopupPanel();
 
         String notificationPopupPlaceholder();
+
+        String notificationShowingAnimation();
+
+        String notificationHidingAnimation();
     }
 
     @Source({"notification.css", "org/eclipse/che/ide/api/ui/style.css"})
