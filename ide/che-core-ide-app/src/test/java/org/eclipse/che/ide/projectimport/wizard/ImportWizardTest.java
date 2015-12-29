@@ -29,6 +29,7 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.commons.exception.ServerException;
@@ -64,7 +65,8 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ImportWizardTest {
-    private static final String PROJECT_NAME = "project1";
+    private static final String           PROJECT_NAME = "project1";
+    private static final java.lang.String ID           = "id";
 
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Item>>                   callbackCaptorForItem;
@@ -79,20 +81,22 @@ public class ImportWizardTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<List<SourceEstimation>>> estimationCaptor;
     @Captor
-    private ArgumentCaptor<Operation<ProjectTypeDto>>             typeDefinitionCaptor;
+    private ArgumentCaptor<Operation<ProjectTypeDto>>                    typeDefinitionCaptor;
 
     @Mock
     private ProjectServiceClient                projectServiceClient;
     @Mock
-    private Promise<ProjectTypeDto>      definitionPromise;
+    private Promise<ProjectTypeDto>             definitionPromise;
     @Mock
     private AppContext                          appContext;
     @Mock
     private SourceEstimation                    estimation;
     @Mock
-    private ProjectTypeDto               projectTypeDefinition;
+    private ProjectTypeDto                      projectTypeDefinition;
     @Mock
     private ProjectConfigDto                    projectConfig;
+    @Mock
+    private ProjectTypeRegistry                 projectTypeRegistry;
     @Mock
     private ProjectTypeServiceClient            projectTypeServiceClient;
     @Mock
@@ -129,17 +133,19 @@ public class ImportWizardTest {
         when(projectConfig.getSource()).thenReturn(source);
         when(dataObject.getName()).thenReturn(PROJECT_NAME);
         when(dataObject.getSource()).thenReturn(source);
+        when(projectTypeRegistry.getProjectType(anyString())).thenReturn(projectTypeDefinition);
+        when(projectTypeDefinition.getId()).thenReturn(ID);
 
         wizard = new ImportWizard(dataObject,
                                   projectServiceClient,
-                                  projectTypeServiceClient,
                                   dtoUnmarshallerFactory,
                                   dtoFactory,
                                   vfsServiceClient,
                                   eventBus,
                                   localizationConstant,
                                   importProjectNotificationSubscriber,
-                                  appContext);
+                                  appContext,
+                                  projectTypeRegistry);
     }
 
     @Test
@@ -191,6 +197,8 @@ public class ImportWizardTest {
         ServerException throwable = mock(ServerException.class);
 
         when(throwable.getHTTPStatus()).thenReturn(404);
+        when(estimation.getType()).thenReturn(ID);
+        when(dataObject.getType()).thenReturn(ID);
 
         AsyncRequestCallback<Item> itemCallback = callbackCaptorForItem.getValue();
         GwtReflectionUtils.callOnFailure(itemCallback, throwable);
@@ -202,8 +210,7 @@ public class ImportWizardTest {
         verify(projectServiceClient).resolveSources(anyString(), anyString(), estimationCaptor.capture());
         GwtReflectionUtils.callOnSuccess(estimationCaptor.getValue(), Arrays.asList(estimation));
 
-        verify(definitionPromise).then(typeDefinitionCaptor.capture());
-        typeDefinitionCaptor.getValue().apply(projectTypeDefinition);
+        verify(dataObject).withType(anyString());
 
         verify(projectServiceClient)
                 .updateProject(anyString(), anyString(), Matchers.<ProjectConfigDto>anyObject(), asyncDescriptorCaptor.capture());

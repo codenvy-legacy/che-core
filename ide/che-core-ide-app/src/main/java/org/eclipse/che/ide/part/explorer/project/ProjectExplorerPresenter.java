@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.explorer.project;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
@@ -195,6 +196,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         if (!projectConfig.getProblems().isEmpty()) {
             notificationManager.notify(locale.projectExplorerInvalidProjectDetected(), locale.projectExplorerDetectedUnconfiguredProject(),
                                        projectConfig);
+            //TODO move this logic to separate component
             askUserToSetUpProject(projectConfig);
         }
 
@@ -414,7 +416,13 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     public void onConfigureProject(ConfigureProjectEvent event) {
         final ProjectConfigDto toConfigure = event.getProject();
         if (toConfigure != null) {
-            projectConfigWizard.show(toConfigure);
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    //Scheduler need to wait when configuration wizard will create and prepare wizard pages
+                    projectConfigWizard.show(toConfigure);
+                }
+            });
         }
     }
 

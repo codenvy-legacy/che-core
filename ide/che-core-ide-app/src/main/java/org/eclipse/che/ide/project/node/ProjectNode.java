@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.project.node;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
@@ -61,7 +62,8 @@ public class ProjectNode extends ResourceBasedNode<ProjectConfigDto> implements 
     }
 
     private boolean isValid(ProjectConfigDto projectConfig) {
-        return projectConfig.getProblems().isEmpty();
+        //TODO add check for registered project type
+        return projectConfig.getProblems().isEmpty() && !Strings.isNullOrEmpty(projectConfig.getType());
     }
 
     @NotNull

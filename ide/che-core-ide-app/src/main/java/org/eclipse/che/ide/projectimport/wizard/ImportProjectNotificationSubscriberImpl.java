@@ -131,6 +131,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                 }
                 notification.setStatus(SUCCESS);
                 notification.setTitle(locale.importProjectMessageSuccess(projectName));
+                notification.setContent("");
             }
         }).catchError(logErrorHandler);
     }
