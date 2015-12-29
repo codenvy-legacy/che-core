@@ -12,6 +12,7 @@ package org.eclipse.che.git.impl;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.CredentialsLoader;
+import org.eclipse.che.api.git.UserResolver;
 import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 import org.testng.annotations.DataProvider;
@@ -29,7 +30,8 @@ public class GitConnectionFactoryProvider {
                 new Object[]{
                         new NativeGitConnectionFactory(
                                 mock(CredentialsLoader.class),
-                                new GitSshScriptProvider(host -> new byte[0]))
+                                new GitSshScriptProvider(host -> new byte[0]),
+                                mock(UserResolver.class))
                 }
         };
     }

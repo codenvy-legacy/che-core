@@ -12,10 +12,10 @@ package org.eclipse.che.git.impl.nativegit;
 
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.CredentialsLoader;
-import org.eclipse.che.api.git.CredentialsProvider;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.UserResolver;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import javax.inject.Inject;
@@ -33,16 +33,19 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
 
     private final CredentialsLoader    credentialsLoader;
     private final GitSshScriptProvider gitSshScriptProvider;
+    private final UserResolver         userResolver;
 
     @Inject
-    public NativeGitConnectionFactory(CredentialsLoader credentialsLoader, GitSshScriptProvider gitSshScriptProvider) {
+    public NativeGitConnectionFactory(CredentialsLoader credentialsLoader, GitSshScriptProvider gitSshScriptProvider, UserResolver userResolver) {
         this.credentialsLoader = credentialsLoader;
         this.gitSshScriptProvider = gitSshScriptProvider;
+        this.userResolver = userResolver;
     }
+
 
     @Override
     public GitConnection getConnection(File workDir, LineConsumerFactory outputPublisherFactory) throws GitException {
-        final GitConnection gitConnection = new NativeGitConnection(workDir, gitSshScriptProvider, credentialsLoader);
+        final GitConnection gitConnection = new NativeGitConnection(workDir, gitSshScriptProvider, credentialsLoader, userResolver);
         gitConnection.setOutputLineConsumerFactory(outputPublisherFactory);
         return gitConnection;
     }
