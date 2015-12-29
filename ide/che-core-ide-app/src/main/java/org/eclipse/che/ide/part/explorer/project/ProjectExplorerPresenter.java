@@ -192,7 +192,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.addNode(null, node);
         view.select(node, false);
 
-        if (!projectConfig.getProblems().isEmpty()) {
+        if (!projectConfig.getProblems().isEmpty() || Constants.BLANK_ID.equals(projectConfig.getType())) {
             notificationManager.notify(locale.projectExplorerInvalidProjectDetected(), locale.projectExplorerDetectedUnconfiguredProject(),
                                        projectConfig);
             askUserToSetUpProject(projectConfig);

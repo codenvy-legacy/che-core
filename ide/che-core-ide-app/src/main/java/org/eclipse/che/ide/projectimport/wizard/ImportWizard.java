@@ -10,18 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projectimport.wizard;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
-import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
+import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
-import org.eclipse.che.api.promises.client.Operation;
-import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
@@ -29,6 +28,7 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
+import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.commons.exception.JobNotFoundException;
@@ -40,8 +40,15 @@ import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.getFirst;
+import static com.google.common.collect.Iterables.size;
+import static com.google.common.collect.Iterables.transform;
 
 /**
  * Project import wizard used for importing a project.
@@ -51,35 +58,35 @@ import java.util.List;
 public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 
     private final ProjectServiceClient                projectServiceClient;
-    private final ProjectTypeServiceClient            projectTypeServiceClient;
     private final DtoUnmarshallerFactory              dtoUnmarshallerFactory;
     private final DtoFactory                          dtoFactory;
     private final VfsServiceClient                    vfsServiceClient;
     private final EventBus                            eventBus;
     private final CoreLocalizationConstant            localizationConstant;
     private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    private final ProjectTypeRegistry                 projectTypeRegistry;
     private final String                              workspaceId;
 
     @Inject
     public ImportWizard(@Assisted ProjectConfigDto dataObject,
                         ProjectServiceClient projectServiceClient,
-                        ProjectTypeServiceClient projectTypeServiceClient,
                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
                         DtoFactory dtoFactory,
                         VfsServiceClient vfsServiceClient,
                         EventBus eventBus,
                         CoreLocalizationConstant localizationConstant,
                         ImportProjectNotificationSubscriber importProjectNotificationSubscriber,
-                        AppContext appContext) {
+                        AppContext appContext,
+                        ProjectTypeRegistry projectTypeRegistry) {
         super(dataObject);
         this.projectServiceClient = projectServiceClient;
-        this.projectTypeServiceClient = projectTypeServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dtoFactory = dtoFactory;
         this.vfsServiceClient = vfsServiceClient;
         this.eventBus = eventBus;
         this.localizationConstant = localizationConstant;
         this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
+        this.projectTypeRegistry = projectTypeRegistry;
 
         this.workspaceId = appContext.getWorkspaceId();
     }
@@ -114,6 +121,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
             @Override
             protected void onSuccess(final Void result) {
                 resolveProject(callback);
+                importProjectNotificationSubscriber.onSuccess();
             }
 
             @Override
@@ -134,20 +142,46 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         Unmarshallable<List<SourceEstimation>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(SourceEstimation.class);
         projectServiceClient.resolveSources(workspaceId, projectName, new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
 
+            Function<SourceEstimation, ProjectTypeDto> estimateToType = new Function<SourceEstimation, ProjectTypeDto>() {
+                @Nullable
+                @Override
+                public ProjectTypeDto apply(@Nullable SourceEstimation input) {
+                    if (input != null) {
+                        return projectTypeRegistry.getProjectType(input.getType());
+                    }
+
+                    return null;
+                }
+            };
+
+            Predicate<ProjectTypeDto> isPrimaryable = new Predicate<ProjectTypeDto>() {
+                @Override
+                public boolean apply(@Nullable ProjectTypeDto input) {
+                    if (input != null) {
+                        return input.isPrimaryable();
+                    }
+
+                    return false;
+                }
+            };
+
             @Override
             protected void onSuccess(List<SourceEstimation> result) {
-                for (SourceEstimation estimation : result) {
-                    final Promise<ProjectTypeDto> projectTypePromise =
-                            projectTypeServiceClient.getProjectType(workspaceId, estimation.getType());
-                    projectTypePromise.then(new Operation<ProjectTypeDto>() {
-                        @Override
-                        public void apply(ProjectTypeDto typeDefinition) throws OperationException {
-                            if (typeDefinition.isPrimaryable()) {
-                                createProject(callback, dataObject.withType(typeDefinition.getId()));
-                            }
-                        }
-                    });
+                Iterable<ProjectTypeDto> types = filter(transform(result, estimateToType), isPrimaryable);
+
+                if (size(types) == 1) {
+                    ProjectTypeDto typeDto = getFirst(types, null);
+
+                    if (typeDto != null) {
+                        dataObject.withType(typeDto.getId());
+                    }
                 }
+
+                if (isNullOrEmpty(dataObject.getType())) {
+                    dataObject.withType(Constants.BLANK_ID);
+                }
+
+                updateProject(callback, dataObject);
             }
 
             @Override
@@ -159,7 +193,7 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         });
     }
 
-    private void createProject(final CompleteCallback callback, ProjectConfigDto projectConfig) {
+    private void updateProject(final CompleteCallback callback, ProjectConfigDto projectConfig) {
         final String projectName = dataObject.getName();
         Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
         projectServiceClient
