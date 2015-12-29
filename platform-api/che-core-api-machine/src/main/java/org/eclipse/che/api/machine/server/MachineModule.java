@@ -27,6 +27,6 @@ public class MachineModule extends AbstractModule {
         bind(MachineStateMessenger.class).asEagerSingleton();
         bind(MachineProcessMessenger.class).asEagerSingleton();
 
-        bindConstant().annotatedWith(Names.named("machine.extension.api_port")).to(4401);
+        bindConstant().annotatedWith(Names.named("machine.extension.api_port")).to(WsAgentLauncherImpl.WS_AGENT_PORT);
     }
 }
