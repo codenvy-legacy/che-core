@@ -15,6 +15,8 @@ import org.eclipse.che.api.project.server.InvalidValueException;
 import org.eclipse.che.api.project.server.ValueProviderFactory;
 import org.eclipse.che.api.project.server.ValueStorageException;
 
+import java.util.List;
+
 
 /**
  * @author gazarenkov
@@ -49,7 +51,13 @@ public class Variable extends AbstractAttribute {
 
     public final AttributeValue getValue(FolderEntry projectFolder) throws ValueStorageException {
         if (valueProviderFactory != null) {
-            return new AttributeValue(valueProviderFactory.newInstance(projectFolder).getValues(getName()));
+
+            List<String> values = valueProviderFactory.newInstance(projectFolder).getValues(getName());
+            if (values == null) {
+                return null;
+            }
+
+            return new AttributeValue(values);
         } else {
             return value;
         }
