@@ -18,12 +18,12 @@ import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.Presentation;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter;
+import org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter;
 
 import javax.validation.constraints.NotNull;
 
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter.State;
-import static org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderPresenter.State.WORKING;
+import static org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter.State;
+import static org.eclipse.che.ide.ui.loaders.initialization.LoaderPresenter.State.WORKING;
 
 /**
  * Action for displaying information about a process of loading.

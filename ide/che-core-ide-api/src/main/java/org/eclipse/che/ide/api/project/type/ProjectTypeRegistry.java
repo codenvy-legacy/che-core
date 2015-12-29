@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.project.type;
 
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -23,11 +23,11 @@ import java.util.List;
 public interface ProjectTypeRegistry {
 
     @Nullable
-    ProjectTypeDefinition getProjectType(@NotNull String id);
+    ProjectTypeDto getProjectType(@NotNull String id);
 
-    List<ProjectTypeDefinition> getProjectTypes();
+    List<ProjectTypeDto> getProjectTypes();
 
-    void register(ProjectTypeDefinition projectType);
+    void register(ProjectTypeDto projectType);
 
-    void registerAll(List<ProjectTypeDefinition> projectTypesList);
+    void registerAll(List<ProjectTypeDto> projectTypesList);
 }

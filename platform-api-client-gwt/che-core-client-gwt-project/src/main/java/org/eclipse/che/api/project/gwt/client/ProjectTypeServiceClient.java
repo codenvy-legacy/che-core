@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.gwt.client;
 
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.promises.client.Promise;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public interface ProjectTypeServiceClient {
      * @param workspaceId
      *         id of current workspace
      */
-    Promise<List<ProjectTypeDefinition>> getProjectTypes(String workspaceId);
+    Promise<List<ProjectTypeDto>> getProjectTypes(String workspaceId);
 
     /**
      * Get information about project type with the specified ID.
@@ -38,5 +38,5 @@ public interface ProjectTypeServiceClient {
      * @param id
      *         id of the project type to get
      */
-    Promise<ProjectTypeDefinition> getProjectType(String workspaceId, String id);
+    Promise<ProjectTypeDto> getProjectType(String workspaceId, String id);
 }

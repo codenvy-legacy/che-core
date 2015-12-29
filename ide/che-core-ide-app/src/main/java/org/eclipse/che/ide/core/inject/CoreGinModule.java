@@ -161,7 +161,7 @@ import org.eclipse.che.ide.projecttype.ProjectTypeRegistryImpl;
 import org.eclipse.che.ide.projecttype.wizard.PreSelectedProjectTypeManagerImpl;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardRegistryImpl;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.search.factory.FindResultNodeFactory;
@@ -200,9 +200,8 @@ import org.eclipse.che.ide.ui.dialogs.message.MessageDialogViewImpl;
 import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidget;
 import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
 import org.eclipse.che.ide.ui.dropdown.DropDownListFactory;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderView;
-import org.eclipse.che.ide.ui.loaders.initializationLoader.LoaderViewImpl;
-import org.eclipse.che.ide.ui.loaders.requestLoader.IdeLoader;
+import org.eclipse.che.ide.ui.loaders.initialization.LoaderView;
+import org.eclipse.che.ide.ui.loaders.initialization.LoaderViewImpl;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 import org.eclipse.che.ide.ui.toolbar.ToolbarView;
@@ -249,13 +248,13 @@ public class CoreGinModule extends AbstractGinModule {
                                                         WorkBenchPartControllerImpl.class).build(WorkBenchControllerFactory.class));
         // generic bindings
         bind(EventBus.class).to(SimpleEventBus.class).in(Singleton.class);
-        bind(AsyncRequestLoader.class).to(IdeLoader.class).in(Singleton.class);
         bind(Resources.class).in(Singleton.class);
         bind(String.class).annotatedWith(RestContext.class).toProvider(RestContextProvider.class).in(Singleton.class);
         bind(ExtensionRegistry.class).in(Singleton.class);
         bind(StandardComponentInitializer.class).in(Singleton.class);
         bind(ClipboardButtonBuilder.class).to(ClipboardButtonBuilderImpl.class);
 
+        install(new GinFactoryModuleBuilder().build(LoaderFactory.class));
         install(new GinFactoryModuleBuilder().implement(PartStackView.class, PartStackViewImpl.class).build(PartStackViewFactory.class));
         install(new GinFactoryModuleBuilder().implement(PartStack.class, PartStackPresenter.class).build(PartStackPresenterFactory.class));
 

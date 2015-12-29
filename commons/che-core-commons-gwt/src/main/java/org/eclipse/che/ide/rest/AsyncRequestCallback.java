@@ -41,7 +41,6 @@ public abstract class AsyncRequestCallback<T> implements RequestCallback {
     private       AsyncRequestLoader loader;
     private       T                  payload;
     private       AsyncRequest       request;
-    private       String             loaderMessage;
 
     public AsyncRequestCallback() {
         this(null);
@@ -76,20 +75,11 @@ public abstract class AsyncRequestCallback<T> implements RequestCallback {
         this.loader = loader;
     }
 
-    public final void setLoader(AsyncRequestLoader loader, String loaderMessage) {
-        this.loader = loader;
-        this.loaderMessage = loaderMessage;
-    }
-
     /** @see com.google.gwt.http.client.RequestCallback#onError(com.google.gwt.http.client.Request, java.lang.Throwable) */
     @Override
     public final void onError(Request request, Throwable exception) {
         if (loader != null) {
-            if (loaderMessage == null) {
-                loader.hide();
-            } else {
-                loader.hide(loaderMessage);
-            }
+            loader.hide();
         }
 
         onFailure(exception);
@@ -102,11 +92,7 @@ public abstract class AsyncRequestCallback<T> implements RequestCallback {
     @Override
     public final void onResponseReceived(Request request, Response response) {
         if (loader != null) {
-            if (loaderMessage == null) {
-                loader.hide();
-            } else {
-                loader.hide(loaderMessage);
-            }
+            loader.hide();
         }
 
         // If there is no connection to the server then status equals 0 ( In Internet Explorer status is 12029 )

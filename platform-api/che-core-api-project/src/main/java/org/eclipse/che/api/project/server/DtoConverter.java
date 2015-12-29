@@ -11,19 +11,17 @@
 package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.project.server.type.BaseProjectType;
-import org.eclipse.che.api.project.shared.dto.AttributeDescriptor;
-import org.eclipse.che.api.project.shared.dto.ItemReference;
-import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
+import org.eclipse.che.api.project.shared.dto.*;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
@@ -35,18 +33,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static javax.ws.rs.HttpMethod.DELETE;
-import static javax.ws.rs.HttpMethod.GET;
-import static javax.ws.rs.HttpMethod.PUT;
+import static javax.ws.rs.HttpMethod.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_CHILDREN;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_DELETE;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_EXPORT_ZIP;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_GET_CONTENT;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_MODULES;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_TREE;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_UPDATE_CONTENT;
-import static org.eclipse.che.api.project.server.Constants.LINK_REL_UPDATE_PROJECT;
+import static org.eclipse.che.api.project.server.Constants.*;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
@@ -59,30 +48,37 @@ public class DtoConverter {
     private DtoConverter() {
     }
 
-    public static ProjectTypeDefinition toTypeDefinition(ProjectType projectType) {
-        final ProjectTypeDefinition definition = newDto(ProjectTypeDefinition.class).withId(projectType.getId())
-                                                                                    .withDisplayName(projectType.getDisplayName())
-                                                                                    .withPrimaryable(projectType.canBePrimary())
-                                                                                    .withMixable(projectType.canBeMixin());
+    public static ProjectTypeDto toTypeDefinition(ProjectTypeDef projectType) {
+        final ProjectTypeDto definition = newDto(ProjectTypeDto.class).withId(projectType.getId())
+                                                                      .withDisplayName(projectType.getDisplayName())
+                                                                      .withPrimaryable(projectType.isPrimaryable())
+                                                                      .withMixable(projectType.isMixable())
+                                                                      .withAncestors(projectType.getAncestors());
 
-        final List<AttributeDescriptor> typeAttributes = new ArrayList<>();
+        final List<AttributeDto> typeAttributes = new ArrayList<>();
         for (Attribute attr : projectType.getAttributes()) {
-            List<String> valueList = null;
-            if (attr.getValue() != null) {
-                valueList = attr.getValue().getList();
-            }
-            typeAttributes.add(newDto(AttributeDescriptor.class).withName(attr.getName())
-                                                                .withDescription(attr.getDescription())
-                                                                .withRequired(attr.isRequired())
-                                                                .withVariable(attr.isVariable())
-                                                                .withValues(valueList));
-        }
-        definition.setAttributeDescriptors(typeAttributes);
 
-        final List<String> parents = projectType.getParents().stream()
-                                                .map(ProjectType::getId)
-                                                .collect(Collectors.toList());
-        definition.setParents(parents);
+
+            ValueDto valueDto = newDto(ValueDto.class);
+
+            if (attr.getValue() != null) {
+                valueDto.withList(attr.getValue().getList());
+            }
+
+            typeAttributes.add(newDto(AttributeDto.class).withName(attr.getName())
+                                                         .withDescription(attr.getDescription())
+                                                         .withRequired(attr.isRequired())
+                                                         .withVariable(attr.isVariable())
+                                                         .withValue(valueDto));
+        }
+        definition.withAttributes(typeAttributes).withParents(projectType.getParents());
+
+//        final List<String> parents = projectType.getParents().stream()
+//                                                .map(ProjectTypeDef::getId)
+//                                                .collect(Collectors.toList());
+//        definition.setParents(parents);
+
+        //definition.withParents(projectType.getParents());
 
         return definition;
     }
@@ -136,7 +132,7 @@ public class DtoConverter {
     public static ProjectConfigDto toProjectConfig(Project project,
                                                    UriBuilder serviceUriBuilder) throws ForbiddenException,
                                                                                         ServerException,
-                                                                                        ProjectTypeConstraintException,
+                                                                                        NotFoundException,
                                                                                         ValueStorageException {
         String name = project.getName();
         String path = project.getPath();
@@ -219,7 +215,8 @@ public class DtoConverter {
                                                    .toString(),
                                          APPLICATION_JSON,
                                          APPLICATION_JSON,
-                                         LINK_REL_UPDATE_PROJECT));
+                                         LINK_REL_UPDATE_PROJECT
+        ));
         return links;
     }
 
@@ -236,7 +233,8 @@ public class DtoConverter {
                                          APPLICATION_JSON, LINK_REL_CHILDREN));
         links.add(
                 LinksHelper.createLink(GET, uriBuilder.clone().path(ProjectService.class, "getTree").build(workspace, relPath).toString(),
-                                       null, APPLICATION_JSON, LINK_REL_TREE));
+                                       null, APPLICATION_JSON, LINK_REL_TREE)
+        );
         links.add(LinksHelper.createLink(GET,
                                          uriBuilder.clone().path(ProjectService.class, "getModules").build(workspace, relPath).toString(),
                                          APPLICATION_JSON, LINK_REL_MODULES));

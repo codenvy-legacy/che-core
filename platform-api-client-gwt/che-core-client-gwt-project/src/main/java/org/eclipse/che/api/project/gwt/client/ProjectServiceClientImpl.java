@@ -32,8 +32,8 @@ import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.websocket.Message;
 import org.eclipse.che.ide.websocket.MessageBuilder;
 import org.eclipse.che.ide.websocket.MessageBus;
@@ -63,7 +63,7 @@ import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
  */
 public class ProjectServiceClientImpl implements ProjectServiceClient {
     private final ExtServerStateController extServerStateController;
-    private final AsyncRequestLoader       loader;
+    private final LoaderFactory            loaderFactory;
     private final AsyncRequestFactory      asyncRequestFactory;
     private final DtoFactory               dtoFactory;
     private final DtoUnmarshallerFactory   dtoUnmarshaller;
@@ -72,14 +72,14 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
     @Inject
     protected ProjectServiceClientImpl(ExtServerStateController extServerStateController,
-                                       AsyncRequestLoader loader,
+                                       LoaderFactory loaderFactory,
                                        AsyncRequestFactory asyncRequestFactory,
                                        DtoFactory dtoFactory,
                                        DtoUnmarshallerFactory dtoUnmarshaller,
                                        @Named("cheExtensionPath") String extPath) {
         this.extPath = extPath;
         this.extServerStateController = extServerStateController;
-        this.loader = loader;
+        this.loaderFactory = loaderFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshaller = dtoUnmarshaller;
@@ -89,7 +89,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     public void getProjects(String workspaceId, boolean includeAttributes, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
         asyncRequestFactory.createGetRequest(extPath + "/project/" + workspaceId + "?includeAttributes=" + includeAttributes)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Getting projects...")
+                           .loader(loaderFactory.newLoader("Getting projects..."))
                            .send(callback);
     }
 
@@ -108,7 +108,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + wsId;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Getting projects...")
+                           .loader(loaderFactory.newLoader("Getting projects..."))
                            .send(callback);
     }
 
@@ -124,7 +124,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Copying project...")
+                           .loader(loaderFactory.newLoader("Copying project..."))
                            .send(callback);
     }
 
@@ -133,7 +133,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Getting project...")
+                           .loader(loaderFactory.newLoader("Getting project..."))
                            .send(callback);
     }
 
@@ -142,7 +142,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
         return asyncRequestFactory.createGetRequest(requestUrl)
                                   .header(ACCEPT, MimeType.APPLICATION_JSON)
-                                  .loader(loader, "Getting project...")
+                                  .loader(loaderFactory.newLoader("Getting project..."))
                                   .send(dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class));
     }
 
@@ -151,7 +151,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "/item" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Getting item...")
+                           .loader(loaderFactory.newLoader("Getting item..."))
                            .send(callback);
     }
 
@@ -163,7 +163,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "?name=" + name;
         asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Creating project...")
+                           .loader(loaderFactory.newLoader("Creating project..."))
                            .send(callback);
     }
 
@@ -175,7 +175,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "/estimate" + normalizePath(path) + "?type=" + projectType;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Estimating project...")
+                           .loader(loaderFactory.newLoader("Estimating project..."))
                            .send(callback);
     }
 
@@ -184,7 +184,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "/resolve" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Resolving sources...")
+                           .loader(loaderFactory.newLoader("Resolving sources..."))
                            .send(callback);
     }
 
@@ -194,6 +194,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "/modules" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
+                           .loader(loaderFactory.newLoader("Getting modules..."))
                            .send(callback);
     }
 
@@ -205,7 +206,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(parentProjectPath);
         asyncRequestFactory.createPostRequest(requestUrl, projectConfig)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Creating module...")
+                           .loader(loaderFactory.newLoader("Creating module..."))
                            .send(callback);
     }
 
@@ -218,7 +219,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         asyncRequestFactory.createRequest(PUT, requestUrl, projectConfig, false)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Updating project...")
+                           .loader(loaderFactory.newLoader("Updating project..."))
                            .send(callback);
     }
 
@@ -231,7 +232,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "/file" + normalizePath(parentPath) + "?name=" + name;
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .data(content)
-                           .loader(loader, "Creating file...")
+                           .loader(loaderFactory.newLoader("Creating file..."))
                            .send(callback);
     }
 
@@ -239,7 +240,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     public void getFileContent(String workspaceId, String path, AsyncRequestCallback<String> callback) {
         final String requestUrl = extPath + "/project/" + workspaceId + "/file" + normalizePath(path);
         asyncRequestFactory.createGetRequest(requestUrl)
-                           .loader(loader, "Loading file content...")
+                           .loader(loaderFactory.newLoader("Loading file content..."))
                            .send(callback);
     }
 
@@ -248,6 +249,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "/file" + normalizePath(path);
         asyncRequestFactory.createRequest(PUT, requestUrl, null, false)
                            .data(content)
+                           .loader(loaderFactory.newLoader("Updating file..."))
                            .send(callback);
     }
 
@@ -255,7 +257,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     public void createFolder(String workspaceId, String path, AsyncRequestCallback<ItemReference> callback) {
         final String requestUrl = extPath + "/project/" + workspaceId + "/folder" + normalizePath(path);
         asyncRequestFactory.createPostRequest(requestUrl, null)
-                           .loader(loader, "Creating folder...")
+                           .loader(loaderFactory.newLoader("Creating folder..."))
                            .send(callback);
     }
 
@@ -263,7 +265,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     public void delete(String workspaceId, String path, AsyncRequestCallback<Void> callback) {
         final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
-                           .loader(loader, "Deleting project...")
+                           .loader(loaderFactory.newLoader("Deleting project..."))
                            .send(callback);
     }
 
@@ -271,7 +273,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
     public void deleteModule(String workspaceId, String pathToParent, String modulePath, AsyncRequestCallback<Void> callback) {
         final String requestUrl = extPath + "/project/" + workspaceId + "/module" + normalizePath(pathToParent) + "?module=" + modulePath;
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
-                           .loader(loader, "Deleting module...")
+                           .loader(loaderFactory.newLoader("Deleting module..."))
                            .send(callback);
     }
 
@@ -284,7 +286,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         copyOptions.setOverWrite(false);
 
         asyncRequestFactory.createPostRequest(requestUrl, copyOptions)
-                           .loader(loader, "Copying item...")
+                           .loader(loaderFactory.newLoader("Copying..."))
                            .send(callback);
     }
 
@@ -297,7 +299,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         moveOptions.setOverWrite(false);
 
         asyncRequestFactory.createPostRequest(requestUrl, moveOptions)
-                           .loader(loader, "Moving item...")
+                           .loader(loaderFactory.newLoader("Moving..."))
                            .send(callback);
     }
 
@@ -308,7 +310,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
             requestUrl += "&mediaType=" + newMediaType;
         }
         asyncRequestFactory.createPostRequest(requestUrl, null)
-                           .loader(loader, "Renaming item...")
+                           .loader(loaderFactory.newLoader("Renaming..."))
                            .send(callback);
     }
 
@@ -406,6 +408,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
         final String requestUrl = extPath + "/project/" + workspaceId + "/tree" + normalizePath(path) + "?depth=" + depth;
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
+                           .loader(loaderFactory.newLoader("Reading project..."))
                            .send(callback);
     }
 
@@ -437,6 +440,7 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
 
         return asyncRequestFactory.createGetRequest(requestUrl.toString() + queryParameters.toString().replaceFirst("&", "?"))
                                   .header(ACCEPT, MimeType.APPLICATION_JSON)
+                                  .loader(loaderFactory.newLoader("Searching..."))
                                   .send(dtoUnmarshaller.newListUnmarshaller(ItemReference.class));
     }
 

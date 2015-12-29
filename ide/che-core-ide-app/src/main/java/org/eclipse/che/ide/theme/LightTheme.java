@@ -1261,4 +1261,29 @@ public class LightTheme implements Theme {
     public String editorTabPinDropShadow() {
         return "drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.4))";
     }
+
+    @Override
+    public String loaderBackgroundColor() {
+        return "#fff";
+    }
+
+    @Override
+    public String loaderBorderColor() {
+        return "#a5a5a5";
+    }
+
+    @Override
+    public String loaderBoxShadow() {
+        return "0 2px 7px rgba(0,0,0,0.4)";
+    }
+
+    @Override
+    public String loaderSVGFill() {
+        return "#4990e2";
+    }
+
+    @Override
+    public String loaderLabelColor() {
+        return "#6c5455";
+    }
 }

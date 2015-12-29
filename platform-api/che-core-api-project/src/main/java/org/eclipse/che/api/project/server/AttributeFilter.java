@@ -14,14 +14,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +62,8 @@ public class AttributeFilter {
                                                 FolderEntry projectFolder) throws ServerException,
                                                                                   ForbiddenException,
                                                                                   ProjectTypeConstraintException,
-                                                                                  ValueStorageException {
+                                                                                  ValueStorageException,
+                                                                                  NotFoundException {
         addAttributesToProject(projectConfig, projectFolder, AttributeType.PERSISTENT);
     }
 
@@ -87,22 +88,27 @@ public class AttributeFilter {
                                               FolderEntry projectFolder) throws ProjectTypeConstraintException,
                                                                                 ForbiddenException,
                                                                                 ValueStorageException,
-                                                                                ServerException {
+                                                                                ServerException,
+                                                                                NotFoundException {
+
         addAttributesToProject(projectConfig, projectFolder, AttributeType.RUNTIME);
     }
+
 
     private void addAttributesToProject(ProjectConfigDto projectConfig,
                                         FolderEntry parentFolder,
                                         AttributeType attributeType) throws ServerException,
                                                                             ForbiddenException,
                                                                             ProjectTypeConstraintException,
-                                                                            ValueStorageException {
+                                                                            ValueStorageException,
+                                                                            NotFoundException {
+
         ProjectTypes projectTypes = getProjectTypes(parentFolder, projectConfig);
 
         projectConfig.setType(projectTypes.getPrimary().getId());
         projectConfig.setMixins(projectTypes.mixinIds());
 
-        for (ProjectType projectType : projectTypes.getAll().values()) {
+        for (ProjectTypeDef projectType : projectTypes.getAll().values()) {
             Map<String, List<String>> attributes = AttributeType.PERSISTENT.equals(attributeType) ? getPersistedAttributes(projectType,
                                                                                                                            projectConfig)
                                                                                                   : getRuntimeAttributes(projectType,
@@ -143,7 +149,8 @@ public class AttributeFilter {
     }
 
     private ProjectTypes getProjectTypes(FolderEntry module, ProjectConfig moduleConfig) throws ProjectTypeConstraintException,
-                                                                                                ServerException {
+                                                                                                ServerException,
+                                                                                                NotFoundException {
         Project project = new Project(module, projectManager);
 
         ProjectTypes types = new ProjectTypes(project, moduleConfig.getType(), moduleConfig.getMixins(), projectManager);
@@ -152,33 +159,32 @@ public class AttributeFilter {
         return types;
     }
 
-    private Map<String, List<String>> getPersistedAttributes(ProjectType projectType,
+    private Map<String, List<String>> getPersistedAttributes(ProjectTypeDef projectType,
                                                              ProjectConfig projectConfig) throws ProjectTypeConstraintException,
                                                                                                  ValueStorageException {
         Map<String, List<String>> persistentAttributes = new HashMap<>();
-        if (projectType.isPersisted()) { //TODO: quick fix for IDEX-3725 have plan remove this class totally during improving Project API
-            for (Attribute attribute : projectType.getAttributes()) {
-                if (!attribute.isVariable()) {
-                    persistentAttributes.put(attribute.getName(), attribute.getValue().getList());
-                    continue;
-                }
 
-                Variable variable = (Variable)attribute;
-                ValueProviderFactory factory = variable.getValueProviderFactory();
+        for (Attribute attribute : projectType.getAttributes()) {
+            if (!attribute.isVariable()) {
+                persistentAttributes.put(attribute.getName(), attribute.getValue().getList());
 
-                if (factory == null) {
-                    List<String> value = projectConfig.getAttributes().get(attribute.getName());
-
-                    persistentAttributes.put(variable.getName(), value);
-                }
+                continue;
             }
 
-            return persistentAttributes;
+            Variable variable = (Variable)attribute;
+            ValueProviderFactory factory = variable.getValueProviderFactory();
+
+            if (factory == null) {
+                List<String> value = projectConfig.getAttributes().get(attribute.getName());
+
+                persistentAttributes.put(variable.getName(), value);
+            }
         }
-        return Collections.emptyMap();
+
+        return persistentAttributes;
     }
 
-    private Map<String, List<String>> getRuntimeAttributes(ProjectType projectType,
+    private Map<String, List<String>> getRuntimeAttributes(ProjectTypeDef projectType,
                                                            ProjectConfig projectConfig,
                                                            FolderEntry projectFolder) throws ProjectTypeConstraintException,
                                                                                              ValueStorageException {

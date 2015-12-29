@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.notification;
 
-import com.google.gwt.animation.client.Animation;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.DOM;
@@ -21,6 +20,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import org.eclipse.che.ide.DelayedTask;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationObserver;
@@ -31,12 +31,10 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 
-import static com.google.gwt.dom.client.Style.Unit.PX;
 import static com.google.gwt.user.client.Event.ONCLICK;
 import static com.google.gwt.user.client.Event.ONDBLCLICK;
 import static com.google.gwt.user.client.Event.ONMOUSEOUT;
 import static com.google.gwt.user.client.Event.ONMOUSEOVER;
-import static org.eclipse.che.ide.util.MathUtils.getCubicBezier;
 import static org.eclipse.che.ide.api.notification.StatusNotification.Status.PROGRESS;
 
 /**
@@ -131,9 +129,6 @@ public class NotificationPopup extends SimplePanel implements NotificationObserv
         notificationWrapper.add(createCloseWidget());
         notificationWrapper.setStyleName(resources.notificationCss().notificationPopup());
         notificationWrapper.ensureDebugId(NOTIFICATION_WRAPPER_DBG_ID + notification.getId());
-
-        //by default set opacity to zero, to animate showing later
-        getElement().getStyle().setOpacity(0);
 
         setWidget(notificationWrapper);
     }
@@ -284,6 +279,7 @@ public class NotificationPopup extends SimplePanel implements NotificationObserv
         Widget titleWidget = titlePanel.getWidget();
         if (titleWidget != null && titleWidget instanceof Label) {
             ((Label)titleWidget).setText(notification.getTitle());
+            titleWidget.setTitle(notification.getTitle());
         }
 
         Widget messageWidget = messagePanel.getWidget();
@@ -324,16 +320,7 @@ public class NotificationPopup extends SimplePanel implements NotificationObserv
             sinkEvents(ONCLICK | ONDBLCLICK | ONMOUSEOUT | ONMOUSEOVER);
             update();
 
-            new Animation() {
-
-                /** {@inheritDoc} */
-                @Override
-                protected void onUpdate(double progress) {
-                    getElement().getStyle().setOpacity(progress);
-                    getElement().getStyle().setProperty("transform", "scale(" + (2 - progress) + ',' + (2 - progress) + ");");
-                    getElement().getStyle().setProperty("filter", "blur(" + (2 - progress * 2) + "px);");
-                }
-            }.run(200);
+            addStyleName(resources.notificationCss().notificationShowingAnimation());
         }
     }
 
@@ -350,22 +337,14 @@ public class NotificationPopup extends SimplePanel implements NotificationObserv
     @Override
     public void removeFromParent() {
         if (isOrWasAttached()) {
-            new Animation() {
-                double offsetWidth = getElement().getOffsetWidth();
+            addStyleName(resources.notificationCss().notificationHidingAnimation());
 
-                /** {@inheritDoc} */
+            new DelayedTask() {
                 @Override
-                protected void onUpdate(double progress) {
-                    getElement().getStyle().setMarginLeft(offsetWidth * getCubicBezier(progress, 0, .05, 0, 1), PX);
-                    getElement().getStyle().setOpacity(1 - progress);
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                protected void onComplete() {
+                public void onExecute() {
                     NotificationPopup.super.removeFromParent();
                 }
-            }.run(1000);
+            }.delay(500);
         } else {
             super.removeFromParent();
         }

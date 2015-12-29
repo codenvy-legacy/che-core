@@ -13,14 +13,19 @@ package org.eclipse.che.api.core.model.project.type;
 import java.util.List;
 
 /**
+ * Attribute value
  * @author gazarenkov
  */
 public interface Value {
+
+    /**
+     * @return value as String. If attribute has multiple values it returns first one.
+     */
     String getString();
 
-    void setString(String str);
-
+    /**
+     * @return value as list of strings
+     */
     List<String> getList();
 
-    void setList(List<String> list);
 }

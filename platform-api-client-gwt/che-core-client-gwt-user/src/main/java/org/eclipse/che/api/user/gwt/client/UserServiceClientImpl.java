@@ -14,11 +14,10 @@ import org.eclipse.che.api.user.shared.dto.UserDescriptor;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.RestContext;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import javax.validation.constraints.NotNull;
 
@@ -36,14 +35,14 @@ public class UserServiceClientImpl implements UserServiceClient {
     private final String              CREATE;
     private final String              FIND;
     private final String              PASSWORD;
-    private final AsyncRequestLoader  loader;
+    private final LoaderFactory       loaderFactory;
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
     protected UserServiceClientImpl(@RestContext String restContext,
-                                    AsyncRequestLoader loader,
+                                    LoaderFactory loaderFactory,
                                     AsyncRequestFactory asyncRequestFactory) {
-        this.loader = loader;
+        this.loaderFactory = loaderFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         USER = restContext + "/user/";
         CREATE = USER + "create";
@@ -59,7 +58,7 @@ public class UserServiceClientImpl implements UserServiceClient {
 
         asyncRequestFactory.createPostRequest(requestUrl.toString(), null)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Creating user...")
+                           .loader(loaderFactory.newLoader("Creating user..."))
                            .send(callback);
     }
 
@@ -69,7 +68,7 @@ public class UserServiceClientImpl implements UserServiceClient {
 
         asyncRequestFactory.createGetRequest(USER)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Retrieving current user...")
+                           .loader(loaderFactory.newLoader("Retrieving current user..."))
                            .send(callback);
     }
 
@@ -81,7 +80,7 @@ public class UserServiceClientImpl implements UserServiceClient {
 
         asyncRequestFactory.createPostRequest(requestUrl, null)
                            .header(CONTENT_TYPE, MimeType.APPLICATION_FORM_URLENCODED)
-                           .loader(loader, "Updating user's password...")
+                           .loader(loaderFactory.newLoader("Updating user's password..."))
                            .send(callback);
     }
 
@@ -92,7 +91,7 @@ public class UserServiceClientImpl implements UserServiceClient {
 
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Retrieving user...")
+                           .loader(loaderFactory.newLoader("Retrieving user..."))
                            .send(callback);
     }
 
@@ -103,7 +102,7 @@ public class UserServiceClientImpl implements UserServiceClient {
 
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
-                           .loader(loader, "Retrieving user...")
+                           .loader(loaderFactory.newLoader("Retrieving user..."))
                            .send(callback);
     }
 
@@ -113,7 +112,7 @@ public class UserServiceClientImpl implements UserServiceClient {
         String requestUrl = USER + id;
 
         asyncRequestFactory.createRequest(DELETE, requestUrl, null, false)
-                           .loader(loader, "Deleting user...")
+                           .loader(loaderFactory.newLoader("Deleting user..."))
                            .send(callback);
     }
 

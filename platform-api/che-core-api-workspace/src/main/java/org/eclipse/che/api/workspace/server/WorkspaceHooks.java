@@ -29,23 +29,6 @@ import javax.validation.constraints.NotNull;
 public interface WorkspaceHooks {
 
     /**
-     * No-operations workspace hooks. Each method does nothing
-     */
-    WorkspaceHooks NOOP_WORKSPACE_HOOKS = new WorkspaceHooks() {
-        @Override
-        public void beforeStart(UsersWorkspace workspace, String evnName, String accountId) throws NotFoundException, ServerException {}
-
-        @Override
-        public void beforeCreate(UsersWorkspace workspace, String accountId) throws NotFoundException, ServerException {}
-
-        @Override
-        public void afterCreate(UsersWorkspace workspace, String accountId) throws ServerException {}
-
-        @Override
-        public void afterRemove(String workspaceId) {}
-    };
-
-    /**
      * Called before workspace starting.
      *
      * @param workspace

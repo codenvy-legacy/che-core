@@ -37,10 +37,7 @@ import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
 import org.eclipse.che.api.project.server.handlers.RemoveModuleHandler;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
-import org.eclipse.che.api.project.server.type.AttributeValue;
-import org.eclipse.che.api.project.server.type.BaseProjectType;
-import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
-import org.eclipse.che.api.project.server.type.Variable;
+import org.eclipse.che.api.project.server.type.*;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
@@ -417,7 +414,8 @@ public final class DefaultProjectManager implements ProjectManager {
     public ProjectConfig getProjectConfig(Project project) throws ServerException,
                                                                   ProjectTypeConstraintException,
                                                                   ValueStorageException,
-                                                                  ForbiddenException {
+                                                                  ForbiddenException,
+                                                                  NotFoundException {
         ProjectConfigDto projectConfigDto = getProjectFromWorkspace(project.getWorkspace(), project.getPath());
         if (projectConfigDto == null) {
             projectConfigDto = newDto(ProjectConfigDto.class);
@@ -437,7 +435,7 @@ public final class DefaultProjectManager implements ProjectManager {
     public void updateProjectConfig(Project project, ProjectConfig projectConfig) throws ServerException,
                                                                                          ValueStorageException,
                                                                                          ProjectTypeConstraintException,
-                                                                                         ForbiddenException {
+                                                                                         ForbiddenException, NotFoundException {
         List<ProjectConfigDto> modules = new ArrayList<>();
 
         for (ProjectConfig config : projectConfig.getModules()) {
@@ -464,8 +462,8 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     private void storeCalculatedAttributes(Project project, ProjectConfig projectConfig) throws ProjectTypeConstraintException,
-                                                                                              ValueStorageException,
-                                                                                              InvalidValueException {
+                                                                                                ValueStorageException,
+                                                                                                InvalidValueException, NotFoundException {
         final ProjectTypes types = new ProjectTypes(project, projectConfig.getType(), projectConfig.getMixins(), this);
         types.removeTransient();
 
@@ -475,7 +473,7 @@ public final class DefaultProjectManager implements ProjectManager {
 
             // Try to find definition in all the types
             Attribute attributeDefinition = null;
-            for (ProjectType projectType : types.getAll().values()) {
+            for (ProjectTypeDef projectType : types.getAll().values()) {
                 attributeDefinition = projectType.getAttribute(attributeName);
                 if (attributeDefinition != null) {
                     break;
@@ -772,7 +770,7 @@ public final class DefaultProjectManager implements ProjectManager {
                 if (!attributes.isEmpty()) {
                     estimations.add(newDto(SourceEstimation.class).withType(type.getId()).withAttributes(attributes));
                     ProjectType projectType = projectTypeRegistry.getProjectType(type.getId());
-                    if (projectType.canBePrimary()) {
+                    if (projectType.isPrimaryable()) {
                         isPresentPrimaryType = true;
                     }
                 }

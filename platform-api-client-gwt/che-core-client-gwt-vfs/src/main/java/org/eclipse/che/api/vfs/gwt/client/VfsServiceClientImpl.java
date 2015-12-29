@@ -18,6 +18,7 @@ import org.eclipse.che.api.vfs.shared.dto.ReplacementSet;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -40,10 +41,10 @@ public class VfsServiceClientImpl implements VfsServiceClient {
 
     @Inject
     public VfsServiceClientImpl(@Named("cheExtensionPath") String extPath,
-                                AsyncRequestLoader loader,
+                                LoaderFactory loaderFactory,
                                 AsyncRequestFactory asyncRequestFactory) {
+        this.loader = loaderFactory.newLoader();
         this.extPath = extPath;
-        this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
     }
 

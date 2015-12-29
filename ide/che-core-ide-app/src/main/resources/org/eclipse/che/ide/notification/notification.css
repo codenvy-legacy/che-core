@@ -147,22 +147,27 @@
     box-shadow: notificationPopupPanelShadow;
     margin-bottom: 10px;
     overflow: hidden;
+    opacity: 0;
 }
 
 .notificationPopup {
     width: 400px;
-    min-height: 55px;
+    margin: 10px;
 }
 
 .notificationPopupContentWrapper {
     display: inline-block;
     max-width: 315px;
+    vertical-align: middle;
 }
 
 .notificationPopupIconWrapper {
     display: inline-block;
     vertical-align: top;
-    margin: 18px 18px 15px 18px;
+    margin-right: 10px;
+    margin-bottom: -4px;
+    margin-left: 5px;
+    padding-top: 0px;
 }
 
 .notificationPopupIconWrapper > svg > g,
@@ -175,7 +180,7 @@
     display: inline-block;
     vertical-align: top;
     float: right;
-    padding: 1px 7px 1px 7px;
+    margin: -10px 17px 0 0;
     cursor: pointer;
 }
 
@@ -195,7 +200,7 @@
 }
 
 .notificationPopupTitleWrapper {
-    margin-top: 12px;
+    margin: 0;
 }
 
 .notificationPopupTitleWrapper > div {
@@ -204,13 +209,103 @@
     font-family: mainFontFamily;
     font-weight: bold;
     color: mainFontColor;
-    white-space: pre-wrap;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .notificationPopupMessageWrapper {
-    margin-bottom: 12px;
+    margin-bottom: 0;
 }
 
 .notificationPopupMessageWrapper > div {
     color: mainFontColor;
+    margin: 0;
+}
+
+.notificationShowingAnimation {
+    -webkit-animation: showing 0.2s ease-in-out;
+    opacity: 1;
+}
+
+@-webkit-keyframes showing {
+    from {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+        opacity: 0;
+    }
+
+    50% {
+        -webkit-transform: scale3d(1.05, 1.05, 1.05);
+        transform: scale3d(1.05, 1.05, 1.05);
+        opacity: 0.5;
+    }
+
+    to {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+        opacity: 1;
+    }
+}
+
+@keyframes showing {
+    from {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+        opacity: 0;
+    }
+
+    50% {
+        -webkit-transform: scale3d(1.05, 1.05, 1.05);
+        transform: scale3d(1.05, 1.05, 1.05);
+        opacity: 0.5;
+    }
+
+    to {
+        -webkit-transform: scale3d(1, 1, 1);
+        transform: scale3d(1, 1, 1);
+        opacity: 1;
+    }
+}
+
+.notificationHidingAnimation {
+    -webkit-animation: hiding 0.5s ease-in-out;
+}
+
+@-webkit-keyframes hiding {
+    from {
+        -webkit-transform: perspective(400px);
+        transform: perspective(400px);
+    }
+
+    30% {
+        -webkit-transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+        transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+        opacity: 1;
+    }
+
+    to {
+        -webkit-transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+        transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+        opacity: 0;
+    }
+}
+
+@keyframes hiding {
+    from {
+        -webkit-transform: perspective(400px);
+        transform: perspective(400px);
+    }
+
+    30% {
+        -webkit-transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+        transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+        opacity: 1;
+    }
+
+    to {
+        -webkit-transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+        transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+        opacity: 0;
+    }
 }

@@ -16,13 +16,12 @@ import javax.inject.Singleton;
  * @author gazarenkov
  */
 @Singleton
-public class BaseProjectType extends AbstractProjectType {
+public class BaseProjectType extends ProjectTypeDef {
 
     public static final String ID = "blank";
 
     public BaseProjectType() {
         super(ID, "Blank", true, false);
-        //addVariableDefinition("vcs", "VCS", false);
     }
 
 }

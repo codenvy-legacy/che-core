@@ -16,7 +16,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDefinition;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
@@ -48,9 +48,9 @@ public class ProjectTypeComponent implements Component {
 
     @Override
     public void start(final Callback<Component, Exception> callback) {
-        projectTypeService.getProjectTypes(appContext.getWorkspace().getId()).then(new Operation<List<ProjectTypeDefinition>>() {
+        projectTypeService.getProjectTypes(appContext.getWorkspace().getId()).then(new Operation<List<ProjectTypeDto>>() {
             @Override
-            public void apply(List<ProjectTypeDefinition> arg) throws OperationException {
+            public void apply(List<ProjectTypeDto> arg) throws OperationException {
                 projectTypeRegistry.registerAll(arg);
                 callback.onSuccess(ProjectTypeComponent.this);
             }

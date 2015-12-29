@@ -138,7 +138,7 @@ public interface ProjectManager {
      * @see ProjectConfig
      */
     ProjectConfig getProjectConfig(Project project)
-            throws ServerException, ProjectTypeConstraintException, ValueStorageException, ForbiddenException;
+            throws ServerException, ProjectTypeConstraintException, ValueStorageException, ForbiddenException, NotFoundException;
 
     /**
      * Updates project meta-information making all necessary validations.
@@ -155,7 +155,7 @@ public interface ProjectManager {
     void updateProjectConfig(Project project, ProjectConfig config) throws ServerException,
                                                                            ValueStorageException,
                                                                            ProjectTypeConstraintException,
-                                                                           ForbiddenException;
+                                                                           ForbiddenException, NotFoundException;
 
     /**
      * Gets ProjectMisc.

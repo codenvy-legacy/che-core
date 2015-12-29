@@ -20,9 +20,9 @@ import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.util.Pair;
 
 import javax.validation.constraints.NotNull;
@@ -41,15 +41,15 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
 
     private final AsyncRequestFactory    asyncRequestFactory;
     private final DtoUnmarshallerFactory unmarshallerFactory;
-    private final AsyncRequestLoader     loader;
+    private final LoaderFactory          loaderFactory;
 
     @Inject
     public FactoryServiceClientImpl(AsyncRequestFactory asyncRequestFactory,
                                     DtoUnmarshallerFactory unmarshallerFactory,
-                                    AsyncRequestLoader loader) {
+                                    LoaderFactory loaderFactory) {
         this.asyncRequestFactory = asyncRequestFactory;
         this.unmarshallerFactory = unmarshallerFactory;
-        this.loader = loader;
+        this.loaderFactory = loaderFactory;
     }
 
     /**
@@ -85,6 +85,7 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
         }
         asyncRequestFactory.createGetRequest(url.toString())
                            .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
+                            .loader(loaderFactory.newLoader("Getting info about factory..."))
                            .send(callback);
     }
 
@@ -94,9 +95,10 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
         if (path != null) {
             url += path;
         }
+
         return asyncRequestFactory.createGetRequest(url)
                                   .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
-                                  .loader(loader, "Getting info about factory...")
+                                  .loader(loaderFactory.newLoader("Getting info about factory..."))
                                   .send(unmarshallerFactory.newUnmarshaller(Factory.class));
     }
 
@@ -105,7 +107,7 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
         return asyncRequestFactory.createPostRequest(API_FACTORY_BASE_URL, factory)
                                   .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
                                   .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
-                                  .loader(loader, "Creating factory...")
+                                  .loader(loaderFactory.newLoader("Creating factory..."))
                                   .send(unmarshallerFactory.newUnmarshaller(Factory.class));
     }
 
@@ -126,7 +128,7 @@ public class FactoryServiceClientImpl implements FactoryServiceClient {
         return asyncRequestFactory.createGetRequest(API_FACTORY_BASE_URL + "find" + queryString(allParams))
                                   .header(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON)
                                   .header(HTTPHeader.CONTENT_TYPE, MimeType.APPLICATION_JSON)
-                                  .loader(loader, "Creating factory...")
+                                  .loader(loaderFactory.newLoader("Searching factory..."))
                                   .send(unmarshallerFactory.newListUnmarshaller(Factory.class));
     }
 
