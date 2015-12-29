@@ -177,11 +177,14 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
                     }
                 }
 
+                boolean configRequire = false;
+
                 if (isNullOrEmpty(dataObject.getType())) {
                     dataObject.withType(Constants.BLANK_ID);
+                    configRequire = true;
                 }
 
-                updateProject(callback, dataObject);
+                updateProject(callback, dataObject, configRequire);
             }
 
             @Override
@@ -193,20 +196,20 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         });
     }
 
-    private void updateProject(final CompleteCallback callback, ProjectConfigDto projectConfig) {
+    private void updateProject(final CompleteCallback callback, ProjectConfigDto projectConfig, final boolean configRequire) {
         final String projectName = dataObject.getName();
         Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
         projectServiceClient
                 .updateProject(workspaceId, projectName, projectConfig, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
 
                     @Override
-                    protected void onSuccess(ProjectConfigDto result) {
+                    protected void onSuccess(final ProjectConfigDto result) {
                         eventBus.fireEvent(new CreateProjectEvent(result));
-                        if (!result.getProblems().isEmpty()) {
-                            eventBus.fireEvent(new ConfigureProjectEvent(result));
-                        }
                         importProjectNotificationSubscriber.onSuccess();
                         callback.onCompleted();
+                        if (!result.getProblems().isEmpty() || configRequire) {
+                            eventBus.fireEvent(new ConfigureProjectEvent(result));
+                        }
                     }
 
                     @Override
