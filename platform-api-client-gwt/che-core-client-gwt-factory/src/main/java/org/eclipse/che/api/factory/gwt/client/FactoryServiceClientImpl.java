@@ -20,7 +20,6 @@ import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.AsyncRequestLoader;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
