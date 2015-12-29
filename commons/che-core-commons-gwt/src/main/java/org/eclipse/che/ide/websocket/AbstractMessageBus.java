@@ -288,7 +288,9 @@ abstract class AbstractMessageBus implements MessageBus {
         final String uuid = message.getStringField(MessageBuilder.UUID_FIELD);
         internalSend(uuid, message.serialize(), callback);
         if (callback != null) {
-            callback.getLoader().show();
+            if (callback.getLoader() != null) {
+                callback.getLoader().show();
+            }
             if (callback.getStatusHandler() != null) {
                 callback.getStatusHandler().requestInProgress(uuid);
             }
