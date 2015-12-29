@@ -17,14 +17,8 @@ import java.util.Map;
  *
  * @author andrew00x
  * @author Alexander Garagatyi
+ * @author Sergii Kabashniuk
  */
 public interface InstanceKey {
     Map<String, String> getFields();
-
-    boolean equals(Object o);
-
-    int hashCode();
-
-    /** Serializes this {@code InstanceKey} in JSON format. */
-    String toJson();
 }

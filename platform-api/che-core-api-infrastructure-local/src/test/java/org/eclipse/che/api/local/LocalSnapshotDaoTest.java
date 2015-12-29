@@ -101,11 +101,6 @@ public class LocalSnapshotDaoTest {
         }
 
         @Override
-        public String toJson() {
-            return "{\"field1\":\"value1\"}";
-        }
-
-        @Override
         public boolean equals(Object obj) {
             return obj instanceof InstanceKey && ((InstanceKey)obj).getFields().equals(getFields());
         }

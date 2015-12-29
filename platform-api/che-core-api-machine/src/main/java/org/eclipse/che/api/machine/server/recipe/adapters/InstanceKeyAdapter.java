@@ -48,11 +48,6 @@ public class InstanceKeyAdapter implements JsonDeserializer<InstanceKey>, JsonSe
                 }
                 return fields;
             }
-
-            @Override
-            public String toJson() {
-                return null;
-            }
         };
     }
 
