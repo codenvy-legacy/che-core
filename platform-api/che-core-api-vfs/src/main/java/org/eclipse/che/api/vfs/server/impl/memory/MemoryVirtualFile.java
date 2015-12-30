@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.singletonMap;
-import static org.eclipse.che.api.vfs.server.VirtualFileFilters.dotGitFilter;
 
 /**
  * In-memory implementation of VirtualFile.
@@ -629,7 +628,7 @@ public class MemoryVirtualFile implements VirtualFile {
     private InputStream compress(Archiver archiver) throws ForbiddenException, ServerException {
         try {
             ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            archiver.compress(byteOut, dotGitFilter());
+            archiver.compress(byteOut);
             return new ByteArrayInputStream(byteOut.toByteArray());
         } catch (IOException e) {
             throw new ServerException(e.getMessage(), e);
@@ -836,7 +835,7 @@ public class MemoryVirtualFile implements VirtualFile {
         SearcherProvider searcherProvider = fileSystem.getSearcherProvider();
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(fileSystem, true).add(newFile);
+                searcherProvider.getSearcher(fileSystem).add(newFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -847,7 +846,7 @@ public class MemoryVirtualFile implements VirtualFile {
         SearcherProvider searcherProvider = fileSystem.getSearcherProvider();
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(fileSystem, true).update(this);
+                searcherProvider.getSearcher(fileSystem).update(this);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -858,7 +857,7 @@ public class MemoryVirtualFile implements VirtualFile {
         SearcherProvider searcherProvider = fileSystem.getSearcherProvider();
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(fileSystem, true).delete(path.toString(), isFile);
+                searcherProvider.getSearcher(fileSystem).delete(path.toString(), isFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }

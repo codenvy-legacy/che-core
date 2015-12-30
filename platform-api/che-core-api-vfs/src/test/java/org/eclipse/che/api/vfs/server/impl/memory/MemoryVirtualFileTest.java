@@ -22,7 +22,6 @@ import org.eclipse.che.api.vfs.server.Archiver;
 import org.eclipse.che.api.vfs.server.ArchiverFactory;
 import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileVisitor;
 import org.eclipse.che.api.vfs.server.search.Searcher;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
@@ -77,6 +76,7 @@ public class MemoryVirtualFileTest {
         fileSystem = new MemoryVirtualFileSystem(archiverFactory, searcherProvider);
         searcher = mock(Searcher.class);
         when(searcherProvider.getSearcher(eq(fileSystem), eq(true))).thenReturn(searcher);
+        when(searcherProvider.getSearcher(eq(fileSystem))).thenReturn(searcher);
     }
 
     @Test
@@ -1306,7 +1306,7 @@ public class MemoryVirtualFileTest {
         Archiver archiver = mock(Archiver.class);
         when(archiverFactory.createArchiver(eq(folder), eq("zip"))).thenReturn(archiver);
         folder.zip();
-        verify(archiver).compress(any(OutputStream.class), any(VirtualFileFilter.class));
+        verify(archiver).compress(any(OutputStream.class));
     }
 
     @Test
@@ -1342,7 +1342,7 @@ public class MemoryVirtualFileTest {
         Archiver archiver = mock(Archiver.class);
         when(archiverFactory.createArchiver(eq(folder), eq("tar"))).thenReturn(archiver);
         folder.tar();
-        verify(archiver).compress(any(OutputStream.class), any(VirtualFileFilter.class));
+        verify(archiver).compress(any(OutputStream.class));
     }
 
     @Test

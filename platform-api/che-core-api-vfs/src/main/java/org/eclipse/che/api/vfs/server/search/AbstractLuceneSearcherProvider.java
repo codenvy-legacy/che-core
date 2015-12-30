@@ -31,5 +31,10 @@ public abstract class AbstractLuceneSearcherProvider implements SearcherProvider
         return cachedSearcher;
     }
 
+    @Override
+    public Searcher getSearcher(VirtualFileSystem virtualFileSystem) throws ServerException {
+        return getSearcher(virtualFileSystem, true);
+    }
+
     protected abstract LuceneSearcher createLuceneSearcher();
 }

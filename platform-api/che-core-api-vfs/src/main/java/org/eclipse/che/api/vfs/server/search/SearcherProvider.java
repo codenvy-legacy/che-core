@@ -30,4 +30,14 @@ public interface SearcherProvider {
      * @see VirtualFileSystem
      */
     Searcher getSearcher(VirtualFileSystem virtualFileSystem, boolean create) throws ServerException;
+
+    /**
+     * Get Searcher for specified VirtualFileSystem. This method is shortcut for {@code getSearcher(VirtualFileSystem, true)}.
+     *
+     * @param virtualFileSystem
+     *         VirtualFileSystem
+     * @return {@code Searcher}
+     * @see VirtualFileSystem
+     */
+    Searcher getSearcher(VirtualFileSystem virtualFileSystem) throws ServerException;
 }

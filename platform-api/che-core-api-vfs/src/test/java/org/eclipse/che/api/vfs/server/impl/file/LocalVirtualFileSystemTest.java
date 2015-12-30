@@ -44,6 +44,7 @@ public class LocalVirtualFileSystemTest {
         testDirectory = new File(targetDir, NameGenerator.generate("fs-", 4));
         fileSystem = new LocalVirtualFileSystem(testDirectory, mock(ArchiverFactory.class), searcherProvider, closeCallback);
         when(searcherProvider.getSearcher(eq(fileSystem), anyBoolean())).thenReturn(searcher);
+        when(searcherProvider.getSearcher(eq(fileSystem))).thenReturn(searcher);
     }
 
     @After

@@ -70,6 +70,7 @@ public class ZipArchiverTest {
                                                                          searcherProvider,
                                                                          mock(VirtualFileSystem.CloseCallback.class));
         when(searcherProvider.getSearcher(eq(virtualFileSystem), eq(true))).thenReturn(searcher);
+        when(searcherProvider.getSearcher(eq(virtualFileSystem))).thenReturn(searcher);
         vfsRoot = virtualFileSystem.getRoot();
     }
 

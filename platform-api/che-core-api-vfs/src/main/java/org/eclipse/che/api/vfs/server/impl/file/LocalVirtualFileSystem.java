@@ -915,7 +915,7 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
     private void addInSearcher(LocalVirtualFile newVirtualFile) {
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(this, true).add(newVirtualFile);
+                searcherProvider.getSearcher(this).add(newVirtualFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -925,7 +925,7 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
     private void updateInSearcher(LocalVirtualFile virtualFile) {
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(this, true).update(virtualFile);
+                searcherProvider.getSearcher(this).update(virtualFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }
@@ -935,7 +935,7 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
     private void deleteInSearcher(Path path, boolean isFile) {
         if (searcherProvider != null) {
             try {
-                searcherProvider.getSearcher(this, true).delete(path.toString(), isFile);
+                searcherProvider.getSearcher(this).delete(path.toString(), isFile);
             } catch (ServerException e) {
                 LOG.error(e.getMessage(), e);
             }

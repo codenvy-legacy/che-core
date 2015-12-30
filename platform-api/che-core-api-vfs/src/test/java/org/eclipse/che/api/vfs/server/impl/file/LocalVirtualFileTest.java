@@ -95,6 +95,7 @@ public class LocalVirtualFileTest {
                                                 mock(VirtualFileSystem.CloseCallback.class));
         searcher = mock(Searcher.class);
         when(searcherProvider.getSearcher(eq(fileSystem), eq(true))).thenReturn(searcher);
+        when(searcherProvider.getSearcher(eq(fileSystem))).thenReturn(searcher);
     }
 
     @After
