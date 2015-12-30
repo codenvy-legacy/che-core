@@ -416,10 +416,6 @@ public class Style {
         return theme.getDelimeterColor();
     }
 
-    public static String getOutputFontColor() {
-        return theme.getOutputFontColor();
-    }
-
     public static String getOutputLinkColor() {
         return theme.getOutputLinkColor();
     }

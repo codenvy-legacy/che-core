@@ -305,7 +305,7 @@
 @eval delimeterColor org.eclipse.che.ide.api.theme.Style.getDelimeterColor();
 
 /*Events*/
-@eval outputFontColor org.eclipse.che.ide.api.theme.Style.getOutputFontColor();
+@eval outputFontColor org.eclipse.che.ide.api.theme.Style.theme.getOutputFontColor();
 @eval outputLinkColor org.eclipse.che.ide.api.theme.Style.getOutputLinkColor();
 
 /*Colors*/
