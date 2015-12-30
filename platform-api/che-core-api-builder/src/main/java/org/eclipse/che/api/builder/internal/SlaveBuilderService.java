@@ -94,7 +94,6 @@ public final class SlaveBuilderService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_BUILDER_STATE)
     @GET
     @Path("state")
-    @RolesAllowed({"user", "tmp_user"})
     @Produces(MediaType.APPLICATION_JSON)
     public BuilderState getBuilderState(@Required
                                         @Description("Name of the builder")
