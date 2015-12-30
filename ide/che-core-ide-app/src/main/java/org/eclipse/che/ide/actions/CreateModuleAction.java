@@ -15,13 +15,17 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ProjectAction;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
 import org.eclipse.che.ide.project.shared.NodesResources;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
+import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,18 +33,21 @@ import java.util.List;
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class CreateModuleAction extends ProjectAction {
+public class CreateModuleAction extends AbstractPerspectiveAction {
 
+    private final AppContext               appContext;
     private final ProjectWizardPresenter   wizard;
     private final AnalyticsEventLogger     eventLogger;
     private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
-    public CreateModuleAction(NodesResources resources,
+    public CreateModuleAction(AppContext appContext,
+                              NodesResources resources,
                               ProjectWizardPresenter wizard,
                               AnalyticsEventLogger eventLogger,
                               ProjectExplorerPresenter projectExplorer) {
-        super("Create Module...", "Create module from existing folder", resources.moduleFolder());
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), "Create Module...", "Create module from existing folder", null, resources.moduleFolder());
+        this.appContext = appContext;
         this.wizard = wizard;
         this.eventLogger = eventLogger;
         this.projectExplorer = projectExplorer;
@@ -56,8 +63,13 @@ public class CreateModuleAction extends ProjectAction {
     }
 
     @Override
-    protected void updateProjectAction(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(getResourceBasedNode() != null);
+    public void updateInPerspective(@NotNull ActionEvent event) {
+        if (appContext.getCurrentProject() == null) {
+            event.getPresentation().setEnabledAndVisible(false);
+            return;
+        }
+
+        event.getPresentation().setEnabledAndVisible(getResourceBasedNode() != null);
     }
 
     @Nullable

@@ -428,18 +428,6 @@ public class StandardComponentInitializer {
             }
         });
 
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Stop...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
         // Project (New Menu)
         DefaultActionGroup projectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT);
 

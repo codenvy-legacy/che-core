@@ -744,7 +744,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getOutputFontColor() {
-        return "#e6e6e6";
+        return "#5c5c5c";
     }
 
     @Override
