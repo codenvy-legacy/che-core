@@ -220,10 +220,7 @@ public class SourcesManagerImpl implements SourcesManager {
             conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
             conn.setConnectTimeout(CONNECT_TIMEOUT);
             conn.setReadTimeout(READ_TIMEOUT);
-            final EnvironmentContext context = EnvironmentContext.getCurrent();
-            if (context.getUser() != null && context.getUser().getToken() != null) {
-                conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
-            }
+            EnvironmentContext.getCurrent().setAuthorization(conn);
             if (!md5sums.isEmpty()) {
                 conn.setRequestMethod(HttpMethod.POST);
                 conn.setRequestProperty("Content-type", MediaType.TEXT_PLAIN);

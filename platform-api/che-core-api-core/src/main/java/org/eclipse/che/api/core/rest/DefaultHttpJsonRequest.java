@@ -205,9 +205,7 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
             conn.setRequestMethod(method);
             //drop a hint for server side that we want to receive application/json
             conn.addRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-            if (authToken != null) {
-                conn.setRequestProperty(HttpHeaders.AUTHORIZATION, authToken);
-            }
+            EnvironmentContext.getCurrent().setAuthorization(conn);
             if (body != null) {
                 conn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
                 conn.setDoOutput(true);

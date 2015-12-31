@@ -138,10 +138,7 @@ public class RemoteRunnerProcess {
         conn.setConnectTimeout(60 * 1000);
         conn.setReadTimeout(60 * 1000);
         conn.setRequestMethod(method);
-        final EnvironmentContext context = EnvironmentContext.getCurrent();
-        if (context.getUser() != null && context.getUser().getToken() != null) {
-            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
-        }
+        EnvironmentContext.getCurrent().setAuthorization(conn);
         try {
             if (output instanceof HttpOutputMessage) {
                 HttpOutputMessage httpOutput = (HttpOutputMessage)output;
