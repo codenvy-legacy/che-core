@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.14.0</version>
+        <version>3.14.0-sap-03</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>che-core-ide-parent</artifactId>
