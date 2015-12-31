@@ -116,9 +116,6 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
-            <resource>
-                <directory>target/requirejs-${requirejs.upstream.version}</directory>
-            </resource>
         </resources>
         <testResources>
             <testResource>
@@ -127,28 +124,11 @@
         </testResources>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>wagon-maven-plugin</artifactId>
-                <version>1.0-beta-4</version>
-                <executions>
-                    <execution>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>${requirejs.upstream.url}</url>
-                            <fromFile>require.js</fromFile>
-                            <toFile>${project.build.directory}/requirejs-${requirejs.upstream.version}/org/eclipse/che/ide/jseditor/public/require.js</toFile>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
                     <excludes>
+                        <exclude>**/org/eclipse/che/ide/jseditor/public/</exclude>
                         <exclude>**/org/eclipse/che/ide/jseditor/client/reconciler/DirtyRegion.java</exclude>
                         <exclude>**/org/eclipse/che/ide/jseditor/client/reconciler/DirtyRegionQueue.java</exclude>
                         <exclude>**/org/eclipse/che/ide/jseditor/client/annotation/AnnotationModelEvent.java</exclude>
