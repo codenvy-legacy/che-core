@@ -430,8 +430,7 @@ public class BuildQueue {
         final Link zipballLink = descriptor.getLink(org.eclipse.che.api.project.server.Constants.LINK_REL_EXPORT_ZIP);
         if (zipballLink != null) {
             final String zipballLinkHref = zipballLink.getHref();
-            final String token = getAuthenticationToken();
-            request.setSourcesUrl(token != null ? String.format("%s?token=%s", zipballLinkHref, token) : zipballLinkHref);
+            request.setSourcesUrl(zipballLinkHref);
         }
     }
 
