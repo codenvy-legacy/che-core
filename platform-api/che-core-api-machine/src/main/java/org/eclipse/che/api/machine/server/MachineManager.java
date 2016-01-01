@@ -102,6 +102,7 @@ public class MachineManager {
     private final String                   apiEndpoint;
     private final int                      defaultMachineMemorySizeMB;
     private final MachineCleaner           machineCleaner;
+    private final WsAgentLauncher          wsAgentLauncher;
 
     @Inject
     public MachineManager(SnapshotDao snapshotDao,
@@ -110,11 +111,13 @@ public class MachineManager {
                           @Named("machine.logs.location") String machineLogsDir,
                           EventService eventService,
                           @Named("machine.default_mem_size_mb") int defaultMachineMemorySizeMB,
-                          @Named("api.endpoint") String apiEndpoint) {
+                          @Named("api.endpoint") String apiEndpoint,
+                          WsAgentLauncher wsAgentLauncher) {
         this.snapshotDao = snapshotDao;
         this.machineInstanceProviders = machineInstanceProviders;
         this.eventService = eventService;
         this.apiEndpoint = apiEndpoint;
+        this.wsAgentLauncher = wsAgentLauncher;
         this.machineLogsDir = new File(machineLogsDir);
         this.machineRegistry = machineRegistry;
         this.defaultMachineMemorySizeMB = defaultMachineMemorySizeMB;
@@ -358,9 +361,13 @@ public class MachineManager {
                 instance = instanceProvider.createInstance(instanceKey, machineState, machineLogger);
             }
 
+            instance.setStatus(MachineStatus.RUNNING);
+
             machineRegistry.update(instance);
 
-            instance.setStatus(MachineStatus.RUNNING);
+            if (machineState.isDev()) {
+                wsAgentLauncher.startWsAgent(machineState.getWorkspaceId());
+            }
 
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.RUNNING)
@@ -369,7 +376,7 @@ public class MachineManager {
                                            .withWorkspaceId(machineState.getWorkspaceId())
                                            .withMachineName(machineState.getName()));
 
-        } catch (ServerException | ConflictException e) {
+        } catch (ServerException | ConflictException | InterruptedException e) {
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.ERROR)
                                            .withMachineId(machineState.getId())
