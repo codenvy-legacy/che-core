@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.util;
 
+import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +40,7 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
     public void download(String downloadUrl, java.io.File downloadTo, Callback callback) {
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
-            conn.setConnectTimeout(CONNECT_TIMEOUT);
-            conn.setReadTimeout(READ_TIMEOUT);
-            final int responseCode = conn.getResponseCode();
-            if (responseCode != 200) {
-                throw new IOException(String.format("Invalid response status %d from remote server. ", responseCode));
-            }
+            conn = openUrlConnection(downloadUrl);
             final String contentDisposition = conn.getHeaderField(HttpHeaders.CONTENT_DISPOSITION);
             String fileName = null;
             if (contentDisposition != null) {
@@ -81,13 +76,7 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
     public void download(String downloadUrl, java.io.File downloadTo, String fileName, boolean replaceExisting) throws IOException {
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
-            conn.setConnectTimeout(CONNECT_TIMEOUT);
-            conn.setReadTimeout(READ_TIMEOUT);
-            final int responseCode = conn.getResponseCode();
-            if (responseCode != 200) {
-                throw new IOException(String.format("Invalid response status %d from remote server. ", responseCode));
-            }
+            conn = openUrlConnection(downloadUrl);
             final java.io.File downloadFile = new java.io.File(downloadTo, fileName);
             try (InputStream in = conn.getInputStream()) {
                 if (replaceExisting) {
@@ -101,5 +90,23 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
                 conn.disconnect();
             }
         }
+    }
+
+    private static HttpURLConnection openUrlConnection(String downloadUrl) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
+        // Set timeouts
+        conn.setConnectTimeout(CONNECT_TIMEOUT);
+        conn.setReadTimeout(READ_TIMEOUT);
+        // Set authorization if present
+        final EnvironmentContext context = EnvironmentContext.getCurrent();
+        if (context.getUser() != null && context.getUser().getToken() != null) {
+            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
+        }
+        // Connect
+        final int responseCode = conn.getResponseCode();
+        if (responseCode != 200) {
+            throw new IOException(String.format("Invalid response status %d from remote server. ", responseCode));
+        }
+        return conn;
     }
 }
