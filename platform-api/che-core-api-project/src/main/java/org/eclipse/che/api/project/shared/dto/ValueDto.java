@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.shared.dto;
 
+
 import org.eclipse.che.api.core.model.project.type.Value;
 import org.eclipse.che.dto.shared.DTO;
 

@@ -16,19 +16,20 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.Wizard;
@@ -81,7 +82,7 @@ public class ImportWizardTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<List<SourceEstimation>>> estimationCaptor;
     @Captor
-    private ArgumentCaptor<Operation<ProjectTypeDto>>                    typeDefinitionCaptor;
+    private ArgumentCaptor<Operation<ProjectTypeImpl>>                   typeDefinitionCaptor;
 
     @Mock
     private ProjectServiceClient                projectServiceClient;
@@ -92,7 +93,7 @@ public class ImportWizardTest {
     @Mock
     private SourceEstimation                    estimation;
     @Mock
-    private ProjectTypeDto                      projectTypeDefinition;
+    private ProjectTypeImpl                      projectTypeDefinition;
     @Mock
     private ProjectConfigDto                    projectConfig;
     @Mock

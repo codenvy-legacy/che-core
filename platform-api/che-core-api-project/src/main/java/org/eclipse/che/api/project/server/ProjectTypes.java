@@ -12,7 +12,7 @@ package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.core.model.project.type.Attribute;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 

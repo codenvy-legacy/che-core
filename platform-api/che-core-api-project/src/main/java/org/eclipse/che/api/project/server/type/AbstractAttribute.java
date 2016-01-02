@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
-import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.core.model.project.type.Attribute;
 
 /**
  * @author gazarenkov

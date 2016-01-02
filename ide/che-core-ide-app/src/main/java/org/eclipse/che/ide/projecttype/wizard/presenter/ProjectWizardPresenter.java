@@ -13,12 +13,13 @@ package org.eclipse.che.ide.projecttype.wizard.presenter;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
@@ -35,7 +36,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.*;
+import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
+import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE_MODULE;
+import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.IMPORT;
+import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.UPDATE;
 
 /**
  * Presenter for project wizard.
@@ -51,17 +55,17 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
                                                CategoriesPagePresenter.ProjectTypeSelectionListener,
                                                CategoriesPagePresenter.ProjectTemplateSelectionListener {
 
-    private final ProjectWizardView view;
-    private final DtoFactory dtoFactory;
-    private final DialogFactory dialogFactory;
-    private final ProjectWizardFactory projectWizardFactory;
-    private final ProjectWizardRegistry wizardRegistry;
-    private final Provider<CategoriesPagePresenter>         categoriesPageProvider;
-    private final Map<ProjectTypeDto, ProjectWizard> wizardsCache;
-    private CategoriesPagePresenter categoriesPage;
-    private ProjectWizard wizard;
-    private ProjectWizard importWizard;
-    private WizardPage currentPage;
+    private final ProjectWizardView                   view;
+    private final DtoFactory                          dtoFactory;
+    private final DialogFactory                       dialogFactory;
+    private final ProjectWizardFactory                projectWizardFactory;
+    private final ProjectWizardRegistry               wizardRegistry;
+    private final Provider<CategoriesPagePresenter>   categoriesPageProvider;
+    private final Map<ProjectTypeImpl, ProjectWizard> wizardsCache;
+    private       CategoriesPagePresenter             categoriesPage;
+    private       ProjectWizard                       wizard;
+    private       ProjectWizard                       importWizard;
+    private       WizardPage                          currentPage;
 
     private ProjectWizardMode wizardMode;
     /** Contains project's path when project wizard opened for updating project. */
@@ -181,7 +185,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     @Override
-    public void onProjectTypeSelected(ProjectTypeDto projectType) {
+    public void onProjectTypeSelected(ProjectTypeImpl projectType) {
         final ProjectConfigDto prevData = wizard.getDataObject();
         wizard = getWizardForProjectType(projectType);
         wizard.navigateToFirst();
@@ -217,7 +221,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Creates or returns project wizard for the specified projectType with the given dataObject. */
-    private ProjectWizard getWizardForProjectType(@NotNull ProjectTypeDto projectType) {
+    private ProjectWizard getWizardForProjectType(@NotNull ProjectTypeImpl projectType) {
         if (wizardsCache.containsKey(projectType)) {
             return wizardsCache.get(projectType);
         }

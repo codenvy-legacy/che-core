@@ -29,6 +29,7 @@ public class CurrentProject {
     private ProjectConfigDto configDto;
     private TreeStructure    tree;
 
+
     /**
      * @return ProjectDescriptor of opened project
      */
@@ -87,4 +88,6 @@ public class CurrentProject {
     public void setCurrentTree(TreeStructure tree) {
         this.tree = tree;
     }
+
+
 }

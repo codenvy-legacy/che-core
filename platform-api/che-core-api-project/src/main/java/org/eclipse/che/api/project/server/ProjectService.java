@@ -24,7 +24,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
+import org.eclipse.che.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.Service;

@@ -11,8 +11,13 @@
 package org.eclipse.che.ide.api.app;
 
 
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.factory.shared.dto.Factory;
+import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.ide.api.project.ProjectFactory;
+import org.eclipse.che.ide.api.project.ProjectImpl;
 
 import javax.inject.Singleton;
 
@@ -31,6 +36,14 @@ public class AppContext {
     private Factory           factory;
     private String            devMachineId;
     private String            projectsRoot;
+
+    private ProjectImpl activeProject;
+    private ProjectFactory projectFactory;
+
+    @Inject
+    public AppContext(ProjectFactory projectFactory) {
+        this.projectFactory = projectFactory;
+    }
 
     public UsersWorkspaceDto getWorkspace() {
         return workspace;
@@ -115,4 +128,22 @@ public class AppContext {
     public void setProjectsRoot(String projectsRoot) {
         this.projectsRoot = projectsRoot;
     }
+
+
+    /**
+     * TODO experimental
+     * @return
+     */
+    public ProjectImpl getActiveProject() {
+        return activeProject;
+    }
+
+    /**
+     * TODO experimental
+     * @param configDto
+     */
+    public void setActiveProject(ProjectConfigDto configDto) {
+        this.activeProject = projectFactory.createProject(configDto);
+    }
+
 }

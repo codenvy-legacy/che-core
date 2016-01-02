@@ -12,10 +12,11 @@ package org.eclipse.che.ide.projecttype.wizard.categoriespage;
 
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
+
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
@@ -23,7 +24,11 @@ import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 import org.eclipse.che.ide.util.NameUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode.CREATE;
 import static org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar.WIZARD_MODE_KEY;
@@ -43,7 +48,7 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
     private final ProjectTemplateRegistry projectTemplateRegistry;
     private final ProjectWizardRegistry wizardRegistry;
     private final PreSelectedProjectTypeManager preSelectedProjectTypeManager;
-    private ProjectTypeDto selectedProjectType;
+    private ProjectTypeImpl selectedProjectType;
     private ProjectTemplateDescriptor selectedProjectTemplate;
     private       ProjectTypeSelectionListener     projectTypeSelectionListener;
     private       ProjectTemplateSelectionListener projectTemplateSelectionListener;
@@ -111,7 +116,7 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
     }
 
     @Override
-    public void projectTypeSelected(ProjectTypeDto typeDescriptor) {
+    public void projectTypeSelected(ProjectTypeImpl typeDescriptor) {
         selectedProjectType = typeDescriptor;
         selectedProjectTemplate = null;
 
@@ -159,14 +164,14 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
     }
 
     private void loadProjectTypesAndTemplates() {
-        List<ProjectTypeDto> projectTypes = projectTypeRegistry.getProjectTypes();
-        Map<String, Set<ProjectTypeDto>> typesByCategory = new HashMap<>();
+        Set<ProjectTypeImpl> projectTypes = projectTypeRegistry.getProjectTypes();
+        Map<String, Set<ProjectTypeImpl>> typesByCategory = new HashMap<>();
         Map<String, Set<ProjectTemplateDescriptor>> templatesByCategory = new HashMap<>();
-        for (ProjectTypeDto type : projectTypes) {
+        for (ProjectTypeImpl type : projectTypes) {
             if (wizardRegistry.getWizardRegistrar(type.getId()) != null) {
                 final String category = wizardRegistry.getWizardCategory(type.getId());
                 if (!typesByCategory.containsKey(category)) {
-                    typesByCategory.put(category, new HashSet<ProjectTypeDto>());
+                    typesByCategory.put(category, new HashSet<ProjectTypeImpl>());
                 }
                 typesByCategory.get(category).add(type);
             }
@@ -187,7 +192,7 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
 
     public interface ProjectTypeSelectionListener {
         /** Called when project type selected. */
-        void onProjectTypeSelected(ProjectTypeDto projectTypeDto);
+        void onProjectTypeSelected(ProjectTypeImpl projectTypeDto);
     }
 
     public interface ProjectTemplateSelectionListener {

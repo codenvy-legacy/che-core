@@ -14,7 +14,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.SourceStorage;
-import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.core.model.project.type.Attribute;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.core.rest.shared.dto.Link;

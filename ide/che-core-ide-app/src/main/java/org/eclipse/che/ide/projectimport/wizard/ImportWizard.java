@@ -19,7 +19,6 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
@@ -28,6 +27,7 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
@@ -142,10 +142,10 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
         Unmarshallable<List<SourceEstimation>> unmarshaller = dtoUnmarshallerFactory.newListUnmarshaller(SourceEstimation.class);
         projectServiceClient.resolveSources(workspaceId, projectName, new AsyncRequestCallback<List<SourceEstimation>>(unmarshaller) {
 
-            Function<SourceEstimation, ProjectTypeDto> estimateToType = new Function<SourceEstimation, ProjectTypeDto>() {
+            Function<SourceEstimation, ProjectTypeImpl> estimateToType = new Function<SourceEstimation, ProjectTypeImpl>() {
                 @Nullable
                 @Override
-                public ProjectTypeDto apply(@Nullable SourceEstimation input) {
+                public ProjectTypeImpl apply(@Nullable SourceEstimation input) {
                     if (input != null) {
                         return projectTypeRegistry.getProjectType(input.getType());
                     }
@@ -154,9 +154,9 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
                 }
             };
 
-            Predicate<ProjectTypeDto> isPrimaryable = new Predicate<ProjectTypeDto>() {
+            Predicate<ProjectTypeImpl> isPrimaryable = new Predicate<ProjectTypeImpl>() {
                 @Override
-                public boolean apply(@Nullable ProjectTypeDto input) {
+                public boolean apply(@Nullable ProjectTypeImpl input) {
                     if (input != null) {
                         return input.isPrimaryable();
                     }
@@ -167,10 +167,10 @@ public class ImportWizard extends AbstractWizard<ProjectConfigDto> {
 
             @Override
             protected void onSuccess(List<SourceEstimation> result) {
-                Iterable<ProjectTypeDto> types = filter(transform(result, estimateToType), isPrimaryable);
+                Iterable<ProjectTypeImpl> types = filter(transform(result, estimateToType), isPrimaryable);
 
                 if (size(types) == 1) {
-                    ProjectTypeDto typeDto = getFirst(types, null);
+                    ProjectTypeImpl typeDto = getFirst(types, null);
 
                     if (typeDto != null) {
                         dataObject.withType(typeDto.getId());

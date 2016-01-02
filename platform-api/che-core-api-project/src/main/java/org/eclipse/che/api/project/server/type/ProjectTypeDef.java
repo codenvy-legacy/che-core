@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server.type;
 
-import org.eclipse.che.api.core.model.project.type.Attribute;
-import org.eclipse.che.api.core.model.project.type.ProjectType;
+import org.eclipse.che.core.model.project.type.Attribute;
+import org.eclipse.che.core.model.project.type.ProjectType;
 import org.eclipse.che.api.project.server.ValueProviderFactory;
 
 import java.util.ArrayList;
