@@ -24,16 +24,5 @@
     <name>Che Core API :: Client GWT :: Parent</name>
     <modules>
         <module>che-core-client-gwt-core</module>
-        <module>che-core-client-gwt-analytics</module>
-        <module>che-core-client-gwt-auth</module>
-        <module>che-core-client-gwt-builder</module>
-        <module>che-core-client-gwt-account</module>
-        <module>che-core-client-gwt-project</module>
-        <module>che-core-client-gwt-user</module>
-        <module>che-core-client-gwt-runner</module>
-        <module>che-core-client-gwt-vfs</module>
-        <module>che-core-client-gwt-factory</module>
-        <module>che-core-client-gwt-git</module>
-        <module>che-core-client-gwt-workspace</module>
     </modules>
 </project>
