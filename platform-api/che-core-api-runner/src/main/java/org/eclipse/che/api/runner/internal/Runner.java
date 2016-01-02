@@ -368,13 +368,7 @@ public abstract class Runner {
         }
         String url = null;
         if (link != null) {
-            final String href = link.getHref();
-            final String token = request.getUserToken();
-            if (href.indexOf('?') > 0) {
-                url = href + "&token=" + token;
-            } else {
-                url = href + "?token=" + token;
-            }
+            url = link.getHref();
         }
         if (url == null) {
             return NO_SOURCES;
