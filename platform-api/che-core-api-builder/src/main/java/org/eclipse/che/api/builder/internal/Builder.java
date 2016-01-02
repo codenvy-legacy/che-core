@@ -28,6 +28,7 @@ import org.eclipse.che.api.core.util.ProcessUtil;
 import org.eclipse.che.api.core.util.StreamPump;
 import org.eclipse.che.api.core.util.Watchdog;
 import org.eclipse.che.commons.lang.IoUtil;
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.dto.server.DtoFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -408,7 +409,8 @@ public abstract class Builder {
                 }
             }
         };
-        final FutureBuildTask task = new FutureBuildTask(callable, internalId, commandLine, getName(), configuration, myLogger, callback);
+        Callable<Boolean> contextCallable = ThreadLocalPropagateContext.wrap(callable);
+        final FutureBuildTask task = new FutureBuildTask(contextCallable, internalId, commandLine, getName(), configuration, myLogger, callback);
         tasks.put(internalId, task);
         executor.execute(task);
         return task;
