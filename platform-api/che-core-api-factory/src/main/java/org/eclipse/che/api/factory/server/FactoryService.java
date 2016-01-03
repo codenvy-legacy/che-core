@@ -25,11 +25,13 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.workspace.EnvironmentState;
 import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.factory.server.builder.FactoryBuilder;
 import org.eclipse.che.api.factory.server.snippet.SnippetGenerator;
 import org.eclipse.che.api.factory.shared.dto.Author;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.workspace.server.DtoConverter;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
@@ -83,7 +85,7 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
- * Service for factory rest api features
+ * Defines Factory REST API.
  *
  * @author Anton Korneta
  */
@@ -100,6 +102,7 @@ public class FactoryService extends Service {
     private final LinksHelper            linksHelper;
     private final FactoryBuilder         factoryBuilder;
     private final WorkspaceManager       workspaceManager;
+    private final UserDao                userDao;
 
     @Inject
     public FactoryService(FactoryStore factoryStore,
@@ -108,7 +111,8 @@ public class FactoryService extends Service {
                           FactoryEditValidator factoryEditValidator,
                           LinksHelper linksHelper,
                           FactoryBuilder factoryBuilder,
-                          WorkspaceManager workspaceManager) {
+                          WorkspaceManager workspaceManager,
+                          UserDao userDao) {
         this.factoryStore = factoryStore;
         this.createValidator = createValidator;
         this.acceptValidator = acceptValidator;
@@ -116,6 +120,7 @@ public class FactoryService extends Service {
         this.linksHelper = linksHelper;
         this.factoryBuilder = factoryBuilder;
         this.workspaceManager = workspaceManager;
+        this.userDao = userDao;
     }
 
     /**
@@ -137,18 +142,16 @@ public class FactoryService extends Service {
      *         when any server errors occurs
      */
     @POST
-    @Consumes({MULTIPART_FORM_DATA})
-    @Produces({APPLICATION_JSON})
+    @Consumes(MULTIPART_FORM_DATA)
+    @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
     @ApiOperation(value = "Create a Factory and return data",
-                  notes = "Save factory to storage and return stored data. Field 'factory' should contains factory information.",
-                  response = Factory.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
-            @ApiResponse(code = 403, message = "The user does not have appropriate rights for perform factory save"),
-            @ApiResponse(code = 409, message = "Conflict error. Some parameter is missing"),
-            @ApiResponse(code = 500, message = "Unable to identify user from context")})
+                  notes = "Save factory to storage and return stored data. Field 'factory' should contains factory information.")
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have appropriate rights for perform factory save"),
+                   @ApiResponse(code = 409, message = "Conflict error. Some parameter is missing"),
+                   @ApiResponse(code = 500, message = "Unable to identify user from context")})
     public Factory saveFactory(Iterator<FileItem> formData, @Context UriInfo uriInfo)
             throws ForbiddenException, ConflictException, BadRequestException, ServerException, NotFoundException {
         try {
@@ -177,6 +180,8 @@ public class FactoryService extends Service {
                         }
                         break;
                     }
+                    default:
+                        //DO NOTHING
                 }
             }
             if (factory == null) {
@@ -185,11 +190,8 @@ public class FactoryService extends Service {
             }
             processDefaults(factory);
             createValidator.validateOnCreate(factory);
-            String factoryId = factoryStore.saveFactory(factory, images);
-            return factory.withLinks(linksHelper.createLinks(factoryStore.getFactory(factoryId),
-                                                             images,
-                                                             uriInfo,
-                                                             EnvironmentContext.getCurrent().getUser().getName()));
+            final Factory storedFactory = factoryStore.getFactory(factoryStore.saveFactory(factory, images));
+            return storedFactory.withLinks(createLinks(storedFactory, images, uriInfo));
         } catch (IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
             throw new ServerException(e.getLocalizedMessage(), e);
@@ -197,7 +199,7 @@ public class FactoryService extends Service {
     }
 
     /**
-     * Stores the factory from the configuration.
+     * Save factory to storage and return stored data.
      *
      * @param factory
      *         instance of factory which would be stored
@@ -212,18 +214,16 @@ public class FactoryService extends Service {
      *         when stored the factory is already exist
      */
     @POST
-    @Consumes({APPLICATION_JSON})
-    @Produces({APPLICATION_JSON})
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     @RolesAllowed("user")
     @ApiOperation(value = "Stores the factory from the configuration",
-                  notes = "Stores the factory without pictures and returns instance of the stored factory with links",
-                  response = Factory.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
-            @ApiResponse(code = 403, message = "The user does not have appropriate rights for perform factory save"),
-            @ApiResponse(code = 409, message = "Conflict error. Some parameter is missing"),
-            @ApiResponse(code = 500, message = "Internal Server Error")})
+                  notes = "Stores the factory without pictures and returns instance of the stored factory with links")
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "The user does not have appropriate rights for perform factory save"),
+                   @ApiResponse(code = 409, message = "Conflict error. Some parameter is missing"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
     public Factory saveFactory(Factory factory)
             throws BadRequestException, ServerException, ForbiddenException, ConflictException, NotFoundException {
         if (factory == null) {
@@ -231,15 +231,8 @@ public class FactoryService extends Service {
         }
         processDefaults(factory);
         createValidator.validateOnCreate(factory);
-        final String factoryId = factoryStore.saveFactory(factory, null);
-        try {
-            factory.setLinks(linksHelper.createLinks(factoryStore.getFactory(factoryId),
-                                                     uriInfo,
-                                                     EnvironmentContext.getCurrent().getUser().getName()));
-        } catch (UnsupportedEncodingException e) {
-            throw new ServerException(e.getLocalizedMessage(), e);
-        }
-        return factory;
+        final Factory storedFactory = factoryStore.getFactory(factoryStore.saveFactory(factory, null));
+        return storedFactory.withLinks(createLinks(storedFactory, null, uriInfo));
     }
 
     /**
@@ -259,35 +252,26 @@ public class FactoryService extends Service {
      */
     @GET
     @Path("/{id}")
-    @Produces({APPLICATION_JSON})
+    @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Get factory information by its id",
-                  notes = "Get JSON with factory information. Factory id is passed in a path parameter",
-                  response = Factory.class)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 404, message = "Factory not found"),
-            @ApiResponse(code = 400, message = "Failed to validate factory e.g. if it expired"),
-            @ApiResponse(code = 500, message = "Internal server error")})
+                  notes = "Get JSON with factory information. Factory id is passed in a path parameter")
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 404, message = "Factory not found"),
+                   @ApiResponse(code = 400, message = "Failed to validate factory e.g. if it expired"),
+                   @ApiResponse(code = 500, message = "Internal server error")})
     public Factory getFactory(@ApiParam(value = "Factory ID")
                               @PathParam("id")
                               String id,
                               @ApiParam(value = "Whether or not to validate values like it is done when accepting a Factory",
-                                        allowableValues = "true,false", defaultValue = "false")
+                                        allowableValues = "true,false",
+                                        defaultValue = "false")
                               @DefaultValue("false")
                               @QueryParam("validate")
                               Boolean validate,
                               @Context
                               UriInfo uriInfo) throws NotFoundException, ServerException, BadRequestException {
         final Factory factory = factoryStore.getFactory(id);
-
-        try {
-            factory.setLinks(linksHelper.createLinks(factory,
-                                                     factoryStore.getFactoryImages(id, null),
-                                                     uriInfo,
-                                                     factory.getCreator().getName()));
-        } catch (UnsupportedEncodingException e) {
-            throw new ServerException(e.getLocalizedMessage());
-        }
+        factory.setLinks(createLinks(factory, factoryStore.getFactoryImages(id, null), uriInfo));
         if (validate) {
             acceptValidator.validateOnAccept(factory);
         }
@@ -316,18 +300,17 @@ public class FactoryService extends Service {
     @PUT
     @Path("/{id}")
     @RolesAllowed("user")
-    @Consumes({APPLICATION_JSON})
-    @Produces({APPLICATION_JSON})
+    @Consumes(APPLICATION_JSON)
+    @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Updates factory information by its id",
                   notes = "Updates factory based on the factory id which is passed in a path parameter. " +
                           "For perform this operation user needs respective rights")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
-            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-            @ApiResponse(code = 409, message = "Not rewritable factory information is present in the new factory"),
-            @ApiResponse(code = 404, message = "Factory to update not found"),
-            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+                   @ApiResponse(code = 409, message = "Not rewritable factory information is present in the new factory"),
+                   @ApiResponse(code = 404, message = "Factory to update not found"),
+                   @ApiResponse(code = 500, message = "Internal server error")})
     public Factory updateFactory(@ApiParam(value = "Factory id")
                                  @PathParam("id")
                                  String id,
@@ -339,7 +322,7 @@ public class FactoryService extends Service {
         }
         final Factory existingFactory = factoryStore.getFactory(id);
 
-        // Validate the factory against the current user
+        // check if the current user has enough access to edit the factory
         factoryEditValidator.validate(existingFactory);
 
         processDefaults(newFactory);
@@ -351,16 +334,7 @@ public class FactoryService extends Service {
 
         // access granted, user can update the factory
         factoryStore.updateFactory(id, newFactory);
-
-        // create links
-        try {
-            newFactory.setLinks(linksHelper.createLinks(newFactory,
-                                                        factoryStore.getFactoryImages(id, null),
-                                                        uriInfo,
-                                                        newFactory.getCreator().getName()));
-        } catch (UnsupportedEncodingException e) {
-            throw new ServerException(e.getLocalizedMessage());
-        }
+        newFactory.setLinks(createLinks(newFactory, factoryStore.getFactoryImages(id, null), uriInfo));
         return newFactory;
     }
 
@@ -384,11 +358,10 @@ public class FactoryService extends Service {
     @ApiOperation(value = "Removes factory by its id",
                   notes = "Removes factory based on the factory id which is passed in a path parameter. " +
                           "For perform this operation user needs respective rights")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-            @ApiResponse(code = 404, message = "Factory not found"),
-            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+                   @ApiResponse(code = 404, message = "Factory not found"),
+                   @ApiResponse(code = 500, message = "Internal server error")})
     public void removeFactory(@ApiParam(value = "Factory id")
                               @PathParam("id")
                               String id,
@@ -396,7 +369,7 @@ public class FactoryService extends Service {
                               UriInfo uriInfo) throws NotFoundException, ServerException, ForbiddenException {
         final Factory factory = factoryStore.getFactory(id);
 
-        // Validate the factory against the current user
+        // check if the current user has enough access to edit the factory
         factoryEditValidator.validate(factory);
 
         // if validator didn't fail it means that the access is granted
@@ -418,14 +391,13 @@ public class FactoryService extends Service {
      */
     @GET
     @Path("/find")
-    @Produces({APPLICATION_JSON})
+    @Produces(APPLICATION_JSON)
     @RolesAllowed({"user", "system/manager"})
     @ApiOperation(value = "Get Factory by attribute",
                   notes = "If specify more than one value for a single query parameter then will be taken first one")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 400, message = "Failed to validate factory e.g. if it expired"),
-            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 400, message = "Failed to validate factory e.g. if it expired"),
+                   @ApiResponse(code = 500, message = "Internal server error")})
     public List<Factory> getFactoryByAttribute(@DefaultValue("0")
                                                @QueryParam("skipCount")
                                                Integer skipCount,
@@ -469,9 +441,8 @@ public class FactoryService extends Service {
     @Produces("image/*")
     @ApiOperation(value = "Get factory image information",
                   notes = "If the factory does not have image with specified id then first found image will be returned")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 404, message = "Factory or image id not found")})
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 404, message = "Factory or image id not found")})
     public Response getImage(@ApiParam(value = "Factory id")
                              @PathParam("id")
                              String id,
@@ -516,14 +487,13 @@ public class FactoryService extends Service {
      */
     @GET
     @Path("/{id}/snippet")
-    @Produces({TEXT_PLAIN})
+    @Produces(TEXT_PLAIN)
     @ApiOperation(value = "Get factory snippet by id",
                   notes = "If snippet type not set then default 'url' will be used")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
-            @ApiResponse(code = 404, message = "Factory or factory images not found"),
-            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 404, message = "Factory or factory images not found"),
+                   @ApiResponse(code = 500, message = "Internal server error")})
     public String getFactorySnippet(@ApiParam(value = "Factory ID")
                                     @PathParam("id")
                                     String id,
@@ -581,12 +551,11 @@ public class FactoryService extends Service {
     @Produces(APPLICATION_JSON)
     @ApiOperation(value = "Construct factory from workspace",
                   notes = "This call returns a Factory.json that is used to create a factory.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK"),
-            @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
-            @ApiResponse(code = 403, message = "Access to workspace denied"),
-            @ApiResponse(code = 404, message = "Workspace not found"),
-            @ApiResponse(code = 500, message = "Internal server error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
+                   @ApiResponse(code = 403, message = "Access to workspace denied"),
+                   @ApiResponse(code = 404, message = "Workspace not found"),
+                   @ApiResponse(code = 500, message = "Internal server error")})
     public Response getFactoryJson(@ApiParam(value = "Workspace ID")
                                    @PathParam("ws-id")
                                    String workspace,
@@ -604,6 +573,27 @@ public class FactoryService extends Service {
         return Response.ok(factory, APPLICATION_JSON)
                        .header(CONTENT_DISPOSITION, "attachment; filename=factory.json")
                        .build();
+    }
+
+    /**
+     * Creates factory links.
+     *
+     * If factory is named it will be generated accept named link,
+     * if images set is not null and not empty it will be generate links for them
+     */
+    private List<Link> createLinks(Factory factory, Set<FactoryImage> images, UriInfo uriInfo) throws NotFoundException, ServerException {
+        try {
+            String username = null;
+            if (!isNullOrEmpty(factory.getName())) {
+                username = userDao.getById(factory.getCreator().getUserId()).getName();
+            }
+            return images != null && !images.isEmpty()
+                   ? linksHelper.createLinks(factory, images, uriInfo, username)
+                   : linksHelper.createLinks(factory, uriInfo, username);
+
+        } catch (UnsupportedEncodingException e) {
+            throw new ServerException(e.getLocalizedMessage(), e);
+        }
     }
 
     /**

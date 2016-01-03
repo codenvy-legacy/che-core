@@ -107,7 +107,7 @@ public class FactoryBaseValidatorTest {
     public void shouldBeAbleToValidateFactoryUrlObject() throws ApiException {
         factory = prepareFactoryWithGivenStorage("git", VALID_REPOSITORY_URL);
         validator.validateProjects(factory);
-//        validator.validateProjectNames(factory);
+        validator.validateProjects(factory);
         validator.validateAccountId(factory);
     }
 
@@ -115,7 +115,7 @@ public class FactoryBaseValidatorTest {
     public void shouldBeAbleToValidateFactoryUrlObjectIfStorageIsESBWSO2() throws ApiException {
         factory = prepareFactoryWithGivenStorage("esbwso2", VALID_REPOSITORY_URL);
         validator.validateProjects(factory);
-//        validator.validateProjectNames(factory);
+        validator.validateProjects(factory);
         validator.validateAccountId(factory);
     }
 
@@ -183,12 +183,15 @@ public class FactoryBaseValidatorTest {
     @Test(dataProvider = "validProjectNamesProvider")
     public void shouldBeAbleToValidateValidProjectName(String projectName) throws Exception {
         // given
-        factory.withWorkspace(newDto(WorkspaceConfigDto.class)
-                                      .withProjects(Collections.singletonList(newDto(ProjectConfigDto.class)
-                                                                                      .withType("type")
-                                                                                      .withName(projectName))));
+        prepareFactoryWithGivenStorage("git", VALID_REPOSITORY_URL);
+        factory.withWorkspace(newDto(WorkspaceConfigDto.class).withProjects(
+                Collections.singletonList(newDto(ProjectConfigDto.class).withType("type")
+                                                                        .withName(projectName)
+                                                                        .withSource(newDto(SourceStorageDto.class)
+                                                                                            .withType("git")
+                                                                                            .withLocation(VALID_REPOSITORY_URL)))));
         // when, then
-//        validator.validateProjectNames(factory);
+        validator.validateProjects(factory);
     }
 
     @DataProvider(name = "validProjectNamesProvider")

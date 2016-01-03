@@ -27,7 +27,7 @@ public interface FactoryEditValidator {
      * @param factory
      *         factory object to validate
      * @throws ForbiddenException
-     *         occurs if the current user is not granted to edit the factory
+     *         when the current user is not granted to edit the factory
      * @throws ServerException
      *         when any other error occurs
      */

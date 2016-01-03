@@ -25,6 +25,8 @@ import org.eclipse.che.api.factory.shared.dto.Button;
 import org.eclipse.che.api.factory.shared.dto.ButtonAttributes;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.user.server.dao.UserDao;
+import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
@@ -113,6 +115,9 @@ public class FactoryServiceTest {
     @Mock
     private WorkspaceManager workspaceManager;
 
+    @Mock
+    private UserDao userDao;
+
     private FactoryBuilder factoryBuilder;
 
     private FactoryService factoryService;
@@ -123,13 +128,15 @@ public class FactoryServiceTest {
         dto = DtoFactory.getInstance();
         factoryBuilder = spy(new FactoryBuilder(new SourceStorageParametersValidator()));
         doNothing().when(factoryBuilder).checkValid(any(Factory.class));
+        when(userDao.getById(anyString())).thenReturn(new User().withName(JettyHttpServer.ADMIN_USER_NAME));
         factoryService = new FactoryService(factoryStore,
                                             createValidator,
                                             acceptValidator,
                                             editValidator,
                                             new LinksHelper(),
                                             factoryBuilder,
-                                            workspaceManager);
+                                            workspaceManager,
+                                            userDao);
     }
 
     @Filter
@@ -427,7 +434,7 @@ public class FactoryServiceTest {
 
         Link expectedCreateProjectByName = dto.createDto(Link.class);
         expectedCreateProjectByName.setProduces("text/html");
-        expectedCreateProjectByName.setHref(getServerUrl(context) + "/f?name=" + factoryName + "&user=" + userId);
+        expectedCreateProjectByName.setHref(getServerUrl(context) + "/f?name=" + factoryName + "&user=" + JettyHttpServer.ADMIN_USER_NAME);
         expectedCreateProjectByName.setRel("accept-named");
         expectedLinks.add(expectedCreateProjectByName);
 
