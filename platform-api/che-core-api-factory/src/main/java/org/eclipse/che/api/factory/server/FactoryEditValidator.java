@@ -10,7 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.server;
 
-import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 
 /**
@@ -21,12 +22,14 @@ import org.eclipse.che.api.factory.shared.dto.Factory;
 public interface FactoryEditValidator {
 
     /**
-     * Validates given factory by checking the current user is granted to edit the factory
+     * Validates given factory by checking the current user is granted to edit the factory.
      *
      * @param factory
      *         factory object to validate
-     * @throws org.eclipse.che.api.core.ApiException
-     *         - in case if factory is not valid
+     * @throws ForbiddenException
+     *         occurs if the current user is not granted to edit the factory
+     * @throws ServerException
+     *         when any other error occurs
      */
-    void validate(Factory factory) throws ApiException;
+    void validate(Factory factory) throws ForbiddenException, ServerException;
 }
