@@ -8,23 +8,19 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.git.impl.nativegit.ssh;
-
-import org.eclipse.che.api.git.GitException;
+package org.eclipse.che.api.ssh.shared;
 
 /**
- * @author Sergii Kabashniuk
+ * Constants for ssh API
+ *
+ * @author Sergii Leschenko
  */
-public interface SshKeyProvider {
+public final class Constants {
+    public static final String LINK_REL_GENERATE_PAIR = "create pair";
+    public static final String LINK_REL_CREATE_PAIR   = "create pair";
+    public static final String LINK_REL_GET_PAIRS     = "get pairs";
+    public static final String LINK_REL_GET_PAIR      = "get pair";
+    public static final String LINK_REL_REMOVE_PAIR   = "remove pair";
 
-    /**
-     * Get private ssh key.
-     *
-     * @param url
-     *         url to git repository
-     * @return byte array that contains private ssh key
-     * @throws GitException
-     *         if an error occurs while fetching keys
-     */
-    byte[] getPrivateKey(String url) throws GitException;
+    private Constants() {}
 }

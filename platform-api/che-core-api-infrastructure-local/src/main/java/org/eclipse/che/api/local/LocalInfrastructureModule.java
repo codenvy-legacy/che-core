@@ -19,6 +19,7 @@ import org.eclipse.che.api.core.rest.permission.PermissionManager;
 import org.eclipse.che.api.local.storage.LocalStorageFactory;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
 import org.eclipse.che.api.machine.server.dao.SnapshotDao;
+import org.eclipse.che.api.ssh.server.spi.SshDao;
 import org.eclipse.che.api.user.server.TokenValidator;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.User;
@@ -38,6 +39,7 @@ public class LocalInfrastructureModule extends AbstractModule {
         bind(UserProfileDao.class).to(LocalProfileDaoImpl.class);
         bind(PreferenceDao.class).to(LocalPreferenceDaoImpl.class);
         bind(SnapshotDao.class).to(LocalSnapshotDaoImpl.class);
+        bind(SshDao.class).to(LocalSshDaoImpl.class);
 //        bind(MemberDao.class).to(LocalMemberDaoImpl.class);
         bind(AuthenticationDao.class).to(LocalAuthenticationDaoImpl.class);
 //        bind(FactoryStore.class).to(InMemoryFactoryStore.class);

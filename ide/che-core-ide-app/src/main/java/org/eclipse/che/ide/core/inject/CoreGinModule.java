@@ -42,6 +42,8 @@ import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClientImpl;
+import org.eclipse.che.api.ssh.gwt.client.SshServiceClient;
+import org.eclipse.che.api.ssh.gwt.client.SshServiceClientImpl;
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClientImpl;
 import org.eclipse.che.api.user.gwt.client.UserServiceClient;
@@ -322,6 +324,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
         bind(ProjectServiceClient.class).to(ProjectServiceClientImpl.class).in(Singleton.class);
         bind(WorkspaceServiceClient.class).to(WorkspaceServiceClientImpl.class).in(Singleton.class);
+        bind(SshServiceClient.class).to(SshServiceClientImpl.class).in(Singleton.class);
         bind(VfsServiceClient.class).to(VfsServiceClientImpl.class).in(Singleton.class);
         bind(ProjectImportersServiceClient.class).to(ProjectImportersServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTypeServiceClient.class).to(ProjectTypeServiceClientImpl.class).in(Singleton.class);
