@@ -44,7 +44,7 @@ public class FullTextSearchViewImpl extends Window implements FullTextSearchView
     }
 
     @UiField
-    Label errLabel;
+    Label                    errLabel;
     @UiField(provided = true)
     CoreLocalizationConstant locale;
     private final AppContext appContext;
@@ -171,8 +171,8 @@ public class FullTextSearchViewImpl extends Window implements FullTextSearchView
             }
         });
 
-        getFooter().add(accept);
-        getFooter().add(cancel);
+        addButtonToFooter(accept);
+        addButtonToFooter(cancel);
     }
 
     private void addHandlers(final SelectPathPresenter selectPathPresenter) {

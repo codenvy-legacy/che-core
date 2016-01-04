@@ -59,6 +59,11 @@ public class FullTextSearchPresenter implements FullTextSearchView.ActionDelegat
     public void showDialog() {
         view.showDialog();
         view.clearInput();
+        if (appContext.getCurrentProject() != null) {
+            view.setPathDirectory(appContext.getCurrentProject().getProjectConfig().getPath());
+        } else {
+            view.setPathDirectory("/");
+        }
     }
 
     @Override

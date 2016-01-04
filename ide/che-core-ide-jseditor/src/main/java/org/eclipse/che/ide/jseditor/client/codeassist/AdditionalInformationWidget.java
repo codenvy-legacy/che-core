@@ -10,16 +10,15 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.codeassist;
 
+import elemental.dom.Element;
+
 import org.eclipse.che.ide.jseditor.client.popup.PopupResources;
 import org.eclipse.che.ide.jseditor.client.popup.PopupWidget;
-import org.eclipse.che.ide.util.dom.Elements;
-
-import elemental.dom.Element;
 
 public class AdditionalInformationWidget extends PopupWidget<Element> {
 
     public AdditionalInformationWidget(PopupResources popupResources) {
-        super(popupResources);
+        super(popupResources, "Proposals:");
     }
 
     @Override
