@@ -172,8 +172,8 @@
             </plugin>
             <plugin>
                 <groupId>org.eclipse.che.core</groupId>
-                <version>${project.version}</version>
                 <artifactId>che-core-api-dto-maven-plugin</artifactId>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <id>generate-server-dto</id>
