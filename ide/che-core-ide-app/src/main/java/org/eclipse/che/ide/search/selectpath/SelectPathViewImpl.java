@@ -109,8 +109,8 @@ public class SelectPathViewImpl extends Window implements SelectPathView {
             }
         });
 
-        getFooter().add(ok);
-        getFooter().add(cancel);
+        addButtonToFooter(ok);
+        addButtonToFooter(cancel);
     }
 
     @Override
