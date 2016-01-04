@@ -10,10 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.server;
 
-import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 /** Class to hold image information such as data, name, media type */
@@ -103,9 +104,9 @@ public class FactoryImage {
      * @param name
      *         - image name
      * @return - {@code FactoryImage} if {@code FactoryImage} was created, null if input stream has no content
-     * @throws org.eclipse.che.api.core.ApiException
+     * @throws org.eclipse.che.api.core.ConflictException
      */
-    public static FactoryImage createImage(InputStream is, String mediaType, String name) throws ApiException {
+    public static FactoryImage createImage(InputStream is, String mediaType, String name) throws ConflictException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];

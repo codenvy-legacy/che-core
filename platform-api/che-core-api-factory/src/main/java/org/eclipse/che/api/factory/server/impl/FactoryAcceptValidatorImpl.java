@@ -11,6 +11,7 @@
 package org.eclipse.che.api.factory.server.impl;
 
 import org.eclipse.che.api.account.server.dao.AccountDao;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.factory.server.FactoryAcceptValidator;
 import org.eclipse.che.api.factory.shared.dto.Factory;
@@ -31,7 +32,7 @@ public class FactoryAcceptValidatorImpl extends FactoryBaseValidator implements 
     }
 
     @Override
-    public void validateOnAccept(Factory factory) throws ConflictException {
+    public void validateOnAccept(Factory factory) throws BadRequestException {
         validateCurrentTimeBetweenSinceUntil(factory);
         validateProjectActions(factory);
     }

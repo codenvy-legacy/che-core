@@ -371,6 +371,36 @@ public class UserService extends Service {
 
     }
 
+    /**
+     * Get user by name.
+     *
+     * @param name
+     *         user name
+     * @return found user
+     * @throws NotFoundException
+     *         when user with given name doesn't exist
+     * @throws ServerException
+     *         when some error occurred while retrieving user
+     */
+    @GET
+    @Path("/name/{name}")
+    @GenerateLink(rel = "get user by name")
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Get user by name",
+                  notes = "Get user by its name in the system. Roles allowed: user, system/admin, system/manager.")
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 404, message = "Not Found"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
+    public UserDescriptor getByName(@ApiParam(value = "User email")
+                                    @PathParam("name")
+                                    String name,
+                                    @Context
+                                    SecurityContext context) throws NotFoundException, ServerException {
+        final User user = userDao.getByName(name);
+        return toDescriptor(user, context);
+    }
+
     private User fromEntity(NewUser newUser) throws ForbiddenException {
         if (newUser == null) {
             throw new ForbiddenException("New user required");
