@@ -106,7 +106,12 @@ public class DarkTheme implements Theme {
 
     @Override
     public String activeTabBackground() {
-        return "#292C2F";
+        return "rgb(41, 44, 47)";
+    }
+
+    @Override
+    public String hoveredTabBackground() {
+        return "rgba(41, 44, 47, 0.5)";
     }
 
     @Override

@@ -29,6 +29,9 @@
 /** Background color for active tab */
 @eval activeTabBackground org.eclipse.che.ide.api.theme.Style.theme.activeTabBackground();
 
+/** Background color for active tab */
+@eval hoveredTabBackground org.eclipse.che.ide.api.theme.Style.theme.hoveredTabBackground();
+
 /** Border color for active tab */
 @eval activeTabBorderColor org.eclipse.che.ide.api.theme.Style.theme.activeTabBorderColor();
 

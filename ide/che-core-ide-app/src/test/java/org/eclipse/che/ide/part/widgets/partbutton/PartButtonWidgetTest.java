@@ -29,7 +29,6 @@ import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Dmitry Shnurenko
@@ -59,11 +58,6 @@ public class PartButtonWidgetTest {
     public void setUp() {
         partButton = new PartButtonWidget(resources, SOME_TEXT);
         partButton.setDelegate(delegate);
-    }
-
-    @Test
-    public void constructorShouldBeVerified() {
-        verify(partButton.buttonName).setText(SOME_TEXT);
     }
 
     @Test

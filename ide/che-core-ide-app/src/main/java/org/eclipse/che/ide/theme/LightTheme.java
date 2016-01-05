@@ -69,7 +69,12 @@ public class LightTheme implements Theme {
 
     @Override
     public String activeTabBackground() {
-        return "#ffffff";
+        return "rgb(255, 255, 255)";
+    }
+
+    @Override
+    public String hoveredTabBackground() {
+        return "rgba(255, 255, 255, 0.5)";
     }
 
     @Override
