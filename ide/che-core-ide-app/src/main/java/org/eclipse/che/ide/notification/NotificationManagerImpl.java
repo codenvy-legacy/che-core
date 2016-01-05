@@ -217,7 +217,7 @@ public class NotificationManagerImpl extends BasePresenter implements Notificati
     @Override
     public Notification notify(String title,
                                ProjectConfigDto project) {
-        return notify(title, null, (NotificationListener)project);
+        return notify(title, (NotificationListener)null, project);
     }
 
     /** {@inheritDoc} */
