@@ -231,7 +231,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
 
         List<MachineConfigDto> machineConfigs = new ArrayList<>();
         machineConfigs.add(dtoFactory.createDto(MachineConfigDto.class)
-                                     .withName("dev-machine")
+                                     .withName("ws-machine")
                                      .withType("docker")
                                      .withSource(dtoFactory.createDto(MachineSourceDto.class)
                                                            .withType("recipe")
