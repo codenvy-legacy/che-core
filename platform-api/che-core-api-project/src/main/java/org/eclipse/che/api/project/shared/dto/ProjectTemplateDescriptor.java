@@ -12,6 +12,7 @@ package org.eclipse.che.api.project.shared.dto;
 
 import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.dto.shared.DTO;
@@ -103,6 +104,12 @@ public interface ProjectTemplateDescriptor {
     void setCategory(String category);
 
     ProjectTemplateDescriptor withCategory(String category);
+
+    List<CommandDto> getCommands();
+
+    void setCommands(List<CommandDto> commands);
+
+    ProjectTemplateDescriptor withCommands(List<CommandDto> commands);
 
     List<String> getTags();
 
