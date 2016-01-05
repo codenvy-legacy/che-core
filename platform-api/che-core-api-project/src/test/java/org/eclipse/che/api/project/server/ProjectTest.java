@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
@@ -597,6 +598,21 @@ public class ProjectTest {
 
     }
 
+    @Test(expectedExceptions = ConflictException.class)
+    public void testAddModuleWithConflictingPath() throws Exception {
+
+        pm.getProjectTypeRegistry().registerProjectType(new ProjectType("testModule", "my type", true, false) {
+        });
+
+        Project myProject = pm.getProject("my_ws", "my_project");
+        myProject.updateConfig(new ProjectConfig("my proj", "testModule"));
+
+        Assert.assertEquals(myProject.getModules().get().size(), 0);
+
+        pm.addModule("my_ws", "my_project", "test", new ProjectConfig("descr", "testModule"), null, null);
+        pm.addModule("my_ws", "my_project", "./test", new ProjectConfig("descr", "testModule"), null, null);
+
+    }
 
     @Test
     public void testModulePathShouldBeAdded() throws Exception {
