@@ -254,25 +254,25 @@ public class UserService extends Service {
     }
 
     /**
-     * Returns status <b>200</b> and {@link UserDescriptor} built from user with given {@code email}
-     * or status <b>404</b> when user with given {@code email} was not found
+     * Returns status <b>200</b> and {@link UserDescriptor} built from user with given {@code alias}
+     * or status <b>404</b> when user with given {@code alias} was not found
      *
-     * @param email
-     *         email to search user
+     * @param alias
+     *         alias to search user
      * @return entity of found user
      * @throws NotFoundException
-     *         when user with given email doesn't exist
+     *         when user with given alias doesn't exist
      * @throws ServerException
      *         when some error occurred while retrieving user
      * @see UserDescriptor
      * @see #getById(String, SecurityContext)
      * @see #remove(String)
      */
-    @ApiOperation(value = "Get user by email",
-                  notes = "Get user by registration email. Roles allowed: system/admin, system/manager.",
+    @ApiOperation(value = "Get user by alias",
+                  notes = "Get user by alias. Roles allowed: system/admin, system/manager.",
                   response = UserDescriptor.class)
     @ApiResponses({@ApiResponse(code = 200, message = "OK"),
-                   @ApiResponse(code = 403, message = "Missed parameter email"),
+                   @ApiResponse(code = 403, message = "Missed parameter alias"),
                    @ApiResponse(code = 404, message = "Not Found"),
                    @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
@@ -280,12 +280,12 @@ public class UserService extends Service {
     @GenerateLink(rel = LINK_REL_GET_USER_BY_EMAIL)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     @Produces(APPLICATION_JSON)
-    public UserDescriptor getByEmail(@ApiParam(value = "User email", required = true) @QueryParam("email") @Required String email,
+    public UserDescriptor getByAlias(@ApiParam(value = "User alias", required = true) @QueryParam("alias") @Required String alias,
                                      @Context SecurityContext context) throws NotFoundException, ServerException, ConflictException {
-        if (email == null) {
-            throw new ConflictException("Missed parameter email");
+        if (alias == null) {
+            throw new ConflictException("Missed parameter alias");
         }
-        final User user = userDao.getByAlias(email);
+        final User user = userDao.getByAlias(alias);
         return toDescriptor(user, context);
     }
 
