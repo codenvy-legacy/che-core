@@ -112,7 +112,7 @@ public class SlaveRunnerService extends Service {
 
     @POST
     @Path("stop/{runner:.*}/{id}")
-    @RolesAllowed({"user", "tmp_user"})
+    @RolesAllowed({"user", "temp_user"})
     @Produces(MediaType.APPLICATION_JSON)
     public ApplicationProcessDescriptor stop(@PathParam("runner") String runner, @PathParam("id") Long id) throws Exception {
         final Runner myRunner = getRunner(runner);
@@ -123,7 +123,7 @@ public class SlaveRunnerService extends Service {
 
     @GET
     @Path("logs/{runner:.*}/{id}")
-    @RolesAllowed({"user", "tmp_user"})
+    @RolesAllowed({"user", "temp_user"})
     public void getLogs(@PathParam("runner") String runner,
                         @PathParam("id") Long id,
                         @Context HttpServletResponse httpServletResponse) throws Exception {
@@ -151,7 +151,7 @@ public class SlaveRunnerService extends Service {
 
     @GET
     @Path("recipe/{runner:.*}/{id}")
-    @RolesAllowed({"user", "tmp_user"})
+    @RolesAllowed({"user", "temp_user"})
     public void getRecipeFile(@PathParam("runner") String runner,
                               @PathParam("id") Long id,
                               @Context HttpServletResponse httpServletResponse) throws Exception {
@@ -320,7 +320,7 @@ public class SlaveRunnerService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_GET_CURRENT_RECIPE)
     @GET
     @Path("/recipe")
-    @RolesAllowed({"user", "tmp_user"})
+    @RolesAllowed({"user", "temp_user"})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRecipe(@QueryParam("id") String id) throws Exception {
         java.nio.file.Path dockerParentPath = Paths.get(dockerfilesRepository);

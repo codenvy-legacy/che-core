@@ -120,7 +120,7 @@ public final class SlaveBuilderService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_BUILD)
     @POST
     @Path("build")
-    @RolesAllowed({"user", "tmp_user"})
+    @RolesAllowed({"user", "temp_user"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public BuildTaskDescriptor build(@Description("Parameters for build task in JSON format") BuildRequest request) throws Exception {
@@ -132,7 +132,7 @@ public final class SlaveBuilderService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_DEPENDENCIES_ANALYSIS)
     @POST
     @Path("dependencies")
-    @RolesAllowed({"user", "tmp_user"})
+    @RolesAllowed({"user", "temp_user"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public BuildTaskDescriptor dependencies(@Description("Parameters for analyze dependencies in JSON format") DependencyRequest request)
