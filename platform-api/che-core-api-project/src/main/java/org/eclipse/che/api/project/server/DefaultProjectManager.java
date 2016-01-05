@@ -720,24 +720,49 @@ public final class DefaultProjectManager implements ProjectManager {
             // Use the same rules as in method createFile to make client side simpler.
             ((FileEntry) entry).rename(newName, newMediaType);
         } else {
+            Path oldEntryPath = entry.getVirtualFile().getVirtualFilePath();
             entry.rename(newName);
-            String projectName = projectPath(path);
-            /* We should not edit Modules if resource to rename is project */
-            if (!projectName.equals(path) && entry.isFolder() && ((FolderEntry) entry).isProjectFolder()) {
-                Project project = getProject(workspace, projectName);
-
-                /*
-                 * We need module path without projectName, f.e projectName/module1/oldModuleName ->
-                 * module1/oldModuleName
-                 */
-                String oldModulePath = path.replaceFirst(projectName + "/", "");
-                /* Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName */
-                String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
-
-                project.getModules().update(oldModulePath, newModulePath);
+            Path newEntryPath = entry.getVirtualFile().getVirtualFilePath();
+            // Update projects modules
+            List<Project> projects = getProjects(workspace);
+            for (Project project : projects) {
+                renameModulesUnder(oldEntryPath, newEntryPath, workspace, project);
             }
         }
         return entry;
+    }
+
+    private void renameModulesUnder(Path oldFolderPath, Path newFolderPath, String workspace, Project project)
+            throws ForbiddenException, ServerException, NotFoundException, ConflictException {
+        String projectName = project.getName();
+        Set<String> modules = project.getModules().get();
+        // If the new path of the folder is outside the project, make the path absolute
+        boolean makeAbsolute = !newFolderPath.element(0).equals(projectName);
+        for (String odlModulePath : modules) {
+            Path oldAbsModulePath = Project.getAbsoluteModulePath(odlModulePath, project);
+            // Get the new absolute module path, in case it was inside the renamed folder
+            Path newAbsModulePath = null;
+            if (oldAbsModulePath.length() == oldFolderPath.length()) {
+                if (oldAbsModulePath.equals(oldFolderPath)) {
+                    newAbsModulePath = newFolderPath;
+                }
+            } else if (oldAbsModulePath.isChild(oldFolderPath)) {
+                newAbsModulePath = newFolderPath.newPath(oldAbsModulePath.subPath(oldFolderPath.length()));
+            }
+            if (newAbsModulePath == null) {
+                continue;
+            }
+            // Use relative form for the new path only if it is outside the project
+            String newValue;
+            if (makeAbsolute) {
+                newValue = newAbsModulePath.toString();
+            } else {
+                // Remove project name and then the initial '/' to mark it as relative
+                newValue = newAbsModulePath.subPath(1).toString().substring(1);
+            }
+            // Update the module
+            project.getModules().update(odlModulePath, newValue);
+        }
     }
 
     @Override
