@@ -387,46 +387,7 @@ public class StandardComponentInitializer {
         actionManager.registerAction("downloadAsZipAction", downloadAsZipAction);
         workspaceGroup.add(downloadAsZipAction);
 
-        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
-        workspaceGroup.add(showHiddenFilesAction);
-
         workspaceGroup.addSeparator();
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Export...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Import...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Clone...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
 
         // Project (New Menu)
         DefaultActionGroup projectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT);
@@ -461,6 +422,9 @@ public class StandardComponentInitializer {
         projectGroup.add(uploadFolderAction);
 
         projectGroup.add(downloadAsZipAction);
+
+        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
+        projectGroup.add(showHiddenFilesAction);
 
         projectGroup.addSeparator();
 

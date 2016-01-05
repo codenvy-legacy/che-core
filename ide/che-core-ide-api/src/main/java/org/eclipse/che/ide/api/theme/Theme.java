@@ -56,6 +56,13 @@ public interface Theme {
     String selectionBackground();
 
     /**
+     * Background color for inactive selection.
+     *
+     * @return the color
+     */
+    String inactiveSelectionBackground();
+
+    /**
      * Background color for inactive(not selected part button)
      *
      * @return the color
@@ -988,6 +995,20 @@ public interface Theme {
      * @return the hovering color of part minimize button
      */
     String minimizeIconHoverColor();
+
+    /**
+     * Background color for processes panel.
+     *
+     * @return color
+     */
+    String processTreeBackgroundColor();
+
+    /**
+     * Background color for console output area.
+     *
+     * @return color
+     */
+    String outputBackgroundColor();
 
     /**
      * @return the color of the output font.
