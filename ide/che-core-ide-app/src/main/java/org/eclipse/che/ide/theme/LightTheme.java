@@ -53,6 +53,11 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String inactiveSelectionBackground() {
+        return "rgba(73,143,225,0.40)";
+    }
+
+    @Override
     public String inactiveTabBackground() {
         return "#D6D6D9";
     }
@@ -740,6 +745,16 @@ public class LightTheme implements Theme {
     @Override
     public String minimizeIconHoverColor() {
         return "#333333";
+    }
+
+    @Override
+    public String processTreeBackgroundColor() {
+        return "white";
+    }
+
+    @Override
+    public String outputBackgroundColor() {
+        return "white";
     }
 
     @Override

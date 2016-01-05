@@ -74,6 +74,7 @@
 @eval hoverBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.hoverBackgroundColor();
 
 @eval selectionBackground org.eclipse.che.ide.api.theme.Style.theme.selectionBackground();
+@eval inactiveSelectionBackground org.eclipse.che.ide.api.theme.Style.theme.inactiveSelectionBackground();
 @eval treeTextFileColor org.eclipse.che.ide.api.theme.Style.theme.treeTextFileColor();
 @eval treeTextFolderColor org.eclipse.che.ide.api.theme.Style.theme.treeTextFolderColor();
 @eval treeTextShadow org.eclipse.che.ide.api.theme.Style.theme.treeTextShadow();

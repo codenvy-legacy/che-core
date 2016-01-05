@@ -53,6 +53,11 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String inactiveSelectionBackground() {
+        return "#132D41";
+    }
+
+    @Override
     public String tabsPanelBackground() {
         return "#33373B";
     }
@@ -764,6 +769,16 @@ public class DarkTheme implements Theme {
     @Override
     public String minimizeIconHoverColor() {
         return "#D8D8D8";
+    }
+
+    @Override
+    public String processTreeBackgroundColor() {
+        return "#21252b";
+    }
+
+    @Override
+    public String outputBackgroundColor() {
+        return "#292C2F";
     }
 
     @Override
