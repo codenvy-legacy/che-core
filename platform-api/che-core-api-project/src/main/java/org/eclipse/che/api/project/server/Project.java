@@ -22,6 +22,7 @@ import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.project.shared.Builders;
 import org.eclipse.che.api.project.shared.Runners;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
+import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MediaType;
 
@@ -106,6 +108,21 @@ public class Project {
         manager.saveProjectMisc(this, misc);
     }
 
+    /**
+     * Get the absolute path of the given module, based on the path of its parent project.
+     * 
+     * @param modulePath
+     *            The raw path of the module.
+     * @param parentProject
+     *            The parent project that the module is relative to.
+     * @return An absolute path to the module's folder.
+     */
+    public static Path getAbsoluteModulePath(String modulePath, Project parentProject) {
+        if (modulePath.startsWith("/")) {
+            return Path.fromString(modulePath);
+        }
+        return parentProject.getBaseFolder().getVirtualFile().getVirtualFilePath().newPath(modulePath);
+    }
 
     public ProjectConfig getConfig() throws ServerException, ValueStorageException, ProjectTypeConstraintException,
                                             InvalidValueException {
@@ -432,6 +449,17 @@ public class Project {
 
         public Set<String> get() throws ForbiddenException, ServerException {
             return read();
+        }
+
+        /**
+         * Get the absolute paths of the modules of this project.
+         */
+        public Set<Path> getAbsolute() throws ForbiddenException, ServerException {
+            Set<String> rawPaths = read();
+            Set<Path> paths = rawPaths.stream() //
+                    .map(path -> getAbsoluteModulePath(path, Project.this)) //
+                    .collect(Collectors.toSet());
+            return paths;
         }
 
         private Set<String> read() throws ForbiddenException, ServerException {
