@@ -45,18 +45,6 @@ public class MessageLoader implements AsyncRequestLoader {
     private final DelayedTask showLoader = new DelayedTask() {
         @Override
         public void onExecute() {
-            label.setStyleName(resources.Css().label());
-
-            loader.setStyleName(resources.Css().loader());
-            FlowPanel loaderSvg = new FlowPanel();
-            loaderSvg.setStyleName(resources.Css().loaderSvg());
-            loaderSvg.add(new SVGImage(resources.loader()));
-
-            loader.add(loaderSvg);
-            loader.add(label);
-
-            glass.add(loader);
-            glass.setStyleName(resources.Css().glass());
             RootPanel.get().add(glass);
             showing = true;
         }
@@ -72,6 +60,18 @@ public class MessageLoader implements AsyncRequestLoader {
         this.resources = resources;
 
         label.setText(message == null || message.isEmpty() ? DEF_MESSAGE : message);
+        label.setStyleName(resources.Css().label());
+        loader.setStyleName(resources.Css().loader());
+
+        FlowPanel loaderSvg = new FlowPanel();
+        loaderSvg.setStyleName(resources.Css().loaderSvg());
+        loaderSvg.add(new SVGImage(resources.loader()));
+
+        loader.add(loaderSvg);
+        loader.add(label);
+
+        glass.add(loader);
+        glass.setStyleName(resources.Css().glass());
     }
 
     /** {@inheritDoc} */
