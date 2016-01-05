@@ -351,14 +351,14 @@ public final class DefaultProjectManager implements ProjectManager {
         if (parentProject == null)
             throw new NotFoundException("Parent Project not found " + projectPath);
 
-        if (parentProject.getModules().get().contains(modulePath)) {
+        // Normalize the existing module paths and verify that there are no conflicts
+        Path absModulePathObj = Project.getAbsoluteModulePath(modulePath, parentProject);
+        Set<Path> existingAbsModulePaths = parentProject.getModules().getAbsolute();
+        if (existingAbsModulePaths.contains(absModulePathObj)) {
             throw new ConflictException("Module " + modulePath + " already exists");
         }
 
-        if (!projectPath.startsWith("/")) {
-            projectPath = "/" + projectPath;
-        }
-        String absModulePath = modulePath.startsWith("/") ? modulePath : projectPath + "/" + modulePath;
+        String absModulePath = absModulePathObj.toString();
 
         VirtualFileEntry moduleFolder = getProjectsRoot(workspace).getChild(absModulePath);
         if (moduleFolder != null && moduleFolder.isFile())
@@ -370,7 +370,6 @@ public final class DefaultProjectManager implements ProjectManager {
         if (moduleFolder == null) {
             if (moduleConfig == null)
                 throw new ConflictException("Module not found on " + absModulePath + " and module configuration is not defined");
-            Path absModulePathObj = Path.fromString(absModulePath);
             String parentPath = absModulePathObj.getParent().toString();
             String name = absModulePathObj.getName();
             final VirtualFileEntry parentFolder = getProjectsRoot(workspace).getChild(parentPath);
