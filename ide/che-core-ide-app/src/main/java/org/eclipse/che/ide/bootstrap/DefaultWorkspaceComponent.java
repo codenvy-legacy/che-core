@@ -124,8 +124,6 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
                 dialogFactory.createMessageDialog(locale.getWsErrorDialogTitle(),
                                                   locale.getWsErrorDialogContent(error.getMessage()),
                                                   null).show();
-
-                callback.onFailure(new Exception(error.getCause()));
             }
         });
     }
