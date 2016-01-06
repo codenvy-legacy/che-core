@@ -37,7 +37,11 @@ import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
 import org.eclipse.che.api.project.server.handlers.RemoveModuleHandler;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
-import org.eclipse.che.api.project.server.type.*;
+import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.server.type.BaseProjectType;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
+import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
+import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
@@ -46,6 +50,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -464,7 +469,7 @@ public final class DefaultProjectManager implements ProjectManager {
     private void storeCalculatedAttributes(Project project, ProjectConfig projectConfig) throws ProjectTypeConstraintException,
                                                                                                 ValueStorageException,
                                                                                                 InvalidValueException, NotFoundException {
-        final ProjectTypes types = new ProjectTypes(project, projectConfig.getType(), projectConfig.getMixins(), this);
+        final ProjectTypes types = new ProjectTypes(project, projectConfig, this);
         types.removeTransient();
 
         for (Map.Entry<String, List<String>> entry : projectConfig.getAttributes().entrySet()) {
@@ -563,6 +568,12 @@ public final class DefaultProjectManager implements ProjectManager {
             }
         }
         return null;
+    }
+
+    public List<ProjectConfigDto> getAllProjectsFromWorkspace(@NotNull String workspaceId) throws ServerException {
+        UsersWorkspaceDto usersWorkspaceDto = getWorkspace(workspaceId);
+
+        return usersWorkspaceDto.getProjects();
     }
 
     private void updateWorkspace(String wsId, WorkspaceConfigDto workspaceConfig) throws ServerException {
@@ -881,7 +892,6 @@ public final class DefaultProjectManager implements ProjectManager {
                                                                          ForbiddenException,
                                                                          NotFoundException,
                                                                          ConflictException {
-        VirtualFileEntry entryToDelete = getEntryToDelete(workspaceId, deleteNodePath);
 
         String pathToProject = deleteNodePath.contains("/") ? deleteNodePath.substring(0, deleteNodePath.indexOf("/")) : deleteNodePath;
 
@@ -891,9 +901,16 @@ public final class DefaultProjectManager implements ProjectManager {
             deleteProjectFromWorkspace(project, workspaceId);
         }
 
+        VirtualFileEntry entryToDelete = getEntryToDelete(workspaceId, deleteNodePath);
+
+        if (entryToDelete == null) {
+            return;
+        }
+
         deleteEntryAndFireEvent(entryToDelete, workspaceId);
     }
 
+    @Nullable
     private VirtualFileEntry getEntryToDelete(String workspaceId, String deleteNodePath) throws ServerException,
                                                                                                 NotFoundException,
                                                                                                 ForbiddenException {
@@ -901,7 +918,7 @@ public final class DefaultProjectManager implements ProjectManager {
         VirtualFileEntry entryToDelete = root.getChild(deleteNodePath);
 
         if (entryToDelete == null) {
-            throw new NotFoundException("Path " + deleteNodePath + " doesn't exist");
+            return null;
         }
 
         return entryToDelete;

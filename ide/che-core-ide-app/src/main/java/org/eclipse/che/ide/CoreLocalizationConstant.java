@@ -684,4 +684,43 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("failed.to.upload.files.from.zip")
     String failedToUploadFilesFromZip();
+
+    @Key("synchronize.dialog.title")
+    String synchronizeDialogTitle();
+
+    @Key("button.import")
+    String buttonImport();
+
+    @Key("button.remove")
+    String buttonRemove();
+
+    @Key("project.removed")
+    String projectRemoved(String projectName);
+
+    @Key("project.remove.error")
+    String projectRemoveError(String projectName);
+
+    @Key("location.incorrect")
+    String locationIncorrect();
+
+    @Key("exist.in.workspace.dialog.content")
+    String existInWorkspaceDialogContent(String projectName);
+
+    @Key("exist.in.file.system.dialog.content")
+    String existInFileSystemDialogContent(String projectName);
+
+    @Key("button.configure")
+    String buttonConfigure();
+
+    @Key("location.dialog.title")
+    String locationDialogTitle();
+
+    @Key("project.configuration.changed")
+    String projectConfigurationChanged();
+
+    @Key("button.keep.blank")
+    String buttonKeepBlank();
+
+    @Key("project.update.error")
+    String projectUpdateError(String projectName);
 }

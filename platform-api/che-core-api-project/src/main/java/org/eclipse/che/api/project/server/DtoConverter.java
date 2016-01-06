@@ -159,7 +159,7 @@ public class DtoConverter {
 
             projectConfigDto.withType(config.getType());
             projectConfigDto.withSource(toSourceDto(config.getSource()));
-            projectConfigDto.setContentRoot(project.getContentRoot());
+            projectConfigDto.withProblems(config.getProblems());
         } catch (ServerException | ValueStorageException | ProjectTypeConstraintException exception) {
             projectConfigDto.withType(BaseProjectType.ID).withType("blank");
             ProjectProblem projectProblem = newDto(ProjectProblem.class).withCode(1).withMessage(exception.getMessage());

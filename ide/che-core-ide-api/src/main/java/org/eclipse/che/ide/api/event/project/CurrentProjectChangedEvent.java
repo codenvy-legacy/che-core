@@ -14,6 +14,8 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * This event should be fired when we select different projects.
  *
@@ -32,7 +34,7 @@ public class CurrentProjectChangedEvent extends GwtEvent<CurrentProjectChangedHa
      * @param configDto
      *         selected project
      */
-    public CurrentProjectChangedEvent(ProjectConfigDto configDto) {
+    public CurrentProjectChangedEvent(@NotNull ProjectConfigDto configDto) {
         this.configDto = configDto;
     }
 
@@ -42,6 +44,7 @@ public class CurrentProjectChangedEvent extends GwtEvent<CurrentProjectChangedHa
     }
 
     /** Returns descriptor of the project. */
+    @NotNull
     public ProjectConfigDto getProjectConfig() {
         return configDto;
     }

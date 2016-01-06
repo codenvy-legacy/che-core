@@ -81,6 +81,19 @@ public interface ProjectManager {
     ProjectConfigDto getProjectFromWorkspace(@NotNull String wsId, @NotNull String projectPath) throws ServerException;
 
     /**
+     * Returns all projects which are in workspace.
+     *
+     * @param workspaceId
+     *         id of workspace to get projects
+     * @return list of of {@link ProjectConfigDto}
+     * @throws ServerException
+     *         if some error occurs
+     * @throws IllegalArgumentException
+     *         if workspace id will be null
+     */
+    List<ProjectConfigDto> getAllProjectsFromWorkspace(@NotNull String workspaceId) throws ServerException;
+
+    /**
      * Creates new project.
      *
      * @param workspace
