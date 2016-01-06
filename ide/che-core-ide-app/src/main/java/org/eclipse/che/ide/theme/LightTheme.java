@@ -334,7 +334,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getEditorCurrentLineColor() {
-        return "#E8F2FF";
+        return "rgba(215, 215, 215, 0.45)";
     }
 
     @Override

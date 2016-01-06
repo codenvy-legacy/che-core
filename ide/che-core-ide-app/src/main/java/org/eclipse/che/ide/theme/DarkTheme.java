@@ -353,7 +353,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getEditorCurrentLineColor() {
-        return "#424242";
+        return "#2C323B";
     }
 
     @Override
