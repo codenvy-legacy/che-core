@@ -42,7 +42,6 @@ import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -624,10 +623,7 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
                 BreakpointManagerImpl.this.onLineChange(file, firstLine, linesAdded, linesRemoved);
             }
         });
-
-        if (debuggerState == CONNECTED && breakpoint.isActive()) {
-            breakpointRenderer.setBreakpointActive(lineNumber, true);
-        }
+        breakpointRenderer.setBreakpointActive(lineNumber, breakpoint.isActive());
     }
 
     private void preserveBreakpoints() {
