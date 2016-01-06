@@ -85,7 +85,8 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
 
     @Override
     public void onClose(WebSocketClosedEvent event) {
-        Log.info(getClass(), "Test WS connection closed with code " + event.getCode() + " reason: " + event.getReason() + " extension server started well ");
+        Log.info(getClass(), "Test WS connection closed with code " + event.getCode() + " reason: " + event.getReason() +
+                             " workspace agent started well ");
     }
 
     @Override
