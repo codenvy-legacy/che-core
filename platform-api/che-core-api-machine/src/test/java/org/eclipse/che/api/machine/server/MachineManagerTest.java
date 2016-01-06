@@ -13,6 +13,7 @@ package org.eclipse.che.api.machine.server;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.machine.Channels;
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.machine.Limits;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.MachineMetadata;
@@ -218,7 +219,8 @@ public class MachineManagerTest {
         }
 
         @Override
-        public InstanceProcess createProcess(String commandName, String commandLine) throws MachineException {
+        public InstanceProcess createProcess(Command command, String outputChannel)
+                throws MachineException {
             return null;
         }
 

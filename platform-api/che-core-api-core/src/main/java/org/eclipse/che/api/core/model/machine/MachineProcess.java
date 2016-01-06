@@ -8,14 +8,14 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.machine.shared;
+package org.eclipse.che.api.core.model.machine;
 
 /**
  * Describe process running in a machine
  *
  * @author andrew00x
  */
-public interface MachineProcess {
+public interface MachineProcess extends Command {
     /**
      * Returns pid of the process.
      * To be able to control from the clients pid should be valid even if process isn't started yet.
@@ -25,21 +25,12 @@ public interface MachineProcess {
     int getPid();
 
     /**
-     * Returns command with all its arguments
-     *
-     * @return command
-     */
-    String getCommandLine();
-
-    /**
      * Checks is process is running or not.
      *
      * @return {@code true} if process running and {@code false} otherwise
      */
     boolean isAlive();
 
-    /**
-     * Returns user-friendly name of command that was the source for machine process
-     */
-    String getCommandName();
+    /** Returns websocket chanel for execution logs of command */
+    String getOutputChannel();
 }

@@ -18,7 +18,7 @@ import org.eclipse.che.api.core.model.machine.MachineMetadata;
 import org.eclipse.che.api.core.model.machine.MachineSource;
 import org.eclipse.che.api.core.model.machine.MachineState;
 import org.eclipse.che.api.core.model.machine.Server;
-import org.eclipse.che.api.machine.shared.MachineProcess;
+import org.eclipse.che.api.core.model.machine.MachineProcess;
 import org.eclipse.che.api.core.model.machine.Snapshot;
 import org.eclipse.che.api.machine.shared.dto.ChannelsDto;
 import org.eclipse.che.api.machine.shared.dto.LimitsDto;
@@ -154,7 +154,9 @@ public final class DtoConverter {
         return newDto(MachineProcessDto.class).withPid(machineProcess.getPid())
                                               .withCommandLine(machineProcess.getCommandLine())
                                               .withAlive(machineProcess.isAlive())
-                                              .withCommandName(machineProcess.getCommandName())
+                                              .withName(machineProcess.getName())
+                                              .withType(machineProcess.getType())
+                                              .withOutputChannel(machineProcess.getOutputChannel())
                                               .withLinks(null);
     }
 
