@@ -105,7 +105,9 @@ public class AttributeFilter {
 
         ProjectTypes projectTypes = getProjectTypes(parentFolder, projectConfig);
 
-        projectConfig.setType(projectTypes.getPrimary().getId());
+        ProjectTypeDef primaryType = projectTypes.getPrimary();
+
+        projectConfig.setType(primaryType == null ? "blank" : primaryType.getId());
         projectConfig.setMixins(projectTypes.mixinIds());
 
         for (ProjectTypeDef projectType : projectTypes.getAll().values()) {
@@ -153,7 +155,7 @@ public class AttributeFilter {
                                                                                                 NotFoundException {
         Project project = new Project(module, projectManager);
 
-        ProjectTypes types = new ProjectTypes(project, moduleConfig.getType(), moduleConfig.getMixins(), projectManager);
+        ProjectTypes types = new ProjectTypes(project, moduleConfig, projectManager);
         types.addTransient();
 
         return types;

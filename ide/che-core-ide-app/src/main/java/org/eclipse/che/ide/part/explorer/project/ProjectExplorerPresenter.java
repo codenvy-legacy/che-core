@@ -63,6 +63,7 @@ import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView.ActionDelegate;
+import org.eclipse.che.ide.part.explorer.project.synchronize.ProjectConfigSynchronizationListener;
 import org.eclipse.che.ide.project.event.ProjectExplorerLoadedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDeletedHandler;
@@ -127,6 +128,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     public static final int PART_SIZE = 250;
 
     private boolean hiddenFilesAreShown;
+    private boolean extServerStarted;
 
     @Inject
     public ProjectExplorerPresenter(ProjectExplorerView view,
@@ -141,7 +143,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                     Resources resources,
                                     DtoUnmarshallerFactory dtoUnmarshaller,
                                     ProjectServiceClient projectService,
-                                    NotificationManager notificationManager) {
+                                    NotificationManager notificationManager,
+                                    Provider<ProjectConfigSynchronizationListener> synchronizationListenerProvider) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -159,6 +162,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         this.notificationManager = notificationManager;
         this.currentProject = new CurrentProject();
 
+        synchronizationListenerProvider.get();
+
         eventBus.addHandler(CreateProjectEvent.TYPE, this);
         eventBus.addHandler(DeleteProjectEvent.TYPE, this);
         eventBus.addHandler(ConfigureProjectEvent.TYPE, this);
@@ -172,7 +177,23 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
-        reloadProjectTree();
+        if (!extServerStarted) {
+            reloadProjectTree();
+
+            extServerStarted = true;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onExtServerStopped(ExtServerStateEvent event) {
+        view.removeAllNodes();
+        appContext.setCurrentProject(null);
+        queryFieldViewer.setProjectName("");
+        notificationManager.notify(locale.projectExplorerExtensionServerStopped(),
+                                   locale.projectExplorerExtensionServerStoppedDescription(), FAIL, false);
+
+        extServerStarted = false;
     }
 
     /** {@inheritDoc} */
@@ -182,6 +203,14 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
         if (projectConfig == null) {
             return;
+        }
+
+        List<Node> nodes = view.getAllNodes();
+
+        for (Node node : nodes) {
+            if (node.getName().equals(projectConfig.getName())) {
+                view.removeNode(node, true);
+            }
         }
 
         if (view.isGoIntoActivated()) {
@@ -373,16 +402,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     @Override
     public void onResourceEvent(ResourceNodeDeletedEvent event) {
         view.removeNode(event.getNode(), true);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onExtServerStopped(ExtServerStateEvent event) {
-        view.removeAllNodes();
-        appContext.setCurrentProject(null);
-        queryFieldViewer.setProjectName("");
-        notificationManager.notify(locale.projectExplorerExtensionServerStopped(),
-                                   locale.projectExplorerExtensionServerStoppedDescription(), FAIL, false);
     }
 
     /** {@inheritDoc} */

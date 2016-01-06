@@ -8,39 +8,46 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.projectimport.wizard;
+package org.eclipse.che.ide.part.explorer.project.synchronize;
 
-import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
-import org.eclipse.che.ide.api.wizard.Wizard.CompleteCallback;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwtmockito.GwtMockitoTestRunner;
+
+import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.verify;
 
 /**
- * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
  */
-@RunWith(MockitoJUnitRunner.class)
-public class ImportWizardTest {
+@RunWith(GwtMockitoTestRunner.class)
+public class ChangeLocationWidgetTest {
 
     @Mock
-    private ProjectImporter  importer;
+    private TextBox                  textBox;
     @Mock
-    private ProjectConfigDto projectConfig;
+    private CoreLocalizationConstant locale;
     @Mock
-    private CompleteCallback completeCallback;
+    private Label                    label;
 
     @InjectMocks
-    private ImportWizard wizard;
+    private ChangeLocationWidget widget;
 
     @Test
-    public void wizardShouldBeCompleted() {
-        wizard.complete(completeCallback);
+    public void widgetShouldBeInitialized() {
+        verify(locale).locationIncorrect();
+        verify(textBox).setWidth("420px");
+    }
 
-        verify(importer).checkFolderExistenceAndImport(completeCallback, projectConfig);
+    @Test
+    public void textShouldBeReturned() {
+        widget.getText();
+
+        verify(textBox).getText();
     }
 }

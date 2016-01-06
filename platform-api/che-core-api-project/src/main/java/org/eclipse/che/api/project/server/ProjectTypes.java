@@ -13,6 +13,8 @@ package org.eclipse.che.api.project.server;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
+import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 
@@ -21,6 +23,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 
 /**
@@ -34,27 +38,36 @@ public class ProjectTypes {
     private final Map<String, ProjectTypeDef> mixins = new HashMap<>();
     private final Map<String, ProjectTypeDef> all    = new HashMap<>();
 
-    public ProjectTypes(Project project, String pt, List<String> mss, ProjectManager manager) throws ProjectTypeConstraintException,
+    public ProjectTypes(Project project, ProjectConfig projectConfig, ProjectManager manager) throws ProjectTypeConstraintException,
                                                                                                      NotFoundException {
         this.project = project;
         this.manager = manager;
 
-        if (pt == null) {
+        String projectType = projectConfig.getType();
+
+        if (projectType == null) {
             throw new ProjectTypeConstraintException("No primary type defined for " + project.getWorkspace() + " : " + project.getPath());
         }
 
-        primary = manager.getProjectTypeRegistry().getProjectType(pt);
-//        if (primary == null) {
-//            throw new ProjectTypeConstraintException("No project type registered for " + pt);
-//        }
+        primary = manager.getProjectTypeRegistry().getProjectType(projectType);
+        if (primary == null) {
+            ProjectProblem problem = newDto(ProjectProblem.class).withCode(8).withMessage("Project configuration changed");
+
+            projectConfig.getProblems().add(problem);
+
+            return;
+        }
+
         if (!primary.isPrimaryable()) {
             throw new ProjectTypeConstraintException("Project type " + primary.getId() + " is not allowable to be primary type");
         }
 
         all.put(primary.getId(), primary);
 
-        if (mss == null) {
-            mss = new ArrayList<>();
+        List<String> mixinsFromConfig = projectConfig.getMixins();
+
+        if (mixinsFromConfig == null) {
+            mixinsFromConfig = new ArrayList<>();
         }
 
         // temporary storage to detect duplicated attributes
@@ -63,11 +76,11 @@ public class ProjectTypes {
             tmpAttrs.put(attr.getName(), attr);
         }
 
-        for (String m : mss) {
-            if (!m.equals(primary.getId())) {
-                ProjectTypeDef mixin = manager.getProjectTypeRegistry().getProjectType(m);
+        for (String mixinFromConfig : mixinsFromConfig) {
+            if (!mixinFromConfig.equals(primary.getId())) {
+                ProjectTypeDef mixin = manager.getProjectTypeRegistry().getProjectType(mixinFromConfig);
                 if (mixin == null) {
-                    throw new ProjectTypeConstraintException("No project type registered for " + m);
+                    throw new ProjectTypeConstraintException("No project type registered for " + mixinFromConfig);
                 }
                 if (!mixin.isMixable()) {
                     throw new ProjectTypeConstraintException("Project type " + mixin + " is not allowable to be mixin");
@@ -87,8 +100,8 @@ public class ProjectTypes {
                 }
 
                 // Silently remove repeated items from mixins if any
-                mixins.put(m, mixin);
-                all.put(m, mixin);
+                mixins.put(mixinFromConfig, mixin);
+                all.put(mixinFromConfig, mixin);
             }
         }
     }
