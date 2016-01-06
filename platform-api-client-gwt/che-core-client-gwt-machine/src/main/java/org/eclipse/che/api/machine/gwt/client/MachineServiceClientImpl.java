@@ -12,6 +12,7 @@ package org.eclipse.che.api.machine.gwt.client;
 
 import com.google.inject.Inject;
 
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.api.machine.shared.dto.MachineProcessDto;
@@ -99,13 +100,9 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     @Override
     public Promise<MachineProcessDto> executeCommand(@NotNull final String machineId,
-                                                     @NotNull final String commandName,
-                                                     @NotNull final String commandLine,
+                                                     @NotNull final Command command,
                                                      @Nullable final String outputChannel) {
-        final CommandDto request = dtoFactory.createDto(CommandDto.class)
-                                             .withCommandLine(commandLine)
-                                             .withName(commandName);
-        return asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command?outputChannel=" + outputChannel, request)
+        return asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command?outputChannel=" + outputChannel, command)
                                   .header(ACCEPT, APPLICATION_JSON)
                                   .loader(loaderFactory.newLoader("Executing command..."))
                                   .send(dtoUnmarshallerFactory.newUnmarshaller(MachineProcessDto.class));

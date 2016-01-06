@@ -14,7 +14,7 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.machine.server.exception.MachineException;
-import org.eclipse.che.api.machine.shared.MachineProcess;
+import org.eclipse.che.api.core.model.machine.MachineProcess;
 
 /**
  * Represents process in the machine created by command.
