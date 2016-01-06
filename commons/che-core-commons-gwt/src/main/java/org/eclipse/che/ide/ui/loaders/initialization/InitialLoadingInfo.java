@@ -76,7 +76,7 @@ public class InitialLoadingInfo implements LoadingInfo {
     public enum Operations {
         WORKSPACE_BOOTING("Initializing workspace"),
         MACHINE_BOOTING("Booting developer machine"),
-        EXTENSION_SERVER_BOOTING("Starting extension server");
+        EXTENSION_SERVER_BOOTING("Starting workspace agent");
 
         private final String value;
 
