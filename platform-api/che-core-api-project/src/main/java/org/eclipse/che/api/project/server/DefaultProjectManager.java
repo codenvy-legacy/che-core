@@ -27,7 +27,7 @@ import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
@@ -104,6 +104,7 @@ public final class DefaultProjectManager implements ProjectManager {
     private final ProjectHandlerRegistry            handlers;
     private final String                            apiEndpoint;
     private final Provider<AttributeFilter>         filterProvider;
+    private final HttpJsonRequestFactory            httpJsonRequestFactory;
 
     @Inject
     @SuppressWarnings("unchecked")
@@ -112,7 +113,8 @@ public final class DefaultProjectManager implements ProjectManager {
                                  ProjectTypeRegistry projectTypeRegistry,
                                  ProjectHandlerRegistry handlers,
                                  Provider<AttributeFilter> filterProvider,
-                                 @Named("api.endpoint") String apiEndpoint) {
+                                 @Named("api.endpoint") String apiEndpoint,
+                                 HttpJsonRequestFactory httpJsonRequestFactory) {
 
         this.fileSystemRegistry = fileSystemRegistry;
         this.eventService = eventService;
@@ -120,6 +122,7 @@ public final class DefaultProjectManager implements ProjectManager {
         this.handlers = handlers;
         this.apiEndpoint = apiEndpoint;
         this.filterProvider = filterProvider;
+        this.httpJsonRequestFactory = httpJsonRequestFactory;
 
         this.miscCaches = new Cache[CACHE_NUM];
         this.miscLocks = new Lock[CACHE_NUM];
@@ -551,7 +554,9 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("GET").withHref(href);
 
         try {
-            return HttpJsonHelper.request(UsersWorkspaceDto.class, link);
+            return httpJsonRequestFactory.fromLink(link)
+                                         .request()
+                                         .asDto(UsersWorkspaceDto.class);
         } catch (IOException | ApiException e) {
             throw new ServerException(e);
         }
@@ -582,7 +587,9 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
-            HttpJsonHelper.request(WorkspaceConfigDto.class, link, workspaceConfig);
+            httpJsonRequestFactory.fromLink(link)
+                                  .setBody(workspaceConfig)
+                                  .request();
         } catch (IOException | ApiException e) {
             throw new ServerException(e.getMessage());
         }
@@ -595,14 +602,18 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
-            HttpJsonHelper.request(UsersWorkspaceDto.class, link, projectConfig);
+            httpJsonRequestFactory.fromLink(link)
+                                  .setBody(projectConfig)
+                                  .request();
         } catch (NotFoundException e) {
             final String addProjectHref = UriBuilder.fromUri(apiEndpoint)
                                                     .path(WorkspaceService.class).path(WorkspaceService.class, "addProject")
                                                     .build(wsId).toString();
             final Link addProjectLink = newDto(Link.class).withMethod("POST").withHref(addProjectHref);
             try {
-                HttpJsonHelper.request(UsersWorkspaceDto.class, addProjectLink, projectConfig);
+                httpJsonRequestFactory.fromLink(addProjectLink)
+                                      .setBody(projectConfig)
+                                      .request();
             } catch (IOException | ApiException e1) {
                 throw new ServerException(e1.getMessage());
             }
@@ -1001,7 +1012,8 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("DELETE").withHref(href);
 
         try {
-            HttpJsonHelper.request(null, link);
+            httpJsonRequestFactory.fromLink(link)
+                                  .request();
         } catch (IOException | ApiException exception) {
             throw new ServerException(exception.getLocalizedMessage(), exception);
         }
