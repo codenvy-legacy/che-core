@@ -72,6 +72,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("action.paste.description")
     String pasteItemsActionDescription();
 
+    @Key("action.export.text")
+    String exportConfigText();
+
     @Key("deleteDialogTitle")
     String deleteDialogTitle();
 

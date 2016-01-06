@@ -29,6 +29,7 @@ import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.ExpandNodeAction;
+import org.eclipse.che.ide.actions.ExportConfigAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
@@ -194,6 +195,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private ExpandNodeAction expandNodeAction;
+
+    @Inject
+    private ExportConfigAction exportConfigAction;
 
     @Inject
     private OpenSelectedFileAction openSelectedFileAction;
@@ -388,6 +392,9 @@ public class StandardComponentInitializer {
         workspaceGroup.add(downloadAsZipAction);
 
         workspaceGroup.addSeparator();
+
+        actionManager.registerAction("exportConfig", exportConfigAction);
+        workspaceGroup.add(exportConfigAction);
 
         // Project (New Menu)
         DefaultActionGroup projectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT);
