@@ -329,7 +329,7 @@ public class CreateWorkspacePresenterTest {
 
         verify(view, times(2)).getWorkspaceName();
         verify(dtoFactory).createDto(MachineConfigDto.class);
-        verify(machineConfigDto).withName("dev-machine");
+        verify(machineConfigDto).withName("ws-machine");
         verify(machineConfigDto).withType("docker");
         verify(machineConfigDto).withSource(machineSourceDto);
         verify(machineConfigDto).withDev(true);
