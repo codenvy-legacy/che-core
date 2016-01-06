@@ -84,13 +84,6 @@ public interface Theme {
     String activeTabBackground();
 
     /**
-     * Background color for hovered part button
-     *
-     * @return the color
-     */
-    String hoveredTabBackground();
-
-    /**
      * Border color for active (selected) part button
      *
      * @return the color
