@@ -11,7 +11,6 @@
 package org.eclipse.che.api.core.model.workspace;
 
 import org.eclipse.che.api.core.model.project.SourceStorage;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
 
 import java.util.List;
 import java.util.Map;
@@ -35,11 +34,7 @@ public interface ProjectConfig {
 
     List<? extends ProjectConfig> getModules();
 
-    List<ProjectProblem> getProblems();
-
     SourceStorage getSource();
-
-    List<Link> getLinks();
 
     String getContentRoot();
 }

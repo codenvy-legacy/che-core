@@ -8,24 +8,26 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.workspace;
+package org.eclipse.che.api.workspace.shared.dto;
 
 import org.eclipse.che.dto.shared.DTO;
 
 /**
- * @author andrew00x
+ * @author Sergii Kabashniuk
  */
 @DTO
-public interface ProjectProblem {
+public interface ProjectProblemDto  {
+
+
     int getCode();
 
     void setCode(int status);
 
-    ProjectProblem withCode(int status);
+    ProjectProblemDto withCode(int status);
 
     String getMessage();
 
     void setMessage(String message);
 
-    ProjectProblem withMessage(String message);
+    ProjectProblemDto withMessage(String message);
 }

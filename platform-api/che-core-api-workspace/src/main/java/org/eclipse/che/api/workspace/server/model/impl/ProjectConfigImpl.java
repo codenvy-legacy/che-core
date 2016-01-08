@@ -13,8 +13,6 @@ package org.eclipse.che.api.workspace.server.model.impl;
 
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,10 +38,8 @@ public class ProjectConfigImpl implements ProjectConfig {
     private List<String>              mixins;
     private Map<String, List<String>> attributes;
     private List<ProjectConfig>       modules;
-    private List<Link>                links;
     private SourceStorageImpl         storage;
     private String                    contentRoot;
-    private List<ProjectProblem>      problems;
 
     public ProjectConfigImpl() {
     }
@@ -66,9 +62,7 @@ public class ProjectConfigImpl implements ProjectConfig {
             storage = new SourceStorageImpl(sourceStorage.getType(), sourceStorage.getLocation(), sourceStorage.getParameters());
         }
 
-        links = projectConfig.getLinks();
         contentRoot = projectConfig.getContentRoot();
-        problems = projectConfig.getProblems();
     }
 
     @Override
@@ -135,14 +129,6 @@ public class ProjectConfigImpl implements ProjectConfig {
         return modules;
     }
 
-    @Override
-    public List<ProjectProblem> getProblems() {
-        if (problems == null) {
-            problems = new ArrayList<>();
-        }
-        return problems;
-    }
-
     public void setModules(List<ProjectConfig> modules) {
         this.modules = modules;
     }
@@ -157,14 +143,6 @@ public class ProjectConfigImpl implements ProjectConfig {
     }
 
     @Override
-    public List<Link> getLinks() {
-        if (links == null) {
-            links = new ArrayList<>();
-        }
-        return links;
-    }
-
-    @Override
     public String getContentRoot() {
         return contentRoot;
     }
@@ -173,16 +151,8 @@ public class ProjectConfigImpl implements ProjectConfig {
         this.contentRoot = contentRoot;
     }
 
-    public void setLinks(List<Link> links) {
-        this.links = links;
-    }
-
     public void setSource(SourceStorageImpl sourceStorage) {
         this.storage = sourceStorage;
-    }
-
-    public void setProblems(List<ProjectProblem> problems) {
-        this.problems = problems;
     }
 
     @Override
@@ -197,8 +167,6 @@ public class ProjectConfigImpl implements ProjectConfig {
                && getMixins().equals(other.getMixins())
                && getAttributes().equals(other.getAttributes())
                && getModules().equals(other.getModules())
-               && getLinks().equals(other.getLinks())
-               && getProblems().equals(other.getProblems())
                && Objects.equals(storage, other.getSource())
                && Objects.equals(contentRoot, other.getContentRoot());
     }
@@ -213,8 +181,6 @@ public class ProjectConfigImpl implements ProjectConfig {
         hash = hash * 31 + getMixins().hashCode();
         hash = hash * 31 + getAttributes().hashCode();
         hash = hash * 31 + getModules().hashCode();
-        hash = hash * 31 + getLinks().hashCode();
-        hash = hash * 31 + getProblems().hashCode();
         hash = hash * 31 + Objects.hashCode(storage);
         hash = hash * 31 + Objects.hashCode(contentRoot);
         return hash;
@@ -230,7 +196,6 @@ public class ProjectConfigImpl implements ProjectConfig {
                ", mixins=" + mixins +
                ", attributes=" + attributes +
                ", modules=" + modules +
-               ", links=" + links +
                ", storage=" + storage +
                ", contentRoot='" + contentRoot + '\'' +
                '}';
