@@ -515,12 +515,11 @@ public final class DefaultProjectManager implements ProjectManager {
                                                                    .withDescription(module.getDescription())
                                                                    .withAttributes(module.getAttributes())
                                                                    .withModules(modules)
-                                                                   .withProblems(module.getProblems())
-                                                                   .withLinks(module.getLinks())
                                                                    .withContentRoot(module.getContentRoot())
                                                                    .withMixins(module.getMixins());
         projectModules.add(moduleDto);
     }
+
 
     private SourceStorageDto getSourceStorageDto(ProjectConfig moduleConfig) {
         SourceStorageDto storageDto = newDto(SourceStorageDto.class);

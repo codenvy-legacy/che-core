@@ -13,7 +13,6 @@ package org.eclipse.che.ide.projectimport.wizard;
 import com.google.gwt.event.shared.EventBus;
 import com.google.web.bindery.event.shared.Event;
 
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
@@ -23,6 +22,7 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.vfs.gwt.client.VfsServiceClient;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectProblemDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -165,7 +165,7 @@ public class ProjectImporterTest {
 
     @Test
     public void shouldImportAndOpenProjectForConfiguring() throws Exception {
-        ProjectProblem problem = mock(ProjectProblem.class);
+        ProjectProblemDto problem = mock(ProjectProblemDto.class);
 
         when(projectTypeDefinition.isPrimaryable()).thenReturn(true);
         when(projectConfig.getProblems()).thenReturn(Arrays.asList(problem));

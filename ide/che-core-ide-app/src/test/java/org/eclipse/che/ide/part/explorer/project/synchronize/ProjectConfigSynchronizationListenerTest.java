@@ -13,10 +13,10 @@ package org.eclipse.che.ide.part.explorer.project.synchronize;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectProblemDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -97,7 +97,7 @@ public class ProjectConfigSynchronizationListenerTest {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Void>> deleteCaptor;
 
-    private List<ProjectProblem> problems;
+    private List<ProjectProblemDto> problems;
 
     private ProjectConfigSynchronizationListener listener;
 
@@ -153,7 +153,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
     @Test
     public void projectExistInWSButAbsentOnVFSDialogShouldBeShown() {
-        ProjectProblem problem = newDto(ProjectProblem.class).withCode(10);
+        ProjectProblemDto problem = newDto(ProjectProblemDto.class).withCode(10);
 
         problems.add(problem);
 
@@ -177,7 +177,7 @@ public class ProjectConfigSynchronizationListenerTest {
     @Test
     public void changeLocationDialogShouldBeShownIfProjectHasNoLocationOrLocationIsIncorrectAndProjectShouldBeImported() {
         when(sourceStorage.getLocation()).thenReturn(null);
-        ProjectProblem problem = newDto(ProjectProblem.class).withCode(10);
+        ProjectProblemDto problem = newDto(ProjectProblemDto.class).withCode(10);
 
         problems.add(problem);
 
@@ -207,7 +207,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
     @Test
     public void projectExistOnVFSButAbsentInWSDialogShouldBeShown() {
-        ProjectProblem problem = newDto(ProjectProblem.class).withCode(9);
+        ProjectProblemDto problem = newDto(ProjectProblemDto.class).withCode(9);
 
         problems.add(problem);
 
@@ -231,7 +231,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
     @Test
     public void projectShouldBeDeletedFromWorkspaceWhenWeRemoveId() {
-        ProjectProblem problem = newDto(ProjectProblem.class).withCode(9);
+        ProjectProblemDto problem = newDto(ProjectProblemDto.class).withCode(9);
 
         problems.add(problem);
 
@@ -251,7 +251,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
     @Test
     public void projectConfigurationChangedDialogShouldBeShown() {
-        ProjectProblem problem = newDto(ProjectProblem.class).withCode(8);
+        ProjectProblemDto problem = newDto(ProjectProblemDto.class).withCode(8);
 
         problems.add(problem);
 
@@ -275,7 +275,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
     @Test
     public void projectShouldBeUpdatedAsBlankWhenProjectConfigurationChanged() {
-        ProjectProblem problem = newDto(ProjectProblem.class).withCode(8);
+        ProjectProblemDto problem = newDto(ProjectProblemDto.class).withCode(8);
 
         problems.add(problem);
 

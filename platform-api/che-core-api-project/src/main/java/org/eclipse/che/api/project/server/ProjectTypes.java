@@ -14,7 +14,6 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.type.Attribute;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 
@@ -23,8 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 
 /**
@@ -50,13 +47,6 @@ public class ProjectTypes {
         }
 
         primary = manager.getProjectTypeRegistry().getProjectType(projectType);
-        if (primary == null) {
-            ProjectProblem problem = newDto(ProjectProblem.class).withCode(8).withMessage("Project configuration changed");
-
-            projectConfig.getProblems().add(problem);
-
-            return;
-        }
 
         if (!primary.isPrimaryable()) {
             throw new ProjectTypeConstraintException("Project type " + primary.getId() + " is not allowable to be primary type");

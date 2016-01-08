@@ -26,7 +26,6 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.Description;
@@ -49,6 +48,7 @@ import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectProblemDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
@@ -185,8 +185,8 @@ public class ProjectService extends Service {
 
                     ProjectConfigDto projectConfig = toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder());
 
-                    ProjectProblem projectProblem = newDto(ProjectProblem.class).withCode(9)
-                                                                                .withMessage("Project is not synchronized");
+                    ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(9)
+                                                                                   .withMessage("Project is not synchronized");
                     projectConfig.getProblems().add(projectProblem);
 
                     projectConfigs.add(projectConfig);
@@ -207,7 +207,7 @@ public class ProjectService extends Service {
         allProjectsFromWorkspace.stream()
                                 .filter(projectFromWorkspace -> !configsNames.contains(projectFromWorkspace.getName()))
                                 .forEach(projectFromWorkspace -> {
-                                    ProjectProblem projectProblem = newDto(ProjectProblem.class).withCode(10)
+                                    ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(10)
                                                                                                 .withMessage("Project is not synchronized");
                                     projectFromWorkspace.getProblems().add(projectProblem);
 

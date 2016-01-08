@@ -14,10 +14,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectProblemDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
@@ -100,13 +100,13 @@ public class ProjectConfigSynchronizationListener implements CurrentProjectChang
     public void onCurrentProjectChanged(CurrentProjectChangedEvent event) {
         this.projectConfig = event.getProjectConfig();
 
-        List<ProjectProblem> problems = projectConfig.getProblems();
+        List<ProjectProblemDto> problems = projectConfig.getProblems();
 
         if (problems.isEmpty()) {
             return;
         }
 
-        for (ProjectProblem problem : problems) {
+        for (ProjectProblemDto problem : problems) {
             switch (problem.getCode()) {
                 case 10:
                     projectExistInWSButAbsentOnVFS();
