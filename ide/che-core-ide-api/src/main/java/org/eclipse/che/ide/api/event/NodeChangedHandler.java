@@ -16,7 +16,10 @@ import com.google.gwt.event.shared.EventHandler;
  * A handler for receiving {@link NodeChangedEvent}s.
  *
  * @author Artem Zatsarynnyi
+ * @deprecated tree performs renaming data objects in nodes by self,
+ * so this event is useless after new tree implementation
  */
+@Deprecated
 public interface NodeChangedHandler extends EventHandler {
 
     /**

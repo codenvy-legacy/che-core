@@ -18,7 +18,9 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
  * Handler for {@link RenameNodeEvent}
  *
  * @author Alexander Andrienko
+ * @deprecated event should be removed because renaming node is useless in current state
  */
+@Deprecated
 public interface RenameNodeEventHandler extends EventHandler {
 
     /**
