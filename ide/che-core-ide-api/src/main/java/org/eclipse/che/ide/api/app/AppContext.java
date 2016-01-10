@@ -10,14 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.factory.shared.dto.Factory;
-import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.ide.api.project.ProjectFactory;
 import org.eclipse.che.ide.api.project.ProjectImpl;
+import org.eclipse.che.ide.api.project.WorkspaceProjects;
 
 import javax.inject.Singleton;
 
@@ -37,11 +35,11 @@ public class AppContext {
     private String            devMachineId;
     private String            projectsRoot;
 
-    private ProjectImpl activeProject;
-    private ProjectFactory projectFactory;
+    private ProjectImpl       activeProject;
+    private WorkspaceProjects projectFactory;
 
     @Inject
-    public AppContext(ProjectFactory projectFactory) {
+    public AppContext(WorkspaceProjects projectFactory) {
         this.projectFactory = projectFactory;
     }
 
@@ -51,14 +49,15 @@ public class AppContext {
 
     public void setWorkspace(UsersWorkspaceDto workspace) {
         this.workspace = workspace;
+        projectFactory.init(workspace.getProjects());
     }
-    
+
     /** Returns id of current workspace of throws IllegalArgumentException if workspace is null. */
     public String getWorkspaceId() {
-        if(workspace == null) {
+        if (workspace == null) {
             throw new IllegalArgumentException(getClass() + " Workspace can not be null.");
         }
-        
+
         return workspace.getId();
     }
 
@@ -136,14 +135,16 @@ public class AppContext {
      */
     public ProjectImpl getActiveProject() {
         return activeProject;
+
     }
 
     /**
      * TODO experimental
      * @param configDto
      */
-    public void setActiveProject(ProjectConfigDto configDto) {
-        this.activeProject = projectFactory.createProject(configDto);
+    public void setActiveProject(String projectName) {
+        //this.activeProject = projectFactory.createProject(configDto);
+        this.activeProject = projectFactory.getProject(projectName);
     }
 
 }

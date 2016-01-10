@@ -523,7 +523,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             appContext.setCurrentProject(currentProject);
 
             // TODO experimental
-            appContext.setActiveProject(selectedProjectConfig);
+            appContext.setActiveProject(selectedProjectConfig.getName());
 
             eventBus.fireEvent(new CurrentProjectChangedEvent(selectedProjectConfig));
 
