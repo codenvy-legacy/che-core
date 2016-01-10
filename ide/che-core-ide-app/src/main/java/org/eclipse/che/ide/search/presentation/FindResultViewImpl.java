@@ -23,8 +23,8 @@ import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.search.factory.FindResultNodeFactory;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.Tree;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
+import org.eclipse.che.ide.ui.smartTree.NodeLoader;
+import org.eclipse.che.ide.ui.smartTree.NodeStorage;
 import org.eclipse.che.ide.ui.smartTree.UniqueKeyProvider;
 
 import javax.validation.constraints.NotNull;
@@ -62,8 +62,8 @@ class FindResultViewImpl extends BaseView<FindResultView.ActionDelegate> impleme
             }
         };
 
-        TreeNodeStorage nodeStorage = new TreeNodeStorage(nodeIdProvider);
-        TreeNodeLoader loader = new TreeNodeLoader(Collections.<NodeInterceptor>emptySet());
+        NodeStorage nodeStorage = new NodeStorage(nodeIdProvider);
+        NodeLoader loader = new NodeLoader(Collections.<NodeInterceptor>emptySet());
         tree = new Tree(nodeStorage, loader);
 
         setContentWidget(tree);

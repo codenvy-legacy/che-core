@@ -18,6 +18,7 @@ import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.ui.smartTree.handler.GroupingHandlerRegistration;
 import org.eclipse.che.ide.ui.smartTree.event.StoreAddEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreClearEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreDataChangeEvent;
@@ -46,7 +47,7 @@ import java.util.Map;
  *
  * @author Vlad Zhukovskiy
  */
-public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
+public class NodeStorage implements StoreHandlers.HasStoreHandlers {
 
     private final NodeDescriptor              roots       = new NodeDescriptor(this, null);
     private final Map<String, NodeDescriptor> idToNodeMap = new HashMap<>();
@@ -56,7 +57,7 @@ public class TreeNodeStorage implements StoreHandlers.HasStoreHandlers {
 
     private List<StoreSortInfo> comparators = new ArrayList<>();
 
-    public TreeNodeStorage(UniqueKeyProvider<Node> keyProvider) {
+    public NodeStorage(UniqueKeyProvider<Node> keyProvider) {
         this.keyProvider = keyProvider;
     }
 

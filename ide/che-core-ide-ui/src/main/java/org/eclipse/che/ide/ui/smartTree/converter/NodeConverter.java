@@ -8,18 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.smartTree.sorting;
+package org.eclipse.che.ide.ui.smartTree.converter;
 
 import org.eclipse.che.ide.api.project.node.Node;
 
-import java.util.Comparator;
-
 /**
- * @author Vlad Zhukovskiy
+ * Mechanism to convert node or specific part of node into another representation.
+ *
+ * @author Vlad Zhukovskyi
  */
-public class AlphabeticalFilter implements Comparator<Node> {
-    @Override
-    public int compare(Node o1, Node o2) {
-        return o1.getName().compareTo(o2.getName());
-    }
+public interface NodeConverter<N extends Node, D> {
+    /**
+     * Convert node into another type, e.g. String or other type.
+     *
+     * @param node
+     *         node to be converted.
+     * @return instance of {@link D}
+     */
+    D convert(N node);
 }

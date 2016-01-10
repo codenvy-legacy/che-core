@@ -146,17 +146,8 @@ public class TreeView {
     }
 
     public boolean isSelectableTarget(Node node, Element target) {
-        NodeDescriptor nodeDescriptor = tree.findNode(node);
+        NodeDescriptor nodeDescriptor = tree.getNodeDescriptor(node);
         return nodeDescriptor != null && !isJointElement(target);
-    }
-
-    private boolean isJointElement(Element element) {
-        if (element instanceof SVGSVGElement) {
-            SVGSVGElement joint = (SVGSVGElement)element;
-            return joint.getClassList().contains(tree.getTreeStyles().styles().joint());
-        }
-
-        return false;
     }
 
     public void onDropChange(NodeDescriptor nodeDescriptor, boolean drop) {
@@ -208,7 +199,7 @@ public class TreeView {
             return;
         }
 
-        Element jointContainer = tree.getNodePresentationRenderer().getJointContainer(joint);
+        Element jointContainer = tree.getPresentationRenderer().getJointContainer(joint);
 
         getNodeContainer(node).insertFirst(jointContainer);
 
@@ -237,7 +228,7 @@ public class TreeView {
                 tree.setExpanded(tree.getNodeStorage().getParent(node), true);
             }
         }
-        NodeDescriptor nodeDescriptor = tree.findNode(node);
+        NodeDescriptor nodeDescriptor = tree.getNodeDescriptor(node);
         if (nodeDescriptor != null) {
             Element e = getNodeContainer(nodeDescriptor);
             if (e != null) {
@@ -289,7 +280,7 @@ public class TreeView {
     }
 
     protected void onMouseOver(NativeEvent ne) {
-        NodeDescriptor nodeDescriptor = tree.findNode((Element)ne.getEventTarget().cast());
+        NodeDescriptor nodeDescriptor = tree.getNodeDescriptor((Element)ne.getEventTarget().cast());
         if (nodeDescriptor != null) {
             if (over != nodeDescriptor) {
                 onMouseOut(ne);
@@ -305,5 +296,14 @@ public class TreeView {
         } else {
             element.removeClassName(cls);
         }
+    }
+
+    private boolean isJointElement(Element element) {
+        if (element instanceof SVGSVGElement) {
+            SVGSVGElement joint = (SVGSVGElement)element;
+            return joint.getClassList().contains(tree.getTreeStyles().styles().joint());
+        }
+
+        return false;
     }
 }

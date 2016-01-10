@@ -29,6 +29,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 
 import org.eclipse.che.ide.api.project.node.HasAction;
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.ui.smartTree.handler.GroupingHandlerRegistration;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.HasSelectionChangedHandlers;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
@@ -52,7 +53,7 @@ import java.util.List;
 /**
  * @author Vlad Zhukovskiy
  */
-public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBeforeSelectionHandlers<Node>, HasSelectionChangedHandlers {
+public class SelectionModel implements HasSelectionHandlers<Node>, HasBeforeSelectionHandlers<Node>, HasSelectionChangedHandlers {
     private class TreeMouseHandler implements MouseDownHandler, ClickHandler {
         @Override
         public void onClick(ClickEvent event) {
@@ -60,7 +61,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
 
         @Override
         public void onMouseDown(MouseDownEvent event) {
-            TreeSelectionModel.this.onMouseDown(event);
+            SelectionModel.this.onMouseDown(event);
         }
     }
 
@@ -69,12 +70,12 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
 
         @Override
         public void onAdd(StoreAddEvent event) {
-            TreeSelectionModel.this.onAdd(event.getNodes());
+            SelectionModel.this.onAdd(event.getNodes());
         }
 
         @Override
         public void onClear(StoreClearEvent event) {
-            TreeSelectionModel.this.onClear(event);
+            SelectionModel.this.onClear(event);
         }
 
         @Override
@@ -82,14 +83,14 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
             Scheduler.get().scheduleFinally(new Scheduler.ScheduledCommand() {
                 @Override
                 public void execute() {
-                    TreeSelectionModel.this.onRecordChange(event);
+                    SelectionModel.this.onRecordChange(event);
                 }
             });
         }
 
         @Override
         public void onRemove(StoreRemoveEvent event) {
-            TreeSelectionModel.this.onRemove(event.getNode());
+            SelectionModel.this.onRemove(event.getNode());
         }
 
         @Override
@@ -100,7 +101,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
                 @Override
                 public void execute() {
                     for (Node anUpdate : update) {
-                        TreeSelectionModel.this.onUpdate(anUpdate);
+                        SelectionModel.this.onUpdate(anUpdate);
                     }
                 }
             });
@@ -166,7 +167,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
 
     protected Tree tree;
 
-    protected TreeNodeStorage nodeStorage;
+    protected NodeStorage nodeStorage;
 
     private TreeMouseHandler   treeMouseHandler   = new TreeMouseHandler();
     private TreeStorageHandler treeStorageHandler = new TreeStorageHandler();
@@ -183,7 +184,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
         SINGLE, SIMPLE, MULTI
     }
 
-    public TreeSelectionModel() {
+    public SelectionModel() {
 
     }
 
@@ -242,7 +243,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
         }
     }
 
-    public void bindStorage(TreeNodeStorage store) {
+    public void bindStorage(NodeStorage store) {
         deselectAll();
         if (this.nodeStorage != null) {
             handlerRegistration.removeHandler();
@@ -418,7 +419,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
         }
 
         if (selectionMode == Mode.MULTI) {
-            NodeDescriptor node = tree.findNode((Element)e.getEventTarget().cast());
+            NodeDescriptor node = tree.getNodeDescriptor((Element)e.getEventTarget().cast());
             // on dnd prevent drag the node will be null
             if (node != null) {
                 Node sel = node.getNode();
@@ -445,7 +446,7 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
     protected void onMouseDown(MouseDownEvent mde) {
         NativeTreeEvent e = mde.getNativeEvent().cast();
         Element target = e.getEventTargetEl();
-        NodeDescriptor selNode = tree.findNode(target);
+        NodeDescriptor selNode = tree.getNodeDescriptor(target);
 
         if (selNode == null || tree == null) {
             return;
@@ -487,11 +488,11 @@ public class TreeSelectionModel implements HasSelectionHandlers<Node>, HasBefore
                         List<Node> selectedItems = new ArrayList<>();
 
                         // from last selected or firstly selected
-                        NodeDescriptor lastSelTreeNode = tree.findNode(lastSelectedNode);
+                        NodeDescriptor lastSelTreeNode = tree.getNodeDescriptor(lastSelectedNode);
                         Element lastSelTreeEl = tree.getView().getRootContainer(lastSelTreeNode);
 
                         // to selected or secondly selected
-                        NodeDescriptor selTreeNode = tree.findNode(sel);
+                        NodeDescriptor selTreeNode = tree.getNodeDescriptor(sel);
                         Element selTreeNodeEl = tree.getView().getRootContainer(selTreeNode);
 
                         // holding shift down, selecting the same item again, selecting itself

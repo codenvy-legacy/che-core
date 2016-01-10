@@ -30,6 +30,7 @@ import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CancellableEvent;
+import org.eclipse.che.ide.ui.smartTree.handler.GroupingHandlerRegistration;
 import org.eclipse.che.ide.ui.smartTree.event.LoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoadExceptionEvent;
 import org.eclipse.che.ide.ui.smartTree.event.LoaderHandler;
@@ -43,7 +44,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,7 +53,7 @@ import java.util.Set;
  * @author Vlad Zhukovskiy
  * @see org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor
  */
-public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
+public class NodeLoader implements LoaderHandler.HasLoaderHandlers {
     /**
      * Temporary storage for current requested nodes. When children have been loaded requested node removes from temporary set.
      */
@@ -91,14 +91,14 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
         @Override
         public void onLoad(final LoadEvent event) {
             Node parent = event.getRequestedNode();
-            tree.getView().onLoadChange(tree.findNode(parent), false);
+            tree.getView().onLoadChange(tree.getNodeDescriptor(parent), false);
 
             //remove joint element if non-leaf node doesn't have any children
             if (!parent.isLeaf() && event.getReceivedNodes().isEmpty()) {
-                tree.getView().onJointChange(tree.findNode(parent), Tree.Joint.NONE);
+                tree.getView().onJointChange(tree.getNodeDescriptor(parent), Tree.Joint.NONE);
             }
 
-            NodeDescriptor requested = tree.findNode(parent);
+            NodeDescriptor requested = tree.getNodeDescriptor(parent);
 
             if (requested == null) {
                 //smth happened, that requested node isn't registered in storage
@@ -128,19 +128,12 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
                 }
             }
 
-            //This method will be refactored with this issue https://jira.codenvycorp.com/browse/IDEX-3319
-            //So to reduce requests count was temporary disable inner checking of children to proper displaying ">" control of the node.
-//            Set joint element on the view
-//            Promise<Void> promise = Promises.resolve(null);
-//            List<Node> exist = tree.getNodeStorage().getChildren(event.getRequestedNode());
-//            chainChildrenAndSetJointElement(promise, exist.listIterator());
-
             //Iterate on nested descendants to make additional load request
             if (event.isReloadExpandedChild()) {
                 Iterable<Node> filter = Iterables.filter(tree.getNodeStorage().getChildren(parent), new Predicate<Node>() {
                     @Override
                     public boolean apply(@Nullable Node input) {
-                        return tree.hasChildren(input) && tree.isExpanded(input);
+                        return tree.isExpanded(input);
                     }
                 });
 
@@ -154,7 +147,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
 
         @Override
         public void onLoadException(LoadExceptionEvent event) {
-            NodeDescriptor requested = tree.findNode(event.getRequestedNode());
+            NodeDescriptor requested = tree.getNodeDescriptor(event.getRequestedNode());
 
             if (requested == null) {
                 return;
@@ -165,7 +158,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
 
         @Override
         public void onBeforeLoad(BeforeLoadEvent event) {
-            NodeDescriptor requested = tree.findNode(event.getRequestedNode());
+            NodeDescriptor requested = tree.getNodeDescriptor(event.getRequestedNode());
 
             if (requested == null) {
                 return;
@@ -174,36 +167,6 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
             requested.setLoading(true);
             requested.setLoading(true);
         }
-    }
-
-    private Promise<Void> chainChildrenAndSetJointElement(Promise<Void> promise, ListIterator<Node> iterator) {
-        if (!iterator.hasNext()) {
-            return promise;
-        }
-
-        final Node node = iterator.next();
-
-        if (node.isLeaf()) {
-            return chainChildrenAndSetJointElement(promise, iterator);
-        }
-
-        final Promise<Void> derivedPromise = promise.thenPromise(new Function<Void, Promise<Void>>() {
-            @Override
-            public Promise<Void> apply(Void arg) throws FunctionException {
-                return hasChildren(node).thenPromise(new Function<Boolean, Promise<Void>>() {
-                    @Override
-                    public Promise<Void> apply(Boolean hasChildren) throws FunctionException {
-                        if (!hasChildren) {
-                            tree.getView().onJointChange(tree.findNode(node), Tree.Joint.NONE);
-                        }
-
-                        return Promises.resolve(null);
-                    }
-                });
-            }
-        });
-
-        return chainChildrenAndSetJointElement(derivedPromise, iterator);
     }
 
     private List<Node> findNewNodes(NodeDescriptor parent, final List<Node> loadedChildren) {
@@ -261,7 +224,7 @@ public class TreeNodeLoader implements LoaderHandler.HasLoaderHandlers {
      * @param nodeInterceptors
      *         set of {@link org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor}
      */
-    public TreeNodeLoader(@Nullable Set<NodeInterceptor> nodeInterceptors) {
+    public NodeLoader(@Nullable Set<NodeInterceptor> nodeInterceptors) {
         this.nodeInterceptors = new ArrayList<>();
         if (nodeInterceptors != null) {
             this.nodeInterceptors.addAll(nodeInterceptors);

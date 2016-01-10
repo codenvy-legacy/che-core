@@ -16,10 +16,12 @@ import com.google.gwt.resources.client.CssResource;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
+ * Style for the {@link Tree} widget.
+ *
  * @author Vlad Zhukovskiy
  */
 public interface TreeStyles extends ClientBundle {
-    public interface CSS extends CssResource {
+    interface CSS extends CssResource {
         String noFocusOutline();
 
         String rootContainer();

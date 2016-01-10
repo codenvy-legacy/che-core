@@ -35,8 +35,8 @@ import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.Tree;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
+import org.eclipse.che.ide.ui.smartTree.NodeLoader;
+import org.eclipse.che.ide.ui.smartTree.NodeStorage;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer;
 import org.eclipse.che.ide.ui.window.Window;
@@ -48,7 +48,7 @@ import java.util.List;
 import static com.google.gwt.dom.client.Style.Overflow.AUTO;
 import static org.eclipse.che.ide.part.editor.recent.RecentFileStore.getShortPath;
 import static org.eclipse.che.ide.project.node.AbstractProjectBasedNode.CUSTOM_BACKGROUND_FILL;
-import static org.eclipse.che.ide.ui.smartTree.TreeSelectionModel.Mode.SINGLE;
+import static org.eclipse.che.ide.ui.smartTree.SelectionModel.Mode.SINGLE;
 
 /**
  * Implementation for the {@link OpenRecentFilesView}.
@@ -79,7 +79,7 @@ public class OpenRecentFileViewImpl extends Window implements OpenRecentFilesVie
         pathLabel = new Label();
         pathLabel.setStyleName(styles.css().label());
 
-        TreeNodeStorage storage = new TreeNodeStorage(new NodeUniqueKeyProvider() {
+        NodeStorage storage = new NodeStorage(new NodeUniqueKeyProvider() {
             @Override
             public String getKey(@NotNull Node item) {
                 if (item instanceof HasStorablePath) {
@@ -89,9 +89,9 @@ public class OpenRecentFileViewImpl extends Window implements OpenRecentFilesVie
                 }
             }
         });
-        TreeNodeLoader loader = new TreeNodeLoader(Collections.<NodeInterceptor>emptySet());
+        NodeLoader loader = new NodeLoader(Collections.<NodeInterceptor>emptySet());
         tree = new Tree(storage, loader);
-        tree.setNodePresentationRenderer(new DefaultPresentationRenderer<Node>(tree.getTreeStyles()) {
+        tree.setPresentationRenderer(new DefaultPresentationRenderer<Node>(tree.getTreeStyles()) {
             @Override
             public Element render(Node node, String domID, Tree.Joint joint, int depth) {
                 Element element = super.render(node, domID, joint, depth);

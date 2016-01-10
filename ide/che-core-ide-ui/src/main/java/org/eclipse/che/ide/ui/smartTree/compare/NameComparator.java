@@ -8,13 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.smartTree;
+package org.eclipse.che.ide.ui.smartTree.compare;
 
 import org.eclipse.che.ide.api.project.node.Node;
 
+import java.util.Comparator;
+
 /**
- * @author Vlad Zhukovskiy
+ * Comparator which compare nodes by their name.
+ *
+ * @author Vlad Zhukovskyi
  */
-public interface NodeConverter<N extends Node, D> {
-    D convert(N node);
+public class NameComparator implements Comparator<Node> {
+
+    /** {@inheritDoc} */
+    @Override
+    public int compare(Node o1, Node o2) {
+        return o1.getName().compareTo(o2.getName());
+    }
 }

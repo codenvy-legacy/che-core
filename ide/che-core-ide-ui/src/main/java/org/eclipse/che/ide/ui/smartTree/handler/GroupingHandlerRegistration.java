@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ui.smartTree;
+package org.eclipse.che.ide.ui.smartTree.handler;
 
 import com.google.gwt.event.shared.HandlerRegistration;
 

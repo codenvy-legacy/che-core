@@ -19,8 +19,8 @@ import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ToggleAction;
 import org.eclipse.che.ide.part.explorer.project.FoldersOnTopFilter;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerViewImpl;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
-import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
+import org.eclipse.che.ide.ui.smartTree.NodeStorage.StoreSortInfo;
+import org.eclipse.che.ide.ui.smartTree.compare.NameComparator;
 
 import static org.eclipse.che.ide.ui.smartTree.SortDir.ASC;
 
@@ -31,7 +31,7 @@ import static org.eclipse.che.ide.ui.smartTree.SortDir.ASC;
 public class FoldersAlwaysOnTopAction extends ToggleAction {
     private final ProjectExplorerViewImpl view;
     private static StoreSortInfo DEFAULT      = new StoreSortInfo(new FoldersOnTopFilter(), ASC);
-    private static StoreSortInfo ALPHABETICAL = new StoreSortInfo(new AlphabeticalFilter(), ASC);
+    private static StoreSortInfo ALPHABETICAL = new StoreSortInfo(new NameComparator(), ASC);
 
     @Inject
     public FoldersAlwaysOnTopAction(ProjectExplorerViewImpl view) {

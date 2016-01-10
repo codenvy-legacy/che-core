@@ -21,6 +21,8 @@ import com.google.gwt.user.client.ui.SimplePanel;
 
 import org.eclipse.che.ide.DelayedTask;
 import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.ui.smartTree.converter.NodeConverter;
+import org.eclipse.che.ide.ui.smartTree.converter.impl.NodeNameConverter;
 
 import java.util.List;
 
