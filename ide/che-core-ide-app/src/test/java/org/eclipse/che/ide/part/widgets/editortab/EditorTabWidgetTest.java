@@ -15,6 +15,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwtmockito.GwtMockitoTestRunner;
 
+import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
@@ -62,6 +63,8 @@ public class EditorTabWidgetTest {
     private VirtualFile     file;
     @Mock
     private EditorTabContextMenuFactory editorTabContextMenuFactory;
+    @Mock
+    private EventBus eventBus;
 
     private EditorTabWidget tab;
 
@@ -70,7 +73,7 @@ public class EditorTabWidgetTest {
         when(icon.getSvg()).thenReturn(svg);
         when(event.getNativeButton()).thenReturn(NativeEvent.BUTTON_LEFT);
 
-        tab = new EditorTabWidget(file, icon, SOME_TEXT, resources, editorTabContextMenuFactory);
+        tab = new EditorTabWidget(file, icon, SOME_TEXT, resources, editorTabContextMenuFactory, eventBus);
         tab.setDelegate(delegate);
     }
 

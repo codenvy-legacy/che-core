@@ -27,6 +27,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
+import com.google.web.bindery.event.shared.EventBus;
+import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
@@ -66,8 +68,9 @@ public class EditorTabWidget extends Composite implements EditorTab, ContextMenu
     @UiField(provided = true)
     final PartStackUIResources resources;
 
+    private final EventBus eventBus;
     private final EditorTabContextMenuFactory editorTabContextMenu;
-    private final VirtualFile                 file;
+    private final VirtualFile file;
 
     private ActionDelegate delegate;
     private boolean        pinned;
@@ -78,8 +81,10 @@ public class EditorTabWidget extends Composite implements EditorTab, ContextMenu
                            @Assisted SVGResource icon,
                            @Assisted String title,
                            PartStackUIResources resources,
-                           EditorTabContextMenuFactory editorTabContextMenu) {
+                           EditorTabContextMenuFactory editorTabContextMenu,
+                           EventBus eventBus) {
         this.resources = resources;
+        this.eventBus = eventBus;
 
         initWidget(UI_BINDER.createAndBindUi(this));
 
@@ -168,6 +173,7 @@ public class EditorTabWidget extends Composite implements EditorTab, ContextMenu
         if (NativeEvent.BUTTON_LEFT == event.getNativeButton()) {
             delegate.onTabClicked(this);
         } else if (NativeEvent.BUTTON_MIDDLE == event.getNativeButton()) {
+            eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
             delegate.onTabClose(this);
         }
     }
@@ -204,6 +210,7 @@ public class EditorTabWidget extends Composite implements EditorTab, ContextMenu
 
     @UiHandler("closeIcon")
     public void onCloseButtonClicked(@SuppressWarnings("UnusedParameters") ClickEvent event) {
+        eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
         delegate.onTabClose(this);
     }
 
