@@ -17,8 +17,10 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 /**
  * An event that should be fired in order to open a project.
  *
+ * don't use this event anymore
  * @author Artem Zatsarynnyi
  */
+@Deprecated
 public class OpenProjectEvent extends GwtEvent<OpenProjectHandler> {
 
     /** Type class used to register this event. */

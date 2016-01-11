@@ -15,8 +15,10 @@ import com.google.gwt.event.shared.EventHandler;
 /**
  * A handler for handling {@link OpenProjectEvent}.
  *
+ * don't use this handler anymore
  * @author Artem Zatsarynnyi
  */
+@Deprecated
 public interface OpenProjectHandler extends EventHandler {
     /**
      * Called when someone is going to open a project.
