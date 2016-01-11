@@ -1392,4 +1392,11 @@ public interface Theme {
     String loaderLabelColor();
 
     String outputBoxShadow();
+
+    String toolButtonSvgFill();
+    String toolButtonBorder();
+    String toolButtonHoverBackgroundColor();
+    String toolButtonActiveBackgroundColor();
+    String toolButtonHoverBoxShadow();
+    String toolButtonActiveBoxShadow();
 }

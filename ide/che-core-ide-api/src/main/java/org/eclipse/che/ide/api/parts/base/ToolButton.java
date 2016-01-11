@@ -11,25 +11,23 @@
 package org.eclipse.che.ide.api.parts.base;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import org.vectomatic.dom.svg.ui.SVGImage;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Button which can be added to the tool bar.
  *
  * @author Vitaliy Gulyy
+ * @author Vlad Zhukovskyi
  */
 public class ToolButton extends Composite implements HasClickHandlers {
 
@@ -41,15 +39,7 @@ public class ToolButton extends Composite implements HasClickHandlers {
     private static TabButtonUiBinder uiBinder = GWT.create(TabButtonUiBinder.class);
 
     @UiField
-    HTML controlPanel;
-
-    @UiField
-    DivElement buttonPanel;
-
-    @UiField
-    DivElement iconPanel;
-
-    private List<ClickHandler> clickHandlers = new ArrayList<ClickHandler>();
+    FlowPanel iconPanel;
 
     public ToolButton(SVGImage image) {
         this(null, image);
@@ -58,7 +48,7 @@ public class ToolButton extends Composite implements HasClickHandlers {
     public ToolButton(String id, SVGImage image) {
         initWidget(uiBinder.createAndBindUi(this));
 
-        iconPanel.appendChild(image.getElement());
+        iconPanel.add(image);
 
         if (id != null) {
             getElement().setId(id);
@@ -67,7 +57,7 @@ public class ToolButton extends Composite implements HasClickHandlers {
 
     @Override
     public HandlerRegistration addClickHandler(ClickHandler clickHandler) {
-        return controlPanel.addClickHandler(clickHandler);
+        return iconPanel.addDomHandler(clickHandler, ClickEvent.getType());
     }
 
 }

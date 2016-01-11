@@ -1306,4 +1306,34 @@ public class LightTheme implements Theme {
     public String outputBoxShadow() {
         return "inset 0px 37px 8px -35px rgba(0,0,0,0.25)";
     }
+
+    @Override
+    public String toolButtonSvgFill() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String toolButtonBorder() {
+        return "1px solid #8E8E8E";
+    }
+
+    @Override
+    public String toolButtonHoverBackgroundColor() {
+        return "#BDBEC0";
+    }
+
+    @Override
+    public String toolButtonActiveBackgroundColor() {
+        return "#AFAFB0";
+    }
+
+    @Override
+    public String toolButtonHoverBoxShadow() {
+        return "none";
+    }
+
+    @Override
+    public String toolButtonActiveBoxShadow() {
+        return "inset 1px 1px 0 0 #6F6E6E";
+    }
 }

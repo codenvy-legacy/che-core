@@ -1329,4 +1329,34 @@ public class DarkTheme implements Theme {
     public String outputBoxShadow() {
         return "inset 0px 37px 8px -35px rgba(0,0,0,0.25)";
     }
+
+    @Override
+    public String toolButtonSvgFill() {
+        return "#dbdbdb";
+    }
+
+    @Override
+    public String toolButtonBorder() {
+        return "1px solid #24272c";
+    }
+
+    @Override
+    public String toolButtonHoverBackgroundColor() {
+        return "#44484D";
+    }
+
+    @Override
+    public String toolButtonActiveBackgroundColor() {
+        return "#33373B";
+    }
+
+    @Override
+    public String toolButtonHoverBoxShadow() {
+        return "1px 1px 0 0 #3c3c3c";
+    }
+
+    @Override
+    public String toolButtonActiveBoxShadow() {
+        return "inset 1px 1px 0 0 #3c3c3c";
+    }
 }

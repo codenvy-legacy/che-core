@@ -119,7 +119,7 @@ public abstract class BaseView<T extends BaseActionDelegate> extends Composite i
      */
     public final void addToolButton(@NotNull IsWidget button) {
         if (button != null) {
-            toolbarHeader.addEast(button, 20);
+            toolbarHeader.addEast(button, 22);
         }
     }
 

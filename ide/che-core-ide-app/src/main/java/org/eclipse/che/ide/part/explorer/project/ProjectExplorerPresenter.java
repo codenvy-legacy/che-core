@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.part.explorer.project;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
@@ -84,6 +85,7 @@ import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,7 +180,24 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
         if (!extServerStarted) {
-            reloadProjectTree();
+            nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
+                @Override
+                public void apply(List<Node> nodes) throws OperationException {
+                    view.removeAllNodes();
+                    view.addNodes(null, nodes);
+                    //actually we don't need to setup current project in application context
+                    //because when we apply selection to first node, then tree will fires
+                    //selection changed event and app context will be filled in method
+                    //updateAppContext(List<Nodes>)
+
+                    eventBus.fireEvent(new ProjectExplorerLoadedEvent(nodes));
+                }
+            }).catchError(new Operation<PromiseError>() {
+                @Override
+                public void apply(PromiseError arg) throws OperationException {
+                    notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
+                }
+            });
 
             extServerStarted = true;
         }
@@ -223,34 +242,12 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         view.select(node, false);
 
         if (!projectConfig.getProblems().isEmpty()) {
-            notificationManager.notify(locale.projectExplorerInvalidProjectDetected(), locale.projectExplorerDetectedUnconfiguredProject(),
-                                       projectConfig);
+            notificationManager.notify(locale.projectExplorerInvalidProjectDetected(),
+                                       locale.projectExplorerDetectedUnconfiguredProject(), projectConfig);
             //TODO move this logic to separate component
             askUserToSetUpProject(projectConfig);
         }
 
-    }
-
-    //TODO: temporary fix to make accept factory working
-    public void reloadProjectTree() {
-        nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
-            @Override
-            public void apply(List<Node> nodes) throws OperationException {
-                view.removeAllNodes();
-                view.addNodes(null, nodes);
-                //actually we don't need to setup current project in application context
-                //because when we apply selection to first node, then tree will fires
-                //selection changed event and app context will be filled in method
-                //updateAppContext(List<Nodes>)
-
-                eventBus.fireEvent(new ProjectExplorerLoadedEvent(nodes));
-            }
-        }).catchError(new Operation<PromiseError>() {
-            @Override
-            public void apply(PromiseError arg) throws OperationException {
-                notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
-            }
-        });
     }
 
     private void askUserToSetUpProject(final ProjectConfigDto descriptor) {
@@ -435,7 +432,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     public void onConfigureProject(ConfigureProjectEvent event) {
         final ProjectConfigDto toConfigure = event.getProject();
         if (toConfigure != null) {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            Scheduler.get().scheduleDeferred(new ScheduledCommand() {
                 @Override
                 public void execute() {
                     //Scheduler need to wait when configuration wizard will create and prepare wizard pages
@@ -832,4 +829,51 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         return view.getRootNodes();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void onRefreshProjectsRequested() {
+        //TODO method should be removed when new vfs will be implemented, but at this moment we need this method to handle refresh button
+        //click to synchronize project state between client and server
+        nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
+            @Override
+            public void apply(List<Node> nodes) throws OperationException {
+                List<Node> sameNodes = new ArrayList<>(view.getRootNodes());
+                sameNodes.retainAll(nodes);
+
+                List<Node> removedNodes = new ArrayList<>(view.getRootNodes());
+                removedNodes.removeAll(sameNodes);
+                for (final Node node : removedNodes) {
+                    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                        @Override
+                        public void execute() {
+                            view.removeNode(node, true);
+                        }
+                    });
+                }
+
+                List<Node> addedNodes = new ArrayList<>(nodes);
+                addedNodes.removeAll(sameNodes);
+                for (final Node node : addedNodes) {
+                    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                        @Override
+                        public void execute() {
+                            view.addNode(null, node);
+                        }
+                    });
+                }
+
+                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        view.reloadChildren(null, true);
+                    }
+                });
+            }
+        }).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
+            }
+        });
+    }
 }

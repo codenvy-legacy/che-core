@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.singletonList;
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
 import static org.eclipse.che.ide.project.node.SyntheticBasedNode.CUSTOM_BACKGROUND_FILL;
 import static org.eclipse.che.ide.ui.menu.PositionController.HorizontalAlign.MIDDLE;
@@ -263,7 +264,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             throw new IllegalArgumentException("Children shouldn't be null");
         }
 
-        addNodes(parent, Collections.singletonList(child));
+        addNodes(parent, singletonList(child));
     }
 
     /** {@inheritDoc} */
@@ -359,17 +360,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             refreshButton.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
-                    List<Node> selectedNodes = tree.getSelectionModel().getSelectedNodes();
-
-                    for (Node node : selectedNodes) {
-                        if (node.isLeaf()) {
-                            continue;
-                        }
-
-                        if (tree.isExpanded(node)) {
-                            tree.getNodeLoader().loadChildren(node, true);
-                        }
-                    }
+                    delegate.onRefreshProjectsRequested();
                 }
             });
             refreshButton.ensureDebugId(REFRESH_BUTTON_ID);
@@ -377,8 +368,9 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             Tooltip.create((elemental.dom.Element)refreshButton.getElement(),
                            BOTTOM,
                            MIDDLE,
-                           "Refresh selected folder");
+                           "Refresh Project Tree");
             addToolButton(refreshButton);
+            refreshButton.setVisible(true);
         }
 
         if (collapseAllButton == null) {
@@ -403,15 +395,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             addToolButton(collapseAllButton);
         }
 
-        refreshButton.setVisible(true);
         collapseAllButton.setVisible(true);
     }
 
     private void hideToolbar() {
-        if (refreshButton != null) {
-            refreshButton.setVisible(false);
-        }
-
         if (collapseAllButton != null) {
             collapseAllButton.setVisible(false);
         }
@@ -426,18 +413,14 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     /** {@inheritDoc} */
     @Override
     public void reloadChildren(Node parent, boolean deep) {
-        NodeLoader loader = tree.getNodeLoader();
-
-        if (parent != null) {
-            if (tree.isExpanded(parent) && !loader.loadChildren(parent, deep)) {
-                Log.warn(getClass(), "Node has been already requested for loading children");
+        //iterate on root nodes and call tree widget to reload their children
+        for (Node node : parent == null ? tree.getRootNodes() : singletonList(parent)) {
+            if (node.isLeaf()) { //just preventive actions
+                continue;
             }
-        } else {
-            List<Node> rootNodes = tree.getRootNodes();
-            for (Node root : rootNodes) {
-                if (tree.isExpanded(root) && !loader.loadChildren(root, deep)) {
-                    Log.warn(getClass(), "Node has been already requested for loading children");
-                }
+
+            if (tree.isExpanded(node)) {
+                tree.getNodeLoader().loadChildren(node, deep);
             }
         }
     }
