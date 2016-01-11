@@ -161,12 +161,12 @@ import static org.eclipse.che.ide.util.dom.Elements.disableTextSelection;
  * @see NodeUniqueKeyProvider
  */
 public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
-        HasExpandItemHandlers,
-        HasBeforeCollapseItemHandlers,
-        HasCollapseItemHandlers,
-        ComponentWithEmptyText,
-        HasBlurHandlers,
-        HasNodeAddedEventHandlers {
+                                                 HasExpandItemHandlers,
+                                                 HasBeforeCollapseItemHandlers,
+                                                 HasCollapseItemHandlers,
+                                                 ComponentWithEmptyText,
+                                                 HasBlurHandlers,
+                                                 HasNodeAddedEventHandlers {
 
     private static final String NULL_NODE_MSG = "Node should not be a null";
     private static final String NULL_NODE_STORAGE_MSG = "Node should not be a null";
@@ -1360,16 +1360,26 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
         if (isOrWasAttached()) {
             Node parent = nodeStorage.getParent(event.getNodes().get(0));
 
+            final Element container = getContainer(parent);
+            final int index = event.getIndex();
+
             if (parent == null) {
-                redraw(null);
+                for (Node child : event.getNodes()) {
+                    if (index == 0) {
+                        container.insertFirst(renderNode(child, 0));
+                    } else if (index == getNodeStorage().getRootCount() - event.getNodes().size()) {
+                        com.google.gwt.dom.client.Node lastChild = container.getLastChild();
+                        container.insertAfter(renderNode(child, 0), lastChild);
+                    } else {
+                        container.insertBefore(renderNode(child, 0), container.getChild(index));
+                    }
+                    scrollIntoView(child);
+                }
             } else {
                 NodeDescriptor descriptor = getNodeDescriptor(parent);
                 if (descriptor != null && descriptor.isChildrenRendered()) {
                     int parentDepth = nodeStorage.getDepth(parent);
 
-                    Element container = getContainer(parent);
-
-                    int index = event.getIndex();
                     int parentChildCount = nodeStorage.getChildCount(parent);
                     for (Node child : event.getNodes()) {
                         if (!descriptor.isExpanded() && nodeStorage.getChildCount(descriptor.getNode()) == 1) {
@@ -1577,11 +1587,11 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
     }
 
     private class Handler implements StoreAddHandler,
-            StoreClearHandler,
-            StoreDataChangeHandler,
-            StoreRemoveHandler,
-            StoreUpdateHandler,
-            StoreSortHandler {
+                                     StoreClearHandler,
+                                     StoreDataChangeHandler,
+                                     StoreRemoveHandler,
+                                     StoreUpdateHandler,
+                                     StoreSortHandler {
         @Override
         public void onAdd(StoreAddEvent event) {
             Tree.this.onAdd(event);
