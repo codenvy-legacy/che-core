@@ -30,7 +30,6 @@
         <module>ide</module>
         <module>che-core-vfs-impl</module>
         <module>che-core-git-impl-native</module>
-        <module>che-core-git-server</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:codenvy/che-core.git</connection>
