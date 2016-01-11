@@ -359,5 +359,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
         void onSelectionChanged(List<Node> selection);
 
         void onDeleteKeyPressed();
+
+        void onRefreshProjectsRequested();
     }
 }

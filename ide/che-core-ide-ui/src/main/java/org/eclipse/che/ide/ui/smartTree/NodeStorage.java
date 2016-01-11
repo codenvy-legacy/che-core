@@ -71,7 +71,11 @@ public class NodeStorage implements StoreHandlers.HasStoreHandlers {
      * @param nodes
      */
     public void add(List<Node> nodes) {
-        insert(roots, roots.getChildren().size(), nodes);
+        if (nodes.size() == 1) {
+            insert(roots, roots.getChildren().size(), nodes.get(0));
+        } else {
+            insert(roots, roots.getChildren().size(), nodes);
+        }
     }
 
     /**
@@ -92,7 +96,11 @@ public class NodeStorage implements StoreHandlers.HasStoreHandlers {
      */
     public void add(Node parent, List<Node> children) {
         NodeDescriptor nodeDescriptor = getWrapper(parent);
-        insert(nodeDescriptor, nodeDescriptor.getChildren().size(), children);
+        if (children.size() == 1) {
+            insert(nodeDescriptor, nodeDescriptor.getChildren().size(), children.get(0));
+        } else {
+            insert(nodeDescriptor, nodeDescriptor.getChildren().size(), children);
+        }
     }
 
     /**
