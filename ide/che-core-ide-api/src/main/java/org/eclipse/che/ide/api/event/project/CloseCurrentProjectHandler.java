@@ -16,7 +16,9 @@ import com.google.gwt.event.shared.EventHandler;
  * A handler for handling {@link CloseCurrentProjectEvent}.
  *
  * @author Artem Zatsarynnyi
+ * @deprecated since project explorer has all projects opened
  */
+@Deprecated
 public interface CloseCurrentProjectHandler extends EventHandler {
     /**
      * Called when someone is going to close the currently opened project.

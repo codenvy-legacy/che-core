@@ -109,7 +109,8 @@ public final class DtoConverter {
     public static CommandDto asDto(Command command) {
         return newDto(CommandDto.class).withName(command.getName())
                                        .withCommandLine(command.getCommandLine())
-                                       .withType(command.getType());
+                                       .withType(command.getType())
+                                       .withPreviewUrl(command.getPreviewUrl());
     }
 
     /**

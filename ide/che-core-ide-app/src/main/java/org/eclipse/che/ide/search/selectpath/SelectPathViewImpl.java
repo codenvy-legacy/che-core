@@ -28,8 +28,8 @@ import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.Tree;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
+import org.eclipse.che.ide.ui.smartTree.NodeLoader;
+import org.eclipse.che.ide.ui.smartTree.NodeStorage;
 import org.eclipse.che.ide.ui.smartTree.UniqueKeyProvider;
 import org.eclipse.che.ide.ui.window.Window;
 
@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.eclipse.che.ide.ui.smartTree.TreeSelectionModel.Mode.SINGLE;
+import static org.eclipse.che.ide.ui.smartTree.SelectionModel.Mode.SINGLE;
 
 /**
  * Implementation of {@link SelectPathView}.
@@ -77,10 +77,10 @@ public class SelectPathViewImpl extends Window implements SelectPathView {
         FolderNodeInterceptor interceptor = new FolderNodeInterceptor();
         Set<NodeInterceptor> interceptors = new HashSet<>();
         interceptors.add(interceptor);
-        TreeNodeLoader loader = new TreeNodeLoader(interceptors);
-        TreeNodeStorage treeNodeStorage = new TreeNodeStorage(uniqueKeyProvider);
+        NodeLoader loader = new NodeLoader(interceptors);
+        NodeStorage nodeStorage = new NodeStorage(uniqueKeyProvider);
 
-        tree = new Tree(treeNodeStorage, loader);
+        tree = new Tree(nodeStorage, loader);
         tree.setAutoSelect(true);
         tree.getSelectionModel().setSelectionMode(SINGLE);
         treeContainer.add(tree);

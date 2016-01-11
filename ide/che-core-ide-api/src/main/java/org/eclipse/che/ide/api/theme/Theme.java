@@ -84,13 +84,6 @@ public interface Theme {
     String activeTabBackground();
 
     /**
-     * Background color for hovered part button
-     *
-     * @return the color
-     */
-    String hoveredTabBackground();
-
-    /**
      * Border color for active (selected) part button
      *
      * @return the color
@@ -1397,4 +1390,13 @@ public interface Theme {
     String loaderBoxShadow();
     String loaderSVGFill();
     String loaderLabelColor();
+
+    String outputBoxShadow();
+
+    String toolButtonSvgFill();
+    String toolButtonBorder();
+    String toolButtonHoverBackgroundColor();
+    String toolButtonActiveBackgroundColor();
+    String toolButtonHoverBoxShadow();
+    String toolButtonActiveBoxShadow();
 }

@@ -10,15 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.document;
 
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.api.text.Region;
-import org.eclipse.che.ide.jseditor.client.text.TextRange;
 import org.eclipse.che.ide.jseditor.client.events.CursorActivityHandler;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
-
-import com.google.web.bindery.event.shared.HandlerRegistration;
+import org.eclipse.che.ide.jseditor.client.text.TextRange;
 
 /**
  * An abstraction over the editor representation of the document.
@@ -75,15 +73,6 @@ public interface Document extends ReadOnlyDocument {
      * @return a handle to remove the handler
      */
     HandlerRegistration addCursorHandler(CursorActivityHandler handler);
-
-    /**
-     * Replaces the text range with the given replacement contents.
-     * @param region the original region to replace
-     * @param text the replacement text
-     * @deprecated use {@link #replace(int, int, String)}
-     */
-    @Deprecated
-    void replace(Region region, String text);
 
     /**
      * Replaces the text range with the given replacement contents.

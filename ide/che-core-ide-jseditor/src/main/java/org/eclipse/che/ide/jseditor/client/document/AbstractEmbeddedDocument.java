@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.jseditor.client.document;
 
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.api.text.RegionImpl;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
 
@@ -51,11 +50,6 @@ public abstract class AbstractEmbeddedDocument implements Document, DocumentHand
     @Override
     public VirtualFile getFile() {
         return this.file;
-    }
-
-    @Override
-    public void replace(final int offset, final int length, String text) {
-        replace(new RegionImpl(offset, length), text);
     }
 
     @Override

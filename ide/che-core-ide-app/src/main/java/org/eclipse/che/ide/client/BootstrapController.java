@@ -117,7 +117,7 @@ public class BootstrapController {
 
     private void componentStartFail(Exception reason) {
         Log.error(BootstrapController.class, reason);
-        initializationFailed(reason);
+        initializationFailed(reason.getMessage());
     }
 
     /** Start extensions */
@@ -265,7 +265,7 @@ public class BootstrapController {
      * @param reason
      *         failure encountered
      */
-    private native void initializationFailed(Exception reason) /*-{
+    private native void initializationFailed(String reason) /*-{
         try {
             $wnd.IDE.eventHandlers.initializationFailed(reason);
         } catch (e) {

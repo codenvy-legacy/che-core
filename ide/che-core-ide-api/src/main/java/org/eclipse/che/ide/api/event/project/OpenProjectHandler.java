@@ -17,6 +17,7 @@ import com.google.gwt.event.shared.EventHandler;
  *
  * don't use this handler anymore
  * @author Artem Zatsarynnyi
+ * @deprecated since project explorer has all projects opened
  */
 @Deprecated
 public interface OpenProjectHandler extends EventHandler {

@@ -990,7 +990,7 @@ public class ProjectServiceTest {
         ContainerResponse response = launcher.service(DELETE,
                                                       String.format("http://localhost:8080/api/project/%s/my_project/a/b/c", workspace),
                                                       "http://localhost:8080/api", null, null, null);
-        assertEquals(response.getStatus(), 404);
+        assertEquals(response.getStatus(), 204);
         assertNotNull(pm.getProject(workspace, "my_project"));
     }
 

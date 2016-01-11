@@ -23,7 +23,7 @@ import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
 import org.eclipse.che.ide.search.factory.FindResultNodeFactory;
 import org.eclipse.che.ide.ui.smartTree.presentation.HasPresentation;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
-import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
+import org.eclipse.che.ide.ui.smartTree.compare.NameComparator;
 import org.eclipse.che.ide.util.Pair;
 
 import javax.validation.constraints.NotNull;
@@ -74,7 +74,7 @@ public class FindResultGroupNode extends AbstractTreeNode implements HasPresenta
         }
 
         //sort nodes by file name
-        Collections.sort(fileNodes, new AlphabeticalFilter());
+        Collections.sort(fileNodes, new NameComparator());
 
         return Promises.resolve(fileNodes);
     }

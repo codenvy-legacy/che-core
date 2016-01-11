@@ -106,12 +106,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String activeTabBackground() {
-        return "rgb(41, 44, 47)";
-    }
-
-    @Override
-    public String hoveredTabBackground() {
-        return "rgba(41, 44, 47, 0.5)";
+        return "#292C2F";
     }
 
     @Override
@@ -358,7 +353,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String getEditorCurrentLineColor() {
-        return "#424242";
+        return "#2C323B";
     }
 
     @Override
@@ -783,7 +778,7 @@ public class DarkTheme implements Theme {
 
     @Override
     public String outputBackgroundColor() {
-        return "#292C2F";
+        return "#1f1f1f";
     }
 
     @Override
@@ -1328,5 +1323,40 @@ public class DarkTheme implements Theme {
     @Override
     public String loaderLabelColor() {
         return "#dbe3e3";
+    }
+
+    @Override
+    public String outputBoxShadow() {
+        return "inset 0px 37px 8px -35px rgba(0,0,0,0.25)";
+    }
+
+    @Override
+    public String toolButtonSvgFill() {
+        return "#dbdbdb";
+    }
+
+    @Override
+    public String toolButtonBorder() {
+        return "1px solid #24272c";
+    }
+
+    @Override
+    public String toolButtonHoverBackgroundColor() {
+        return "#44484D";
+    }
+
+    @Override
+    public String toolButtonActiveBackgroundColor() {
+        return "#33373B";
+    }
+
+    @Override
+    public String toolButtonHoverBoxShadow() {
+        return "1px 1px 0 0 #3c3c3c";
+    }
+
+    @Override
+    public String toolButtonActiveBoxShadow() {
+        return "inset 1px 1px 0 0 #3c3c3c";
     }
 }

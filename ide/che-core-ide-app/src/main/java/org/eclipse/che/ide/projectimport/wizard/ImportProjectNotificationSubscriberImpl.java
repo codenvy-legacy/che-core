@@ -13,6 +13,7 @@ package org.eclipse.che.ide.projectimport.wizard;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
 import org.eclipse.che.api.promises.client.Operation;
@@ -41,6 +42,7 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.SUC
  *
  * @author Anton Korneta
  */
+@Singleton
 public class ImportProjectNotificationSubscriberImpl implements ImportProjectNotificationSubscriber {
 
     private final Operation<PromiseError>  logErrorHandler;

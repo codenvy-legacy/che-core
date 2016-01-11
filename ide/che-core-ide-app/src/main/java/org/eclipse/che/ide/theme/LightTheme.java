@@ -69,12 +69,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String activeTabBackground() {
-        return "rgb(255, 255, 255)";
-    }
-
-    @Override
-    public String hoveredTabBackground() {
-        return "rgba(255, 255, 255, 0.5)";
+        return "#ffffff";
     }
 
     @Override
@@ -339,7 +334,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getEditorCurrentLineColor() {
-        return "#E8F2FF";
+        return "rgba(215, 215, 215, 0.45)";
     }
 
     @Override
@@ -1305,5 +1300,40 @@ public class LightTheme implements Theme {
     @Override
     public String loaderLabelColor() {
         return "#6c5455";
+    }
+
+    @Override
+    public String outputBoxShadow() {
+        return "inset 0px 37px 8px -35px rgba(0,0,0,0.25)";
+    }
+
+    @Override
+    public String toolButtonSvgFill() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String toolButtonBorder() {
+        return "1px solid #8E8E8E";
+    }
+
+    @Override
+    public String toolButtonHoverBackgroundColor() {
+        return "#BDBEC0";
+    }
+
+    @Override
+    public String toolButtonActiveBackgroundColor() {
+        return "#AFAFB0";
+    }
+
+    @Override
+    public String toolButtonHoverBoxShadow() {
+        return "none";
+    }
+
+    @Override
+    public String toolButtonActiveBoxShadow() {
+        return "inset 1px 1px 0 0 #6F6E6E";
     }
 }

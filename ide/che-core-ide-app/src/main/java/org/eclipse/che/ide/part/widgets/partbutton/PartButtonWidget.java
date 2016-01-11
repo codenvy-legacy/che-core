@@ -10,8 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.widgets.partbutton;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -28,7 +32,6 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
 import org.eclipse.che.commons.annotation.Nullable;
 
 import static com.google.gwt.dom.client.Style.Unit.PX;
@@ -41,49 +44,44 @@ import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
  * @author Valeriy Svydenko
  * @author Vitaliy Guliy
  */
-public class PartButtonWidget implements PartButton, IsWidget {
+public class PartButtonWidget extends Composite implements PartButton {
 
     /** Shifting left and right panels from the top */
     private final static int TOP_SHIFT = 63;
 
+    interface PartButtonWidgetUiBinder extends UiBinder<Widget, PartButtonWidget> {
+    }
+
+    private static final PartButtonWidgetUiBinder UI_BINDER = GWT.create(PartButtonWidgetUiBinder.class);
+
     private final Resources resources;
 
-    private SimplePanel    icon;
-    private Widget         badgeWidget;
-    private FlowPanel      partButton;
+    @UiField
+    SimplePanel icon;
+
+    @UiField
+    Label       buttonName;
+
     private ActionDelegate delegate;
     private TabPosition    tabPosition;
-    private SVGResource    iconResource;
-    private String         title;
-    private boolean        selected;
+
+    private Widget badgeWidget;
+
+    private boolean selected;
+
+    private SVGResource iconResource;
 
     @Inject
     public PartButtonWidget(Resources resources, @Assisted String title) {
         this.resources = resources;
 
-        Label label = new Label(title);
-        label.setStyleName(resources.partStackCss().idePartStackToolbarBottomButton());
+        initWidget(UI_BINDER.createAndBindUi(this));
+        setStyleName(resources.partStackCss().idePartStackTab());
+        this.ensureDebugId("partButton-" + title);
 
-        icon = new SimplePanel();
-        icon.setStyleName(resources.partStackCss().idePartStackToolbarBottomIcon());
+        addDomHandler(this, ClickEvent.getType());
 
-        partButton = new FlowPanel();
-        partButton.ensureDebugId("partButton-" + title);
-        partButton.addDomHandler(this, ClickEvent.getType());
-        partButton.setStyleName(resources.partStackCss().idePartStackTab());
-
-        partButton.add(icon);
-        partButton.add(label);
-    }
-
-    @Override
-    public Widget asWidget() {
-        return partButton;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
+        buttonName.setText(title);
     }
 
     /** {@inheritDoc} */
@@ -105,7 +103,7 @@ public class PartButtonWidget implements PartButton, IsWidget {
     /** {@inheritDoc} */
     @NotNull
     public PartButton setTooltip(@Nullable String tooltip) {
-        title = tooltip;
+        setTitle(tooltip);
         return this;
     }
 
@@ -200,9 +198,9 @@ public class PartButtonWidget implements PartButton, IsWidget {
         selected = true;
 
         if (BELOW.equals(tabPosition)) {
-            partButton.addStyleName(resources.partStackCss().selectedBottomTab());
+            addStyleName(resources.partStackCss().selectedBottomTab());
         } else {
-            partButton.addStyleName(resources.partStackCss().selectedRightOrLeftTab());
+            addStyleName(resources.partStackCss().selectedRightOrLeftTab());
         }
 
         updateBadge();
@@ -214,9 +212,9 @@ public class PartButtonWidget implements PartButton, IsWidget {
         selected = false;
 
         if (BELOW.equals(tabPosition)) {
-            partButton.removeStyleName(resources.partStackCss().selectedBottomTab());
+            removeStyleName(resources.partStackCss().selectedBottomTab());
         } else {
-            partButton.removeStyleName(resources.partStackCss().selectedRightOrLeftTab());
+            removeStyleName(resources.partStackCss().selectedRightOrLeftTab());
         }
 
         updateBadge();
@@ -239,17 +237,17 @@ public class PartButtonWidget implements PartButton, IsWidget {
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value = 0) int countWidgets) {
+    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value=0) int countWidgets) {
         this.tabPosition = tabPosition;
 
         if (LEFT.equals(tabPosition)) {
-            partButton.addStyleName(resources.partStackCss().leftTabs());
-            partButton.getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
+            addStyleName(resources.partStackCss().leftTabs());
+            getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
         } else if (RIGHT.equals(tabPosition)) {
-            partButton.addStyleName(resources.partStackCss().rightTabs());
-            partButton.getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
+            addStyleName(resources.partStackCss().rightTabs());
+            getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
         } else {
-            partButton.addStyleName(resources.partStackCss().bottomTabs());
+            addStyleName(resources.partStackCss().bottomTabs());
         }
     }
 

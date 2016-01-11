@@ -10,21 +10,26 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
-import java.util.List;
+import org.eclipse.che.ide.jseditor.client.texteditor.EditorWidget.WidgetInitializedCallback;
 
+import java.util.List;
 
 /**
  * Interface for {@link EditorWidget} factories.
  *
  * @author "Mickaël Leduque"
+ * @author Artem Zatsarynnyi
  */
 public interface EditorWidgetFactory<T extends EditorWidget> {
 
     /**
      * Create an editor instance.
      *
-     * @param editorModes the editor modes
+     * @param editorModes
+     *         the editor modes
+     * @param widgetInitializedCallback
+     *         the callback that will be called when the editor widget is fully initialize
      * @return an editor instance
      */
-    T createEditorWidget(List<String> editorModes);
+    T createEditorWidget(List<String> editorModes, WidgetInitializedCallback widgetInitializedCallback);
 }

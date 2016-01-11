@@ -17,10 +17,10 @@ import javax.validation.constraints.NotNull;
 /**
  * Current ID provider is responsible for providing a unique identification for a specified node.
  *
- * @author Vlad Zhukovskiy
+ * @author Vlad Zhukovskyi
  */
 public interface NodeUniqueKeyProvider extends UniqueKeyProvider<Node> {
     /** {@inheritDoc} */
     @NotNull
-    public String getKey(@NotNull Node item);
+    String getKey(@NotNull Node item);
 }

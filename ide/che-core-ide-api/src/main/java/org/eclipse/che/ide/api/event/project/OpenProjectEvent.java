@@ -19,6 +19,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
  *
  * don't use this event anymore
  * @author Artem Zatsarynnyi
+ * @deprecated since project explorer have all projects opened
  */
 @Deprecated
 public class OpenProjectEvent extends GwtEvent<OpenProjectHandler> {

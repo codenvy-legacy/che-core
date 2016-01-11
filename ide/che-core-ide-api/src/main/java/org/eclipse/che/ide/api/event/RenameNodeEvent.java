@@ -18,7 +18,9 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
  * Event uses for updating treeNodes data after rename
  *
  * @author Alexander Andrienko
+ * @deprecated event should be removed because renaming node is useless in current state
  */
+@Deprecated
 public class RenameNodeEvent extends GwtEvent<RenameNodeEventHandler> {
 
     public static final Type<RenameNodeEventHandler> TYPE = new Type<>();

@@ -17,7 +17,10 @@ import com.google.gwt.event.shared.GwtEvent;
  * Event that describes the fact that node has been changed.
  *
  * @author Artem Zatsarynnyi
+ * @deprecated tree performs renaming data objects in nodes by self,
+ * so this event is useless after new tree implementation
  */
+@Deprecated
 public class NodeChangedEvent extends GwtEvent<NodeChangedHandler> {
 
     /** Type class used to register this event. */
