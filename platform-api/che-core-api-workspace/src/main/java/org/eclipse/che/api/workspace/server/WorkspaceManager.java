@@ -270,7 +270,7 @@ public class WorkspaceManager {
     public void removeWorkspace(String workspaceId) throws ConflictException, ServerException, BadRequestException {
         requiredNotNull(workspaceId, "Required non-null workspace id");
         if (workspaceRegistry.hasRuntime(workspaceId)) {
-            throw new ConflictException("Cant remove not stopped workspace " + workspaceId);
+            throw new ConflictException("The workspace " + workspaceId + " is currently running and cannot be removed.");
         }
         workspaceDao.remove(workspaceId);
         hooks.afterRemove(workspaceId);
