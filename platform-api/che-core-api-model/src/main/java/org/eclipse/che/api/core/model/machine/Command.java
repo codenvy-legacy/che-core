@@ -37,4 +37,9 @@ public interface Command {
      * Returns command type (i.e. 'maven')
      */
     String getType();
+
+    /**
+     * Returns command preview URL. (i.e. 'http://awesome.com:8080/context')
+     */
+    String getPreviewUrl();
 }
