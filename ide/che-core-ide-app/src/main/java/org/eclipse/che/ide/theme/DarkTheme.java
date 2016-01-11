@@ -1324,4 +1324,9 @@ public class DarkTheme implements Theme {
     public String loaderLabelColor() {
         return "#dbe3e3";
     }
+
+    @Override
+    public String outputBoxShadow() {
+        return "inset 0px 37px 8px -35px rgba(0,0,0,0.25)";
+    }
 }

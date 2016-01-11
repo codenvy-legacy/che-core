@@ -1390,4 +1390,6 @@ public interface Theme {
     String loaderBoxShadow();
     String loaderSVGFill();
     String loaderLabelColor();
+
+    String outputBoxShadow();
 }

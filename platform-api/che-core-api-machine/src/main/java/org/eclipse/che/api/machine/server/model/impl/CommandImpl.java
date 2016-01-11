@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.model.impl;
 
-import org.eclipse.che.api.core.model.machine.Command;
-
 import java.util.Objects;
+
+import org.eclipse.che.api.core.model.machine.Command;
 
 /**
  * Data object for {@link Command}.
@@ -24,6 +24,7 @@ public class CommandImpl implements Command {
     private String name;
     private String commandLine;
     private String type;
+    private String previewUrl;
 
     public CommandImpl(String name, String commandLine, String type) {
         this.name = name;
@@ -35,6 +36,7 @@ public class CommandImpl implements Command {
         this.name = command.getName();
         this.commandLine = command.getCommandLine();
         this.type = command.getType();
+        this.previewUrl = command.getPreviewUrl();
     }
 
     @Override
@@ -65,6 +67,15 @@ public class CommandImpl implements Command {
     }
 
     @Override
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+    public void setPreviewUrl(String previewUrl) {
+        this.previewUrl = previewUrl;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -75,7 +86,8 @@ public class CommandImpl implements Command {
         final CommandImpl command = (CommandImpl)obj;
         return Objects.equals(name, command.name) &&
                Objects.equals(commandLine, command.commandLine) &&
-               Objects.equals(type, command.type);
+               Objects.equals(type, command.type) &&
+               Objects.equals(previewUrl, command.previewUrl);
     }
 
     @Override
@@ -84,6 +96,7 @@ public class CommandImpl implements Command {
         hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(commandLine);
         hash = 31 * hash + Objects.hashCode(type);
+        hash = 31 * hash + Objects.hashCode(previewUrl);
         return hash;
     }
 
@@ -93,6 +106,7 @@ public class CommandImpl implements Command {
                "name='" + name + '\'' +
                ", commandLine='" + commandLine + '\'' +
                ", type='" + type + '\'' +
+               ", previewUrl='" + previewUrl + '\'' +
                '}';
     }
 }

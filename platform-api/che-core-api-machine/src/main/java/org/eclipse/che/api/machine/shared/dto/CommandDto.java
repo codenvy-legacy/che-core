@@ -15,6 +15,7 @@ import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.dto.shared.DTO;
 
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
+import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
 /**
  * @author Alexander Garagatyi
@@ -45,4 +46,12 @@ public interface CommandDto extends Command {
     void setType(String type);
 
     CommandDto withType(String type);
+
+    @Override
+    @FactoryParameter(obligation = OPTIONAL)
+    String getPreviewUrl();
+
+    void setPreviewUrl(String previewUrl);
+
+    CommandDto withPreviewUrl(String previewUrl);
 }

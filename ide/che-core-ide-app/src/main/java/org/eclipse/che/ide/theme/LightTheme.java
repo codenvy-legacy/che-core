@@ -1301,4 +1301,9 @@ public class LightTheme implements Theme {
     public String loaderLabelColor() {
         return "#6c5455";
     }
+
+    @Override
+    public String outputBoxShadow() {
+        return "inset 0px 37px 8px -35px rgba(0,0,0,0.25)";
+    }
 }
