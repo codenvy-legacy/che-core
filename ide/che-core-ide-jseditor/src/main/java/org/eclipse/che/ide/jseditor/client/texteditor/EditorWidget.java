@@ -206,4 +206,9 @@ public interface EditorWidget extends IsWidget,
      * @return list hotKeys
      */
     List<HotKeyItem> getHotKeys();
+
+    /** Callback that should be called when editor widget implementation is fully initialized. */
+    interface WidgetInitializedCallback {
+        void initialized(EditorWidget editorWidget);
+    }
 }
