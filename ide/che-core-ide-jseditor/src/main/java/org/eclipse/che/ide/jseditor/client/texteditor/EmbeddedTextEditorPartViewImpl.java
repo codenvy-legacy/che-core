@@ -95,7 +95,6 @@ public class EmbeddedTextEditorPartViewImpl extends Composite implements Embedde
         editorWidget.showCompletionProposals();
     }
 
-
     @Override
     public void setDelegate(final Delegate delegate) {
         this.delegate = delegate;
