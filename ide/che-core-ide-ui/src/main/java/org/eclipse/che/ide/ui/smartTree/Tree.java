@@ -1316,8 +1316,8 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
         focusEl.getStyle().setPosition(Style.Position.ABSOLUTE);
 
         //subscribe for Event.FOCUSEVENTS
-        int bits = DOM.getEventsSunk((Element)focusEl.cast()); //do not remove redundant cast, GWT tests will fail
-        DOM.sinkEvents((Element)focusEl.cast(), bits | Event.FOCUSEVENTS);
+        int bits = DOM.getEventsSunk((Element) focusEl.cast()); //do not remove redundant cast, GWT tests will fail
+        DOM.sinkEvents((Element) focusEl.cast(), bits | Event.FOCUSEVENTS);
     }
 
     private boolean isRowRendered(int i, List<Node> visible) {
@@ -1359,30 +1359,35 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
         }
         if (isOrWasAttached()) {
             Node parent = nodeStorage.getParent(event.getNodes().get(0));
-            NodeDescriptor pn = getNodeDescriptor(parent);
-            if (parent == null || (pn != null && pn.isChildrenRendered())) {
-                int parentDepth = parent == null ? 0 : nodeStorage.getDepth(parent);
 
-                Element container = getContainer(parent);
-
-                int index = event.getIndex();
-                int parentChildCount = parent == null ? nodeStorage.getRootCount() : nodeStorage.getChildCount(parent);
-                for (Node child : event.getNodes()) {
-                    if (pn != null && !pn.isExpanded() && nodeStorage.getChildCount(pn.getNode()) == 1) {
-                        setExpanded(pn.getNode(), true);
-                    }
-                    if (index == 0) {
-                        container.insertFirst(renderNode(child, parentDepth));
-                    } else if (index == parentChildCount - event.getNodes().size()) {
-                        com.google.gwt.dom.client.Node lastChild = container.getLastChild();
-                        container.insertAfter(renderNode(child, parentDepth), lastChild);
-                    } else {
-                        container.insertBefore(renderNode(child, parentDepth), container.getChild(index));
-                    }
-                    scrollIntoView(child);
-                }
+            if (parent == null) {
+                redraw(null);
             } else {
-                redraw(parent);
+                NodeDescriptor descriptor = getNodeDescriptor(parent);
+                if (descriptor != null && descriptor.isChildrenRendered()) {
+                    int parentDepth = nodeStorage.getDepth(parent);
+
+                    Element container = getContainer(parent);
+
+                    int index = event.getIndex();
+                    int parentChildCount = nodeStorage.getChildCount(parent);
+                    for (Node child : event.getNodes()) {
+                        if (!descriptor.isExpanded() && nodeStorage.getChildCount(descriptor.getNode()) == 1) {
+                            setExpanded(descriptor.getNode(), true);
+                        }
+                        if (index == 0) {
+                            container.insertFirst(renderNode(child, parentDepth));
+                        } else if (index == parentChildCount - event.getNodes().size()) {
+                            com.google.gwt.dom.client.Node lastChild = container.getLastChild();
+                            container.insertAfter(renderNode(child, parentDepth), lastChild);
+                        } else {
+                            container.insertBefore(renderNode(child, parentDepth), container.getChild(index));
+                        }
+                        scrollIntoView(child);
+                    }
+                } else {
+                    redraw(parent);
+                }
             }
             update();
 
