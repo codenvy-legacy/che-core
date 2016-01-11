@@ -59,13 +59,13 @@ public interface UserServiceClient {
     void getUserById(@NotNull String id, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
-     * Get user's information by its email.
+     * Get user's information by its alias.
      *
-     * @param email
-     *         user's email
+     * @param alias
+     *         user's alias
      * @param callback
      */
-    void getUserByEmail(@NotNull String email, AsyncRequestCallback<UserDescriptor> callback);
+    void getUserByAlias(@NotNull String alias, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Remove user.
