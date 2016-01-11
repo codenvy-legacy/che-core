@@ -39,7 +39,7 @@ public class FileNameFileTypeIdentifier implements FileTypeIdentifier {
             return Collections.singletonList("text/x-ruby");
         }
         if ("Dockerfile".equals(filename)) {
-            return Collections.singletonList("text/x-dockerfile-config");
+            return Collections.singletonList("text/x-dockerfile");
         }
 
         // not a known file name
