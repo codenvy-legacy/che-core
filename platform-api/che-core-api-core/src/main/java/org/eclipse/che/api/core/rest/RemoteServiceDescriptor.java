@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Provides basic functionality to access remote {@link Service Service}. Basically provides next information about {@code Service}:
+ * Provides basic functionality to access remote {@link Service}. Basically provides next information about {@code Service}:
  * <ul>
  * <li>URL of {@code Service}</li>
  * <li>Version of API</li>
