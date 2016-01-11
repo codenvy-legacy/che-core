@@ -129,7 +129,7 @@ public class UserService extends Service {
      * @see #getCurrent(SecurityContext)
      * @see #updatePassword(String)
      * @see #getById(String, SecurityContext)
-     * @see #getByEmail(String, SecurityContext)
+     * @see #getByAlias(String, SecurityContext)
      * @see #remove(String)
      */
     @ApiOperation(value = "Create a new user",
@@ -234,7 +234,7 @@ public class UserService extends Service {
      * @throws ServerException
      *         when some error occurred while retrieving user
      * @see UserDescriptor
-     * @see #getByEmail(String, SecurityContext)
+     * @see #getByAlias(String, SecurityContext)
      */
     @ApiOperation(value = "Get user by ID",
                   notes = "Get user by its ID in the system. Roles allowed: system/admin, system/manager.",
@@ -494,7 +494,7 @@ public class UserService extends Service {
             if (user.getEmail() != null) {
                 links.add(LinksHelper.createLink(HttpMethod.GET,
                                                  uriBuilder.clone()
-                                                           .path(getClass(), "getByEmail")
+                                                           .path(getClass(), "getByAlias")
                                                            .queryParam("email", user.getEmail())
                                                            .build()
                                                            .toString(),
