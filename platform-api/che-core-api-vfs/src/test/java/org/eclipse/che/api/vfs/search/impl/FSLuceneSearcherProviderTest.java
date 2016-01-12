@@ -8,11 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.search;
+package org.eclipse.che.api.vfs.search.impl;
 
+import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
-import org.eclipse.che.api.vfs.VirtualFile;
+import org.eclipse.che.api.vfs.search.Searcher;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.junit.After;

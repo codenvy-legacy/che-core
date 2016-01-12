@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.search;
+package org.eclipse.che.api.vfs.search.impl;
 
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
@@ -18,11 +18,11 @@ import org.eclipse.che.api.vfs.VirtualFileFilter;
  * In-memory implementation of LuceneSearcher.
  */
 public class MemoryLuceneSearcher extends LuceneSearcher {
-    MemoryLuceneSearcher(CloseCallback closeCallback) {
+    MemoryLuceneSearcher(AbstractLuceneSearcherProvider.CloseCallback closeCallback) {
         super(closeCallback);
     }
 
-    MemoryLuceneSearcher(VirtualFileFilter filter, CloseCallback closeCallback) {
+    MemoryLuceneSearcher(VirtualFileFilter filter, AbstractLuceneSearcherProvider.CloseCallback closeCallback) {
         super(filter, closeCallback);
     }
 

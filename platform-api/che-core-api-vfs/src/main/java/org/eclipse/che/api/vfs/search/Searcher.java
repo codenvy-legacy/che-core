@@ -11,8 +11,8 @@
 package org.eclipse.che.api.vfs.search;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFile;
+import org.eclipse.che.api.vfs.VirtualFileFilter;
 
 public interface Searcher {
     /**
@@ -61,11 +61,22 @@ public interface Searcher {
 
     boolean isClosed();
 
+    /**
+     * Add filter to prevent adding files in index.
+     *
+     * @param indexFilter
+     *         file filter
+     * @return {@code true} if filter accepted and {@code false} otherwise, e.g. if filter already added
+     */
     boolean addIndexFilter(VirtualFileFilter indexFilter);
 
+    /**
+     * Remove filter to prevent adding files in index.
+     *
+     * @param indexFilter
+     *         file filter
+     * @return {@code true} if filter successfully removed and {@code false} otherwise, e.g. if filter was not added before with method
+     * {@link #addIndexFilter(VirtualFileFilter)}
+     */
     boolean removeIndexFilter(VirtualFileFilter indexFilter);
-
-    interface CloseCallback {
-        void onClose();
-    }
 }

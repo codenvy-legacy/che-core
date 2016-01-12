@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.search;
+package org.eclipse.che.api.vfs.search.impl;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -42,6 +42,11 @@ import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFileFilters;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
+import org.eclipse.che.api.vfs.search.MediaTypeFilter;
+import org.eclipse.che.api.vfs.search.QueryExpression;
+import org.eclipse.che.api.vfs.search.SearchResult;
+import org.eclipse.che.api.vfs.search.SearchResultEntry;
+import org.eclipse.che.api.vfs.search.Searcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +71,8 @@ public abstract class LuceneSearcher implements Searcher {
 
     private static final int RESULT_LIMIT = 1000;
 
-    private final List<VirtualFileFilter> indexFilters;
-    private final CloseCallback           closeCallback;
+    private final List<VirtualFileFilter>                      indexFilters;
+    private final AbstractLuceneSearcherProvider.CloseCallback closeCallback;
 
     private IndexWriter     luceneIndexWriter;
     private SearcherManager searcherManager;
@@ -78,7 +83,7 @@ public abstract class LuceneSearcher implements Searcher {
         this(new MediaTypeFilter(), null);
     }
 
-    protected LuceneSearcher(CloseCallback closeCallback) {
+    protected LuceneSearcher(AbstractLuceneSearcherProvider.CloseCallback closeCallback) {
         this(new MediaTypeFilter(), closeCallback);
     }
 
@@ -87,7 +92,7 @@ public abstract class LuceneSearcher implements Searcher {
      *         common filter for files that should not be indexed. If complex excluding rules needed then few filters might be combined
      *         with {@link VirtualFileFilters#createAndFilter} or {@link VirtualFileFilters#createOrFilter} methods
      */
-    protected LuceneSearcher(VirtualFileFilter indexFilter, CloseCallback closeCallback) {
+    protected LuceneSearcher(VirtualFileFilter indexFilter, AbstractLuceneSearcherProvider.CloseCallback closeCallback) {
         this.closeCallback = closeCallback;
         indexFilters = new CopyOnWriteArrayList<>();
         indexFilters.add(indexFilter);

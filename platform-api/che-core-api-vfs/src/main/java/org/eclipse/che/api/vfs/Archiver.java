@@ -18,11 +18,42 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public interface Archiver {
-    void compress(OutputStream zipOutput) throws IOException, ServerException;
+/** Archiver for compressing and extracting content of folder. */
+public abstract class Archiver {
+    protected final VirtualFile folder;
 
-    void compress(OutputStream zipOutput, VirtualFileFilter filter) throws IOException, ServerException;
+    protected Archiver(VirtualFile folder) {
+        this.folder = folder;
+    }
 
-    void extract(InputStream zipInput, boolean overwrite, int stripNumber)
+    /**
+     * Write compressed content of folder to specified output.
+     *
+     * @param compressOutput
+     *         output for compressed content
+     */
+    public abstract void compress(OutputStream compressOutput) throws IOException, ServerException;
+
+    /**
+     * Write compressed content of folder to specified output.
+     *
+     * @param compressOutput
+     *         output for compressed content
+     * @param filter
+     *         only files that match to this filter are written in {@code compressOutput}
+     */
+    public abstract void compress(OutputStream compressOutput, VirtualFileFilter filter) throws IOException, ServerException;
+
+    /**
+     * Extract compressed content to {@code folder}.
+     *
+     * @param compressedInput
+     *         compressed content that needed to be extracted
+     * @param overwrite
+     *         overwrite existing files
+     * @param stripNumber
+     *         strip number leading components from file names on extraction.
+     */
+    public abstract void extract(InputStream compressedInput, boolean overwrite, int stripNumber)
             throws IOException, ForbiddenException, ConflictException, ServerException;
 }

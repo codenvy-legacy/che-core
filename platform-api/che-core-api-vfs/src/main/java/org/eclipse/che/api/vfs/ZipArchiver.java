@@ -25,12 +25,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public class ZipArchiver implements Archiver {
-
-    private final VirtualFile folder;
-
+public class ZipArchiver extends Archiver {
     public ZipArchiver(VirtualFile folder) {
-        this.folder = folder;
+        super(folder);
     }
 
     @Override

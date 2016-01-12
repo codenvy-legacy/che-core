@@ -19,12 +19,12 @@ import java.util.List;
  */
 public class VirtualFileFilters {
 
-    public static VirtualFileFilter createAndFilter(VirtualFileFilter... filters) {
-        if (filters == null || filters.length < 2) {
-            throw new IllegalArgumentException("At least two filters required. ");
+    public static VirtualFileFilter createAndFilter(VirtualFileFilter filterOne, VirtualFileFilter filterTwo, VirtualFileFilter... filters) {
+        if (filters == null || filters.length == 0) {
+            return new AndFilter(new VirtualFileFilter[]{filterOne, filterTwo});
         }
-        VirtualFileFilter[] copy = new VirtualFileFilter[filters.length];
-        System.arraycopy(filters, 0, copy, 0, filters.length);
+        VirtualFileFilter[] copy = new VirtualFileFilter[filters.length + 2];
+        System.arraycopy(filters, 0, copy, 2, filters.length);
         return new AndFilter(copy);
     }
 
@@ -53,12 +53,12 @@ public class VirtualFileFilters {
         }
     }
 
-    public static VirtualFileFilter createOrFilter(VirtualFileFilter... filters) {
-        if (filters == null || filters.length < 2) {
-            throw new IllegalArgumentException("At least two filters required. ");
+    public static VirtualFileFilter createOrFilter(VirtualFileFilter filterOne, VirtualFileFilter filterTwo, VirtualFileFilter... filters) {
+        if (filters == null || filters.length == 0) {
+            return new AndFilter(new VirtualFileFilter[]{filterOne, filterTwo});
         }
-        VirtualFileFilter[] copy = new VirtualFileFilter[filters.length];
-        System.arraycopy(filters, 0, copy, 0, filters.length);
+        VirtualFileFilter[] copy = new VirtualFileFilter[filters.length + 2];
+        System.arraycopy(filters, 0, copy, 2, filters.length);
         return new OrFilter(copy);
     }
 

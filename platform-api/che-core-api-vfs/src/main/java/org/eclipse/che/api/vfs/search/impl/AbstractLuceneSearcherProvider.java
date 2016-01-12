@@ -8,12 +8,15 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.search;
+package org.eclipse.che.api.vfs.search.impl;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.VirtualFileFilter;
-import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.VirtualFileFilters;
+import org.eclipse.che.api.vfs.VirtualFileSystem;
+import org.eclipse.che.api.vfs.search.MediaTypeFilter;
+import org.eclipse.che.api.vfs.search.Searcher;
+import org.eclipse.che.api.vfs.search.SearcherProvider;
 
 import java.util.List;
 import java.util.Set;
@@ -63,7 +66,7 @@ public abstract class AbstractLuceneSearcherProvider implements SearcherProvider
         return getSearcher(virtualFileSystem, true);
     }
 
-    protected abstract LuceneSearcher createLuceneSearcher(Searcher.CloseCallback closeCallback);
+    protected abstract LuceneSearcher createLuceneSearcher(CloseCallback closeCallback);
 
     @Override
     public void close() throws ServerException {
@@ -72,5 +75,9 @@ public abstract class AbstractLuceneSearcherProvider implements SearcherProvider
             searcher.close();
         }
         searcherReference.set(null);
+    }
+
+    public interface CloseCallback {
+        void onClose();
     }
 }

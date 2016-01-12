@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.search;
 
+/** Container for parameters of query that executed by Searcher.*/
 public class QueryExpression {
     private String name;
     private String path;
@@ -17,6 +18,7 @@ public class QueryExpression {
     private int    skipCount;
     private int    maxItems;
 
+    /** Optional file path parameter. Only file with the specified path or children are included in result. */
     public String getPath() {
         return path;
     }
@@ -26,6 +28,7 @@ public class QueryExpression {
         return this;
     }
 
+    /** Optional file name parameter. Only files that matched to specified name template are included in result. */
     public String getName() {
         return name;
     }
@@ -35,6 +38,7 @@ public class QueryExpression {
         return this;
     }
 
+    /** Text for searching. */
     public String getText() {
         return text;
     }
@@ -44,6 +48,7 @@ public class QueryExpression {
         return this;
     }
 
+    /** Number of items in search result that should be skipped. This parameter used for paging through large set of search result. */
     public int getSkipCount() {
         return skipCount;
     }
@@ -53,6 +58,7 @@ public class QueryExpression {
         return this;
     }
 
+    /** Max number of results that might be returned after executing this query. */
     public int getMaxItems() {
         return maxItems;
     }

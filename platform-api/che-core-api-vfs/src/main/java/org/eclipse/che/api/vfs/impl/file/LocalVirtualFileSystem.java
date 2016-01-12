@@ -22,17 +22,18 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.util.FileCleaner;
+import org.eclipse.che.api.vfs.AbstractVirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.Archiver;
+import org.eclipse.che.api.vfs.ArchiverFactory;
+import org.eclipse.che.api.vfs.HashSumsCounter;
 import org.eclipse.che.api.vfs.LockedFileFinder;
+import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.api.vfs.PathLockFactory;
+import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.search.Searcher;
 import org.eclipse.che.api.vfs.search.SearcherProvider;
-import org.eclipse.che.api.vfs.ArchiverFactory;
-import org.eclipse.che.api.vfs.HashSumsCounter;
-import org.eclipse.che.api.vfs.Path;
-import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.util.DeleteOnCloseFileInputStream;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
@@ -76,7 +77,7 @@ import static org.eclipse.che.commons.lang.IoUtil.deleteRecursive;
 public class LocalVirtualFileSystem implements VirtualFileSystem {
     private static final Logger LOG = LoggerFactory.getLogger(LocalVirtualFileSystem.class);
 
-    private static final int MAX_BUFFER_SIZE = 200 * 1024; // 200k
+    static final int MAX_BUFFER_SIZE = 200 * 1024; // 200k
 
     private static final long WAIT_FOR_FILE_LOCK_TIMEOUT = 60000; // 60 seconds
     private static final int  FILE_LOCK_MAX_THREADS      = 1024;
@@ -119,10 +120,10 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
         }
     }
 
-    private final File             ioRoot;
-    private final ArchiverFactory  archiverFactory;
-    private final SearcherProvider searcherProvider;
-    private final CloseCallback    closeCallback;
+    private final File                                            ioRoot;
+    private final ArchiverFactory                                 archiverFactory;
+    private final SearcherProvider                                searcherProvider;
+    private final AbstractVirtualFileSystemProvider.CloseCallback closeCallback;
 
     /* NOTE -- This does not related to virtual file system locking in any kind. -- */
     private final PathLockFactory pathLockFactory;
@@ -139,7 +140,7 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
     public LocalVirtualFileSystem(File ioRoot,
                                   ArchiverFactory archiverFactory,
                                   SearcherProvider searcherProvider,
-                                  CloseCallback closeCallback) {
+                                  AbstractVirtualFileSystemProvider.CloseCallback closeCallback) {
         this.ioRoot = ioRoot;
         this.archiverFactory = archiverFactory;
         this.searcherProvider = searcherProvider;
@@ -209,8 +210,7 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
         metadataCache.invalidateAll();
     }
 
-    // Used in tests. Need this to check state of PathLockFactory.
-    // All locks MUST be released at the end of request lifecycle.
+    /** Used in tests. Need this to check state of PathLockFactory. All locks MUST be released at the end of request lifecycle. */
     PathLockFactory getPathLockFactory() {
         return pathLockFactory;
     }

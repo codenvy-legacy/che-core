@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.search;
+package org.eclipse.che.api.vfs.search.impl;
 
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -38,7 +38,7 @@ public class FSLuceneSearcher extends LuceneSearcher {
         this(indexDirectory, filter, null);
     }
 
-    FSLuceneSearcher(File indexDirectory, VirtualFileFilter filter, CloseCallback closeCallback) {
+    FSLuceneSearcher(File indexDirectory, VirtualFileFilter filter, AbstractLuceneSearcherProvider.CloseCallback closeCallback) {
         super(filter, closeCallback);
         this.indexDirectory = indexDirectory;
     }

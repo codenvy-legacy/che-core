@@ -11,9 +11,9 @@
 package org.eclipse.che.api.vfs.impl.memory;
 
 import org.eclipse.che.api.vfs.AbstractVirtualFileSystemProvider;
+import org.eclipse.che.api.vfs.ArchiverFactory;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.search.SearcherProvider;
-import org.eclipse.che.api.vfs.ArchiverFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -28,7 +28,7 @@ public class MemoryVirtualFileSystemProvider extends AbstractVirtualFileSystemPr
     }
 
     @Override
-    protected VirtualFileSystem createVirtualFileSystem(VirtualFileSystem.CloseCallback closeCallback) {
+    protected VirtualFileSystem createVirtualFileSystem(CloseCallback closeCallback) {
         return new MemoryVirtualFileSystem(new ArchiverFactory(), searcherProvider, closeCallback);
     }
 }

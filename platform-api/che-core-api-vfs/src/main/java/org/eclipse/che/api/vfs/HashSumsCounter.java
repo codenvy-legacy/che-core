@@ -25,6 +25,10 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.hash.Funnels.asOutputStream;
 
+/**
+ * Traverses recursively all files in folder given in constructor and calculates hash sum for each file.
+ * Algorithm specified by {@code hashFunction} is used for calculating hash sum.
+ */
 public class HashSumsCounter implements VirtualFileVisitor {
     private final VirtualFile                folder;
     private final HashFunction               hashFunction;
@@ -37,6 +41,14 @@ public class HashSumsCounter implements VirtualFileVisitor {
         hashSums = newArrayList();
     }
 
+    /**
+     * Hash sums of files. Each {@code Pair} contains following structure:
+     * <pre>
+     *     Pair&lt;String,String&gt; pair = ...
+     *     pair.first // hash-sum of file represented as HEX String
+     *     pair.second // Path of file that is relative to folder given in constructor
+     * </pre>
+     */
     public List<Pair<String, String>> countHashSums() throws ServerException {
         folder.accept(this);
         return hashSums;

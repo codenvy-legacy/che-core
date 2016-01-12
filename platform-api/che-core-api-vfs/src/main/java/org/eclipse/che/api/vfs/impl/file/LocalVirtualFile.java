@@ -15,10 +15,10 @@ import com.google.common.io.ByteStreams;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFileVisitor;
-import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.commons.lang.Pair;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +28,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.eclipse.che.api.vfs.impl.file.LocalVirtualFileSystem.MAX_BUFFER_SIZE;
 
 /**
  * Implementation of VirtualFile which uses java.io.File.
@@ -107,6 +109,9 @@ public class LocalVirtualFile implements VirtualFile {
 
     @Override
     public byte[] getContentAsBytes() throws ForbiddenException, ServerException {
+        if (getLength() > MAX_BUFFER_SIZE) {
+            throw new ForbiddenException("File is too big and might not be retrieved as bytes");
+        }
         try (InputStream content = getContent()) {
             return ByteStreams.toByteArray(content);
         } catch (IOException e) {

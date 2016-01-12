@@ -33,7 +33,7 @@ public abstract class AbstractVirtualFileSystemProvider implements VirtualFileSy
         return getVirtualFileSystem(true);
     }
 
-    protected abstract VirtualFileSystem createVirtualFileSystem(VirtualFileSystem.CloseCallback closeCallback) throws ServerException;
+    protected abstract VirtualFileSystem createVirtualFileSystem(CloseCallback closeCallback) throws ServerException;
 
     @Override
     public void close() throws ServerException {
@@ -42,5 +42,9 @@ public abstract class AbstractVirtualFileSystemProvider implements VirtualFileSy
             virtualFileSystem.close();
         }
         fileSystemReference.set(null);
+    }
+
+    public interface CloseCallback {
+        void onClose();
     }
 }

@@ -11,10 +11,10 @@
 package org.eclipse.che.api.vfs.impl.file;
 
 import org.eclipse.che.api.core.util.FileCleaner;
-import org.eclipse.che.api.vfs.VirtualFileSystem;
-import org.eclipse.che.api.vfs.search.SearcherProvider;
+import org.eclipse.che.api.vfs.AbstractVirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.ArchiverFactory;
 import org.eclipse.che.api.vfs.search.Searcher;
+import org.eclipse.che.api.vfs.search.SearcherProvider;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.junit.After;
@@ -30,16 +30,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class LocalVirtualFileSystemTest {
-    private LocalVirtualFileSystem          fileSystem;
-    private Searcher                        searcher;
-    private VirtualFileSystem.CloseCallback closeCallback;
-    private File                            testDirectory;
+    private LocalVirtualFileSystem                          fileSystem;
+    private Searcher                                        searcher;
+    private AbstractVirtualFileSystemProvider.CloseCallback closeCallback;
+    private File                                            testDirectory;
 
     @Before
     public void setUp() throws Exception {
         SearcherProvider searcherProvider = mock(SearcherProvider.class);
         searcher = mock(Searcher.class);
-        closeCallback = mock(VirtualFileSystem.CloseCallback.class);
+        closeCallback = mock(AbstractVirtualFileSystemProvider.CloseCallback.class);
         File targetDir = new File(Thread.currentThread().getContextClassLoader().getResource(".").getPath()).getParentFile();
         testDirectory = new File(targetDir, NameGenerator.generate("fs-", 4));
         fileSystem = new LocalVirtualFileSystem(testDirectory, mock(ArchiverFactory.class), searcherProvider, closeCallback);

@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.search;
 
+/**
+ * Single item in {@code SearchResult}.
+ */
 public class SearchResultEntry {
     private final String filePath;
 
@@ -17,6 +20,7 @@ public class SearchResultEntry {
         this.filePath = filePath;
     }
 
+    /** Path of file that matches the search criteria. */
     public String getFilePath() {
         return filePath;
     }

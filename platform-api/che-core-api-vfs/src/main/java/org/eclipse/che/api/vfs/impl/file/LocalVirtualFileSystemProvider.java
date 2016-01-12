@@ -12,9 +12,9 @@ package org.eclipse.che.api.vfs.impl.file;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.AbstractVirtualFileSystemProvider;
+import org.eclipse.che.api.vfs.ArchiverFactory;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.search.SearcherProvider;
-import org.eclipse.che.api.vfs.ArchiverFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,7 +37,7 @@ public class LocalVirtualFileSystemProvider extends AbstractVirtualFileSystemPro
     }
 
     @Override
-    protected VirtualFileSystem createVirtualFileSystem(VirtualFileSystem.CloseCallback closeCallback) throws ServerException {
+    protected VirtualFileSystem createVirtualFileSystem(CloseCallback closeCallback) throws ServerException {
         return new LocalVirtualFileSystem(rootDirectory, new ArchiverFactory(), searcherProvider, closeCallback);
     }
 }

@@ -36,7 +36,4 @@ public interface VirtualFileSystem {
     /** Release used resources, e.g. clear caches, searcher index, etc */
     void close() throws ServerException;
 
-    interface CloseCallback {
-        void onClose();
-    }
 }

@@ -16,15 +16,24 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+/**
+ * Helps to find all locked file in folder given in constructor and all its sub folders.
+ */
 public class LockedFileFinder implements VirtualFileVisitor {
     private final VirtualFile       folder;
     private final List<VirtualFile> locked;
 
+    /**
+     * @param folder folder where need look for looked files
+     */
     public LockedFileFinder(VirtualFile folder) {
         this.folder = folder;
         locked = newArrayList();
     }
 
+    /**
+     * @return locked files that were found
+     */
     public List<VirtualFile> findLockedFiles() throws ServerException {
         folder.accept(this);
         return locked;

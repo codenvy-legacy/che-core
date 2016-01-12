@@ -68,7 +68,7 @@ public class TarArchiverTest {
         VirtualFileSystem virtualFileSystem = new LocalVirtualFileSystem(testDirectory,
                                                                          mock(ArchiverFactory.class),
                                                                          searcherProvider,
-                                                                         mock(VirtualFileSystem.CloseCallback.class));
+                                                                         mock(AbstractVirtualFileSystemProvider.CloseCallback.class));
         when(searcherProvider.getSearcher(eq(virtualFileSystem), eq(true))).thenReturn(searcher);
         when(searcherProvider.getSearcher(eq(virtualFileSystem))).thenReturn(searcher);
         vfsRoot = virtualFileSystem.getRoot();

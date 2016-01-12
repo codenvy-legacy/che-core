@@ -11,6 +11,7 @@
 package org.eclipse.che.api.vfs.impl.memory;
 
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.vfs.AbstractVirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.ArchiverFactory;
 import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
@@ -29,9 +30,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MemoryVirtualFileSystem implements VirtualFileSystem {
     private static final AtomicInteger ID = new AtomicInteger();
 
-    private final ArchiverFactory  archiverFactory;
-    private final SearcherProvider searcherProvider;
-    private final CloseCallback    closeCallback;
+    private final ArchiverFactory                                 archiverFactory;
+    private final SearcherProvider                                searcherProvider;
+    private final AbstractVirtualFileSystemProvider.CloseCallback closeCallback;
     private final int id = ID.incrementAndGet();
 
     private VirtualFile root;
@@ -40,7 +41,7 @@ public class MemoryVirtualFileSystem implements VirtualFileSystem {
         this(archiverFactory, searcherProvider, null);
     }
 
-    MemoryVirtualFileSystem(ArchiverFactory archiverFactory, SearcherProvider searcherProvider, CloseCallback closeCallback) {
+    MemoryVirtualFileSystem(ArchiverFactory archiverFactory, SearcherProvider searcherProvider, AbstractVirtualFileSystemProvider.CloseCallback closeCallback) {
         this.archiverFactory = archiverFactory;
         this.searcherProvider = searcherProvider;
         this.closeCallback = closeCallback;

@@ -17,8 +17,11 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Result of executing {@link Searcher#search(QueryExpression)}.
+ */
 public class SearchResult {
-    static SearchResultBuilder aSearchResult() {
+    public static SearchResultBuilder aSearchResult() {
         return new SearchResultBuilder();
     }
 
@@ -37,22 +40,37 @@ public class SearchResult {
         this.elapsedTimeMillis = elapsedTimeMillis;
     }
 
+    /** Paths of files that match the search criteria. This method is shortcut for:
+     * <pre>
+     * {@code
+     * SearchResult result = ...;
+     * List<String> paths = new ArrayList<>();
+     * for (SearchResultEntry e : result.getResults()) {
+     *    paths.add(e.getFilePath());
+     * }
+     * }
+     * </pre>
+     */
     public List<String> getFilePaths() {
         return results.stream().map(SearchResultEntry::getFilePath).collect(toList());
     }
 
+    /** Get all results that match the search criteria. */
     public List<SearchResultEntry> getResults() {
         return results;
     }
 
+    /** Total number of files that match the search criteria. */
     public int getTotalHits() {
         return totalHits;
     }
 
+    /** Time spent on execution the query. */
     public long getElapsedTimeMillis() {
         return elapsedTimeMillis;
     }
 
+    /** Optional query expression for retrieving next page. */
     public Optional<QueryExpression> getNextPageQueryExpression() {
         return nextPageQueryExpression;
     }

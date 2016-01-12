@@ -19,15 +19,15 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.util.FileCleaner;
+import org.eclipse.che.api.vfs.AbstractVirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.Archiver;
-import org.eclipse.che.api.vfs.VirtualFileFilter;
-import org.eclipse.che.api.vfs.VirtualFileSystem;
-import org.eclipse.che.api.vfs.search.SearcherProvider;
 import org.eclipse.che.api.vfs.ArchiverFactory;
 import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.api.vfs.VirtualFile;
+import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFileVisitor;
 import org.eclipse.che.api.vfs.search.Searcher;
+import org.eclipse.che.api.vfs.search.SearcherProvider;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
@@ -92,7 +92,7 @@ public class LocalVirtualFileTest {
         fileSystem = new LocalVirtualFileSystem(testDirectory,
                                                 archiverFactory,
                                                 searcherProvider,
-                                                mock(VirtualFileSystem.CloseCallback.class));
+                                                mock(AbstractVirtualFileSystemProvider.CloseCallback.class));
         searcher = mock(Searcher.class);
         when(searcherProvider.getSearcher(eq(fileSystem), eq(true))).thenReturn(searcher);
         when(searcherProvider.getSearcher(eq(fileSystem))).thenReturn(searcher);

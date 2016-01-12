@@ -24,11 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class TarArchiver implements Archiver {
-    private final VirtualFile folder;
-
+public class TarArchiver extends Archiver {
     public TarArchiver(VirtualFile folder) {
-        this.folder = folder;
+        super(folder);
     }
 
     @Override

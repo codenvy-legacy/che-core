@@ -8,23 +8,22 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.vfs.search;
+package org.eclipse.che.api.vfs.search.impl;
 
 import com.google.common.base.Optional;
 
-import org.eclipse.che.api.vfs.VirtualFileFilter;
-import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.ArchiverFactory;
 import org.eclipse.che.api.vfs.VirtualFile;
+import org.eclipse.che.api.vfs.VirtualFileFilter;
+import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.impl.memory.MemoryVirtualFileSystem;
-import org.eclipse.che.commons.lang.IoUtil;
-import org.eclipse.che.commons.lang.NameGenerator;
+import org.eclipse.che.api.vfs.search.QueryExpression;
+import org.eclipse.che.api.vfs.search.SearchResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class FSLuceneSearcherTest {
+public class MemoryLuceneSearcherTest {
     private static final String[] TEST_CONTENT = {
             "Apollo set several major human spaceflight milestones",
             "Maybe you should think twice",
@@ -46,28 +45,21 @@ public class FSLuceneSearcherTest {
             "In early 1961, direct ascent was generally the mission mode in favor at NASA"
     };
 
-    private File                   indexDirectory;
-    private VirtualFileFilter      filter;
-    private FSLuceneSearcher       searcher;
-    private Searcher.CloseCallback closeCallback;
+    private MemoryLuceneSearcher                         searcher;
+    private VirtualFileFilter                            filter;
+    private AbstractLuceneSearcherProvider.CloseCallback closeCallback;
 
     @Before
     public void setUp() throws Exception {
-        File targetDir = new File(Thread.currentThread().getContextClassLoader().getResource(".").getPath()).getParentFile();
-        indexDirectory = new File(targetDir, NameGenerator.generate("index-", 4));
-        assertTrue(indexDirectory.mkdir());
-
         filter = mock(VirtualFileFilter.class);
         when(filter.accept(any(VirtualFile.class))).thenReturn(true);
-
-        closeCallback = mock(Searcher.CloseCallback.class);
-        searcher = new FSLuceneSearcher(indexDirectory, filter, closeCallback);
+        closeCallback = mock(AbstractLuceneSearcherProvider.CloseCallback.class);
+        searcher = new MemoryLuceneSearcher(filter, closeCallback);
     }
 
     @After
     public void tearDown() throws Exception {
         searcher.close();
-        IoUtil.deleteRecursive(indexDirectory);
     }
 
     @Test

@@ -117,7 +117,11 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *
      * @return content ot he file
      * @throws ForbiddenException
-     *         if this item is not a file
+     *         if any of following conditions are met:
+     *         <ul>
+     *         <li>this item is not a file</li>
+     *         <li>size of file is too big and might not be retrieved as bytes</li>
+     *         </ul>
      * @throws ServerException
      *         if other error occurs
      * @see #isFile()
@@ -142,7 +146,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @param content
      *         content
      * @param lockToken
-     *         lock token. This parameter is required if the file is locked
+     *         lock token. This parameter is required if the file is locked otherwise might be {@code null}
      * @return VirtualFile after updating content
      * @throws ForbiddenException
      *         if any of following conditions are met:
@@ -180,7 +184,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @param content
      *         content
      * @param lockToken
-     *         lock token. This parameter is required if the file is locked
+     *         lock token. This parameter is required if the file is locked otherwise might be {@code null}
      * @return VirtualFile after updating content
      * @throws ForbiddenException
      *         if any of following conditions are met:
@@ -218,7 +222,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @param content
      *         content
      * @param lockToken
-     *         lock token. This parameter is required if the file is locked
+     *         lock token. This parameter is required if the file is locked otherwise might be {@code null}
      * @return VirtualFile after updating content
      * @throws ForbiddenException
      *         if any of following conditions are met:
@@ -280,7 +284,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @param properties
      *         map of properties to update
      * @param lockToken
-     *         lock token. This parameter is required if the file is locked
+     *         lock token. This parameter is required if the file is locked otherwise might be {@code null}
      * @return VirtualFile after updating properties
      * @throws ForbiddenException
      *         if any of following conditions are met:
@@ -318,7 +322,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @param value
      *         value of property
      * @param lockToken
-     *         lock token. This parameter is required if the file is locked
+     *         lock token. This parameter is required if the file is locked otherwise might be {@code null}
      * @return VirtualFile after updating property
      * @throws ForbiddenException
      *         if any of following conditions are met:
@@ -435,7 +439,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * @param newName
      *         new name
      * @param lockToken
-     *         lock token. This parameter is required if the file is locked
+     *         lock token. This parameter is required if the file is locked otherwise might be {@code null}
      * @throws ForbiddenException
      *         if this item is locked file and {@code lockToken} is {@code null} or does not match
      * @throws ConflictException
@@ -463,7 +467,7 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      * Deletes this VirtualFile.
      *
      * @param lockToken
-     *         lock token. This parameter is required if the file is locked
+     *         lock token. This parameter is required if the file is locked otherwise might be {@code null}
      * @throws ForbiddenException
      *         if any of following conditions are met:
      *         <ul>
