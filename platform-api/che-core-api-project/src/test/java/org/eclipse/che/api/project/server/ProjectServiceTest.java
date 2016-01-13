@@ -22,7 +22,9 @@ import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.CodenvyJsonProvider;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequest;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
+import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.core.util.ValueHolder;
@@ -59,6 +61,7 @@ import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
+import org.eclipse.che.commons.test.SelfReturningAnswer;
 import org.eclipse.che.commons.user.UserImpl;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.everrest.core.ResourceBinder;
@@ -87,7 +90,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,6 +106,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
@@ -115,7 +118,6 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -132,7 +134,7 @@ import static org.testng.Assert.assertNotNull;
 @Listeners(value = {MockitoTestNGListener.class})
 public class ProjectServiceTest {
     private static final String      vfsUser       = "dev";
-    private static final Set<String> vfsUserGroups = new LinkedHashSet<>(Arrays.asList("workspace/developer"));
+    private static final Set<String> vfsUserGroups = singleton("workspace/developer");
     private static final String      workspace     = "my_ws";
     private static final String      apiEndpoint   = "http://localhost:8080/che/api";
 
@@ -142,6 +144,7 @@ public class ProjectServiceTest {
     private ProjectHandlerRegistry  phRegistry;
 
     private org.eclipse.che.commons.env.EnvironmentContext env;
+    private HttpJsonRequest                                httpJsonRequest;
 
     private List<ProjectConfigDto> projects;
     private List<ProjectConfigDto> modules;
@@ -149,13 +152,15 @@ public class ProjectServiceTest {
     @Mock
     private UserDao                           userDao;
     @Mock
-    private HttpJsonHelper.HttpJsonHelperImpl httpJsonHelper;
-    @Mock
     private UsersWorkspaceDto                 usersWorkspaceMock;
     @Mock
     private Provider<AttributeFilter>         filterProvider;
     @Mock
     private AttributeFilter                   filter;
+    @Mock
+    private HttpJsonRequestFactory            httpJsonRequestFactory;
+    @Mock
+    private HttpJsonResponse                  httpJsonResponse;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -164,12 +169,16 @@ public class ProjectServiceTest {
         VirtualFileSystemRegistry vfsRegistry = new VirtualFileSystemRegistry();
 
         final MemoryFileSystemProvider memoryFileSystemProvider =
-                new MemoryFileSystemProvider(workspace, eventService, new VirtualFileSystemUserContext() {
+                new MemoryFileSystemProvider(workspace,
+                                             eventService,
+                                             new VirtualFileSystemUserContext() {
                     @Override
                     public VirtualFileSystemUser getVirtualFileSystemUser() {
                         return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
                     }
-                }, vfsRegistry, new SystemPathsFilter(Collections.singleton(new ProjectMiscPathFilter())));
+                },
+                                             vfsRegistry,
+                                             new SystemPathsFilter(singleton(new ProjectMiscPathFilter())));
 
         MemoryMountPoint mmp = (MemoryMountPoint)memoryFileSystemProvider.getMountPoint(true);
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
@@ -191,11 +200,15 @@ public class ProjectServiceTest {
 
         phRegistry = new ProjectHandlerRegistry(new HashSet<>());
 
-        pm = new DefaultProjectManager(vfsRegistry, eventService, ptRegistry, phRegistry, filterProvider, apiEndpoint);
+        pm = new DefaultProjectManager(vfsRegistry,
+                                       eventService,
+                                       ptRegistry,
+                                       phRegistry,
+                                       filterProvider,
+                                       apiEndpoint,
+                                       httpJsonRequestFactory);
 
-        Field f = HttpJsonHelper.class.getDeclaredField("httpJsonHelperImpl");
-        f.setAccessible(true);
-        f.set(null, httpJsonHelper);
+        httpJsonRequest = mock(HttpJsonRequest.class, new SelfReturningAnswer());
 
         modules = new ArrayList<>();
 
@@ -215,14 +228,15 @@ public class ProjectServiceTest {
 
         projects = new ArrayList<>();
         projects.add(testProjectConfigMock);
-        when(httpJsonHelper.request(any(), eq(apiEndpoint + "/workspace/" + workspace), eq(GET), isNull())).thenReturn(usersWorkspaceMock);
+        when(httpJsonRequestFactory.fromLink(any())).thenReturn(httpJsonRequest);
+        when(httpJsonRequest.request()).thenReturn(httpJsonResponse);
+        when(httpJsonResponse.asDto(UsersWorkspaceDto.class)).thenReturn(usersWorkspaceMock);
         when(usersWorkspaceMock.getProjects()).thenReturn(projects);
 
         pm.createProject(workspace, "my_project", testProjectConfigMock, null);
-        verify(httpJsonHelper).request(any(),
-                                       eq(apiEndpoint + "/workspace/" + workspace + "/project"),
-                                       eq(PUT),
-                                       any(ProjectConfigDto.class));
+        verify(httpJsonRequestFactory).fromLink(eq(DtoFactory.newDto(Link.class)
+                                                             .withHref(apiEndpoint + "/workspace/" + workspace + "/project")
+                                                             .withMethod(PUT)));
 
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
         importerRegistry = new ProjectImporterRegistry(Collections.<ProjectImporter>emptySet());
@@ -248,7 +262,7 @@ public class ProjectServiceTest {
 
             @Override
             public Set<Object> getSingletons() {
-                return new HashSet<>(Arrays.asList(new CodenvyJsonProvider(new HashSet<>(Arrays.asList(ContentStream.class))),
+                return new HashSet<>(Arrays.asList(new CodenvyJsonProvider(singleton(ContentStream.class)),
                                                    new ContentStreamWriter(),
                                                    new ApiExceptionMapper()));
             }
@@ -404,7 +418,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
         assertEquals(attributes.size(), 1);
-        assertEquals(attributes.get("my_attribute"), Arrays.asList("attribute value 1"));
+        assertEquals(attributes.get("my_attribute"), singletonList("attribute value 1"));
         validateProjectLinks(result);
     }
 
@@ -465,7 +479,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
         assertEquals(attributes.size(), 1);
-        assertEquals(attributes.get("my_module_attribute"), Arrays.asList("attribute value 1"));
+        assertEquals(attributes.get("my_module_attribute"), singletonList("attribute value 1"));
         validateProjectLinks(result);
     }
 
@@ -495,7 +509,7 @@ public class ProjectServiceTest {
         });
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         ProjectTypeDef pt = new ProjectTypeDef("testCreateProject", "my project type", true, false) {
             {
@@ -506,7 +520,7 @@ public class ProjectServiceTest {
         pm.getProjectTypeRegistry().registerProjectType(pt);
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
-        attributeValues.put("new_project_attribute", Arrays.asList("to be or not to be"));
+        attributeValues.put("new_project_attribute", singletonList("to be or not to be"));
 
         ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                 .withType("testCreateProject")
@@ -530,7 +544,6 @@ public class ProjectServiceTest {
                                                       DtoFactory.getInstance().toJson(descriptor).getBytes(),
                                                       null);
 
-        verify(httpJsonHelper).request(any(), eq(apiEndpoint + "/workspace/" + workspace + "/project"), eq(PUT), eq(newProjectConfig));
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ProjectConfigDto result = (ProjectConfigDto)response.getEntity();
         assertNotNull(result);
@@ -542,7 +555,7 @@ public class ProjectServiceTest {
         Map<String, List<String>> attributes = result.getAttributes();
         assertNotNull(attributes);
         assertEquals(attributes.size(), 1);
-        assertEquals(attributes.get("new_project_attribute"), Arrays.asList("to be or not to be"));
+        assertEquals(attributes.get("new_project_attribute"), singletonList("to be or not to be"));
         validateProjectLinks(result);
 
         Project project = pm.getProject(workspace, "new_project");
@@ -580,10 +593,10 @@ public class ProjectServiceTest {
         });
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
-        attributeValues.put("new module attribute", Arrays.asList("attribute value 1"));
+        attributeValues.put("new module attribute", singletonList("attribute value 1"));
 
         ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                 .withName("new_module")
@@ -639,7 +652,7 @@ public class ProjectServiceTest {
         when(moduleConfig.getName()).thenReturn("todel");
         when(moduleConfig.getType()).thenReturn("my_project_type");
 
-        when(projectConfig.getModules()).thenReturn(Arrays.asList(moduleConfig));
+        when(projectConfig.getModules()).thenReturn(singletonList(moduleConfig));
 
         pm.createProject(workspace, "project", new ProjectConfigImpl(projectConfig), null);
         pm.addModule(workspace, "my_project", moduleConfig, null);
@@ -660,7 +673,7 @@ public class ProjectServiceTest {
     @Test
     public void testUpdateProject() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         ProjectTypeDef pt = new ProjectTypeDef("testUpdateProject", "my project type", true, false) {
         };
@@ -671,7 +684,7 @@ public class ProjectServiceTest {
                                  "testUpdateProject"), null);
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
-        attributeValues.put("my_attribute", Arrays.asList("to be or not to be"));
+        attributeValues.put("my_attribute", singletonList("to be or not to be"));
         ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                 .withName("module1")
                                                 .withType("testUpdateProject")
@@ -694,8 +707,6 @@ public class ProjectServiceTest {
                                                       DtoFactory.getInstance().toJson(descriptor).getBytes(),
                                                       null);
 
-        verify(httpJsonHelper).request(any(), eq(apiEndpoint + "/workspace/" + workspace + "/project"), eq(PUT), eq(newProjectConfig));
-
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
 
         Project project = pm.getProject(workspace, "testUpdateProject");
@@ -712,9 +723,9 @@ public class ProjectServiceTest {
         mountPoint.getRoot().createFolder("not_project");
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
-        attributeValues.put("my_attribute", Arrays.asList("to be or not to be"));
+        attributeValues.put("my_attribute", singletonList("to be or not to be"));
         ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                 .withType("my_project_type")
                                                 .withDescription("updated project")
@@ -748,9 +759,9 @@ public class ProjectServiceTest {
     @Test
     public void testUpdateProjectInvalidPath() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
-        attributeValues.put("my_attribute", Arrays.asList("to be or not to be"));
+        attributeValues.put("my_attribute", singletonList("to be or not to be"));
         ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
                                                 .withType("my_project_type")
                                                 .withDescription("updated project")
@@ -797,7 +808,7 @@ public class ProjectServiceTest {
         String fileName = "test.txt";
         String fileMediaType = TEXT_PLAIN;
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList("multipart/form-data; boundary=abcdef"));
+        headers.put(CONTENT_TYPE, singletonList("multipart/form-data; boundary=abcdef"));
         String uploadBodyPattern =
                 "--abcdef\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%1$s\"\r\nContent-Type: %2$s\r\n\r\n%3$s"
                 + "\r\n--abcdef\r\nContent-Disposition: form-data; name=\"mimeType\"\r\n\r\n%4$s"
@@ -830,7 +841,7 @@ public class ProjectServiceTest {
         String fileName = "test.txt";
         String fileMediaType = TEXT_PLAIN;
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList("multipart/form-data; boundary=abcdef"));
+        headers.put(CONTENT_TYPE, singletonList("multipart/form-data; boundary=abcdef"));
         String uploadBodyPattern =
                 "--abcdef\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%1$s\"\r\nContent-Type: %2$s\r\n\r\n%3$s"
                 + "\r\n--abcdef\r\nContent-Disposition: form-data; name=\"mimeType\"\r\n\r\n%4$s"
@@ -866,7 +877,7 @@ public class ProjectServiceTest {
         String fileName = "test.txt";
         String fileMediaType = TEXT_PLAIN;
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList("multipart/form-data; boundary=abcdef"));
+        headers.put(CONTENT_TYPE, singletonList("multipart/form-data; boundary=abcdef"));
         String uploadBodyPattern =
                 "--abcdef\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%1$s\"\r\nContent-Type: %2$s\r\n\r\n%3$s"
                 + "\r\n--abcdef\r\nContent-Disposition: form-data; name=\"mimeType\"\r\n\r\n%4$s"
@@ -1002,7 +1013,9 @@ public class ProjectServiceTest {
         assertEquals(response.getStatus(), 204, "Error: " + response.getEntity());
         Assert.assertNull(pm.getProject(workspace, "my_project"));
 
-        verify(httpJsonHelper).request(any(), eq(apiEndpoint + "/workspace/" + workspace + "/project/my_project"), eq("DELETE"), isNull());
+        verify(httpJsonRequestFactory).fromLink(eq(DtoFactory.newDto(Link.class)
+                                                             .withHref(apiEndpoint + "/workspace/" + workspace + "/project/my_project")
+                                                             .withMethod(DELETE)));
     }
 
     @Test
@@ -1029,7 +1042,7 @@ public class ProjectServiceTest {
         ((FolderEntry)myProject.getBaseFolder().getChild("a/b")).createFile("test.txt", "to be or not no be".getBytes());
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
         descriptor.setName("copyOfTest.txt");
@@ -1065,7 +1078,7 @@ public class ProjectServiceTest {
         ((FolderEntry)myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwrittenContent.getBytes());
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
         descriptor.setName(destinationFileName);
@@ -1130,7 +1143,7 @@ public class ProjectServiceTest {
         final String renamedFolder = "renamedFolder";
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
         descriptor.setName(renamedFolder);
@@ -1170,7 +1183,7 @@ public class ProjectServiceTest {
         ((FolderEntry)myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwrittenContent.getBytes());
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         CopyOptions descriptor = DtoFactory.getInstance().createDto(CopyOptions.class);
         descriptor.setName(renamedFolder);
@@ -1219,7 +1232,7 @@ public class ProjectServiceTest {
         final String destinationName = "copyOfTestForMove.txt";
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
         descriptor.setName(destinationName);
@@ -1256,7 +1269,7 @@ public class ProjectServiceTest {
         ((FolderEntry)myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwrittenContent.getBytes());
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
         descriptor.setName(destinationFileName);
@@ -1321,7 +1334,7 @@ public class ProjectServiceTest {
         final String renamedFolder = "renamedFolder";
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
         descriptor.setName(renamedFolder);
@@ -1360,7 +1373,7 @@ public class ProjectServiceTest {
         ((FolderEntry)myProject.getBaseFolder().getChild("a/b/c")).createFile(destinationFileName, overwritenContent.getBytes());
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         MoveOptions descriptor = DtoFactory.getInstance().createDto(MoveOptions.class);
         descriptor.setName(renamedFolder);
@@ -1513,7 +1526,7 @@ public class ProjectServiceTest {
         projects.add(newProjectConfig);
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         String json = "{\n" +
                       "            \"location\": null,\n" +
@@ -1614,7 +1627,7 @@ public class ProjectServiceTest {
         modules.add(newModuleConfig);
 
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         SourceStorageDto source = DtoFactory.newDto(SourceStorageDto.class)
                                             .withParameters(Collections.emptyMap())
@@ -1630,7 +1643,7 @@ public class ProjectServiceTest {
         ProjectConfigDto project = DtoFactory.newDto(ProjectConfigDto.class)
                                              .withDescription("import test")
                                              .withType("chuck_project_type")
-                                             .withModules(Arrays.asList(pModule));
+                                             .withModules(singletonList(pModule));
 
         ContainerResponse response1 = launcher.service(POST,
                                                        String.format("http://localhost:8080/api/project/%s/import/new_project", workspace),
@@ -1664,7 +1677,7 @@ public class ProjectServiceTest {
         zipOut.close();
         byte[] zip = bout.toByteArray();
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(ExtMediaType.APPLICATION_ZIP));
+        headers.put(CONTENT_TYPE, singletonList(ExtMediaType.APPLICATION_ZIP));
         ContainerResponse response = launcher.service(POST,
                                                       String.format("http://localhost:8080/api/project/%s/import/my_project/a/b",
                                                                     workspace),
@@ -1689,7 +1702,7 @@ public class ProjectServiceTest {
         zipOut.close();
         byte[] zip = bout.toByteArray();
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put(CONTENT_TYPE, Arrays.asList(ExtMediaType.APPLICATION_ZIP));
+        headers.put(CONTENT_TYPE, singletonList(ExtMediaType.APPLICATION_ZIP));
         ContainerResponse response = launcher.service(POST,
                                                       String.format(
                                                               "http://localhost:8080/api/project/%s/import/my_project/a/b?skipFirstLevel=false",
@@ -1979,7 +1992,7 @@ public class ProjectServiceTest {
         Principal principal = DtoFactory.getInstance().createDto(Principal.class)
                                         .withName("workspace/developer")
                                         .withType(Principal.Type.GROUP);
-        assertEquals(permissions.get(principal), Arrays.asList(VirtualFileSystemInfo.BasicPermissions.ALL.value()));
+        assertEquals(permissions.get(principal), singletonList(VirtualFileSystemInfo.BasicPermissions.ALL.value()));
 
         response = launcher.service(GET,
                                     String.format("http://localhost:8080/api/project/%s/my_project", workspace),
@@ -2095,17 +2108,17 @@ public class ProjectServiceTest {
         clearAcl(myProject);
         String user = "user";
         HashMap<String, List<String>> headers = new HashMap<>(1);
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         AccessControlEntry entry1 = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                              .withPermissions(Arrays.asList("all"))
+                                              .withPermissions(singletonList("all"))
                                               .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                        .withName(user).withType(Principal.Type.USER));
         launcher.service(POST,
                          String.format("http://localhost:8080/api/project/%s/permissions/my_project", workspace),
                          "http://localhost:8080/api",
                          headers,
-                         JsonHelper.toJson(Arrays.asList(entry1)).getBytes(),
+                         JsonHelper.toJson(singletonList(entry1)).getBytes(),
                          null);
         List<AccessControlEntry> acl = myProject.getBaseFolder().getVirtualFile().getACL();
         AccessControlEntry entry2 = null;
@@ -2126,17 +2139,17 @@ public class ProjectServiceTest {
         clearAcl(myProject);
         String user = "user";
         HashMap<String, List<String>> headers = new HashMap<>(1);
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         AccessControlEntry entry1 = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                              .withPermissions(Arrays.asList("custom"))
+                                              .withPermissions(singletonList("custom"))
                                               .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                        .withName(user).withType(Principal.Type.USER));
         launcher.service(POST,
                          String.format("http://localhost:8080/api/project/%s/permissions/my_project", workspace),
                          "http://localhost:8080/api",
                          headers,
-                         JsonHelper.toJson(Arrays.asList(entry1)).getBytes(),
+                         JsonHelper.toJson(singletonList(entry1)).getBytes(),
                          null);
         List<AccessControlEntry> acl = myProject.getBaseFolder().getVirtualFile().getACL();
         AccessControlEntry entry2 = null;
@@ -2157,7 +2170,7 @@ public class ProjectServiceTest {
         clearAcl(myProject);
         String user = "user";
         HashMap<String, List<String>> headers = new HashMap<>(1);
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         AccessControlEntry entry1 = DtoFactory.getInstance().createDto(AccessControlEntry.class)
                                               .withPermissions(Arrays.asList("build", "run", "update_acl", "read", "write"))
@@ -2167,7 +2180,7 @@ public class ProjectServiceTest {
                          String.format("http://localhost:8080/api/project/%s/permissions/my_project", workspace),
                          "http://localhost:8080/api",
                          headers,
-                         JsonHelper.toJson(Arrays.asList(entry1)).getBytes(),
+                         JsonHelper.toJson(singletonList(entry1)).getBytes(),
                          null);
 
         List<AccessControlEntry> acl = myProject.getBaseFolder().getVirtualFile().getACL();
@@ -2187,29 +2200,29 @@ public class ProjectServiceTest {
     public void testUpdatePermissions() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         AccessControlEntry newEntry = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                                .withPermissions(Arrays.asList("all"))
+                                                .withPermissions(singletonList("all"))
                                                 .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                          .withName("other")
                                                                          .withType(Principal.Type.USER));
         AccessControlEntry newEntry2 = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                                 .withPermissions(Arrays.asList("all"))
+                                                 .withPermissions(singletonList("all"))
                                                  .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                           .withName(vfsUser).withType(Principal.Type.USER));
         //set up basic permissions
         myProject.getBaseFolder().getVirtualFile().updateACL(Arrays.asList(newEntry, newEntry2), false, null);
 
         HashMap<String, List<String>> headers = new HashMap<>(1);
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         AccessControlEntry update = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                              .withPermissions(Arrays.asList("only_custom"))
+                                              .withPermissions(singletonList("only_custom"))
                                               .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                        .withName(vfsUser).withType(Principal.Type.USER));
         launcher.service(POST,
                          String.format("http://localhost:8080/api/project/%s/permissions/my_project", workspace),
                          "http://localhost:8080/api",
                          headers,
-                         JsonHelper.toJson(Arrays.asList(update)).getBytes(),
+                         JsonHelper.toJson(singletonList(update)).getBytes(),
                          null);
 
         List<AccessControlEntry> acl = myProject.getBaseFolder().getVirtualFile().getACL();
@@ -2230,11 +2243,11 @@ public class ProjectServiceTest {
     public void testGetPermissionsForCertainUser() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         AccessControlEntry newEntry = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                                .withPermissions(Arrays.asList("all"))
+                                                .withPermissions(singletonList("all"))
                                                 .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                          .withName(vfsUser).withType(Principal.Type.USER));
         AccessControlEntry newEntry2 = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                                 .withPermissions(Arrays.asList("all"))
+                                                 .withPermissions(singletonList("all"))
                                                  .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                           .withName("other").withType(Principal.Type.USER));
         //set up permissions
@@ -2265,11 +2278,11 @@ public class ProjectServiceTest {
     public void testGetAllProjectPermissions() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         AccessControlEntry newEntry = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                                .withPermissions(Arrays.asList("all"))
+                                                .withPermissions(singletonList("all"))
                                                 .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                          .withName(vfsUser).withType(Principal.Type.USER));
         AccessControlEntry newEntry2 = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                                 .withPermissions(Arrays.asList("all"))
+                                                 .withPermissions(singletonList("all"))
                                                  .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                           .withName("other").withType(Principal.Type.USER));
         //set up permissions
@@ -2293,21 +2306,21 @@ public class ProjectServiceTest {
     public void testClearPermissionsForCertainUserToCertainProject() throws Exception {
         Project myProject = pm.getProject(workspace, "my_project");
         AccessControlEntry entry = DtoFactory.getInstance().createDto(AccessControlEntry.class)
-                                             .withPermissions(Arrays.asList("all"))
+                                             .withPermissions(singletonList("all"))
                                              .withPrincipal(DtoFactory.getInstance().createDto(Principal.class)
                                                                       .withName(vfsUser)
                                                                       .withType(Principal.Type.USER));
         //set up permissions
-        myProject.getBaseFolder().getVirtualFile().updateACL(Arrays.asList(entry), false, null);
+        myProject.getBaseFolder().getVirtualFile().updateACL(singletonList(entry), false, null);
 
         HashMap<String, List<String>> headers = new HashMap<>(1);
-        headers.put(CONTENT_TYPE, Arrays.asList(APPLICATION_JSON));
+        headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
         launcher.service(POST,
                          String.format("http://localhost:8080/api/project/%s/permissions/my_project", workspace),
                          "http://localhost:8080/api",
                          headers,
-                         JsonHelper.toJson(Arrays.asList(entry.withPermissions(null))).getBytes(),
+                         JsonHelper.toJson(singletonList(entry.withPermissions(null))).getBytes(),
                          null
                         );
 
@@ -2320,32 +2333,25 @@ public class ProjectServiceTest {
         root.createFolder("testEstimateProjectGood").createFolder("check");
         root.createFolder("testEstimateProjectBad");
 
-        final ValueProviderFactory vpf1 = new ValueProviderFactory() {
+        final ValueProviderFactory vpf1 = projectFolder -> new ValueProvider() {
+            @Override
+            public List<String> getValues(String attributeName) throws ValueStorageException {
+
+                VirtualFileEntry file;
+                try {
+                    file = projectFolder.getChild("check");
+                } catch (ForbiddenException | ServerException e) {
+                    throw new ValueStorageException(e.getMessage());
+                }
+
+                if (file == null) {
+                    throw new ValueStorageException("Check not found");
+                }
+                return singletonList("checked");
+            }
 
             @Override
-            public ValueProvider newInstance(final FolderEntry projectFolder) {
-                return new ValueProvider() {
-
-                    @Override
-                    public List<String> getValues(String attributeName) throws ValueStorageException {
-
-                        VirtualFileEntry file;
-                        try {
-                            file = projectFolder.getChild("check");
-                        } catch (ForbiddenException | ServerException e) {
-                            throw new ValueStorageException(e.getMessage());
-                        }
-
-                        if (file == null) {
-                            throw new ValueStorageException("Check not found");
-                        }
-                        return singletonList("checked");
-                    }
-
-                    @Override
-                    public void setValues(String attributeName, List<String> value) {
-                    }
-                };
+            public void setValues(String attributeName, List<String> value) {
             }
         };
 
@@ -2382,32 +2388,25 @@ public class ProjectServiceTest {
         root.createFolder("testEstimateProjectGood").createFolder("check");
         root.createFolder("testEstimateProjectBad");
 
-        final ValueProviderFactory vpf1 = new ValueProviderFactory() {
+        final ValueProviderFactory vpf1 = projectFolder -> new ValueProvider() {
+            @Override
+            public List<String> getValues(String attributeName) throws ValueStorageException {
+
+                VirtualFileEntry file;
+                try {
+                    file = projectFolder.getChild("check");
+                } catch (ForbiddenException | ServerException e) {
+                    throw new ValueStorageException(e.getMessage());
+                }
+
+                if (file == null) {
+                    throw new ValueStorageException("Check not found");
+                }
+                return singletonList("checked");
+            }
 
             @Override
-            public ValueProvider newInstance(final FolderEntry projectFolder) {
-                return new ValueProvider() {
-
-                    @Override
-                    public List<String> getValues(String attributeName) throws ValueStorageException {
-
-                        VirtualFileEntry file;
-                        try {
-                            file = projectFolder.getChild("check");
-                        } catch (ForbiddenException | ServerException e) {
-                            throw new ValueStorageException(e.getMessage());
-                        }
-
-                        if (file == null) {
-                            throw new ValueStorageException("Check not found");
-                        }
-                        return singletonList("checked");
-                    }
-
-                    @Override
-                    public void setValues(String attributeName, List<String> value) {
-                    }
-                };
+            public void setValues(String attributeName, List<String> value) {
             }
         };
 
