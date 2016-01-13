@@ -10,15 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.gwt.client;
 
-import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectImporterData;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import java.util.List;
 
 /**
  * @author Vitaly Parfonov
  */
 public interface ProjectImportersServiceClient {
 
-    void getProjectImporters(String workspaceId, AsyncRequestCallback<List<ProjectImporterDescriptor>> callback);
+    void getProjectImporters(String workspaceId, AsyncRequestCallback<ProjectImporterData> callback);
 }
