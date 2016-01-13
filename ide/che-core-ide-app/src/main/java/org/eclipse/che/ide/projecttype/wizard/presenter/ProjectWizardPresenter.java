@@ -140,6 +140,13 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         showDialog(null);
     }
 
+    /** Open the project wizard with given mode. */
+    public void show(@NotNull ProjectConfigDto project, ProjectWizardMode wizardMode) {
+        resetState();
+        this.wizardMode = wizardMode;
+        showDialog(project);
+    }
+
     /** Open the project wizard for updating the given {@code project}. */
     public void show(@NotNull ProjectConfigDto project) {
         resetState();

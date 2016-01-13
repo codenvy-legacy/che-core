@@ -99,6 +99,7 @@ import org.eclipse.che.ide.bootstrap.FactoryWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
 import org.eclipse.che.ide.bootstrap.StandartComponent;
+import org.eclipse.che.ide.bootstrap.StartUpActionsProcessor;
 import org.eclipse.che.ide.bootstrap.StartupComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
 import org.eclipse.che.ide.core.Component;
@@ -285,6 +286,7 @@ public class CoreGinModule extends AbstractGinModule {
         install(new GinFactoryModuleBuilder().implement(RecipeWidget.class, RecipeWidgetImpl.class)
                                              .implement(WorkspaceWidget.class, WorkspaceWidgetImpl.class)
                                              .build(WorkspaceWidgetFactory.class));
+        bind(StartUpActionsProcessor.class).in(Singleton.class);
     }
 
     private void configureComponents() {

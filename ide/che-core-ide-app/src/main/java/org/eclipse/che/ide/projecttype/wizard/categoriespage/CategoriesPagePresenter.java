@@ -78,7 +78,12 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
         final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
         if (CREATE == wizardMode) {
             // set pre-selected project type
-            final String preSelectedProjectTypeId = preSelectedProjectTypeManager.getPreSelectedProjectTypeId();
+            final String preSelectedProjectTypeId;
+            if(dataObject.getType() != null ) {
+                preSelectedProjectTypeId = dataObject.getType();
+            } else {
+                preSelectedProjectTypeId = preSelectedProjectTypeManager.getPreSelectedProjectTypeId();
+            }
             if (wizardRegistry.getWizardRegistrar(preSelectedProjectTypeId) != null) {
                 dataObject.setType(preSelectedProjectTypeId);
             }

@@ -109,12 +109,13 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
                     } else {
                         for (UsersWorkspaceDto workspace : workspaces) {
                             if (wsNameFromBrowser.equals(workspace.getName())) {
+                                Log.info(getClass(), workspace.getName());
                                 startWorkspaceById(workspace);
                                 return;
                             }
                         }
-                        createWorkspacePresenter.show(workspaces, callback);
                     }
+                    createWorkspacePresenter.show(workspaces, callback);
                 }
             }
         }).catchError(new Operation<PromiseError>() {
