@@ -22,19 +22,20 @@ import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
-import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
-import org.eclipse.che.ide.api.event.project.CurrentProjectChangedHandler;
 import org.eclipse.che.ide.api.event.project.DeleteProjectEvent;
 import org.eclipse.che.ide.api.event.project.ProjectUpdatedEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.notification.StatusNotification;
+import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.wizard.Wizard;
+import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.projectimport.wizard.ProjectImporter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
 import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.List;
@@ -50,7 +51,7 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAI
  * @author Dmitry Shnurenko
  */
 @Singleton
-public class ProjectConfigSynchronizationListener implements CurrentProjectChangedHandler {
+public class ProjectConfigSynchronizationListener implements BeforeExpandNodeEvent.BeforeExpandNodeHandler {
 
     private final DialogFactory            dialogFactory;
     private final ProjectImporter          projectImporter;
@@ -61,6 +62,7 @@ public class ProjectConfigSynchronizationListener implements CurrentProjectChang
     private final ChangeLocationWidget     changeLocationWidget;
     private final CancelCallback           cancelCallback;
     private final DtoUnmarshallerFactory   factory;
+    private final AppContext               appContext;
     private final String                   workspaceId;
 
     private ProjectConfigDto projectConfig;
@@ -83,6 +85,7 @@ public class ProjectConfigSynchronizationListener implements CurrentProjectChang
         this.eventBus = eventBus;
         this.changeLocationWidget = changeLocationWidget;
         this.factory = factory;
+        this.appContext = appContext;
 
         this.workspaceId = appContext.getWorkspaceId();
 
@@ -93,12 +96,31 @@ public class ProjectConfigSynchronizationListener implements CurrentProjectChang
             }
         };
 
-        eventBus.addHandler(CurrentProjectChangedEvent.TYPE, this);
+        eventBus.addHandler(BeforeExpandNodeEvent.getType(), this);
     }
 
     @Override
-    public void onCurrentProjectChanged(CurrentProjectChangedEvent event) {
-        this.projectConfig = event.getProjectConfig();
+    public void onBeforeExpand(final BeforeExpandNodeEvent event) {
+        Node expandedNode = event.getNode();
+
+        if (!(expandedNode instanceof ProjectNode)) {
+            return;
+        }
+
+        this.projectConfig = ((ProjectNode)expandedNode).getProjectConfig();
+
+        if (isProjectImporting()) {
+            event.setCancelled(true);
+
+            dialogFactory.createMessageDialog(locale.projectStatusTitle(),
+                                              locale.projectStatusContent(projectConfig.getName()),
+                                              new ConfirmCallback() {
+                                                  @Override
+                                                  public void accepted() {
+                                                  }
+                                              }).show();
+            return;
+        }
 
         List<ProjectProblemDto> problems = projectConfig.getProblems();
 
@@ -109,6 +131,8 @@ public class ProjectConfigSynchronizationListener implements CurrentProjectChang
         for (ProjectProblemDto problem : problems) {
             switch (problem.getCode()) {
                 case 10:
+                    event.setCancelled(true);
+
                     projectExistInWSButAbsentOnVFS();
                     break;
                 case 9:
@@ -119,6 +143,16 @@ public class ProjectConfigSynchronizationListener implements CurrentProjectChang
                 default:
             }
         }
+    }
+
+    private boolean isProjectImporting() {
+        for (String pathToProject : appContext.getImportingProjects()) {
+            if (pathToProject.equals(projectConfig.getPath())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void projectExistInWSButAbsentOnVFS() {

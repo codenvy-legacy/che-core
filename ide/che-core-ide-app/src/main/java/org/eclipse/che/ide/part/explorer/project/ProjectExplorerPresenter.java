@@ -130,7 +130,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     public static final int PART_SIZE = 250;
 
     private boolean hiddenFilesAreShown;
-    private boolean extServerStarted;
 
     @Inject
     public ProjectExplorerPresenter(ProjectExplorerView view,
@@ -146,7 +145,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                     DtoUnmarshallerFactory dtoUnmarshaller,
                                     ProjectServiceClient projectService,
                                     NotificationManager notificationManager,
-                                    Provider<ProjectConfigSynchronizationListener> synchronizationListenerProvider) {
+                                    ProjectConfigSynchronizationListener synchronizationListener) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -164,8 +163,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         this.notificationManager = notificationManager;
         this.currentProject = new CurrentProject();
 
-        synchronizationListenerProvider.get();
-
         eventBus.addHandler(CreateProjectEvent.TYPE, this);
         eventBus.addHandler(DeleteProjectEvent.TYPE, this);
         eventBus.addHandler(ConfigureProjectEvent.TYPE, this);
@@ -174,33 +171,31 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), this);
         eventBus.addHandler(ResourceNodeDeletedEvent.getType(), this);
         eventBus.addHandler(ModuleCreatedEvent.getType(), this);
+
+        addBeforeExpandHandler(synchronizationListener);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
-        if (!extServerStarted) {
-            nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
-                @Override
-                public void apply(List<Node> nodes) throws OperationException {
-                    view.removeAllNodes();
-                    view.addNodes(null, nodes);
-                    //actually we don't need to setup current project in application context
-                    //because when we apply selection to first node, then tree will fires
-                    //selection changed event and app context will be filled in method
-                    //updateAppContext(List<Nodes>)
+        nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
+            @Override
+            public void apply(List<Node> nodes) throws OperationException {
+                view.removeAllNodes();
+                view.addNodes(null, nodes);
+                //actually we don't need to setup current project in application context
+                //because when we apply selection to first node, then tree will fires
+                //selection changed event and app context will be filled in method
+                //updateAppContext(List<Nodes>)
 
-                    eventBus.fireEvent(new ProjectExplorerLoadedEvent(nodes));
-                }
-            }).catchError(new Operation<PromiseError>() {
-                @Override
-                public void apply(PromiseError arg) throws OperationException {
-                    notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
-                }
-            });
-
-            extServerStarted = true;
-        }
+                eventBus.fireEvent(new ProjectExplorerLoadedEvent(nodes));
+            }
+        }).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
+            }
+        });
     }
 
     /** {@inheritDoc} */
@@ -211,8 +206,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         queryFieldViewer.setProjectName("");
         notificationManager.notify(locale.projectExplorerExtensionServerStopped(),
                                    locale.projectExplorerExtensionServerStoppedDescription(), FAIL, false);
-
-        extServerStarted = false;
     }
 
     /** {@inheritDoc} */

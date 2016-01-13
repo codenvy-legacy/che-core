@@ -1152,10 +1152,6 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
             return;
         }
 
-        if (!fireCancellableEvent(new BeforeExpandNodeEvent(node))) {
-            return;
-        }
-
         if (!nodeDescriptor.isExpanded() && nodeLoader != null && (!nodeDescriptor.isLoaded())) {
             nodeStorage.removeChildren(node);
             nodeDescriptor.setExpand(true);
@@ -1163,6 +1159,10 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
             nodeDescriptor.setLoading(true);
             view.onLoadChange(nodeDescriptor, true);
             nodeLoader.loadChildren(node);
+            return;
+        }
+
+        if (!fireCancellableEvent(new BeforeExpandNodeEvent(node))) {
             return;
         }
 
