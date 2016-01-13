@@ -416,6 +416,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("delete")
     String delete();
 
+    @Key("print")
+    String print();
+
     @Key("projectProblem.title")
     String projectProblemTitle();
 

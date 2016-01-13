@@ -17,47 +17,47 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This representation of widget that provides an ability to show hotKeys list for IDE and editor
+ * This representation of widget that provides an ability to show hotKeys list for IDE and editor.
+ *
  * @author Alexander Andrienko
+ * @author Artem Zatsarynnyi
  */
 public interface HotKeysDialogView extends View<HotKeysDialogView.ActionDelegate> {
 
-    interface ActionDelegate {
-        /**
-         * Show list hotKeys
-         */
-        void showHotKeys();
-
-        /**
-         * Perform some action in response to user's clicking 'Ok' button
-         */
-        void onOkClicked();
-
-        /**
-         * Filter keybindings by filtered text in the description and keybindings
-         * @param filteredText text for filter keybindings
-         */
-        void onFilterValueChanged(String filteredText);
-    }
-
-    /**
-     * Reset filter input and Show dialog
-     */
+    /** Reset filter input and Show dialog. */
     void show();
 
-    /**
-     * Clear and Render keybinding combination
-     */
+    /** Clear and Render keybinding combination. */
     void renderKeybindings();
 
-    /**
-     * Hide dialog
-     */
+    /** Hide dialog. */
     void hide();
 
     /**
-     * Set keybindings map for displaying
-     * @param data map which binds categories keybindings and their keybindings
+     * Set keybindings map for displaying.
+     *
+     * @param data
+     *         map which binds categories keybindings and their keybindings
      */
     void setData(Map<String, List<HotKeyItem>> data);
+
+    interface ActionDelegate {
+
+        /** Show list hotKeys. */
+        void showHotKeys();
+
+        /** Perform some action in response to user's clicking 'Ok' button. */
+        void onOkClicked();
+
+        /** Will be called when 'Print' button clicked. */
+        void onPrintClicked();
+
+        /**
+         * Filter keybindings by filtered text in the description and keybindings.
+         *
+         * @param filteredText
+         *         text for filter keybindings
+         */
+        void onFilterValueChanged(String filteredText);
+    }
 }
