@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,13 +59,13 @@ public interface UserServiceClient {
     void getUserById(@NotNull String id, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
-     * Get user's information by its email.
+     * Get user's information by its alias.
      *
-     * @param email
-     *         user's email
+     * @param alias
+     *         user's alias
      * @param callback
      */
-    void getUserByEmail(@NotNull String email, AsyncRequestCallback<UserDescriptor> callback);
+    void getUserByAlias(@NotNull String alias, AsyncRequestCallback<UserDescriptor> callback);
 
     /**
      * Remove user.

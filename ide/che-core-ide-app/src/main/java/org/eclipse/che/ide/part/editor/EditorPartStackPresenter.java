@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@ package org.eclipse.che.ide.part.editor;
 
 import com.google.common.base.Predicate;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -40,7 +39,6 @@ import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.listtab.ListButton;
 import org.eclipse.che.ide.part.widgets.listtab.ListItem;
 import org.eclipse.che.ide.part.widgets.listtab.ListItemWidget;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
@@ -210,27 +208,16 @@ public class EditorPartStackPresenter extends PartStackPresenter implements Edit
 
     /** {@inheritDoc} */
     @Override
-    public void onTabClose(@NotNull TabItem tab) {
-        final PartPresenter closedPart = parts.get(tab);
-        view.removeTab(closedPart);
-
-        parts.remove(tab);
-        partsOrder.remove(closedPart);
-
-        removeItemFromList(tab);
-
+    public void removePart(PartPresenter part) {
+        super.removePart(part);
+        partsOrder.remove(part);
         activePart = partsOrder.isEmpty() ? null : partsOrder.getLast();
+    }
 
-        closedPart.onClose(new AsyncCallback<Void>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                Log.error(this.getClass(), "Unexpected error occured when closing the editor. " + caught.getMessage());
-            }
-
-            @Override
-            public void onSuccess(Void result) {
-            }
-        });
+    /** {@inheritDoc} */
+    @Override
+    public void onTabClose(@NotNull TabItem tab) {
+        removeItemFromList(tab);
     }
 
     /** {@inheritDoc} */

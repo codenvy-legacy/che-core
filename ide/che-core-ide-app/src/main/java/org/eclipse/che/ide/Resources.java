@@ -17,6 +17,7 @@ package org.eclipse.che.ide;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.CssResource.NotStrict;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.TextResource;
 
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
 import org.eclipse.che.ide.menu.MenuResources;
@@ -222,4 +223,7 @@ public interface Resources extends Tree.Resources,
 
     @Source("part/output-part-icon.svg")
     SVGResource outputPartIcon();
+
+    @Source("hotkeys/print_template.html")
+    TextResource printTemplate();
 }

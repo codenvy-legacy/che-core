@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,8 @@ package org.eclipse.che.ide.api.event.project;
 import com.google.gwt.event.shared.GwtEvent;
 
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * This event should be fired when we select different projects.
@@ -32,7 +34,7 @@ public class CurrentProjectChangedEvent extends GwtEvent<CurrentProjectChangedHa
      * @param configDto
      *         selected project
      */
-    public CurrentProjectChangedEvent(ProjectConfigDto configDto) {
+    public CurrentProjectChangedEvent(@NotNull ProjectConfigDto configDto) {
         this.configDto = configDto;
     }
 
@@ -42,6 +44,7 @@ public class CurrentProjectChangedEvent extends GwtEvent<CurrentProjectChangedHa
     }
 
     /** Returns descriptor of the project. */
+    @NotNull
     public ProjectConfigDto getProjectConfig() {
         return configDto;
     }

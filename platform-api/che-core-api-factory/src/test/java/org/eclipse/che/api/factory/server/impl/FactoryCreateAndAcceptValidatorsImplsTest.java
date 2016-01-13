@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -62,11 +62,9 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
     public void testValidateOnCreate() throws ApiException {
         FactoryCreateValidatorImpl spy = spy(createValidator);
         doNothing().when(spy)
-                   .validateSource(any(Factory.class));
+                   .validateProjects(any(Factory.class));
         doNothing().when(spy)
                    .validateAccountId(any(Factory.class));
-        doNothing().when(spy)
-                   .validateProjectNames(any(Factory.class));
         doNothing().when(spy)
                    .validateCurrentTimeAfterSinceUntil(any(Factory.class));
         doNothing().when(spy)
@@ -77,9 +75,8 @@ public class FactoryCreateAndAcceptValidatorsImplsTest {
         //main invoke
         spy.validateOnCreate(factory);
 
-        verify(spy).validateSource(any(Factory.class));
+        verify(spy).validateProjects(any(Factory.class));
         verify(spy).validateAccountId(any(Factory.class));
-        verify(spy).validateProjectNames(any(Factory.class));
         verify(spy).validateCurrentTimeAfterSinceUntil(any(Factory.class));
         verify(spy).validateOnCreate(any(Factory.class));
         verify(spy).validateProjectActions(any(Factory.class));

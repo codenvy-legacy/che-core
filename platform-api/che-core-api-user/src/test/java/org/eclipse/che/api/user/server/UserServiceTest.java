@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -44,13 +44,11 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -270,7 +268,7 @@ public class UserServiceTest {
     public void shouldBeAbleToGetUserByEmail() throws Exception {
         final User user = createUser();
 
-        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "?email=" + user.getEmail(), null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "?alias=" + user.getEmail(), null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();

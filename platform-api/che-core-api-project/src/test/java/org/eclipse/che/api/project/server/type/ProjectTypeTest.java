@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,8 +14,16 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.multibindings.Multibinder;
+
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.project.server.*;
+import org.eclipse.che.api.project.server.FolderEntry;
+import org.eclipse.che.api.project.server.InvalidValueException;
+import org.eclipse.che.api.project.server.ProjectApiModule;
+import org.eclipse.che.api.project.server.ProjectTypeService;
+import org.eclipse.che.api.project.server.ValueProvider;
+import org.eclipse.che.api.project.server.ValueProviderFactory;
+import org.eclipse.che.api.project.server.ValueStorageException;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +35,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author gazarenkov
@@ -181,8 +191,8 @@ public class ProjectTypeTest {
         //Assert.assertNull(reg.getProjectType("child"));
 
         try {
-            reg.getProjectType("child");
-            Assert.fail("NotFoundException should be thrown");
+            ProjectTypeDef projectTypeDef = reg.getProjectType("child");
+            assertThat(projectTypeDef, CoreMatchers.is(nullValue()));
         } catch (NotFoundException e) {
         }
 
@@ -255,8 +265,8 @@ public class ProjectTypeTest {
         assertNotNull(reg.getProjectType("parent2"));
 
         try {
-            reg.getProjectType("child");
-            Assert.fail("NotFoundException should be thrown");
+            ProjectTypeDef projectTypeDef = reg.getProjectType("child");
+            assertThat(projectTypeDef, CoreMatchers.is(nullValue()));
         } catch (NotFoundException e) {
         }
         //Assert.assertNull(reg.getProjectType("child"));

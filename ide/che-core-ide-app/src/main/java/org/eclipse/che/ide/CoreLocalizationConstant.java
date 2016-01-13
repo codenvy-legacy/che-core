@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -71,6 +71,9 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("action.paste.description")
     String pasteItemsActionDescription();
+
+    @Key("action.export.text")
+    String exportConfigText();
 
     @Key("deleteDialogTitle")
     String deleteDialogTitle();
@@ -413,6 +416,9 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("delete")
     String delete();
 
+    @Key("print")
+    String print();
+
     @Key("projectProblem.title")
     String projectProblemTitle();
 
@@ -681,4 +687,55 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("failed.to.upload.files.from.zip")
     String failedToUploadFilesFromZip();
+
+    @Key("synchronize.dialog.title")
+    String synchronizeDialogTitle();
+
+    @Key("button.import")
+    String buttonImport();
+
+    @Key("button.remove")
+    String buttonRemove();
+
+    @Key("project.removed")
+    String projectRemoved(String projectName);
+
+    @Key("project.remove.error")
+    String projectRemoveError(String projectName);
+
+    @Key("location.incorrect")
+    String locationIncorrect();
+
+    @Key("exist.in.workspace.dialog.content")
+    String existInWorkspaceDialogContent(String projectName);
+
+    @Key("exist.in.file.system.dialog.content")
+    String existInFileSystemDialogContent(String projectName);
+
+    @Key("button.configure")
+    String buttonConfigure();
+
+    @Key("location.dialog.title")
+    String locationDialogTitle();
+
+    @Key("project.configuration.changed")
+    String projectConfigurationChanged();
+
+    @Key("button.keep.blank")
+    String buttonKeepBlank();
+
+    @Key("project.update.error")
+    String projectUpdateError(String projectName);
+
+    @Key("project.status.title")
+    String projectStatusTitle();
+
+    @Key("project.status.content")
+    String projectStatusContent(String projectName);
+
+    @Key("error.configuration.title")
+    String errorConfigurationTitle();
+
+    @Key("error.configuration.content")
+    String errorConfigurationContent();
 }

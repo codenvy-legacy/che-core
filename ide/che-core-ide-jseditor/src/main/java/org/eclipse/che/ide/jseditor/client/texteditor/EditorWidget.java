@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -206,4 +206,9 @@ public interface EditorWidget extends IsWidget,
      * @return list hotKeys
      */
     List<HotKeyItem> getHotKeys();
+
+    /** Callback that should be called when editor widget implementation is fully initialized. */
+    interface WidgetInitializedCallback {
+        void initialized(EditorWidget editorWidget);
+    }
 }

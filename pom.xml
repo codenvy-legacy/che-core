@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (c) 2012-2015 Codenvy, S.A.
+    Copyright (c) 2012-2016 Codenvy, S.A.
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the Eclipse Public License v1.0
     which accompanies this distribution, and is available at
@@ -16,24 +16,20 @@
     <parent>
         <artifactId>maven-depmgt-pom</artifactId>
         <groupId>org.eclipse.che.depmgt</groupId>
-        <version>4.0.0-beta-3-SNAPSHOT</version>
+        <version>4.0.0-beta-9-SNAPSHOT</version>
     </parent>
     <groupId>org.eclipse.che.core</groupId>
     <artifactId>che-core-parent</artifactId>
-    <version>4.0.0-beta-3-SNAPSHOT</version>
+    <version>4.0.0-beta-9-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Che Core Parent</name>
     <modules>
         <module>commons</module>
-        <!--
-        <module>model</module>
-        -->
         <module>platform-api</module>
         <module>platform-api-client-gwt</module>
         <module>ide</module>
         <module>che-core-vfs-impl</module>
         <module>che-core-git-impl-native</module>
-        <module>che-core-git-server</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:codenvy/che-core.git</connection>

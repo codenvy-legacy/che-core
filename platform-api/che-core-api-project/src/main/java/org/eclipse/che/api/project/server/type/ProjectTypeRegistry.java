@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,7 @@
 package org.eclipse.che.api.project.server.type;
 
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.Attribute;
 import org.eclipse.che.api.project.server.ProjectTypeConstraintException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,11 +92,7 @@ public class ProjectTypeRegistry {
      * @return project type by id
      */
     public ProjectTypeDef getProjectType(String id) throws NotFoundException {
-        ProjectTypeDef pt = projectTypes.get(id);
-
-        if (pt == null)
-            throw new NotFoundException("Project Type " + id + " not found in the registry");
-        return pt;
+        return projectTypes.get(id);
     }
 
     /**
@@ -203,7 +199,7 @@ public class ProjectTypeRegistry {
             if (NAME_PATTERN.matcher(attr.getName()).find()) {
                 LOG.error("Could not register Project Type with invalid attribute Name (only Alphanumeric, dash and underscore allowed): " +
                           attr.getClass().getName() + " ID: '" + attr.getId() + "'"
-                );
+                         );
                 valid = false;
             }
         }

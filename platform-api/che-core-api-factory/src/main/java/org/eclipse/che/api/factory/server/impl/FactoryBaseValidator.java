@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,8 @@ package org.eclipse.che.api.factory.server.impl;
 
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
-import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.BadRequestException;
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.factory.server.FactoryConstants;
 import org.eclipse.che.api.factory.shared.dto.Action;
@@ -57,60 +58,52 @@ public abstract class FactoryBaseValidator {
 
     /**
      * Validates source parameter of factory.
-     * TODO for now validates only git source
      *
      * @param factory
      *         factory to validate
-     * @throws ConflictException
+     * @throws BadRequestException
+     *         when source projects in the factory is invalid
      */
-    protected void validateSource(Factory factory) throws ConflictException {
+    protected void validateProjects(Factory factory) throws BadRequestException {
         for (ProjectConfigDto project : factory.getWorkspace().getProjects()) {
-            String location = project.getSource().getLocation();
-            String parameterLocationName = "project.storage.location";
-
-            if (isNullOrEmpty(location)) {
-                throw new ConflictException(
-                        format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE, parameterLocationName, location));
-            } else {
-                try {
-                    URLDecoder.decode(location, "UTF-8");
-                } catch (IllegalArgumentException | UnsupportedEncodingException e) {
-                    throw new ConflictException(
-                            format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE, parameterLocationName, location));
-                }
-            }
-        }
-    }
-
-    /**
-     * Validates project names
-     *
-     * @param factory
-     *          - factory to validate
-     * @throws ConflictException
-     */
-    protected void validateProjectNames(Factory factory) throws ConflictException {
-        for (ProjectConfigDto project : factory.getWorkspace().getProjects()) {
-            String projectName = project.getName();
+            final String projectName = project.getName();
             if (null != projectName && !PROJECT_NAME_VALIDATOR.matcher(projectName)
                                                               .matches()) {
-                throw new ConflictException(
-                        "Project name must contain only Latin letters, digits or these following special characters -._.");
+                throw new BadRequestException("Project name must contain only Latin letters, " +
+                                              "digits or these following special characters -._.");
+            }
+
+            final String location = project.getSource().getLocation();
+            final String parameterLocationName = "project.storage.location";
+            if (isNullOrEmpty(location)) {
+                throw new BadRequestException(format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE,
+                                                     parameterLocationName,
+                                                     location));
+            }
+            try {
+                URLDecoder.decode(location, "UTF-8");
+            } catch (IllegalArgumentException | UnsupportedEncodingException e) {
+                throw new BadRequestException(format(FactoryConstants.PARAMETRIZED_ILLEGAL_PARAMETER_VALUE_MESSAGE,
+                                                     parameterLocationName,
+                                                     location));
             }
         }
     }
 
     /**
      * Validates that creator of factory is really owner of account specified in it.
+     *
      * @param factory
-     *         - factory to validate
-     * @throws ConflictException
+     *         factory to validate
      * @throws ServerException
+     *         when any server errors occurs
+     * @throws ForbiddenException
+     *         when user does not have required rights
      */
-    protected void validateAccountId(Factory factory) throws ConflictException, ServerException {
+    protected void validateAccountId(Factory factory) throws ServerException, ForbiddenException {
         // TODO do we need check if user is temporary?
-        String accountId = factory.getCreator() != null ? emptyToNull(factory.getCreator().getAccountId()) : null;
-        String userId = factory.getCreator() != null ? factory.getCreator().getUserId() : null;
+        final String accountId = factory.getCreator() != null ? emptyToNull(factory.getCreator().getAccountId()) : null;
+        final String userId = factory.getCreator() != null ? factory.getCreator().getUserId() : null;
 
         if (accountId == null || userId == null) {
             return;
@@ -118,19 +111,18 @@ public abstract class FactoryBaseValidator {
 
         final Map<String, String> preferences = preferenceDao.getPreferences(userId);
         if (parseBoolean(preferences.get("temporary"))) {
-            throw new ConflictException("Current user is not allowed to use this method.");
+            throw new ForbiddenException("Current user is not allowed to use this method.");
         }
 
-        List<Member> members = accountDao.getMembers(accountId);
+        final List<Member> members = accountDao.getMembers(accountId);
         if (members.isEmpty()) {
-            throw new ConflictException(format(FactoryConstants.PARAMETRIZED_ILLEGAL_ACCOUNTID_PARAMETER_MESSAGE, accountId));
+            throw new ForbiddenException(format(FactoryConstants.PARAMETRIZED_ILLEGAL_ACCOUNTID_PARAMETER_MESSAGE, accountId));
         }
 
-        if (members.stream()
-                   .noneMatch(member -> member.getUserId()
-                                              .equals(userId) && member.getRoles()
-                                                                       .contains("account/owner"))) {
-            throw new ConflictException("You are not authorized to use this accountId.");
+        if (members.stream().noneMatch(member -> member.getUserId()
+                                                       .equals(userId) && member.getRoles()
+                                                                                .contains("account/owner"))) {
+            throw new ForbiddenException("You are not authorized to use this accountId.");
         }
     }
 
@@ -139,26 +131,26 @@ public abstract class FactoryBaseValidator {
      *
      * @param factory
      *         factory to validate
-     * @throws ConflictException
+     * @throws BadRequestException
      *         if since date greater than current date<br/>
-     * @throws ConflictException
+     * @throws BadRequestException
      *         if until date less than current date<br/>
      */
-    protected void validateCurrentTimeBetweenSinceUntil(Factory factory) throws ConflictException {
+    protected void validateCurrentTimeBetweenSinceUntil(Factory factory) throws BadRequestException {
         final Policies policies = factory.getPolicies();
         if (policies == null) {
             return;
         }
 
-        Long since = policies.getSince() == null ? 0L : policies.getSince();
-        Long until = policies.getUntil() == null ? 0L : policies.getUntil();
+        final Long since = policies.getSince() == null ? 0L : policies.getSince();
+        final Long until = policies.getUntil() == null ? 0L : policies.getUntil();
 
         if (since != 0 && currentTimeMillis() < since) {
-            throw new ConflictException(FactoryConstants.ILLEGAL_FACTORY_BY_SINCE_MESSAGE);
+            throw new BadRequestException(FactoryConstants.ILLEGAL_FACTORY_BY_SINCE_MESSAGE);
         }
 
         if (until != 0 && currentTimeMillis() > until) {
-            throw new ConflictException(FactoryConstants.ILLEGAL_FACTORY_BY_UNTIL_MESSAGE);
+            throw new BadRequestException(FactoryConstants.ILLEGAL_FACTORY_BY_UNTIL_MESSAGE);
         }
     }
 
@@ -167,44 +159,46 @@ public abstract class FactoryBaseValidator {
      *
      * @param factory
      *         factory to validate
-     * @throws ConflictException
+     * @throws BadRequestException
      *         if since date greater or equal than until date<br/>
-     * @throws ConflictException
+     * @throws BadRequestException
      *         if since date less than current date<br/>
-     * @throws ConflictException
+     * @throws BadRequestException
      *         if until date less than current date<br/>
      */
-    protected void validateCurrentTimeAfterSinceUntil(Factory factory) throws ConflictException {
+    protected void validateCurrentTimeAfterSinceUntil(Factory factory) throws BadRequestException {
         final Policies policies = factory.getPolicies();
         if (policies == null) {
             return;
         }
 
-        Long since = policies.getSince() == null ? 0L : policies.getSince();
-        Long until = policies.getUntil() == null ? 0L : policies.getUntil();
+        final Long since = policies.getSince() == null ? 0L : policies.getSince();
+        final Long until = policies.getUntil() == null ? 0L : policies.getUntil();
 
         if (since != 0 && until != 0 && since >= until) {
-            throw new ConflictException(FactoryConstants.INVALID_SINCEUNTIL_MESSAGE);
+            throw new BadRequestException(FactoryConstants.INVALID_SINCEUNTIL_MESSAGE);
         }
 
         if (since != 0 && currentTimeMillis() > since) {
-            throw new ConflictException(FactoryConstants.INVALID_SINCE_MESSAGE);
+            throw new BadRequestException(FactoryConstants.INVALID_SINCE_MESSAGE);
         }
 
         if (until != 0 && currentTimeMillis() > until) {
-            throw new ConflictException(FactoryConstants.INVALID_UNTIL_MESSAGE);
+            throw new BadRequestException(FactoryConstants.INVALID_UNTIL_MESSAGE);
         }
     }
 
 
     /**
      * Validates IDE actions
+     *
      * @param factory
-     *         - factory to validate
-     * @throws ConflictException
+     *         factory to validate
+     * @throws BadRequestException
+     *         when factory actions is invalid
      */
-    protected void validateProjectActions(Factory factory) throws ConflictException {
-        Ide ide = factory.getIde();
+    protected void validateProjectActions(Factory factory) throws BadRequestException {
+        final Ide ide = factory.getIde();
         if (ide == null) {
             return;
         }
@@ -220,7 +214,7 @@ public abstract class FactoryBaseValidator {
         for (Action applicationAction : applicationActions) {
             String id = applicationAction.getId();
             if ("openFile".equals(id) || "findReplace".equals(id) || "runCommand".equals(id)) {
-                throw new ConflictException(format(FactoryConstants.INVALID_ACTION_SECTION, id));
+                throw new BadRequestException(format(FactoryConstants.INVALID_ACTION_SECTION, id));
             }
         }
 
@@ -231,12 +225,12 @@ public abstract class FactoryBaseValidator {
                 if ("openWelcomePage".equals(action.getId()) && (isNullOrEmpty(properties.get("nonAuthenticatedContentUrl")) ||
                                                                  isNullOrEmpty(properties.get("authenticatedContentUrl")))) {
 
-                    throw new ConflictException(FactoryConstants.INVALID_WELCOME_PAGE_ACTION);
+                    throw new BadRequestException(FactoryConstants.INVALID_WELCOME_PAGE_ACTION);
                 }
             }
         }
 
-        OnProjectsLoaded onLoaded = ide.getOnProjectsLoaded();
+        final OnProjectsLoaded onLoaded = ide.getOnProjectsLoaded();
         if (onLoaded != null) {
             final List<Action> onProjectOpenedActions = onLoaded.getActions();
             for (Action applicationAction : onProjectOpenedActions) {
@@ -246,13 +240,13 @@ public abstract class FactoryBaseValidator {
                 switch (id) {
                     case "openFile":
                         if (isNullOrEmpty(properties.get("file"))) {
-                            throw new ConflictException(FactoryConstants.INVALID_OPENFILE_ACTION);
+                            throw new BadRequestException(FactoryConstants.INVALID_OPENFILE_ACTION);
                         }
                         break;
                         
                     case "runCommand":
                         if (isNullOrEmpty(properties.get("name"))) {
-                            throw new ConflictException(FactoryConstants.INVALID_RUNCOMMAND_ACTION);
+                            throw new BadRequestException(FactoryConstants.INVALID_RUNCOMMAND_ACTION);
                         }
                         break;
 
@@ -260,7 +254,7 @@ public abstract class FactoryBaseValidator {
                         if (isNullOrEmpty(properties.get("in")) ||
                             isNullOrEmpty(properties.get("find")) ||
                             isNullOrEmpty(properties.get("replace"))) {
-                            throw new ConflictException(FactoryConstants.INVALID_FIND_REPLACE_ACTION);
+                            throw new BadRequestException(FactoryConstants.INVALID_FIND_REPLACE_ACTION);
                         }
                         break;
                 }

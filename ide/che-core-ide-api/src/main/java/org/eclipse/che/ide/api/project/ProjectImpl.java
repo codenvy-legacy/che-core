@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,6 @@ package org.eclipse.che.ide.api.project;
 import org.eclipse.che.api.core.model.project.SourceStorage;
 import org.eclipse.che.api.core.model.project.fs.Folder;
 import org.eclipse.che.api.core.model.workspace.Project;
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
@@ -100,20 +99,14 @@ public class ProjectImpl implements Project {
         return null;
     }
 
-    public List<ProjectProblem> getProblems() {
-        return null;
-    }
-
     @Override
     public SourceStorage getSource() {
         return sourceStorage;
     }
 
-
     public List<Link> getLinks() {
         return null;
     }
-
 
     // TODO remove it from the model
     public String getContentRoot() {

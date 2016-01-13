@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -129,7 +129,7 @@ public class UserService extends Service {
      * @see #getCurrent(SecurityContext)
      * @see #updatePassword(String)
      * @see #getById(String, SecurityContext)
-     * @see #getByEmail(String, SecurityContext)
+     * @see #getByAlias(String, SecurityContext)
      * @see #remove(String)
      */
     @ApiOperation(value = "Create a new user",
@@ -234,7 +234,7 @@ public class UserService extends Service {
      * @throws ServerException
      *         when some error occurred while retrieving user
      * @see UserDescriptor
-     * @see #getByEmail(String, SecurityContext)
+     * @see #getByAlias(String, SecurityContext)
      */
     @ApiOperation(value = "Get user by ID",
                   notes = "Get user by its ID in the system. Roles allowed: system/admin, system/manager.",
@@ -254,25 +254,25 @@ public class UserService extends Service {
     }
 
     /**
-     * Returns status <b>200</b> and {@link UserDescriptor} built from user with given {@code email}
-     * or status <b>404</b> when user with given {@code email} was not found
+     * Returns status <b>200</b> and {@link UserDescriptor} built from user with given {@code alias}
+     * or status <b>404</b> when user with given {@code alias} was not found
      *
-     * @param email
-     *         email to search user
+     * @param alias
+     *         alias to search user
      * @return entity of found user
      * @throws NotFoundException
-     *         when user with given email doesn't exist
+     *         when user with given alias doesn't exist
      * @throws ServerException
      *         when some error occurred while retrieving user
      * @see UserDescriptor
      * @see #getById(String, SecurityContext)
      * @see #remove(String)
      */
-    @ApiOperation(value = "Get user by email",
-                  notes = "Get user by registration email. Roles allowed: system/admin, system/manager.",
+    @ApiOperation(value = "Get user by alias",
+                  notes = "Get user by alias. Roles allowed: system/admin, system/manager.",
                   response = UserDescriptor.class)
     @ApiResponses({@ApiResponse(code = 200, message = "OK"),
-                   @ApiResponse(code = 403, message = "Missed parameter email"),
+                   @ApiResponse(code = 403, message = "Missed parameter alias"),
                    @ApiResponse(code = 404, message = "Not Found"),
                    @ApiResponse(code = 500, message = "Internal Server Error")})
     @GET
@@ -280,12 +280,12 @@ public class UserService extends Service {
     @GenerateLink(rel = LINK_REL_GET_USER_BY_EMAIL)
     @RolesAllowed({"user", "system/admin", "system/manager"})
     @Produces(APPLICATION_JSON)
-    public UserDescriptor getByEmail(@ApiParam(value = "User email", required = true) @QueryParam("email") @Required String email,
+    public UserDescriptor getByAlias(@ApiParam(value = "User alias", required = true) @QueryParam("alias") @Required String alias,
                                      @Context SecurityContext context) throws NotFoundException, ServerException, ConflictException {
-        if (email == null) {
-            throw new ConflictException("Missed parameter email");
+        if (alias == null) {
+            throw new ConflictException("Missed parameter alias");
         }
-        final User user = userDao.getByAlias(email);
+        final User user = userDao.getByAlias(alias);
         return toDescriptor(user, context);
     }
 
@@ -369,6 +369,36 @@ public class UserService extends Service {
                          .withScopeId(
                                  scopeId);
 
+    }
+
+    /**
+     * Get user by name.
+     *
+     * @param name
+     *         user name
+     * @return found user
+     * @throws NotFoundException
+     *         when user with given name doesn't exist
+     * @throws ServerException
+     *         when some error occurred while retrieving user
+     */
+    @GET
+    @Path("/name/{name}")
+    @GenerateLink(rel = "get user by name")
+    @RolesAllowed({"user", "system/admin", "system/manager"})
+    @Produces(APPLICATION_JSON)
+    @ApiOperation(value = "Get user by name",
+                  notes = "Get user by its name in the system. Roles allowed: user, system/admin, system/manager.")
+    @ApiResponses({@ApiResponse(code = 200, message = "OK"),
+                   @ApiResponse(code = 404, message = "Not Found"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
+    public UserDescriptor getByName(@ApiParam(value = "User email")
+                                    @PathParam("name")
+                                    String name,
+                                    @Context
+                                    SecurityContext context) throws NotFoundException, ServerException {
+        final User user = userDao.getByName(name);
+        return toDescriptor(user, context);
     }
 
     private User fromEntity(NewUser newUser) throws ForbiddenException {
@@ -464,7 +494,7 @@ public class UserService extends Service {
             if (user.getEmail() != null) {
                 links.add(LinksHelper.createLink(HttpMethod.GET,
                                                  uriBuilder.clone()
-                                                           .path(getClass(), "getByEmail")
+                                                           .path(getClass(), "getByAlias")
                                                            .queryParam("email", user.getEmail())
                                                            .build()
                                                            .toString(),

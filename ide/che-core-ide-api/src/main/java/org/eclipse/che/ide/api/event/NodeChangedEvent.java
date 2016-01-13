@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,10 @@ import com.google.gwt.event.shared.GwtEvent;
  * Event that describes the fact that node has been changed.
  *
  * @author Artem Zatsarynnyi
+ * @deprecated tree performs renaming data objects in nodes by self,
+ * so this event is useless after new tree implementation
  */
+@Deprecated
 public class NodeChangedEvent extends GwtEvent<NodeChangedHandler> {
 
     /** Type class used to register this event. */

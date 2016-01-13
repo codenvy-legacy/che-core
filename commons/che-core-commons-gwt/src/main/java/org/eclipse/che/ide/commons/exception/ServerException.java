@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,26 +13,28 @@ package org.eclipse.che.ide.commons.exception;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import com.google.gwt.http.client.Response;
 
-/** @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a> */
+/**
+ * @author Vitaliy Gulyy
+ */
 
 @SuppressWarnings("serial")
 public class ServerException extends Exception {
 
     private Response response;
 
-    private String msg = "";
+    private String message = "";
 
     private boolean errorMessageProvided;
 
     public ServerException(Response response) {
         this.response = response;
-        this.msg = "";
         this.errorMessageProvided = checkErrorMessageProvided();
+        this.message = getMessageFromJSON(response.getText());
     }
 
-    public ServerException(Response response, String msg) {
+    public ServerException(Response response, String message) {
         this.response = response;
-        this.msg = msg;
+        this.message = message;
     }
 
     public int getHTTPStatus() {
@@ -45,11 +47,28 @@ public class ServerException extends Exception {
 
     @Override
     public String getMessage() {
-        if (response.getText().length() > 0)
-            return msg + response.getText();
+        if (message != null) {
+            return message;
+        }
+
+        if (response.getText().isEmpty())
+            return response.getStatusText();
         else
-            return msg + response.getStatusText();
+            return response.getText();
     }
+
+    @Override
+    public String toString() {
+        return getMessage();
+    }
+
+    private native String getMessageFromJSON(String json) /*-{
+        try {
+            return JSON.parse(json).message;
+        } catch (e) {
+            return null;
+        }
+    }-*/;
 
     public String getHeader(String key) {
         return response.getHeader(key);

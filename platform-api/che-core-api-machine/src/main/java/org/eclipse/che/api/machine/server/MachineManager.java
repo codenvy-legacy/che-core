@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -633,9 +633,10 @@ public class MachineManager {
         requiredNotNull(command, "Command is required");
         requiredNotNull(command.getCommandLine(), "Command line is required");
         requiredNotNull(command.getName(), "Command name is required");
+        requiredNotNull(command.getType(), "Command type is required");
 
         final Instance machine = getMachine(machineId);
-        final InstanceProcess instanceProcess = machine.createProcess(command.getName(), command.getCommandLine());
+        final InstanceProcess instanceProcess = machine.createProcess(command, outputChannel);
         final int pid = instanceProcess.getPid();
 
         final LineConsumer processLogger = getProcessLogger(machineId, pid, outputChannel);

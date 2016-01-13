@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.gwt.client;
 
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.api.machine.shared.dto.MachineProcessDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
@@ -71,16 +72,13 @@ public interface MachineServiceClient {
      *
      * @param machineId
      *         ID of the machine where command should be executed
-     * @param commandName
-     *         name of the command that should be executed in the machine
-     * @param commandLine
-     *         command line that should be executed in the machine
+     * @param command
+     *         the command that should be executed in the machine
      * @param outputChannel
      *         websocket chanel for execution logs
      */
     Promise<MachineProcessDto> executeCommand(@NotNull String machineId,
-                                              @NotNull String commandName,
-                                              @NotNull String commandLine,
+                                              @NotNull Command command,
                                               @Nullable String outputChannel);
 
     /**

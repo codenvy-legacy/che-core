@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -53,9 +53,9 @@ import org.eclipse.che.ide.ui.smartTree.NodeDescriptor;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.SortDir;
 import org.eclipse.che.ide.ui.smartTree.Tree;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeLoader;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
+import org.eclipse.che.ide.ui.smartTree.NodeLoader;
+import org.eclipse.che.ide.ui.smartTree.NodeStorage;
+import org.eclipse.che.ide.ui.smartTree.NodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.TreeStyles;
 import org.eclipse.che.ide.ui.smartTree.UniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
@@ -66,7 +66,7 @@ import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.GoIntoStateHandle
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
 import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer;
-import org.eclipse.che.ide.ui.smartTree.sorting.AlphabeticalFilter;
+import org.eclipse.che.ide.ui.smartTree.compare.NameComparator;
 import org.eclipse.che.ide.util.loging.Log;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.singletonList;
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
 import static org.eclipse.che.ide.project.node.SyntheticBasedNode.CUSTOM_BACKGROUND_FILL;
 import static org.eclipse.che.ide.ui.menu.PositionController.HorizontalAlign.MIDDLE;
@@ -112,7 +113,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     public static final String REFRESH_BUTTON_ID            = "refreshSelectedFolder";
     public static final String COLLAPSE_ALL_BUTTON_ID       = "collapseAllButton";
     public static final String PROJECT_TREE_WIDGET_ID       = "projectTree";
-    public static final String PROJECT_EXPLORER_ID          = "projectExplorer";
 
     @Inject
     public ProjectExplorerViewImpl(final Resources resources,
@@ -144,20 +144,20 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             }
         };
 
-        TreeNodeStorage nodeStorage = new TreeNodeStorage(nodeIdProvider);
+        NodeStorage nodeStorage = new NodeStorage(nodeIdProvider);
 
-        TreeNodeLoader nodeLoader = new TreeNodeLoader(nodeInterceptorSet);
+        NodeLoader nodeLoader = new NodeLoader(nodeInterceptorSet);
 
         tree = new Tree(nodeStorage, nodeLoader);
         tree.setContextMenuInvocationHandler(new Tree.ContextMenuInvocationHandler() {
             @Override
-            public void invokeContextMenuOn(int x, int y) {
+            public void onInvokeContextMenu(int x, int y) {
                 contextMenu.show(x, y);
             }
         });
         tree.getNodeStorage().add(Collections.<Node>emptyList());
 
-        StoreSortInfo alphabetical = new StoreSortInfo(new AlphabeticalFilter(), SortDir.ASC);
+        StoreSortInfo alphabetical = new StoreSortInfo(new NameComparator(), SortDir.ASC);
         tree.getNodeStorage().addSortInfo(foldersOnTopSort);
         tree.getNodeStorage().addSortInfo(alphabetical);
 
@@ -168,9 +168,11 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             }
         });
 
-        tree.getGoIntoMode().addGoIntoHandler(this);
+        if (tree.getGoInto() != null) {
+            tree.getGoInto().addGoIntoHandler(this);
+        }
 
-        tree.setNodePresentationRenderer(new ProjectExplorerRenderer(tree.getTreeStyles()));
+        tree.setPresentationRenderer(new ProjectExplorerRenderer(tree.getTreeStyles()));
         tree.ensureDebugId(PROJECT_TREE_WIDGET_ID);
         tree.setAutoSelect(true);
 
@@ -206,10 +208,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                                 final String sourcePath = editorAgentProvider.get().getActiveEditor().getEditorInput().getFile().getPath();
 
                                 //if we request scroll to file that may be outside of go into flow
-                                if (tree.getGoIntoMode().isActivated()
-                                    && tree.getGoIntoMode().getLastNode() instanceof HasStorablePath
-                                    && !sourcePath.startsWith(((HasStorablePath)tree.getGoIntoMode().getLastNode()).getStorablePath())) {
-                                    tree.getGoIntoMode().reset();
+                                if (tree.getGoInto().isActive()
+                                    && tree.getGoInto().getLastUsed() instanceof HasStorablePath
+                                    && !sourcePath.startsWith(((HasStorablePath)tree.getGoInto().getLastUsed()).getStorablePath())) {
+                                    tree.getGoInto().reset();
                                 }
 
                                 scrollFromSource(new HasStorablePath.StorablePath(sourcePath));
@@ -262,7 +264,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             throw new IllegalArgumentException("Children shouldn't be null");
         }
 
-        addNodes(parent, Collections.singletonList(child));
+        addNodes(parent, singletonList(child));
     }
 
     /** {@inheritDoc} */
@@ -358,17 +360,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             refreshButton.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
-                    List<Node> selectedNodes = tree.getSelectionModel().getSelectedNodes();
-
-                    for (Node node : selectedNodes) {
-                        if (node.isLeaf()) {
-                            continue;
-                        }
-
-                        if (tree.isExpanded(node)) {
-                            tree.getNodeLoader().loadChildren(node, true);
-                        }
-                    }
+                    delegate.onRefreshProjectsRequested();
                 }
             });
             refreshButton.ensureDebugId(REFRESH_BUTTON_ID);
@@ -376,8 +368,9 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             Tooltip.create((elemental.dom.Element)refreshButton.getElement(),
                            BOTTOM,
                            MIDDLE,
-                           "Refresh selected folder");
+                           "Refresh Project Tree");
             addToolButton(refreshButton);
+            refreshButton.setVisible(true);
         }
 
         if (collapseAllButton == null) {
@@ -385,8 +378,8 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             collapseAllButton.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
-                    if (tree.getGoIntoMode().isActivated()) {
-                        Node lastNode = tree.getGoIntoMode().getLastNode();
+                    if (tree.getGoInto().isActive()) {
+                        Node lastNode = tree.getGoInto().getLastUsed();
                         tree.setExpanded(lastNode, false, true);
                         return;
                     }
@@ -402,15 +395,10 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             addToolButton(collapseAllButton);
         }
 
-        refreshButton.setVisible(true);
         collapseAllButton.setVisible(true);
     }
 
     private void hideToolbar() {
-        if (refreshButton != null) {
-            refreshButton.setVisible(false);
-        }
-
         if (collapseAllButton != null) {
             collapseAllButton.setVisible(false);
         }
@@ -425,18 +413,14 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     /** {@inheritDoc} */
     @Override
     public void reloadChildren(Node parent, boolean deep) {
-        TreeNodeLoader loader = tree.getNodeLoader();
-
-        if (parent != null) {
-            if (tree.isExpanded(parent) && !loader.loadChildren(parent, deep)) {
-                Log.warn(getClass(), "Node has been already requested for loading children");
+        //iterate on root nodes and call tree widget to reload their children
+        for (Node node : parent == null ? tree.getRootNodes() : singletonList(parent)) {
+            if (node.isLeaf()) { //just preventive actions
+                continue;
             }
-        } else {
-            List<Node> rootNodes = tree.getRootNodes();
-            for (Node root : rootNodes) {
-                if (tree.isExpanded(root) && !loader.loadChildren(root, deep)) {
-                    Log.warn(getClass(), "Node has been already requested for loading children");
-                }
+
+            if (tree.isExpanded(node)) {
+                tree.getNodeLoader().loadChildren(node, deep);
             }
         }
     }
@@ -449,7 +433,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             List<Node> allChildren = tree.getNodeStorage().getAllChildren(rootNode);
             for (Node child : allChildren) {
                 if (child.getClass().equals(type)) {
-                    NodeDescriptor nodeDescriptor = tree.findNode(child);
+                    NodeDescriptor nodeDescriptor = tree.getNodeDescriptor(child);
                     if (nodeDescriptor.isLoaded()) {
                         tree.getNodeLoader().loadChildren(child);
                     }
@@ -555,27 +539,31 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     /** {@inheritDoc} */
     @Override
     public boolean setGoIntoModeOn(Node node) {
-        return tree.getGoIntoMode().goInto(node);
+        return tree.getGoInto().activate(node);
     }
 
     /** {@inheritDoc} */
     @Override
     public HandlerRegistration addGoIntoStateHandler(GoIntoStateHandler handler) {
-        return tree.getGoIntoMode().addGoIntoHandler(handler);
+        if (tree.getGoInto() != null) {
+            return tree.getGoInto().addGoIntoHandler(handler);
+        }
+
+        return null;
     }
 
     /** {@inheritDoc} */
     @Override
     public void resetGoIntoMode() {
-        if (tree.getGoIntoMode().isActivated()) {
-            tree.getGoIntoMode().reset();
+        if (tree.getGoInto().isActive()) {
+            tree.getGoInto().reset();
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean isGoIntoActivated() {
-        return tree.getGoIntoMode().isActivated();
+        return tree.getGoInto().isActive();
     }
 
     /** {@inheritDoc} */
@@ -600,7 +588,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
         goBackButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                tree.getGoIntoMode().reset();
+                tree.getGoInto().reset();
             }
         });
         goBackButton.ensureDebugId(GO_BACK_BUTTON_ID);
@@ -726,6 +714,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     /** {@inheritDoc} */
     @Override
     public boolean isLoaded(Node node) {
-        return tree.findNode(node) != null && tree.findNode(node).isLoaded();
+        return tree.getNodeDescriptor(node) != null && tree.getNodeDescriptor(node).isLoaded();
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,6 +29,7 @@ import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.ExpandNodeAction;
+import org.eclipse.che.ide.actions.ExportConfigAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
@@ -194,6 +195,9 @@ public class StandardComponentInitializer {
 
     @Inject
     private ExpandNodeAction expandNodeAction;
+
+    @Inject
+    private ExportConfigAction exportConfigAction;
 
     @Inject
     private OpenSelectedFileAction openSelectedFileAction;
@@ -387,46 +391,10 @@ public class StandardComponentInitializer {
         actionManager.registerAction("downloadAsZipAction", downloadAsZipAction);
         workspaceGroup.add(downloadAsZipAction);
 
-        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
-        workspaceGroup.add(showHiddenFilesAction);
-
         workspaceGroup.addSeparator();
 
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Export...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Import...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Clone...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
+        actionManager.registerAction("exportConfig", exportConfigAction);
+        workspaceGroup.add(exportConfigAction);
 
         // Project (New Menu)
         DefaultActionGroup projectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT);
@@ -461,6 +429,9 @@ public class StandardComponentInitializer {
         projectGroup.add(uploadFolderAction);
 
         projectGroup.add(downloadAsZipAction);
+
+        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
+        projectGroup.add(showHiddenFilesAction);
 
         projectGroup.addSeparator();
 

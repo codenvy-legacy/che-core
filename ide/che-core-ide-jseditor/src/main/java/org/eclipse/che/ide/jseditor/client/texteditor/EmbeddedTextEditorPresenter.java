@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,7 +22,6 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
@@ -70,6 +69,7 @@ import org.eclipse.che.ide.jseditor.client.reconciler.ReconcilerWithAutoSave;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextPosition;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
+import org.eclipse.che.ide.jseditor.client.texteditor.EditorWidget.WidgetInitializedCallback;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPartView.Delegate;
 import org.eclipse.che.ide.texteditor.selection.CursorModelWithHandler;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -104,7 +104,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     /** File type used when we have no idea of the actual content type. */
     public final static String DEFAULT_CONTENT_TYPE = "text/plain";
 
-    private final Resources              resources;
     private final WorkspaceAgent         workspaceAgent;
     private final EditorWidgetFactory<T> editorWidgetFactory;
     private final EditorModule<T>        editorModule;
@@ -150,7 +149,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                                        final EventBus eventBus,
                                        final FileTypeIdentifier fileTypeIdentifier,
                                        final QuickAssistantFactory quickAssistantFactory,
-                                       final Resources resources,
                                        final WorkspaceAgent workspaceAgent) {
 
         this.breakpointManager = breakpointManager;
@@ -165,7 +163,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         this.fileTypeIdentifier = fileTypeIdentifier;
         this.generalEventBus = eventBus;
         this.quickAssistantFactory = quickAssistantFactory;
-        this.resources = resources;
         this.workspaceAgent = workspaceAgent;
 
         this.editorView.setDelegate(this);
@@ -180,75 +177,35 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                               this.quickAssistantFactory,
                               this).init();
 
-        // Postpone setting a document to give the time for editor (TextEditorViewImpl) to fully construct itself.
-        // Otherwise, the editor may not be ready to render the document.
-        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+        if (editorModule.isError()) {
+            displayErrorPanel(constant.editorInitErrorMessage());
+            return;
+        }
+        final boolean moduleReady = editorModule.isReady();
+        EditorInitCallback<T> dualCallback = new EditorInitCallback<T>(moduleReady, loaderFactory, constant) {
             @Override
-            public void execute() {
-                if (editorModule.isError()) {
-                    displayErrorPanel(constant.editorInitErrorMessage());
-                    return;
-                }
-                final boolean moduleReady = editorModule.isReady();
-                EditorInitCallback<T> dualCallback = new EditorInitCallback<T>(moduleReady, loaderFactory, constant) {
-                    @Override
-                    public void onReady(final String content) {
-                        createEditor(content);
-                    }
-
-                    @Override
-                    public void onError() {
-                        displayErrorPanel(constant.editorInitErrorMessage());
-                    }
-
-                    @Override
-                    public void onFileError() {
-                        displayErrorPanel(constant.editorFileErrorMessage());
-                    }
-                };
-                documentStorage.getDocument(input.getFile(), dualCallback);
-                if (!moduleReady) {
-                    editorModule.waitReady(dualCallback);
-                }
+            public void onReady(final String content) {
+                createEditor(content);
             }
-        });
-    }
+
+            @Override
+            public void onError() {
+                displayErrorPanel(constant.editorInitErrorMessage());
+            }
+
+            @Override
+            public void onFileError() {
+                displayErrorPanel(constant.editorFileErrorMessage());
+            }
+        };
+        documentStorage.getDocument(input.getFile(), dualCallback);
+        if (!moduleReady) {
+            editorModule.waitReady(dualCallback);
+        }    }
 
     private void createEditor(final String content) {
         this.fileTypes = detectFileType(getEditorInput().getFile());
-        this.editorWidget = editorWidgetFactory.createEditorWidget(fileTypes);
-
-        // finish editor initialization
-        this.editorView.setEditorWidget(this.editorWidget);
-
-        this.document = this.editorWidget.getDocument();
-        this.document.setFile(input.getFile());
-        this.cursorModel = new EmbeddedEditorCursorModel(this.document);
-
-        this.editorWidget.setTabSize(this.configuration.getTabWidth());
-
-        // initialize info panel
-        this.editorView.initInfoPanel(this.editorWidget.getMode(), this.editorWidget.getEditorType(),
-                                      this.editorWidget.getKeymap(), this.document.getLineCount(),
-                                      this.configuration.getTabWidth());
-
-        // handle delayed focus
-        // should also check if I am visible, but how ?
-        if (delayedFocus) {
-            this.editorWidget.setFocus();
-            this.delayedFocus = false;
-        }
-
-        // delayed keybindings creation ?
-        switchHasKeybinding();
-
-        this.editorWidget.setValue(content);
-        this.generalEventBus.fireEvent(new DocumentReadyEvent(this.getEditorHandle(), this.document));
-
-        firePropertyChange(PROP_INPUT);
-
-        setupEventHandlers();
-        setupFileContentUpdateHandler();
+        editorWidgetFactory.createEditorWidget(fileTypes, new EditorWidgetInitializedCallback(content));
     }
 
     private void setupEventHandlers() {
@@ -771,6 +728,52 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         ReconcilerWithAutoSave autoSave = getAutoSave();
         if (autoSave != null) {
             autoSave.disableAutoSave();
+        }
+    }
+
+    private class EditorWidgetInitializedCallback implements WidgetInitializedCallback {
+        private final String content;
+
+        private EditorWidgetInitializedCallback(String content) {
+            this.content = content;
+        }
+
+        @Override
+        public void initialized(EditorWidget widget) {
+            editorWidget = widget;
+            // finish editor initialization
+            editorView.setEditorWidget(editorWidget);
+
+            document = editorWidget.getDocument();
+            document.setFile(input.getFile());
+            cursorModel = new EmbeddedEditorCursorModel(document);
+
+            editorWidget.setTabSize(configuration.getTabWidth());
+
+            // initialize info panel
+            editorView.initInfoPanel(editorWidget.getMode(),
+                                     editorWidget.getEditorType(),
+                                     editorWidget.getKeymap(),
+                                     document.getLineCount(),
+                                     configuration.getTabWidth());
+
+            // handle delayed focus
+            // should also check if I am visible, but how ?
+            if (delayedFocus) {
+                editorWidget.setFocus();
+                delayedFocus = false;
+            }
+
+            // delayed keybindings creation ?
+            switchHasKeybinding();
+
+            editorWidget.setValue(content);
+            generalEventBus.fireEvent(new DocumentReadyEvent(getEditorHandle(), document));
+
+            firePropertyChange(PROP_INPUT);
+
+            setupEventHandlers();
+            setupFileContentUpdateHandler();
         }
     }
 }

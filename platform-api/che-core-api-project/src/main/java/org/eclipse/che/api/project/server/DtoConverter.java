@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,15 +14,19 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.SourceStorage;
-import org.eclipse.che.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.Attribute;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
-import org.eclipse.che.api.core.model.workspace.ProjectProblem;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
-import org.eclipse.che.api.project.shared.dto.*;
+import org.eclipse.che.api.project.shared.dto.AttributeDto;
+import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
+import org.eclipse.che.api.project.shared.dto.ValueDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectProblemDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 
@@ -33,9 +37,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static javax.ws.rs.HttpMethod.*;
+import static javax.ws.rs.HttpMethod.DELETE;
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.eclipse.che.api.project.server.Constants.*;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_CHILDREN;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_DELETE;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_EXPORT_ZIP;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_GET_CONTENT;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_MODULES;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_TREE;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_UPDATE_CONTENT;
+import static org.eclipse.che.api.project.server.Constants.LINK_REL_UPDATE_PROJECT;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
@@ -159,10 +172,9 @@ public class DtoConverter {
 
             projectConfigDto.withType(config.getType());
             projectConfigDto.withSource(toSourceDto(config.getSource()));
-            projectConfigDto.setContentRoot(project.getContentRoot());
         } catch (ServerException | ValueStorageException | ProjectTypeConstraintException exception) {
             projectConfigDto.withType(BaseProjectType.ID).withType("blank");
-            ProjectProblem projectProblem = newDto(ProjectProblem.class).withCode(1).withMessage(exception.getMessage());
+            ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(1).withMessage(exception.getMessage());
             projectConfigDto.getProblems().add(projectProblem);
         }
 
@@ -187,8 +199,6 @@ public class DtoConverter {
                                              .withDescription(moduleConfig.getDescription())
                                              .withContentRoot(moduleConfig.getContentRoot())
                                              .withSource(toSourceDto(moduleConfig.getSource()))
-                                             .withLinks(moduleConfig.getLinks())
-                                             .withProblems(moduleConfig.getProblems())
                                              .withMixins(moduleConfig.getMixins());
     }
 

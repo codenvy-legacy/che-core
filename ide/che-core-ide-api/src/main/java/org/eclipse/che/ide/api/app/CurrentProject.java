@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@ package org.eclipse.che.ide.api.app;
 
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
-import org.eclipse.che.ide.api.project.tree.TreeStructure;
 
 import java.util.List;
 
@@ -27,8 +26,6 @@ public class CurrentProject {
 
     private ProjectConfigDto rootProject;
     private ProjectConfigDto configDto;
-    private TreeStructure    tree;
-
 
     /**
      * @return ProjectDescriptor of opened project
@@ -79,15 +76,4 @@ public class CurrentProject {
     public List<String> getAttributeValues(String attributeName) {
         return configDto.getAttributes().get(attributeName);
     }
-
-    /** Returns project's tree. */
-    public TreeStructure getCurrentTree() {
-        return tree;
-    }
-
-    public void setCurrentTree(TreeStructure tree) {
-        this.tree = tree;
-    }
-
-
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.eclipse.che.api.machine.server;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.machine.Channels;
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.machine.Limits;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.MachineMetadata;
@@ -218,7 +219,8 @@ public class MachineManagerTest {
         }
 
         @Override
-        public InstanceProcess createProcess(String commandName, String commandLine) throws MachineException {
+        public InstanceProcess createProcess(Command command, String outputChannel)
+                throws MachineException {
             return null;
         }
 

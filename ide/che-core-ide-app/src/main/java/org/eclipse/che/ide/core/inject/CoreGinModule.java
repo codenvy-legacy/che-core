@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,6 +42,8 @@ import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTemplateServiceClientImpl;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectTypeServiceClientImpl;
+import org.eclipse.che.api.ssh.gwt.client.SshServiceClient;
+import org.eclipse.che.api.ssh.gwt.client.SshServiceClientImpl;
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClientImpl;
 import org.eclipse.che.api.user.gwt.client.UserServiceClient;
@@ -97,6 +99,7 @@ import org.eclipse.che.ide.bootstrap.FactoryWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
 import org.eclipse.che.ide.bootstrap.StandartComponent;
+import org.eclipse.che.ide.bootstrap.StartUpActionsProcessor;
 import org.eclipse.che.ide.bootstrap.StartupComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
 import org.eclipse.che.ide.core.Component;
@@ -283,6 +286,7 @@ public class CoreGinModule extends AbstractGinModule {
         install(new GinFactoryModuleBuilder().implement(RecipeWidget.class, RecipeWidgetImpl.class)
                                              .implement(WorkspaceWidget.class, WorkspaceWidgetImpl.class)
                                              .build(WorkspaceWidgetFactory.class));
+        bind(StartUpActionsProcessor.class).in(Singleton.class);
     }
 
     private void configureComponents() {
@@ -322,6 +326,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(FactoryServiceClient.class).to(FactoryServiceClientImpl.class).in(Singleton.class);
         bind(ProjectServiceClient.class).to(ProjectServiceClientImpl.class).in(Singleton.class);
         bind(WorkspaceServiceClient.class).to(WorkspaceServiceClientImpl.class).in(Singleton.class);
+        bind(SshServiceClient.class).to(SshServiceClientImpl.class).in(Singleton.class);
         bind(VfsServiceClient.class).to(VfsServiceClientImpl.class).in(Singleton.class);
         bind(ProjectImportersServiceClient.class).to(ProjectImportersServiceClientImpl.class).in(Singleton.class);
         bind(ProjectTypeServiceClient.class).to(ProjectTypeServiceClientImpl.class).in(Singleton.class);

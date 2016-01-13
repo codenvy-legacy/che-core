@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
@@ -105,16 +106,16 @@ public class FactoryBaseValidatorTest {
     @Test
     public void shouldBeAbleToValidateFactoryUrlObject() throws ApiException {
         factory = prepareFactoryWithGivenStorage("git", VALID_REPOSITORY_URL);
-        validator.validateSource(factory);
-        validator.validateProjectNames(factory);
+        validator.validateProjects(factory);
+        validator.validateProjects(factory);
         validator.validateAccountId(factory);
     }
 
     @Test
     public void shouldBeAbleToValidateFactoryUrlObjectIfStorageIsESBWSO2() throws ApiException {
         factory = prepareFactoryWithGivenStorage("esbwso2", VALID_REPOSITORY_URL);
-        validator.validateSource(factory);
-        validator.validateProjectNames(factory);
+        validator.validateProjects(factory);
+        validator.validateProjects(factory);
         validator.validateAccountId(factory);
     }
 
@@ -128,7 +129,7 @@ public class FactoryBaseValidatorTest {
         factory = prepareFactoryWithGivenStorage("git", "http://codenvy.com/git/04%2");
 
         // when, then
-        validator.validateSource(factory);
+        validator.validateProjects(factory);
     }
 
 
@@ -138,7 +139,7 @@ public class FactoryBaseValidatorTest {
         factory = prepareFactoryWithGivenStorage("git", "ssh://codenvy@review.gerrithub.io:29418/codenvy/exampleProject");
 
         // when, then
-        validator.validateSource(factory);
+        validator.validateProjects(factory);
     }
 
     @Test
@@ -147,12 +148,12 @@ public class FactoryBaseValidatorTest {
         factory = prepareFactoryWithGivenStorage("git","https://github.com/codenvy/example.git");
 
         // when, then
-        validator.validateSource(factory);
+        validator.validateProjects(factory);
     }
 
     @Test(dataProvider = "badAdvancedFactoryUrlProvider", expectedExceptions = ApiException.class)
     public void shouldNotValidateIfStorageOrStorageLocationIsInvalid(Factory factory) throws ApiException {
-        validator.validateSource(factory);
+        validator.validateProjects(factory);
     }
 
     @DataProvider(name = "badAdvancedFactoryUrlProvider")
@@ -168,27 +169,29 @@ public class FactoryBaseValidatorTest {
     }
 
     @Test(dataProvider = "invalidProjectNamesProvider", expectedExceptions = ApiException.class,
-            expectedExceptionsMessageRegExp = "Project name must contain only Latin letters, digits or these following special characters" +
-                                              " -._.")
+          expectedExceptionsMessageRegExp = "Project name must contain only Latin letters, " +
+                                            "digits or these following special characters -._.")
     public void shouldThrowFactoryUrlExceptionIfProjectNameInvalid(String projectName) throws Exception {
         // given
-        factory.withWorkspace(newDto(WorkspaceConfigDto.class)
-                                      .withProjects(Collections.singletonList(newDto(ProjectConfigDto.class)
-                                                                                      .withType("type")
-                                                                                      .withName(projectName))));
+        factory.withWorkspace(newDto(WorkspaceConfigDto.class).withProjects(Collections.singletonList(newDto(ProjectConfigDto.class)
+                                                                                                              .withType("type")
+                                                                                                              .withName(projectName))));
         // when, then
-        validator.validateProjectNames(factory);
+        validator.validateProjects(factory);
     }
 
     @Test(dataProvider = "validProjectNamesProvider")
     public void shouldBeAbleToValidateValidProjectName(String projectName) throws Exception {
         // given
-        factory.withWorkspace(newDto(WorkspaceConfigDto.class)
-                                      .withProjects(Collections.singletonList(newDto(ProjectConfigDto.class)
-                                                                                      .withType("type")
-                                                                                      .withName(projectName))));
+        prepareFactoryWithGivenStorage("git", VALID_REPOSITORY_URL);
+        factory.withWorkspace(newDto(WorkspaceConfigDto.class).withProjects(
+                Collections.singletonList(newDto(ProjectConfigDto.class).withType("type")
+                                                                        .withName(projectName)
+                                                                        .withSource(newDto(SourceStorageDto.class)
+                                                                                            .withType("git")
+                                                                                            .withLocation(VALID_REPOSITORY_URL)))));
         // when, then
-        validator.validateProjectNames(factory);
+        validator.validateProjects(factory);
     }
 
     @DataProvider(name = "validProjectNamesProvider")
@@ -250,7 +253,7 @@ public class FactoryBaseValidatorTest {
     }
 
     @Test
-    public void shouldValidateIfCurrentTimeBeforeSinceUntil() throws ConflictException {
+    public void shouldValidateIfCurrentTimeBeforeSinceUntil() throws Exception {
         Long currentTime = new Date().getTime();
 
         factory.withPolicies(newDto(Policies.class)
@@ -332,7 +335,7 @@ public class FactoryBaseValidatorTest {
     }
 
 
-    @Test(expectedExceptions = ConflictException.class)
+    @Test(expectedExceptions = BadRequestException.class)
     public void shouldNotValidateOpenfileActionIfInWrongSectionOnAppClosed() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
@@ -346,7 +349,7 @@ public class FactoryBaseValidatorTest {
         validator.validateProjectActions(factoryWithAccountId);
     }
 
-    @Test(expectedExceptions = ConflictException.class)
+    @Test(expectedExceptions = BadRequestException.class)
     public void shouldNotValidateFindReplaceActionIfInWrongSectionOnAppLoaded() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
@@ -360,7 +363,7 @@ public class FactoryBaseValidatorTest {
         validator.validateProjectActions(factoryWithAccountId);
     }
 
-    @Test(expectedExceptions = ConflictException.class)
+    @Test(expectedExceptions = BadRequestException.class)
     public void shouldNotValidateIfOpenfileActionInsufficientParams() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
@@ -374,7 +377,7 @@ public class FactoryBaseValidatorTest {
         validator.validateProjectActions(factoryWithAccountId);
     }
     
-    @Test(expectedExceptions = ConflictException.class)
+    @Test(expectedExceptions = BadRequestException.class)
     public void shouldNotValidateIfrunCommandActionInsufficientParams() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
@@ -388,7 +391,7 @@ public class FactoryBaseValidatorTest {
         validator.validateProjectActions(factoryWithAccountId);
     }
 
-    @Test(expectedExceptions = ConflictException.class)
+    @Test(expectedExceptions = BadRequestException.class)
     public void shouldNotValidateIfOpenWelcomePageActionInsufficientParams() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);
@@ -402,7 +405,7 @@ public class FactoryBaseValidatorTest {
         validator.validateProjectActions(factoryWithAccountId);
     }
 
-    @Test(expectedExceptions = ConflictException.class)
+    @Test(expectedExceptions = BadRequestException.class)
     public void shouldNotValidateIfFindReplaceActionInsufficientParams() throws Exception {
         //given
         validator = new TesterFactoryBaseValidator(accountDao, preferenceDao);

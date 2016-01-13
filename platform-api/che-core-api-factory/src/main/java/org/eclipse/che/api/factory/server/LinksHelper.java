@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,11 +36,12 @@ import static java.util.stream.Collectors.toList;
 @Singleton
 public class LinksHelper {
 
-    private static final String IMAGE_REL_ATT            = "image";
-    private static final String RETRIEVE_FACTORY_REL_ATT = "self";
-    private static final String SNIPPET_REL_ATT          = "snippet/";
-    private static final String CREATE_WORKSPACE_REL_ATT = "create-workspace";
-    private static final String ACCEPTED_REL_ATT         = "accepted";
+    private static final String IMAGE_REL_ATT                    = "image";
+    private static final String RETRIEVE_FACTORY_REL_ATT         = "self";
+    private static final String SNIPPET_REL_ATT                  = "snippet/";
+    private static final String FACTORY_ACCEPTANCE_REL_ATT       = "accept";
+    private static final String NAMED_FACTORY_ACCEPTANCE_REL_ATT = "accept-named";
+    private static final String ACCEPTED_REL_ATT                 = "accepted";
 
     private static List<String> snippetTypes = Collections.unmodifiableList(Arrays.asList("markdown", "url", "html", "iframe"));
 
@@ -55,8 +56,8 @@ public class LinksHelper {
      * @throws UnsupportedEncodingException
      *         occurs when impossible to encode URL
      */
-    public List<Link> createLinks(Factory factory, Set<FactoryImage> images, UriInfo uriInfo) throws UnsupportedEncodingException {
-        final List<Link> links = new LinkedList<>(createLinks(factory, uriInfo));
+    public List<Link> createLinks(Factory factory, Set<FactoryImage> images, UriInfo uriInfo, String userName) throws UnsupportedEncodingException {
+        final List<Link> links = new LinkedList<>(createLinks(factory, uriInfo, userName));
         final UriBuilder baseUriBuilder = uriInfo != null ? UriBuilder.fromUri(uriInfo.getBaseUri()) : UriBuilder.fromUri("/");
 
         // add path to factory service
@@ -87,7 +88,7 @@ public class LinksHelper {
      * @throws UnsupportedEncodingException
      *         occurs when impossible to encode URL
      */
-    public List<Link> createLinks(Factory factory, UriInfo uriInfo) throws UnsupportedEncodingException {
+    public List<Link> createLinks(Factory factory, UriInfo uriInfo, String userName) throws UnsupportedEncodingException {
         final List<Link> links = new LinkedList<>();
         final UriBuilder baseUriBuilder = uriInfo != null ? UriBuilder.fromUri(uriInfo.getBaseUri()) : UriBuilder.fromUri("/");
 
@@ -120,7 +121,7 @@ public class LinksHelper {
 
         // uri to accept factory
         final Link createWorkspace = createLink(HttpMethod.GET,
-                                                CREATE_WORKSPACE_REL_ATT,
+                                                FACTORY_ACCEPTANCE_REL_ATT,
                                                 null,
                                                 MediaType.TEXT_HTML,
                                                 baseUriBuilder.clone()
@@ -129,17 +130,20 @@ public class LinksHelper {
                                                               .build()
                                                               .toString());
         links.add(createWorkspace);
-        
-        if (!Strings.isNullOrEmpty(factory.getName())) {
+
+        if (!Strings.isNullOrEmpty(factory.getName()) && !Strings.isNullOrEmpty(userName)) {
             // uri to accept factory by name and creator
-            final Link createWorkspacebyName =
-                                               createLink(HttpMethod.GET, CREATE_WORKSPACE_REL_ATT, null, MediaType.TEXT_HTML,
-                                                          baseUriBuilder.clone()
-                                                                        .replacePath("f")
-                                                                        .queryParam("name", factory.getName())
-                                                                        .queryParam("user", factory.getCreator().getUserId()).build()
-                                                                        .toString());
-            links.add(createWorkspacebyName);
+            final Link createWorkspaceFromNamedFactory = createLink(HttpMethod.GET,
+                                                                    NAMED_FACTORY_ACCEPTANCE_REL_ATT,
+                                                                    null,
+                                                                    MediaType.TEXT_HTML,
+                                                                    baseUriBuilder.clone()
+                                                                                  .replacePath("f")
+                                                                                  .queryParam("name", factory.getName())
+                                                                                  .queryParam("user", userName)
+                                                                                  .build()
+                                                                                  .toString());
+            links.add(createWorkspaceFromNamedFactory);
         }
 
         // links of analytics

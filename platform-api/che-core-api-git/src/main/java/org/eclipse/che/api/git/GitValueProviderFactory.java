@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,11 @@
 package org.eclipse.che.api.git;
 
 import com.google.inject.Inject;
+
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.git.shared.Remote;
+import org.eclipse.che.api.git.shared.RemoteListRequest;
+import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.project.server.FolderEntry;
 import org.eclipse.che.api.project.server.InvalidValueException;
 import org.eclipse.che.api.project.server.ValueProvider;
@@ -27,9 +31,15 @@ import org.eclipse.che.vfs.impl.fs.LocalPathResolver;
 import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 
 import javax.inject.Singleton;
-import java.util.Arrays;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.eclipse.che.api.git.GitProjectType.VCS_PROVIDER_NAME;
+import static org.eclipse.che.api.git.GitProjectType.GIT_CURRENT_BRANCH_NAME;
+import static org.eclipse.che.api.git.GitProjectType.GIT_REPOSITORY_REMOTES;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * @author Roman Nikitenko
@@ -52,9 +62,21 @@ public class GitValueProviderFactory implements ValueProviderFactory {
             public List<String> getValues(String attributeName) throws ValueStorageException {
                 try (GitConnection gitConnection =
                              gitConnectionFactory.getConnection(resolveLocalPathByPath(folder.getPath(), folder.getWorkspace()))) {
-
                     //check whether the folder belongs to git repository
-                    return gitConnection.isInsideWorkTree() ? Arrays.asList("git") : Collections.EMPTY_LIST;
+                    if (!gitConnection.isInsideWorkTree()) {
+                        return Collections.EMPTY_LIST;
+                    }
+                    switch (attributeName) {
+                        case VCS_PROVIDER_NAME:
+                            return Collections.singletonList("git");
+                        case GIT_CURRENT_BRANCH_NAME:
+                            return Collections.singletonList(gitConnection.status(StatusFormat.LONG).getBranchName());
+                        case GIT_REPOSITORY_REMOTES:
+                            return gitConnection.remoteList(newDto(RemoteListRequest.class)).stream().map(Remote::getUrl)
+                                                .collect(Collectors.toList());
+                        default:
+                            return Collections.EMPTY_LIST;
+                    }
                 } catch (ApiException e) {
                     throw new ValueStorageException(e.getMessage());
                 }

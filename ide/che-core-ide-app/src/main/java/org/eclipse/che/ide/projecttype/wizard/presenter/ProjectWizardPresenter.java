@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,17 +55,17 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
                                                CategoriesPagePresenter.ProjectTypeSelectionListener,
                                                CategoriesPagePresenter.ProjectTemplateSelectionListener {
 
-    private final ProjectWizardView                   view;
-    private final DtoFactory                          dtoFactory;
-    private final DialogFactory                       dialogFactory;
-    private final ProjectWizardFactory                projectWizardFactory;
-    private final ProjectWizardRegistry               wizardRegistry;
-    private final Provider<CategoriesPagePresenter>   categoriesPageProvider;
+    private final ProjectWizardView                  view;
+    private final DtoFactory                         dtoFactory;
+    private final DialogFactory                      dialogFactory;
+    private final ProjectWizardFactory               projectWizardFactory;
+    private final ProjectWizardRegistry              wizardRegistry;
+    private final Provider<CategoriesPagePresenter>  categoriesPageProvider;
     private final Map<ProjectTypeImpl, ProjectWizard> wizardsCache;
-    private       CategoriesPagePresenter             categoriesPage;
-    private       ProjectWizard                       wizard;
-    private       ProjectWizard                       importWizard;
-    private       WizardPage                          currentPage;
+    private       CategoriesPagePresenter            categoriesPage;
+    private       ProjectWizard                      wizard;
+    private       ProjectWizard                      importWizard;
+    private       WizardPage                         currentPage;
 
     private ProjectWizardMode wizardMode;
     /** Contains project's path when project wizard opened for updating project. */
@@ -140,18 +140,19 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         showDialog(null);
     }
 
+    /** Open the project wizard with given mode. */
+    public void show(@NotNull ProjectConfigDto project, ProjectWizardMode wizardMode) {
+        resetState();
+        this.wizardMode = wizardMode;
+        showDialog(project);
+    }
+
     /** Open the project wizard for updating the given {@code project}. */
     public void show(@NotNull ProjectConfigDto project) {
         resetState();
         wizardMode = UPDATE;
         projectPath = project.getPath();
-        final ProjectConfigDto dataObject = dtoFactory.createDto(ProjectConfigDto.class)
-                                                      .withType(project.getType())
-                                                      .withName(project.getName())
-                                                      .withDescription(project.getDescription())
-                                                      .withAttributes(new HashMap<>(project.getAttributes()));
-        dataObject.setMixins(project.getMixins());
-        showDialog(dataObject);
+        showDialog(project);
     }
 
     /** Open the project wizard for creating module from the given {@code folder}. */
@@ -187,7 +188,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     @Override
     public void onProjectTypeSelected(ProjectTypeImpl projectType) {
         final ProjectConfigDto prevData = wizard.getDataObject();
-        wizard = getWizardForProjectType(projectType);
+        wizard = getWizardForProjectType(projectType, prevData);
         wizard.navigateToFirst();
         final ProjectConfigDto newProject = wizard.getDataObject();
 
@@ -201,7 +202,6 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
         // set dataObject's values from projectType
         newProject.setType(projectType.getId());
-//        newProject.setRecipe(projectType.getDefaultRecipe());
     }
 
     @Override
@@ -221,7 +221,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Creates or returns project wizard for the specified projectType with the given dataObject. */
-    private ProjectWizard getWizardForProjectType(@NotNull ProjectTypeImpl projectType) {
+    private ProjectWizard getWizardForProjectType(@NotNull ProjectTypeImpl projectType, @NotNull ProjectConfigDto configDto) {
         if (wizardsCache.containsKey(projectType)) {
             return wizardsCache.get(projectType);
         }
@@ -233,7 +233,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
         }
 
         List<Provider<? extends WizardPage<ProjectConfigDto>>> pageProviders = wizardRegistrar.getWizardPages();
-        final ProjectWizard projectWizard = createDefaultWizard(null, wizardMode);
+        final ProjectWizard projectWizard = createDefaultWizard(configDto, wizardMode);
         for (Provider<? extends WizardPage<ProjectConfigDto>> provider : pageProviders) {
             projectWizard.addPage(provider.get(), 1, false);
         }

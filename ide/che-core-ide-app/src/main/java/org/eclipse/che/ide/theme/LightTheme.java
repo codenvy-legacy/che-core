@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -50,6 +50,11 @@ public class LightTheme implements Theme {
     @Override
     public String selectionBackground() {
         return "#C3DEFF";
+    }
+
+    @Override
+    public String inactiveSelectionBackground() {
+        return "rgba(73,143,225,0.40)";
     }
 
     @Override
@@ -329,7 +334,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getEditorCurrentLineColor() {
-        return "#E8F2FF";
+        return "rgba(215, 215, 215, 0.45)";
     }
 
     @Override
@@ -740,6 +745,16 @@ public class LightTheme implements Theme {
     @Override
     public String minimizeIconHoverColor() {
         return "#333333";
+    }
+
+    @Override
+    public String processTreeBackgroundColor() {
+        return "white";
+    }
+
+    @Override
+    public String outputBackgroundColor() {
+        return "white";
     }
 
     @Override
@@ -1285,5 +1300,40 @@ public class LightTheme implements Theme {
     @Override
     public String loaderLabelColor() {
         return "#6c5455";
+    }
+
+    @Override
+    public String outputBoxShadow() {
+        return "inset 0px 37px 8px -35px rgba(0,0,0,0.25)";
+    }
+
+    @Override
+    public String toolButtonSvgFill() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String toolButtonBorder() {
+        return "1px solid #8E8E8E";
+    }
+
+    @Override
+    public String toolButtonHoverBackgroundColor() {
+        return "#BDBEC0";
+    }
+
+    @Override
+    public String toolButtonActiveBackgroundColor() {
+        return "#AFAFB0";
+    }
+
+    @Override
+    public String toolButtonHoverBoxShadow() {
+        return "none";
+    }
+
+    @Override
+    public String toolButtonActiveBoxShadow() {
+        return "inset 1px 1px 0 0 #6F6E6E";
     }
 }

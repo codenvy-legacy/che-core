@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.eclipse.che.api.machine.server.spi;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.model.machine.MachineStatus;
 import org.eclipse.che.api.core.util.LineConsumer;
@@ -56,13 +57,15 @@ public interface Instance extends Machine {
      * Returned {@link InstanceProcess#getPid()} should return unique pid on this stage.
      * This pid allow to control process from clients and save process logs if needed.
      *
-     * @param commandLine
-     *         command line from which process should be created
+     * @param command
+     *         command from which process should be created
+     * @param outputChannel
+     *         websocket chanel for execution logs
      * @return {@link InstanceProcess} with unique pid, that can't be used in future for other process of instance
      * @throws MachineException
      *         if error occurs on creating process
      */
-    InstanceProcess createProcess(String commandName, String commandLine) throws MachineException;
+    InstanceProcess createProcess(Command command, String outputChannel) throws MachineException;
 
     /**
      * Save state of the instance

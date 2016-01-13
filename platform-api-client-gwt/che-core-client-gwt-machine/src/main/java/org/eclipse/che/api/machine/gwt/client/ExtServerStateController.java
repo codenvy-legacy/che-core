@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -85,7 +85,8 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
 
     @Override
     public void onClose(WebSocketClosedEvent event) {
-        Log.info(getClass(), "Test WS connection closed with code " + event.getCode() + " reason: " + event.getReason() + " extension server started well ");
+        Log.info(getClass(), "Test WS connection closed with code " + event.getCode() + " reason: " + event.getReason() +
+                             " workspace agent started well ");
     }
 
     @Override

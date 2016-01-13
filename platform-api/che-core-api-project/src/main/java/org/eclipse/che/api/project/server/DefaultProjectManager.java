@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,13 +21,13 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.core.model.project.type.Attribute;
-import org.eclipse.che.core.model.project.type.ProjectType;
+import org.eclipse.che.api.core.model.project.type.Attribute;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.server.handlers.CreateModuleHandler;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
@@ -37,7 +37,11 @@ import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.handlers.ProjectTypeChangedHandler;
 import org.eclipse.che.api.project.server.handlers.RemoveModuleHandler;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
-import org.eclipse.che.api.project.server.type.*;
+import org.eclipse.che.api.project.server.type.AttributeValue;
+import org.eclipse.che.api.project.server.type.BaseProjectType;
+import org.eclipse.che.api.project.server.type.ProjectTypeDef;
+import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
+import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.observation.VirtualFileEvent;
@@ -46,6 +50,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -99,6 +104,7 @@ public final class DefaultProjectManager implements ProjectManager {
     private final ProjectHandlerRegistry            handlers;
     private final String                            apiEndpoint;
     private final Provider<AttributeFilter>         filterProvider;
+    private final HttpJsonRequestFactory            httpJsonRequestFactory;
 
     @Inject
     @SuppressWarnings("unchecked")
@@ -107,7 +113,8 @@ public final class DefaultProjectManager implements ProjectManager {
                                  ProjectTypeRegistry projectTypeRegistry,
                                  ProjectHandlerRegistry handlers,
                                  Provider<AttributeFilter> filterProvider,
-                                 @Named("api.endpoint") String apiEndpoint) {
+                                 @Named("api.endpoint") String apiEndpoint,
+                                 HttpJsonRequestFactory httpJsonRequestFactory) {
 
         this.fileSystemRegistry = fileSystemRegistry;
         this.eventService = eventService;
@@ -115,6 +122,7 @@ public final class DefaultProjectManager implements ProjectManager {
         this.handlers = handlers;
         this.apiEndpoint = apiEndpoint;
         this.filterProvider = filterProvider;
+        this.httpJsonRequestFactory = httpJsonRequestFactory;
 
         this.miscCaches = new Cache[CACHE_NUM];
         this.miscLocks = new Lock[CACHE_NUM];
@@ -464,7 +472,7 @@ public final class DefaultProjectManager implements ProjectManager {
     private void storeCalculatedAttributes(Project project, ProjectConfig projectConfig) throws ProjectTypeConstraintException,
                                                                                                 ValueStorageException,
                                                                                                 InvalidValueException, NotFoundException {
-        final ProjectTypes types = new ProjectTypes(project, projectConfig.getType(), projectConfig.getMixins(), this);
+        final ProjectTypes types = new ProjectTypes(project, projectConfig, this);
         types.removeTransient();
 
         for (Map.Entry<String, List<String>> entry : projectConfig.getAttributes().entrySet()) {
@@ -510,12 +518,11 @@ public final class DefaultProjectManager implements ProjectManager {
                                                                    .withDescription(module.getDescription())
                                                                    .withAttributes(module.getAttributes())
                                                                    .withModules(modules)
-                                                                   .withProblems(module.getProblems())
-                                                                   .withLinks(module.getLinks())
                                                                    .withContentRoot(module.getContentRoot())
                                                                    .withMixins(module.getMixins());
         projectModules.add(moduleDto);
     }
+
 
     private SourceStorageDto getSourceStorageDto(ProjectConfig moduleConfig) {
         SourceStorageDto storageDto = newDto(SourceStorageDto.class);
@@ -547,7 +554,9 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("GET").withHref(href);
 
         try {
-            return HttpJsonHelper.request(UsersWorkspaceDto.class, link);
+            return httpJsonRequestFactory.fromLink(link)
+                                         .request()
+                                         .asDto(UsersWorkspaceDto.class);
         } catch (IOException | ApiException e) {
             throw new ServerException(e);
         }
@@ -565,6 +574,12 @@ public final class DefaultProjectManager implements ProjectManager {
         return null;
     }
 
+    public List<ProjectConfigDto> getAllProjectsFromWorkspace(@NotNull String workspaceId) throws ServerException {
+        UsersWorkspaceDto usersWorkspaceDto = getWorkspace(workspaceId);
+
+        return usersWorkspaceDto.getProjects();
+    }
+
     private void updateWorkspace(String wsId, WorkspaceConfigDto workspaceConfig) throws ServerException {
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "update")
@@ -572,7 +587,9 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
-            HttpJsonHelper.request(WorkspaceConfigDto.class, link, workspaceConfig);
+            httpJsonRequestFactory.fromLink(link)
+                                  .setBody(workspaceConfig)
+                                  .request();
         } catch (IOException | ApiException e) {
             throw new ServerException(e.getMessage());
         }
@@ -585,14 +602,18 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("PUT").withHref(href);
 
         try {
-            HttpJsonHelper.request(UsersWorkspaceDto.class, link, projectConfig);
+            httpJsonRequestFactory.fromLink(link)
+                                  .setBody(projectConfig)
+                                  .request();
         } catch (NotFoundException e) {
             final String addProjectHref = UriBuilder.fromUri(apiEndpoint)
                                                     .path(WorkspaceService.class).path(WorkspaceService.class, "addProject")
                                                     .build(wsId).toString();
             final Link addProjectLink = newDto(Link.class).withMethod("POST").withHref(addProjectHref);
             try {
-                HttpJsonHelper.request(UsersWorkspaceDto.class, addProjectLink, projectConfig);
+                httpJsonRequestFactory.fromLink(addProjectLink)
+                                      .setBody(projectConfig)
+                                      .request();
             } catch (IOException | ApiException e1) {
                 throw new ServerException(e1.getMessage());
             }
@@ -881,7 +902,6 @@ public final class DefaultProjectManager implements ProjectManager {
                                                                          ForbiddenException,
                                                                          NotFoundException,
                                                                          ConflictException {
-        VirtualFileEntry entryToDelete = getEntryToDelete(workspaceId, deleteNodePath);
 
         String pathToProject = deleteNodePath.contains("/") ? deleteNodePath.substring(0, deleteNodePath.indexOf("/")) : deleteNodePath;
 
@@ -891,9 +911,16 @@ public final class DefaultProjectManager implements ProjectManager {
             deleteProjectFromWorkspace(project, workspaceId);
         }
 
+        VirtualFileEntry entryToDelete = getEntryToDelete(workspaceId, deleteNodePath);
+
+        if (entryToDelete == null) {
+            return;
+        }
+
         deleteEntryAndFireEvent(entryToDelete, workspaceId);
     }
 
+    @Nullable
     private VirtualFileEntry getEntryToDelete(String workspaceId, String deleteNodePath) throws ServerException,
                                                                                                 NotFoundException,
                                                                                                 ForbiddenException {
@@ -901,7 +928,7 @@ public final class DefaultProjectManager implements ProjectManager {
         VirtualFileEntry entryToDelete = root.getChild(deleteNodePath);
 
         if (entryToDelete == null) {
-            throw new NotFoundException("Path " + deleteNodePath + " doesn't exist");
+            return null;
         }
 
         return entryToDelete;
@@ -985,7 +1012,8 @@ public final class DefaultProjectManager implements ProjectManager {
         final Link link = newDto(Link.class).withMethod("DELETE").withHref(href);
 
         try {
-            HttpJsonHelper.request(null, link);
+            httpJsonRequestFactory.fromLink(link)
+                                  .request();
         } catch (IOException | ApiException exception) {
             throw new ServerException(exception.getLocalizedMessage(), exception);
         }
