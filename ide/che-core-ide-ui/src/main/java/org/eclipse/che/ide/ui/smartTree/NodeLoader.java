@@ -219,7 +219,14 @@ public class NodeLoader implements LoaderHandler.HasLoaderHandlers {
     private SimpleEventBus eventBus;
 
     /**
-     * Creates  a new tree node value provider instance.
+     * Creates a new tree node value provider instance.
+     */
+    public NodeLoader() {
+        this(null);
+    }
+
+    /**
+     * Creates a new tree node value provider instance.
      *
      * @param nodeInterceptors
      *         set of {@link org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor}

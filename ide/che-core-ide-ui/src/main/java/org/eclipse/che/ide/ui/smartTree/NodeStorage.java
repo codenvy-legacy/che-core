@@ -28,6 +28,7 @@ import org.eclipse.che.ide.ui.smartTree.event.StoreRemoveEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreSortEvent;
 import org.eclipse.che.ide.ui.smartTree.event.StoreUpdateEvent;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +57,15 @@ public class NodeStorage implements StoreHandlers.HasStoreHandlers {
     private UniqueKeyProvider<Node> keyProvider;
 
     private List<StoreSortInfo> comparators = new ArrayList<>();
+
+    public NodeStorage() {
+        this(new NodeUniqueKeyProvider() {
+            @Override
+            public String getKey(@NotNull Node item) {
+                return String.valueOf(item.hashCode());
+            }
+        });
+    }
 
     public NodeStorage(UniqueKeyProvider<Node> keyProvider) {
         this.keyProvider = keyProvider;
