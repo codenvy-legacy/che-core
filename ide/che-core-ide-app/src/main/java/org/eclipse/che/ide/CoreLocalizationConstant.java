@@ -726,4 +726,16 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("project.update.error")
     String projectUpdateError(String projectName);
+
+    @Key("project.status.title")
+    String projectStatusTitle();
+
+    @Key("project.status.content")
+    String projectStatusContent(String projectName);
+
+    @Key("error.configuration.title")
+    String errorConfigurationTitle();
+
+    @Key("error.configuration.content")
+    String errorConfigurationContent();
 }

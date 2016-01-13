@@ -18,6 +18,8 @@ import org.eclipse.che.ide.util.StartUpAction;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,37 @@ public class AppContext {
     private Factory           factory;
     private String            devMachineId;
     private String            projectsRoot;
+
+    private final List<String> projectsInImport = new ArrayList<>();
+
+    /**
+     * Returns list of projects paths which are in importing state.
+     *
+     * @return list of project paths
+     */
+    public List<String> getImportingProjects() {
+        return projectsInImport;
+    }
+
+    /**
+     * Adds project path to list of projects which are in importing state.
+     *
+     * @param pathToProject
+     *         project path
+     */
+    public void addProjectToImporting(String pathToProject) {
+        projectsInImport.add(pathToProject);
+    }
+
+    /**
+     * Removes project path to list of projects which are in importing state.
+     *
+     * @param pathToProject
+     *         project path
+     */
+    public void removeProjectFromImporting(String pathToProject) {
+        projectsInImport.remove(pathToProject);
+    }
 
     /**
      * List of action with params that comes from startup URL.
@@ -83,7 +116,7 @@ public class AppContext {
     /**
      * Returns {@link CurrentProject} instance that describes the project
      * that is currently opened or <code>null</code> if none opened.
-     * <p>
+     * <p/>
      * Note that current project may also represent a project's module.
      *
      * @return opened project or <code>null</code> if none opened
@@ -94,7 +127,7 @@ public class AppContext {
 
     /**
      * Set the current project instance.
-     * <p>
+     * <p/>
      * Should not be called directly as the current
      * project is managed by the core.
      */
@@ -119,7 +152,7 @@ public class AppContext {
      * @return loaded factory or {@code null}
      */
     public Factory getFactory() {
-         return factory;
+        return factory;
     }
 
     public void setCurrentUser(CurrentUser currentUser) {

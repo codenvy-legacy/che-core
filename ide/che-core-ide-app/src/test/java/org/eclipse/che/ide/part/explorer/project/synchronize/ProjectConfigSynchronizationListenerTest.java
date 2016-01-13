@@ -21,9 +21,9 @@ import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
-import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.wizard.Wizard;
+import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.projectimport.wizard.ProjectImporter;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -31,6 +31,8 @@ import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.confirm.ConfirmDialog;
+import org.eclipse.che.ide.ui.dialogs.message.MessageDialog;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,11 +42,13 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,13 +86,15 @@ public class ProjectConfigSynchronizationListenerTest {
 
     //additional mocks
     @Mock
-    private ProjectConfigDto           projectConfig;
+    private ProjectConfigDto      projectConfig;
     @Mock
-    private CurrentProjectChangedEvent event;
+    private BeforeExpandNodeEvent event;
     @Mock
-    private ConfirmDialog              confirmDialog;
+    private ConfirmDialog         confirmDialog;
     @Mock
-    private SourceStorageDto           sourceStorage;
+    private SourceStorageDto      sourceStorage;
+    @Mock
+    private ProjectNode           projectNode;
 
     @Captor
     private ArgumentCaptor<ConfirmCallback>            confirmCaptor;
@@ -104,7 +110,8 @@ public class ProjectConfigSynchronizationListenerTest {
     @Before
     public void setUp() {
         when(appContext.getWorkspaceId()).thenReturn(WORKSPACE_ID);
-        when(event.getProjectConfig()).thenReturn(projectConfig);
+        when(event.getNode()).thenReturn(projectNode);
+        when(projectNode.getProjectConfig()).thenReturn(projectConfig);
 
         when(dialogFactory.createConfirmDialog(anyString(),
                                                anyString(),
@@ -136,12 +143,12 @@ public class ProjectConfigSynchronizationListenerTest {
     @Test
     public void constructorShouldBeInitialized() {
         verify(appContext).getWorkspaceId();
-        verify(eventBus).addHandler(CurrentProjectChangedEvent.TYPE, listener);
+        verify(eventBus).addHandler(BeforeExpandNodeEvent.getType(), listener);
     }
 
     @Test
     public void nothingShouldHappenWhenProjectDoesNotHaveAnyProblem() {
-        listener.onCurrentProjectChanged(event);
+        listener.onBeforeExpand(event);
 
         verify(dialogFactory, never()).createConfirmDialog(anyString(),
                                                            anyString(),
@@ -157,7 +164,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
         problems.add(problem);
 
-        listener.onCurrentProjectChanged(event);
+        listener.onBeforeExpand(event);
 
         verify(locale).synchronizeDialogTitle();
         verify(locale).existInWorkspaceDialogContent(PROJECT_NAME);
@@ -181,7 +188,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
         problems.add(problem);
 
-        listener.onCurrentProjectChanged(event);
+        listener.onBeforeExpand(event);
 
         verify(dialogFactory).createConfirmDialog(anyString(),
                                                   anyString(),
@@ -211,7 +218,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
         problems.add(problem);
 
-        listener.onCurrentProjectChanged(event);
+        listener.onBeforeExpand(event);
 
         verify(locale).synchronizeDialogTitle();
         verify(locale).existInFileSystemDialogContent(PROJECT_NAME);
@@ -235,7 +242,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
         problems.add(problem);
 
-        listener.onCurrentProjectChanged(event);
+        listener.onBeforeExpand(event);
 
         verify(dialogFactory).createConfirmDialog(anyString(),
                                                   anyString(),
@@ -255,7 +262,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
         problems.add(problem);
 
-        listener.onCurrentProjectChanged(event);
+        listener.onBeforeExpand(event);
 
         verify(locale).synchronizeDialogTitle();
         verify(locale).projectConfigurationChanged();
@@ -279,7 +286,7 @@ public class ProjectConfigSynchronizationListenerTest {
 
         problems.add(problem);
 
-        listener.onCurrentProjectChanged(event);
+        listener.onBeforeExpand(event);
 
         verify(dialogFactory).createConfirmDialog(anyString(),
                                                   anyString(),
@@ -293,5 +300,25 @@ public class ProjectConfigSynchronizationListenerTest {
 
         //noinspection unchecked
         verify(projectService).updateProject(eq(WORKSPACE_ID), anyString(), eq(projectConfig), Matchers.<AsyncRequestCallback>anyObject());
+    }
+
+    @Test
+    public void messageDialogShouldBeShownWhenProjectIsInImportingState() {
+        MessageDialog messageDialog = mock(MessageDialog.class);
+        when(dialogFactory.createMessageDialog(anyString(),
+                                               anyString(),
+                                               Matchers.<ConfirmCallback>anyObject())).thenReturn(messageDialog);
+
+        List<String> importingProjects = Arrays.asList("/test");
+        when(projectConfig.getPath()).thenReturn("/test");
+        when(appContext.getImportingProjects()).thenReturn(importingProjects);
+
+        listener.onBeforeExpand(event);
+
+        verify(event).setCancelled(true);
+        verify(dialogFactory).createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject());
+        verify(messageDialog).show();
+
+        verify(projectConfig, never()).getProblems();
     }
 }
