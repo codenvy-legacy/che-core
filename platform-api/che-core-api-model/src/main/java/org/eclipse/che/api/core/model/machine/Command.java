@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.machine;
 
+import java.util.Map;
+
 /**
  * Command that can be used to create {@link Process} in a machine
  *
@@ -39,7 +41,9 @@ public interface Command {
     String getType();
 
     /**
-     * Returns command preview URL. (i.e. 'http://awesome.com:8080/context')
+     * Returns attributes related to this command.
+     *
+     * @return command attributes
      */
-    String getPreviewUrl();
+    Map<String, String> getAttributes();
 }

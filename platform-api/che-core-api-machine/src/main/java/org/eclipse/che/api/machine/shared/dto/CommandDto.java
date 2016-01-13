@@ -14,6 +14,8 @@ import org.eclipse.che.api.core.factory.FactoryParameter;
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.dto.shared.DTO;
 
+import java.util.Map;
+
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.MANDATORY;
 import static org.eclipse.che.api.core.factory.FactoryParameter.Obligation.OPTIONAL;
 
@@ -49,9 +51,9 @@ public interface CommandDto extends Command {
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)
-    String getPreviewUrl();
+    Map<String, String> getAttributes();
 
-    void setPreviewUrl(String previewUrl);
+    void setAttributes(Map<String, String> attributes);
 
-    CommandDto withPreviewUrl(String previewUrl);
+    CommandDto withAttributes(Map<String, String> attributes);
 }

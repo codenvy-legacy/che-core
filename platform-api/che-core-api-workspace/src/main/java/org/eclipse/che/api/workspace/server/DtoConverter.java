@@ -110,7 +110,7 @@ public final class DtoConverter {
         return newDto(CommandDto.class).withName(command.getName())
                                        .withCommandLine(command.getCommandLine())
                                        .withType(command.getType())
-                                       .withPreviewUrl(command.getPreviewUrl());
+                                       .withAttributes(command.getAttributes());
     }
 
     /**
