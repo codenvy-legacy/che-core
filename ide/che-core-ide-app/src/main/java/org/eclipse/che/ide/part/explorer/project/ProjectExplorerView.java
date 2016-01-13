@@ -21,6 +21,7 @@ import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.ui.smartTree.NodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.UniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
@@ -311,6 +312,15 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
      * @return handler registration
      */
     HandlerRegistration addBeforeExpandHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler);
+
+    /**
+     * Register before node load handler to allow custom functionality retrieve before load event from the project tree.
+     *
+     * @param handler
+     *         before load handler
+     * @return handler registration
+     */
+    HandlerRegistration addBeforeNodeLoadHandler(BeforeLoadEvent.BeforeLoadHandler handler);
 
     /**
      * Register node collapse handler to allow custom functionality retrieve collapse event from the project tree.

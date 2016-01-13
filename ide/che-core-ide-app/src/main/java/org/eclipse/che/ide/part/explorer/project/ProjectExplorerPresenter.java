@@ -77,6 +77,7 @@ import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -774,7 +775,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     }
 
     /**
-     * Register befor node expand handler to allow custom functionality retrieve before expand event from the project tree.
+     * Register before node expand handler to allow custom functionality retrieve before expand event from the project tree.
      *
      * @param handler
      *         before expand handler
@@ -782,6 +783,17 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
      */
     public HandlerRegistration addBeforeExpandHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler) {
         return view.addBeforeExpandHandler(handler);
+    }
+
+    /**
+     * Register before node load handler to allow custom functionality retrieve before load event from the project tree.
+     *
+     * @param handler
+     *         before load handler
+     * @return handler registration
+     */
+    public HandlerRegistration addBeforeNodeLoadHandler(BeforeLoadEvent.BeforeLoadHandler handler) {
+        return view.addBeforeNodeLoadHandler(handler);
     }
 
     /**
