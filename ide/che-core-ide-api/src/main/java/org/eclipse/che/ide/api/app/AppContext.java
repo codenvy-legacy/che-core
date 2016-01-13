@@ -13,8 +13,14 @@ package org.eclipse.che.ide.api.app;
 
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.ide.api.action.Action;
+import org.eclipse.che.ide.util.StartUpAction;
 
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Describes current state of application.
@@ -32,6 +38,31 @@ public class AppContext {
     private String            devMachineId;
     private String            projectsRoot;
 
+    /**
+     * List of action with params that comes from startup URL.
+     * Can be proccesed after IDE itialization as usual after starting Extension Server
+     * and Project API initialization
+     */
+    private List<StartUpAction> startAppActions;
+
+
+    /**
+     * List of action with params that comes from startup URL.
+     * Can be proccesed after IDE itialization as usual after starting Extension Server
+     * and Project API initialization
+     */
+    public void setStartUpActions(List<StartUpAction> startUpActions) {
+        this.startAppActions = startUpActions;
+    }
+
+    /**
+     * List of startUp actions with parameters that comes form URL during IDE itialization
+     * @return
+     */
+    public List<StartUpAction> getStartAppActions() {
+        return startAppActions;
+    }
+
     public UsersWorkspaceDto getWorkspace() {
         return workspace;
     }
@@ -39,13 +70,13 @@ public class AppContext {
     public void setWorkspace(UsersWorkspaceDto workspace) {
         this.workspace = workspace;
     }
-    
+
     /** Returns id of current workspace of throws IllegalArgumentException if workspace is null. */
     public String getWorkspaceId() {
-        if(workspace == null) {
+        if (workspace == null) {
             throw new IllegalArgumentException(getClass() + " Workspace can not be null.");
         }
-        
+
         return workspace.getId();
     }
 
