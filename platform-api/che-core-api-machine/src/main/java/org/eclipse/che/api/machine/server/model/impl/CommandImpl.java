@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.server.model.impl;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.che.api.core.model.machine.Command;
@@ -21,10 +23,10 @@ import org.eclipse.che.api.core.model.machine.Command;
  */
 public class CommandImpl implements Command {
 
-    private String name;
-    private String commandLine;
-    private String type;
-    private String previewUrl;
+    private String              name;
+    private String              commandLine;
+    private String              type;
+    private Map<String, String> attributes;
 
     public CommandImpl(String name, String commandLine, String type) {
         this.name = name;
@@ -36,7 +38,7 @@ public class CommandImpl implements Command {
         this.name = command.getName();
         this.commandLine = command.getCommandLine();
         this.type = command.getType();
-        this.previewUrl = command.getPreviewUrl();
+        this.attributes = command.getAttributes();
     }
 
     @Override
@@ -67,12 +69,15 @@ public class CommandImpl implements Command {
     }
 
     @Override
-    public String getPreviewUrl() {
-        return previewUrl;
+    public Map<String, String> getAttributes() {
+        if (attributes == null) {
+            attributes = new HashMap<>();
+        }
+        return attributes;
     }
 
-    public void setPreviewUrl(String previewUrl) {
-        this.previewUrl = previewUrl;
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
     }
 
     @Override
@@ -87,7 +92,7 @@ public class CommandImpl implements Command {
         return Objects.equals(name, command.name) &&
                Objects.equals(commandLine, command.commandLine) &&
                Objects.equals(type, command.type) &&
-               Objects.equals(previewUrl, command.previewUrl);
+               Objects.equals(getAttributes(), command.getAttributes());
     }
 
     @Override
@@ -96,7 +101,7 @@ public class CommandImpl implements Command {
         hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(commandLine);
         hash = 31 * hash + Objects.hashCode(type);
-        hash = 31 * hash + Objects.hashCode(previewUrl);
+        hash = 31 * hash + Objects.hashCode(getAttributes());
         return hash;
     }
 
@@ -106,7 +111,7 @@ public class CommandImpl implements Command {
                "name='" + name + '\'' +
                ", commandLine='" + commandLine + '\'' +
                ", type='" + type + '\'' +
-               ", previewUrl='" + previewUrl + '\'' +
+               ", attributes=" + getAttributes() +
                '}';
     }
 }
