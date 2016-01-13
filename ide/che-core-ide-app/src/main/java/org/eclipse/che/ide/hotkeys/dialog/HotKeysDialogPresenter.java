@@ -10,12 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.hotkeys.dialog;
 
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
+import org.eclipse.che.ide.collections.js.JsoArray;
 import org.eclipse.che.ide.hotkeys.HasHotKeyItems;
 import org.eclipse.che.ide.hotkeys.HotKeyItem;
 import org.eclipse.che.ide.util.StringUtils;
@@ -30,18 +37,21 @@ import java.util.Map;
 
 /**
  * The class provides displaying list hotKeys for IDE and editor
+ *
  * @author Alexander Andrienko
+ * @author Artem Zatsarynnyi
  */
 @Singleton
 public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate {
 
     private static final String EDITOR_KEYBINDINGS = "Editor";
-    private static final String IDE_KEYBINDINGS = "IDE";
+    private static final String IDE_KEYBINDINGS    = "IDE";
 
     private final HotKeysDialogView view;
     private final KeyBindingAgent   keyBindingAgent;
     private final ActionManager     actionManager;
     private final EditorAgent       editorAgent;
+    private final Resources         resources;
 
     private List<HotKeyItem> ideHotKey;
     private List<HotKeyItem> editorHotKeys;
@@ -50,19 +60,20 @@ public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate 
 
     @Inject
     public HotKeysDialogPresenter(HotKeysDialogView view,
-                           KeyBindingAgent keyBindingAgent,
-                           ActionManager actionManager,
-                           EditorAgent editorAgent) {
+                                  KeyBindingAgent keyBindingAgent,
+                                  ActionManager actionManager,
+                                  EditorAgent editorAgent,
+                                  Resources resources) {
         this.view = view;
         this.keyBindingAgent = keyBindingAgent;
         this.actionManager = actionManager;
         this.editorAgent = editorAgent;
+        this.resources = resources;
 
         categories = new HashMap<>();
         view.setDelegate(this);
     }
 
-    /** {@inheritDoc} */
     @Override
     public void showHotKeys() {
         ideHotKey = getIDEHotKey();
@@ -83,7 +94,7 @@ public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate 
 
     private List<HotKeyItem> getIDEHotKey() {
         List<HotKeyItem> ideHotKeys = new ArrayList<>();
- 
+
         for (String actionId : actionManager.getActionIds("")) {
             CharCodeWithModifiers charCodeWithModifiers = keyBindingAgent.getKeyBinding(actionId);
             if (charCodeWithModifiers != null) {
@@ -103,11 +114,65 @@ public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate 
         return Collections.emptyList();
     }
 
-    /** {@inheritDoc} */
     @Override
     public void onOkClicked() {
         view.hide();
     }
+
+    @Override
+    public void onPrintClicked() {
+        final JsoArray<Node> nodesArray = JsoArray.create();
+        for (Map.Entry<String, List<HotKeyItem>> entry : categories.entrySet()) {
+            nodesArray.add(wrapCategory(entry.getKey()));
+            for (HotKeyItem hotKeyItem : entry.getValue()) {
+                if (hotKeyItem.getActionDescription() != null) {
+                    nodesArray.add(wrapHotKey(hotKeyItem.getHotKey(), hotKeyItem.getActionDescription()));
+                }
+            }
+        }
+
+        openWindowForPrinting(resources.printTemplate().getText(), nodesArray);
+    }
+
+    private static Element wrapCategory(String text) {
+        final DivElement div = Document.get().createDivElement();
+        div.setClassName("divCategory");
+        div.setInnerText(text);
+        return div;
+    }
+
+    private static Element wrapHotKey(String hotKey, String description) {
+        final DivElement containerDiv = Document.get().createDivElement();
+        final DivElement hotKeyDiv = Document.get().createDivElement();
+        final DivElement descriptionDiv = Document.get().createDivElement();
+
+        hotKeyDiv.setInnerText(hotKey);
+        descriptionDiv.setInnerText(description);
+
+        containerDiv.setClassName("divRow");
+        hotKeyDiv.setClassName("divCell");
+        hotKeyDiv.addClassName("hotKey");
+        descriptionDiv.setClassName("divCell");
+        descriptionDiv.addClassName("description");
+
+        containerDiv.appendChild(hotKeyDiv);
+        containerDiv.appendChild(descriptionDiv);
+
+        return containerDiv;
+    }
+
+    private static native void openWindowForPrinting(String htmlTemplate, JsoArray<Node> nodes) /*-{
+        var printWindow = $wnd.open("about:blank", "", "width=650,height=800");
+        printWindow.document.write(htmlTemplate);
+        var container = printWindow.document.getElementById("key-bindings-container");
+        for (var node in nodes) {
+            container.appendChild(nodes[node]);
+        }
+        printWindow.document.close(); // necessary for IE >= 10
+        printWindow.focus(); // necessary for IE >= 10
+        printWindow.print();
+        printWindow.close();
+    }-*/;
 
     @Override
     public void onFilterValueChanged(String filteredText) {
@@ -129,11 +194,11 @@ public class HotKeysDialogPresenter implements HotKeysDialogView.ActionDelegate 
 
     private List<HotKeyItem> filterCategory(List<HotKeyItem> hotKeyItems, String expectedText) {
         List<HotKeyItem> result = new ArrayList<>();
-        for (HotKeyItem hotKeyItem: hotKeyItems) {
+        for (HotKeyItem hotKeyItem : hotKeyItems) {
             String description = hotKeyItem.getActionDescription();
             String keyBindings = hotKeyItem.getHotKey();
             boolean isFound = description != null && (StringUtils.containsIgnoreCase(description, expectedText)
-                              || StringUtils.containsIgnoreCase(keyBindings, expectedText));
+                                                      || StringUtils.containsIgnoreCase(keyBindings, expectedText));
             if (isFound) {
                 result.add(hotKeyItem);
             }

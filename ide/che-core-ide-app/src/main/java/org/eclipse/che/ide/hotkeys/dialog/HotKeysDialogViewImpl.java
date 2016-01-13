@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
+
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.hotkeys.HotKeyItem;
 import org.eclipse.che.ide.hotkeys.HotKeyResources;
@@ -39,7 +40,9 @@ import java.util.Map;
 
 /**
  * Implementation {@link HotKeysDialogView}
+ *
  * @author Alexander Andrienko
+ * @author Artem Zatsarynnyi
  */
 public class HotKeysDialogViewImpl extends Window implements HotKeysDialogView {
 
@@ -86,6 +89,8 @@ public class HotKeysDialogViewImpl extends Window implements HotKeysDialogView {
 
     Button okButton;
 
+    Button printButton;
+
     @UiField
     FlowPanel category;
 
@@ -112,6 +117,14 @@ public class HotKeysDialogViewImpl extends Window implements HotKeysDialogView {
         });
         addButtonToFooter(okButton);
         okButton.addStyleName(resources.windowCss().primaryButton());
+
+        printButton = createButton(locale.print(), "keybindings-printButton-btn", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+                delegate.onPrintClicked();
+            }
+        });
+        addButtonToFooter(printButton);
 
         list = new CategoriesList(res);
         categoriesList = new ArrayList<>();
