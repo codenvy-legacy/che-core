@@ -24,39 +24,40 @@ import java.util.Set;
 
 /**
  * Implementation of Project
+ *
  * @author gazarenkov
  */
 public class ProjectImpl implements Project {
 
-    private Set<String> types;
+    private Set<String>               types;
     private Map<String, List<String>> attributes;
-    private SourceStorage sourceStorage;
-    private String name;
-    private String path;
-    private String description;
-    private String type;
-    private List<String> mixins;
-    private List<ProjectImpl> modules;
+    private SourceStorage             sourceStorage;
+    private String                    name;
+    private String                    path;
+    private String                    description;
+    private String                    type;
+    private List<String>              mixins;
+    private List<ProjectImpl>         modules;
 
     ProjectImpl(ProjectConfigDto configDto, Set<String> types) {
-
         this.types = types;
         this.name = configDto.getName();
         this.path = configDto.getPath();
         this.description = configDto.getDescription();
         this.type = configDto.getType();
 
-        if(configDto.getMixins() == null)
+        if (configDto.getMixins() == null) {
             this.mixins = new ArrayList<>();
-        else
+        } else {
             this.mixins = configDto.getMixins();
+        }
 
-        if(configDto.getAttributes() == null)
+        if (configDto.getAttributes() == null) {
             this.attributes = new HashMap<>();
-        else
+        } else {
             this.attributes = configDto.getAttributes();
+        }
     }
-
 
     @Override
     public Folder getRootFolder() {
@@ -110,12 +111,12 @@ public class ProjectImpl implements Project {
 
     // TODO remove it from the model
     public String getContentRoot() {
-
         return null;
     }
 
     /**
      * Whether this Project has the type which is subtype of incoming typeId
+     *
      * @param typeId
      * @return true if so
      */
@@ -125,27 +126,26 @@ public class ProjectImpl implements Project {
 
     /**
      * Whether the Project contains particular attribute and it's value equals to particular value
-     * @param attrName - attribute name
-     * @param value - value to compare, if null the method checks only attribute presence
+     *
+     * @param attrName
+     *         - attribute name
+     * @param value
+     *         - value to compare, if null the method checks only attribute presence
      * @return true if so and false if there are no such attribute or it is not equal to value
      */
     public boolean isAttrEqual(String attrName, String value) {
-
         List<String> values = getAttributes().get(attrName);
-        if(values != null) {
+        if (values != null) {
 
-            if(value == null)
+            if (value == null)
                 return true;
 
-            for(String v : values) {
-                if(v.equals(value))
+            for (String v : values) {
+                if (v.equals(value))
                     return true;
             }
         }
 
         return false;
-
     }
-
-
 }
