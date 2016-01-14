@@ -11,7 +11,7 @@
 @def menuListBorderPx 1px;
 @def listHeaderLeftPadding 10px;
 @def listHeaderRightPadding 5px;
-@def listItemLeftPadding 24px;
+@def listItemLeftPadding 45px;
 @def listItemRightPadding 44px;
 
 .rootPanel {
