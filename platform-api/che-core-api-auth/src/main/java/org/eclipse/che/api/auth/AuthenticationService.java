@@ -12,7 +12,7 @@ package org.eclipse.che.api.auth;
 
 import org.eclipse.che.api.auth.shared.dto.Credentials;
 import org.eclipse.che.api.auth.shared.dto.Token;
-import com.wordnik.swagger.annotations.*;
+import io.swagger.annotations.*;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;

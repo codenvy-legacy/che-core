@@ -11,8 +11,8 @@
 package org.eclipse.che.api.project.shared.dto;
 
 import org.eclipse.che.dto.shared.DTO;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Map;
 

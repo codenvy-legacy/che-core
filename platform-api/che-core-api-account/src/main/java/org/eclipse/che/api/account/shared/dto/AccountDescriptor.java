@@ -14,7 +14,7 @@ import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.dto.shared.DTO;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 import java.util.Map;
