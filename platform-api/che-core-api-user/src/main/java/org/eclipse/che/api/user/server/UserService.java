@@ -18,6 +18,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 import com.google.common.annotations.Beta;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
@@ -93,7 +95,8 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 @Api(value = "/user", description = "User manager")
 @Path("/user")
 public class UserService extends Service {
-    private static final String USER_SELF_CREATION_ALLOWED = "user.self.creation.allowed";
+    @VisibleForTesting
+    static final String USER_SELF_CREATION_ALLOWED = "user.self.creation.allowed";
 
     private final UserDao        userDao;
     private final UserProfileDao profileDao;
@@ -409,6 +412,16 @@ public class UserService extends Service {
                                     SecurityContext context) throws NotFoundException, ServerException {
         final User user = userDao.getByName(name);
         return toDescriptor(user, context);
+    }
+
+    /**
+     * Get setting of user service
+     */
+    @GET
+    @Path("/settings")
+    @Produces(APPLICATION_JSON)
+    public Map<String, String> getSettings() {
+        return ImmutableMap.of(USER_SELF_CREATION_ALLOWED, Boolean.toString(userSelfCreationAllowed));
     }
 
     private User fromEntity(NewUser newUser) throws ForbiddenException {

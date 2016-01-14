@@ -539,6 +539,17 @@ public class UserServiceTest {
         assertEquals(userInRoleDescriptor.getScopeId(), "");
     }
 
+    @Test
+    public void shouldBeAbleToGetSettingOfUserService() throws Exception {
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/settings", null);
+
+        assertEquals(response.getStatus(), OK.getStatusCode());
+        @SuppressWarnings("unchecked")
+        final Map<String, String> settings = (Map<String, String>)response.getEntity();
+        assertEquals(settings.size(), 1);
+        assertEquals(settings.get(UserService.USER_SELF_CREATION_ALLOWED), "true");
+    }
+
     private User createUser() throws NotFoundException, ServerException {
         final User testUser = new User().withId("test_id")
                                         .withEmail("test@email");
