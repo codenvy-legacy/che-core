@@ -41,6 +41,7 @@ import elemental.html.UListElement;
 import elemental.html.Window;
 import elemental.js.dom.JsElement;
 import elemental.ranges.Range;
+import elemental.svg.SVGAnimatedString;
 
 import org.eclipse.che.ide.util.StringUtils;
 
@@ -333,12 +334,23 @@ public class Elements {
 
     public static boolean hasClassName(String className, Element element) {
         assert className != null : "Unexpected null class name";
-        String currentClassName = element.getClassName();
+        final Object o = element.getClassName();
+        final String currentClassName;
+
+        //don't remove this checking, some times we can catch NPE if we work with OMSVGSVGElement,
+        //because getClassName on this class returns SVGAnimatedString, with stored classes, so
+        //we need to check additionally type of input element
+        if (o instanceof SVGAnimatedString) {
+            currentClassName = ((SVGAnimatedString)o).getBaseVal();
+        } else {
+            currentClassName = String.valueOf(o);
+        }
+
         return (currentClassName != null) &&
                (currentClassName.equals(className)
                 || currentClassName.startsWith(className + " ")
                 || currentClassName.endsWith(" " + className)
-                || currentClassName.indexOf(" " + className + " ") != -1);
+                || currentClassName.contains(" " + className + " "));
     }
 
     public static void addClassName(String className, Element element) {
