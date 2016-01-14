@@ -1281,6 +1281,16 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String notificationPopupIconSvgFill() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String notificationPopupTextColor() {
+        return "#FFFFFF";
+    }
+
+    @Override
     public String projectExplorerReadonlyItemBackground() {
         return "#3b372f";
     }

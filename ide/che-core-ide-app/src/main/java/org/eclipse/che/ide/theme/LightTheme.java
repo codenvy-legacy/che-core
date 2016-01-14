@@ -1239,7 +1239,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String notificationPopupPanelShadow() {
-        return "0 0 10px rgba(0,0,0,0.6)";
+        return "0 0 7px rgba(0,0,0,0.2)";
     }
 
     @Override
@@ -1255,6 +1255,16 @@ public class LightTheme implements Theme {
     @Override
     public String notificationPopupIconProgressFill() {
         return "#9b9b9b";
+    }
+
+    @Override
+    public String notificationPopupIconSvgFill() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String notificationPopupTextColor() {
+        return "#FFFFFF";
     }
 
     @Override

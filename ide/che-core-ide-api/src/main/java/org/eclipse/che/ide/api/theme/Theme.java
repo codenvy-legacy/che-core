@@ -1378,6 +1378,8 @@ public interface Theme {
     String notificationPopupIconSuccessFill();
     String notificationPopupIconFailFill();
     String notificationPopupIconProgressFill();
+    String notificationPopupIconSvgFill();
+    String notificationPopupTextColor();
 
     String projectExplorerReadonlyItemBackground();
     String projectExplorerTestItemBackground();
