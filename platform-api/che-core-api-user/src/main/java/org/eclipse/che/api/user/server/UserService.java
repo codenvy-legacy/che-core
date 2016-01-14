@@ -11,12 +11,13 @@
 package org.eclipse.che.api.user.server;
 
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 import com.google.common.annotations.Beta;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
@@ -58,7 +59,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;

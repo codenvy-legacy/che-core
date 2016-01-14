@@ -11,7 +11,7 @@
 package org.eclipse.che.api.auth.shared.dto;
 
 import org.eclipse.che.dto.shared.DTO;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author gazarenkov

@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.shared.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.dto.shared.DTO;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 

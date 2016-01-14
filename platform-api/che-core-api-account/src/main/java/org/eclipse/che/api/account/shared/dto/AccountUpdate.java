@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.account.shared.dto;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.Map;
