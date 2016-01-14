@@ -1553,6 +1553,18 @@ public class LocalVirtualFileTest {
     }
 
     @Test
+    public void failsCreateFileWhenNameContainsSlash() throws Exception {
+        VirtualFile folder = getRoot().createFolder("a/b/c");
+
+        String name = "x/new_file";
+
+        thrown.expect(ServerException.class);
+        thrown.expectMessage(String.format("Invalid name '%s'", name));
+
+        folder.createFile(name, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
+    }
+
+    @Test
     public void failsCreateFileWhenNameOfNewFileConflictsWithExistedFile() throws Exception {
         VirtualFile file = getRoot().createFile("file", DEFAULT_CONTENT);
         file.setProperty("property1", "value1");

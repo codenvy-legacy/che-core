@@ -285,6 +285,10 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
             throws ForbiddenException, ConflictException, ServerException {
         checkName(name);
 
+        if (Path.of(name).length() > 1) {
+            throw new ServerException(String.format("Invalid name '%s'", name));
+        }
+
         if (parent.isFolder()) {
             final Path newPath = parent.getPath().newPath(name);
             final File newIoFile = new File(ioRoot, toIoPath(newPath));

@@ -20,11 +20,11 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.Archiver;
 import org.eclipse.che.api.vfs.ArchiverFactory;
+import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.VirtualFileVisitor;
 import org.eclipse.che.api.vfs.search.Searcher;
 import org.eclipse.che.api.vfs.search.SearcherProvider;
-import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.lang.Pair;
 import org.junit.Before;
@@ -1451,6 +1451,18 @@ public class MemoryVirtualFileTest {
         assertEquals(file, folder.getChild(Path.of("new_file")));
         assertEquals("/a/b/c/new_file", file.getPath().toString());
         assertEquals(DEFAULT_CONTENT, file.getContentAsString());
+    }
+
+    @Test
+    public void failsCreateFileWhenNameContainsSlash() throws Exception {
+        VirtualFile folder = getRoot().createFolder("a/b/c");
+
+        String name = "x/new_file";
+
+        thrown.expect(ServerException.class);
+        thrown.expectMessage(String.format("Invalid name '%s'", name));
+
+        folder.createFile(name, new ByteArrayInputStream(DEFAULT_CONTENT_BYTES));
     }
 
     @Test

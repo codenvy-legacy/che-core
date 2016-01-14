@@ -705,7 +705,12 @@ public class MemoryVirtualFile implements VirtualFile {
     @Override
     public VirtualFile createFile(String name, InputStream content) throws ForbiddenException, ConflictException, ServerException {
         checkExistence();
+
         checkName(name);
+        if (Path.of(name).length() > 1) {
+            throw new ServerException(String.format("Invalid name '%s'", name));
+        }
+
         if (isFolder()) {
             final MemoryVirtualFile newFile;
             try {
