@@ -10,12 +10,11 @@
  *******************************************************************************/
 /* Default annotated CSS for Tree.java */
 /* @def treeIndent 14px; */
-@eval hoverRowBackground org.eclipse.che.ide.api.theme.Style.getProjectExplorerHoverRowBackground();
-@url expansionIcon expansionIcon;
-@url collapseIcon collapseIcon;
+@eval hoverRowBackground org.eclipse.che.ide.api.theme.Style.theme.projectExplorerHoverRowBackground();
+@eval treeExpandArrowColor org.eclipse.che.ide.api.theme.Style.theme.treeExpandArrowColor();
+@eval treeExpandArrowShadow org.eclipse.che.ide.api.theme.Style.theme.treeExpandArrowShadow();
 
 .treeRoot {
-    font-family: alternativeFontFamily;
     padding-left: 0px;
     margin: 0px 0px 0px 2px;
     position: absolute;
@@ -32,7 +31,6 @@
 }
 
 .treeRoot > .treeNode {
-    /*height: 18px;*/
     margin-top: 2px;
 }
 
@@ -56,6 +54,7 @@
 }
 
 .treeNodeBody:HOVER {
+    background-color: hoverRowBackground;
 }
 
 .expandControl {
@@ -63,35 +62,23 @@
     vertical-align: middle;
     -moz-transition: -moz-transform 0.2s ease-out;
     -webkit-transition: -webkit-transform 0.2s ease-out;
-}
-
-.openedIcon {
-    /* TODO: expandControl should have the image, but
-     * right now it looks like files have the expandControl rule also.
-     * I'm doing the least amount of change for the demo, so
-     * don't want to refactor anything. */
-    background-image: expansionIcon;
-    background-repeat: no-repeat;
-    background-position: 3px;
-}
-
-.closedIcon {
-    background-image: collapseIcon;
-    background-repeat: no-repeat;
-    background-position: 3px;
-}
-
-.openedIcon,
-.closedIcon {
     position: relative;
-    height: 16px;
-    width: 16px;
+    height: 18px;
+    width: 18px;
+}
+
+.expandControl svg {
+    pointer-events: none;
+    fill: treeExpandArrowColor;
+    -webkit-filter: drop-shadow( treeExpandArrowShadow );
+    margin-left: 3px;
+    margin-top: 0px;
 }
 
 /* We have no icon, just a spacer */
 .leafIcon {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     visibility: hidden;
 }
 

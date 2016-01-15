@@ -8,12 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-@eval projectExplorerJointContainerFill org.eclipse.che.ide.api.theme.Style.getProjectExplorerJointContainerFill();
-@eval projectExplorerJointContainerShadow org.eclipse.che.ide.api.theme.Style.getProjectExplorerJointContainerShadow();
-@eval projectExplorerPresentableTextShadow org.eclipse.che.ide.api.theme.Style.getProjectExplorerPresentableTextShadow();
-@eval projectExplorerInfoTextShadow org.eclipse.che.ide.api.theme.Style.getProjectExplorerInfoTextShadow();
-@eval projectExplorerSelectedRowBackground org.eclipse.che.ide.api.theme.Style.getProjectExplorerSelectedRowBackground();
-@eval projectExplorerHoverRowBackground org.eclipse.che.ide.api.theme.Style.getProjectExplorerHoverRowBackground();
+@eval projectExplorerJointContainerFill org.eclipse.che.ide.api.theme.Style.theme.projectExplorerJointContainerFill();
+@eval projectExplorerJointContainerShadow org.eclipse.che.ide.api.theme.Style.theme.projectExplorerJointContainerShadow();
+@eval projectExplorerPresentableTextShadow org.eclipse.che.ide.api.theme.Style.theme.projectExplorerPresentableTextShadow();
+@eval projectExplorerInfoTextShadow org.eclipse.che.ide.api.theme.Style.theme.projectExplorerInfoTextShadow();
+@eval projectExplorerSelectedRowBackground org.eclipse.che.ide.api.theme.Style.theme.projectExplorerSelectedRowBackground();
+@eval projectExplorerHoverRowBackground org.eclipse.che.ide.api.theme.Style.theme.projectExplorerHoverRowBackground();
 
 .noFocusOutline {
     outline: none;
