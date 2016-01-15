@@ -87,6 +87,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -320,6 +321,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         if (view.isExpanded(node) && view.isLoaded(node)) {
             view.reloadChildren(node, true);
         }
+
+        updateAppContext(Collections.<Node>singletonList(node));
     }
 
     /** {@inheritDoc} */
