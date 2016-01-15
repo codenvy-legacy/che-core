@@ -1345,8 +1345,10 @@ public interface Theme {
     String projectExplorerPresentableTextShadow();
     String projectExplorerInfoTextShadow();
     String projectExplorerSelectedRowBackground();
+    String projectExplorerSelectedRowBorder();
     String projectExplorerHoverRowBackground();
-
+    String projectExplorerHoverRowBorder();
+    
     /********************************************************************************************
      *
      * Loader

@@ -1184,12 +1184,22 @@ public class LightTheme implements Theme {
 
     @Override
     public String projectExplorerSelectedRowBackground() {
-        return "rgba(73,143,225,0.40)";
+        return "rgba(0, 0, 0, 0.2)";
     }
 
     @Override
     public String projectExplorerHoverRowBackground() {
-        return "rgba(215,215,215,0.45)";
+        return "rgba(0, 0, 0, 0.12)";
+    }
+
+    @Override
+    public String projectExplorerSelectedRowBorder() {
+        return "#555";
+    }
+
+    @Override
+    public String projectExplorerHoverRowBorder() {
+        return "#7b7b7b";
     }
 
     @Override
