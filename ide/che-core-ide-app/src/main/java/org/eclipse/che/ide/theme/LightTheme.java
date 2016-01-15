@@ -664,7 +664,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getToolbarIconColor() {
-        return this.getIconColor();
+        return iconColor();
     }
 
     @Override
@@ -749,6 +749,11 @@ public class LightTheme implements Theme {
 
     @Override
     public String processTreeBackgroundColor() {
+        return "white";
+    }
+
+    @Override
+    public String processTreeDevLabel() {
         return "white";
     }
 
@@ -913,8 +918,13 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getIconColor() {
+    public String iconColor() {
         return "#7c7c7c";
+    }
+
+    @Override
+    public String activeIconColor() {
+        return "#3E3A3A";
     }
 
     @Override
@@ -1143,32 +1153,42 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getProjectExplorerJointContainerFill() {
+    public String treeExpandArrowColor() {
         return "#5D5D5D";
     }
 
     @Override
-    public String getProjectExplorerJointContainerShadow() {
+    public String treeExpandArrowShadow() {
+        return "1px 1px 0 rgba(0, 0, 0, 0.1)";
+    }
+
+    @Override
+    public String projectExplorerJointContainerFill() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String projectExplorerJointContainerShadow() {
         return "drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.1))";
     }
 
     @Override
-    public String getProjectExplorerPresentableTextShadow() {
+    public String projectExplorerPresentableTextShadow() {
         return "1px 1px 1px rgba(0, 0, 0, 0.1)";
     }
 
     @Override
-    public String getProjectExplorerInfoTextShadow() {
+    public String projectExplorerInfoTextShadow() {
         return "1px 1px 1px rgba(0, 0, 0, 0.1)";
     }
 
     @Override
-    public String getProjectExplorerSelectedRowBackground() {
+    public String projectExplorerSelectedRowBackground() {
         return "rgba(73,143,225,0.40)";
     }
 
     @Override
-    public String getProjectExplorerHoverRowBackground() {
+    public String projectExplorerHoverRowBackground() {
         return "rgba(215,215,215,0.45)";
     }
 

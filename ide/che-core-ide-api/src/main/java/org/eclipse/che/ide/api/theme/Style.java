@@ -532,10 +532,6 @@ public class Style {
         return theme.getPrimaryHighlightColor();
     }
 
-    public static String getIconColor() {
-        return theme.getIconColor();
-    }
-
     public static String getSeparatorColor() {
         return theme.getSeparatorColor();
     }
@@ -568,27 +564,4 @@ public class Style {
         return theme.getListBoxDropdownBackgroundColor();
     }
 
-    public static String getProjectExplorerJointContainerFill() {
-        return theme.getProjectExplorerJointContainerFill();
-    }
-
-    public static String getProjectExplorerJointContainerShadow() {
-        return theme.getProjectExplorerJointContainerShadow();
-    }
-
-    public static String getProjectExplorerPresentableTextShadow() {
-        return theme.getProjectExplorerPresentableTextShadow();
-    }
-
-    public static String getProjectExplorerInfoTextShadow() {
-        return theme.getProjectExplorerInfoTextShadow();
-    }
-
-    public static String getProjectExplorerSelectedRowBackground() {
-        return theme.getProjectExplorerSelectedRowBackground();
-    }
-
-    public static String getProjectExplorerHoverRowBackground() {
-        return theme.getProjectExplorerHoverRowBackground();
-    }
 }

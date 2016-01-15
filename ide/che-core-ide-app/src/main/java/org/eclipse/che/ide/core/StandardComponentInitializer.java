@@ -482,18 +482,6 @@ public class StandardComponentInitializer {
         actionManager.registerAction("findActionAction", findActionAction);
         assistantGroup.add(findActionAction);
 
-        assistantGroup.add(new AbstractPerspectiveAction(null, "Find Text", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
         actionManager.registerAction("hotKeysList", hotKeysListAction);
         assistantGroup.add(hotKeysListAction);
 

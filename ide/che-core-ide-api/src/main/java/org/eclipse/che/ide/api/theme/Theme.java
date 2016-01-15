@@ -1004,6 +1004,13 @@ public interface Theme {
     String processTreeBackgroundColor();
 
     /**
+     * Text color for DEV label in process tree.
+     *
+     * @return color
+     */
+    String processTreeDevLabel();
+
+    /**
      * Background color for console output area.
      *
      * @return color
@@ -1175,9 +1182,18 @@ public interface Theme {
     String getPrimaryHighlightColor();
 
     /**
-     * @return the icon color.
+     * Default icon color
+     *
+     * @return color
      */
-    String getIconColor();
+    String iconColor();
+
+    /**
+     * Active icon color
+     *
+     * @return color
+     */
+    String activeIconColor();
 
     /**
      * @return the separator color.
@@ -1313,15 +1329,24 @@ public interface Theme {
 
     /********************************************************************************************
      *
+     * Tree
+     *
+     ********************************************************************************************/
+    String treeExpandArrowColor();
+    String treeExpandArrowShadow();
+
+    /********************************************************************************************
+     *
      * Project Explorer
      *
      ********************************************************************************************/
-    String getProjectExplorerJointContainerFill();
-    String getProjectExplorerJointContainerShadow();
-    String getProjectExplorerPresentableTextShadow();
-    String getProjectExplorerInfoTextShadow();
-    String getProjectExplorerSelectedRowBackground();
-    String getProjectExplorerHoverRowBackground();
+    String projectExplorerJointContainerFill();
+    String projectExplorerJointContainerShadow();
+    String projectExplorerPresentableTextShadow();
+    String projectExplorerInfoTextShadow();
+    String projectExplorerSelectedRowBackground();
+    String projectExplorerHoverRowBackground();
+
     /********************************************************************************************
      *
      * Loader
