@@ -26,7 +26,7 @@ public class MachineFSMountStrategy implements LocalFSMountStrategy {
     public final String mountProjectsRoot;
 
     @Inject
-    public MachineFSMountStrategy(@Named("vfs.local.fs_root_dir") String mountProjectsRoot) {
+    public MachineFSMountStrategy(@Named("che.user.workspaces.storage") String mountProjectsRoot) {
         this.mountProjectsRoot = mountProjectsRoot;
     }
 

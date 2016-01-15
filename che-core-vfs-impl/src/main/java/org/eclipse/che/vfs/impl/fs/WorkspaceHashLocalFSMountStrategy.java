@@ -50,7 +50,7 @@ public class WorkspaceHashLocalFSMountStrategy implements LocalFSMountStrategy {
     private final java.io.File mountTempRoot;
 
     @Inject
-    public WorkspaceHashLocalFSMountStrategy(@Named("vfs.local.fs_root_dir") java.io.File mountRoot,
+    public WorkspaceHashLocalFSMountStrategy(@Named("che.user.workspaces.storage") java.io.File mountRoot,
                                              @Named("vfs.local.tmp_workspace_fs_root_dir") java.io.File mountTempRoot) {
         this.mountRoot = mountRoot;
         this.mountTempRoot = mountTempRoot;
