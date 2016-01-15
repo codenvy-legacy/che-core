@@ -1207,12 +1207,22 @@ public class DarkTheme implements Theme {
 
     @Override
     public String projectExplorerSelectedRowBackground() {
-        return "#256c9f";
+        return "rgba(215, 215, 215, 0.2)";
+    }
+
+    @Override
+    public String projectExplorerSelectedRowBorder() {
+        return "#4eabff";
     }
 
     @Override
     public String projectExplorerHoverRowBackground() {
-        return "#555";
+        return "rgba(215, 215, 215, 0.1)";
+    }
+
+    @Override
+    public String projectExplorerHoverRowBorder() {
+        return "#dbdbdb";
     }
 
     @Override

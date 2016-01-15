@@ -13,7 +13,10 @@
 @eval projectExplorerPresentableTextShadow org.eclipse.che.ide.api.theme.Style.theme.projectExplorerPresentableTextShadow();
 @eval projectExplorerInfoTextShadow org.eclipse.che.ide.api.theme.Style.theme.projectExplorerInfoTextShadow();
 @eval projectExplorerSelectedRowBackground org.eclipse.che.ide.api.theme.Style.theme.projectExplorerSelectedRowBackground();
+@eval projectExplorerSelectedRowBorder org.eclipse.che.ide.api.theme.Style.theme.projectExplorerSelectedRowBorder();
 @eval projectExplorerHoverRowBackground org.eclipse.che.ide.api.theme.Style.theme.projectExplorerHoverRowBackground();
+@eval projectExplorerHoverRowBorder org.eclipse.che.ide.api.theme.Style.theme.projectExplorerHoverRowBorder();
+
 
 .noFocusOutline {
     outline: none;
@@ -81,6 +84,23 @@
 
 .hover {
     background-color: projectExplorerHoverRowBackground !important;
+}
+
+.hover::after {
+    background: projectExplorerHoverRowBorder;
+}
+
+.selected::after {
+    background: projectExplorerSelectedRowBorder;
+}
+
+.selected::after,
+.hover::after {
+    content: "";
+    width: 1px;
+    height: 20px;
+    position: absolute;
+    left: 0;
 }
 
 .joint {
