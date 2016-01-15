@@ -48,7 +48,7 @@ public class WorkspaceToDirectoryMappingService {
     private VirtualFileSystemRegistry virtualFileSystemRegistry;
 
     @Inject
-    @Named("vfs.local.fs_root_dir")
+    @Named("che.user.workspaces.storage")
     String rootDir;
 
     @POST
