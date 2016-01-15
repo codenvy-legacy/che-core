@@ -25,7 +25,9 @@ public class OAuthAuthenticatorProviderImpl implements OAuthAuthenticatorProvide
     @Inject
     public OAuthAuthenticatorProviderImpl(Set<OAuthAuthenticator> oAuthAuthenticators) {
         for (OAuthAuthenticator authenticator : oAuthAuthenticators) {
-            authenticatorMap.put(authenticator.getOAuthProvider(), authenticator);
+            if (authenticator.isConfigured()) {
+                authenticatorMap.put(authenticator.getOAuthProvider(), authenticator);
+            }
         }
     }
 
