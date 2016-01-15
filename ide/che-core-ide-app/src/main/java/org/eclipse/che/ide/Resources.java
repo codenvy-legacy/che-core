@@ -110,9 +110,6 @@ public interface Resources extends Tree.Resources,
     @Source("xml/xml.svg")
     SVGResource xmlFile();
 
-    @Source("about/logo.png")
-    ImageResource logo();
-
     @Source("console/clear.svg")
     SVGResource clear();
 
