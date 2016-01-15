@@ -11,12 +11,15 @@
 /* Default annotated CSS for Tree.java */
 /* @def treeIndent 14px; */
 @eval hoverRowBackground org.eclipse.che.ide.api.theme.Style.theme.projectExplorerHoverRowBackground();
+@eval hoverRowBorder org.eclipse.che.ide.api.theme.Style.theme.projectExplorerHoverRowBorder();
+@eval selectedRowBackground org.eclipse.che.ide.api.theme.Style.theme.projectExplorerSelectedRowBackground();
+@eval selectedRowBorder org.eclipse.che.ide.api.theme.Style.theme.projectExplorerSelectedRowBorder();
 @eval treeExpandArrowColor org.eclipse.che.ide.api.theme.Style.theme.treeExpandArrowColor();
 @eval treeExpandArrowShadow org.eclipse.che.ide.api.theme.Style.theme.treeExpandArrowShadow();
 
 .treeRoot {
-    padding-left: 0px;
-    margin: 0px 0px 0px 2px;
+    padding-left: 0;
+    margin: 0 0 0 2px;
     position: absolute;
     top: 0;
     left: 0;
@@ -57,6 +60,10 @@
     background-color: hoverRowBackground;
 }
 
+.treeNodeBody:hover::after {
+    background-color: hoverRowBorder;
+}
+
 .expandControl {
     display: inline-block;
     vertical-align: middle;
@@ -72,7 +79,7 @@
     fill: treeExpandArrowColor;
     -webkit-filter: drop-shadow( treeExpandArrowShadow );
     margin-left: 3px;
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 /* We have no icon, just a spacer */
@@ -92,7 +99,23 @@
 
 .active,
 .selected {
-    background-color: selectionBackground ! important;
+    background-color: selectedRowBackground ! important;
+}
+
+.active::after,
+.selected::after {
+    background-color: selectedRowBorder;
+}
+
+.active::after,
+.selected::after,
+.selectedInactive::after,
+.treeNodeBody:hover::after {
+    content: "";
+    width: 1px;
+    height: 18px;
+    position: absolute;
+    left: 0;
 }
 
 .active,
@@ -101,7 +124,11 @@
 }
 
 .selectedInactive {
-    background-color: inactiveSelectionBackground ! important;
+    background-color: hoverRowBackground ! important;
+}
+
+.selectedInactive::after {
+    background-color: hoverRowBorder;
 }
 
 .isDropTarget {
