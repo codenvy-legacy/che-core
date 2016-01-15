@@ -349,7 +349,7 @@ public class SelectionModel implements HasSelectionHandlers<Node>, HasBeforeSele
     protected void onKeyLeft(NativeEvent ce) {
         ce.preventDefault();
         if (lastSelectedNode != null && !tree.isLeaf(lastSelectedNode) && tree.isExpanded(lastSelectedNode)) {
-            tree.setExpanded(lastSelectedNode, false);
+            tree.setExpanded(lastSelectedNode, false, true);
         } else if (lastSelectedNode != null && nodeStorage.getParent(lastSelectedNode) != null) {
             doSingleSelect(nodeStorage.getParent(lastSelectedNode), false);
         }
