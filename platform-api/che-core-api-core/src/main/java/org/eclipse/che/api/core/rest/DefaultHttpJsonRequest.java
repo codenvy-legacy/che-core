@@ -276,4 +276,15 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "DefaultHttpJsonRequest{" +
+               "url='" + url + '\'' +
+               ", timeout=" + timeout +
+               ", method='" + method + '\'' +
+               ", body=" + body +
+               ", queryParams=" + queryParams +
+               '}';
+    }
 }
