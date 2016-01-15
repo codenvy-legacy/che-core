@@ -112,7 +112,7 @@ import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogViewImpl;
 import org.eclipse.che.ide.icon.IconRegistryImpl;
 import org.eclipse.che.ide.keybinding.KeyBindingManager;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
-import org.eclipse.che.ide.logger.AnalyticsEventLoggerImpl;
+import org.eclipse.che.ide.logger.DummyAnalyticsLoger;
 import org.eclipse.che.ide.menu.MainMenuView;
 import org.eclipse.che.ide.menu.MainMenuViewImpl;
 import org.eclipse.che.ide.menu.StatusPanelGroupView;
@@ -266,8 +266,8 @@ public class CoreGinModule extends AbstractGinModule {
         bind(ThemeAgent.class).to(ThemeAgentImpl.class).in(Singleton.class);
         bind(FileTypeRegistry.class).to(FileTypeRegistryImpl.class).in(Singleton.class);
 
-        bind(AnalyticsEventLogger.class).to(AnalyticsEventLoggerImpl.class).in(Singleton.class);
-        bind(AnalyticsEventLoggerExt.class).to(AnalyticsEventLoggerImpl.class).in(Singleton.class);
+        bind(AnalyticsEventLogger.class).to(DummyAnalyticsLoger.class).in(Singleton.class);
+        bind(AnalyticsEventLoggerExt.class).to(DummyAnalyticsLoger.class).in(Singleton.class);
 
         configureComponents();
         configureProjectWizard();
