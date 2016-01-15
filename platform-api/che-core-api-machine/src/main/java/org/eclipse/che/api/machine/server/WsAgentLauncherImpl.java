@@ -86,7 +86,10 @@ public class WsAgentLauncherImpl implements WsAgentLauncher {
             final HttpJsonRequest wsAgentPingRequest = createPingRequest(devMachine);
 
             long pingStartTimestamp = System.currentTimeMillis();
-            LOG.debug("Starts pinging ws agent with url {} at {}", wsAgentPingRequest, pingStartTimestamp);
+            LOG.debug("Starts pinging ws agent. Workspace ID:{}. Url:{}. Timestamp:{}",
+                      workspaceId,
+                      wsAgentPingRequest,
+                      pingStartTimestamp);
 
             while (System.currentTimeMillis() - pingStartTimestamp < wsAgentMaxStartTimeMs) {
                 if (pingWsAgent(wsAgentPingRequest)) {
@@ -98,7 +101,7 @@ public class WsAgentLauncherImpl implements WsAgentLauncher {
         } catch (BadRequestException wsAgentLaunchingExc) {
             throw new MachineException(wsAgentLaunchingExc.getLocalizedMessage(), wsAgentLaunchingExc);
         }
-        throw new MachineException("Workspace agent is not responding. Workspace will be stopped");
+        throw new MachineException("Workspace agent is not responding. Workspace " + workspaceId + " will be stopped");
     }
 
     private HttpJsonRequest createPingRequest(Instance devMachine) {
