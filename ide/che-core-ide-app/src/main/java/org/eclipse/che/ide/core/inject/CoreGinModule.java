@@ -66,7 +66,6 @@ import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.icon.IconRegistry;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.parts.ConsolePart;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
@@ -126,9 +125,6 @@ import org.eclipse.che.ide.part.FocusManager;
 import org.eclipse.che.ide.part.PartStackPresenter;
 import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
 import org.eclipse.che.ide.part.PartStackViewImpl;
-import org.eclipse.che.ide.part.console.ConsolePartPresenter;
-import org.eclipse.che.ide.part.console.ConsolePartView;
-import org.eclipse.che.ide.part.console.ConsolePartViewImpl;
 import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.editor.EditorPartStackView;
 import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
@@ -346,8 +342,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(IconRegistry.class).to(IconRegistryImpl.class).in(Singleton.class);
         // UI Model
         bind(EditorPartStack.class).to(EditorPartStackPresenter.class).in(Singleton.class);
-        // Parts
-        bind(ConsolePart.class).to(ConsolePartPresenter.class).in(Singleton.class);
         bind(ActionManager.class).to(ActionManagerImpl.class).in(Singleton.class);
 
         GinMultibinder<NodeInterceptor> nodeInterceptors = GinMultibinder.newSetBinder(binder(), NodeInterceptor.class);
@@ -382,7 +376,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(NotificationManagerView.class).to(NotificationManagerViewImpl.class).in(Singleton.class);
 
         bind(EditorPartStackView.class);
-        bind(ConsolePartView.class).to(ConsolePartViewImpl.class).in(Singleton.class);
 
         bind(MessageDialogFooter.class);
         bind(MessageDialogView.class).to(MessageDialogViewImpl.class);
