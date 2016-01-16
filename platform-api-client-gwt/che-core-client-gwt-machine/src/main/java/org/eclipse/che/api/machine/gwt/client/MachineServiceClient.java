@@ -27,11 +27,13 @@ import java.util.List;
  * @author Dmitry Shnurenko
  */
 public interface MachineServiceClient {
+
     /**
      * Get machine information by it's id.
      *
      * @param machineId
      *         ID of the machine
+     * @return a promise that resolves to the {@link MachineDto}, or rejects with an error
      */
     Promise<MachineDto> getMachine(@NotNull String machineId);
 
@@ -40,6 +42,7 @@ public interface MachineServiceClient {
      *
      * @param machineId
      *         ID of the machine
+     * @return a promise that resolves to the {@link MachineStateDto}, or rejects with an error
      */
     Promise<MachineStateDto> getMachineState(@NotNull String machineId);
 
@@ -48,14 +51,16 @@ public interface MachineServiceClient {
      *
      * @param workspaceId
      *         workspace id
-     * @return list of machines
+     * @return a promise that will provide a list of {@link MachineDto}s for the given workspace ID, or rejects with an error
      */
     Promise<List<MachineDto>> getWorkspaceMachines(String workspaceId);
 
     /**
      * Find machines states bound to the workspace.
      *
-     * @param workspaceId workspace id
+     * @param workspaceId
+     *         workspace id
+     * @return a promise that will provide a list of {@link MachineStateDto}s for the given workspace ID, or rejects with an error
      */
     Promise<List<MachineStateDto>> getMachinesStates(@NotNull String workspaceId);
 
@@ -64,6 +69,7 @@ public interface MachineServiceClient {
      *
      * @param machineId
      *         ID of machine that should be destroyed
+     * @return a promise that will resolve when the machine has been destroyed, or rejects with an error
      */
     Promise<Void> destroyMachine(@NotNull String machineId);
 
@@ -76,6 +82,7 @@ public interface MachineServiceClient {
      *         the command that should be executed in the machine
      * @param outputChannel
      *         websocket chanel for execution logs
+     * @return a promise that resolves to the {@link MachineProcessDto}, or rejects with an error
      */
     Promise<MachineProcessDto> executeCommand(@NotNull String machineId,
                                               @NotNull Command command,
@@ -86,6 +93,7 @@ public interface MachineServiceClient {
      *
      * @param machineId
      *         ID of machine to get processes information from
+     * @return a promise that will provide a list of {@link MachineProcessDto}s for the given machine ID
      */
     Promise<List<MachineProcessDto>> getProcesses(@NotNull String machineId);
 
@@ -96,28 +104,9 @@ public interface MachineServiceClient {
      *         ID of the machine where process should be stopped
      * @param processId
      *         ID of the process to stop
+     * @return a promise that will resolve when the process has been stopped, or rejects with an error
      */
     Promise<Void> stopProcess(@NotNull String machineId, int processId);
-
-    /**
-     * Bind project to machine.
-     *
-     * @param machineId
-     *         machine where project should be bound
-     * @param projectPath
-     *         project that should be bound
-     */
-    Promise<Void> bindProject(@NotNull String machineId, @NotNull String projectPath);
-
-    /**
-     * Unbind project from machine.
-     *
-     * @param machineId
-     *         machine where project should be unbound
-     * @param projectPath
-     *         project that should be unbound
-     */
-    Promise<Void> unbindProject(@NotNull String machineId, @NotNull String projectPath);
 
     /**
      * Get file content.
@@ -130,6 +119,7 @@ public interface MachineServiceClient {
      *         line number to start reading from
      * @param limit
      *         limitation on line
+     * @return a promise that will provide the file content, or rejects with an error
      */
     Promise<String> getFileContent(@NotNull String machineId, @NotNull String path, int startFrom, int limit);
 }
