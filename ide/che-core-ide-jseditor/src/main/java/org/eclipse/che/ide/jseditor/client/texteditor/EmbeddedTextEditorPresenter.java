@@ -546,14 +546,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
             if (types != null && !types.isEmpty()) {
                 result.addAll(types);
             }
-            // use the registered media type if there is one
-            final String storedContentType = file.getMediaType();
-            if (storedContentType != null
-                && !storedContentType.isEmpty()
-                // give another chance at detection
-                && !DEFAULT_CONTENT_TYPE.equals(storedContentType)) {
-                result.add(storedContentType);
-            }
         }
 
         // ultimate fallback - can't make more generic for text
