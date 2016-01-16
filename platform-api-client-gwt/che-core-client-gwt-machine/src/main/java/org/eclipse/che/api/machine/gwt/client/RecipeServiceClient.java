@@ -14,9 +14,9 @@ import org.eclipse.che.api.machine.shared.dto.recipe.NewRecipe;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeDescriptor;
 import org.eclipse.che.api.machine.shared.dto.recipe.RecipeUpdate;
 import org.eclipse.che.api.promises.client.Promise;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import javax.validation.constraints.NotNull;
-import org.eclipse.che.commons.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -32,16 +32,33 @@ public interface RecipeServiceClient {
      *
      * @param newRecipe
      *         describer of the recipe
+     * @return a promise that resolves to the {@link RecipeDescriptor}, or rejects with an error
      */
     Promise<RecipeDescriptor> createRecipe(@NotNull final NewRecipe newRecipe);
 
-    /** Get recipe script by recipe's ID. */
+    /**
+     * Get recipe script by recipe's ID.
+     *
+     * @param id
+     *         recipe's ID
+     * @return a promise that will provide the recipe's script, or rejects with an error
+     */
     Promise<String> getRecipeScript(@NotNull String id);
 
-    /** Get recipe by ID. */
+    /**
+     * Get recipe by ID.
+     *
+     * @param id
+     *         recipe's ID
+     * @return a promise that resolves to the {@link RecipeDescriptor}, or rejects with an error
+     */
     Promise<RecipeDescriptor> getRecipe(@NotNull String id);
 
-    /** Get all recipes. */
+    /**
+     * Get all recipes.
+     *
+     * @return a promise that will provide a list of {@link RecipeDescriptor}s, or rejects with an error
+     */
     Promise<List<RecipeDescriptor>> getAllRecipes();
 
     /**
@@ -51,6 +68,7 @@ public interface RecipeServiceClient {
      *         count of items which should be skipped
      * @param maxItems
      *         max count of items to fetch
+     * @return a promise that will provide a list of {@link RecipeDescriptor}s, or rejects with an error
      */
     Promise<List<RecipeDescriptor>> getRecipes(int skipCount, int maxItems);
 
@@ -66,6 +84,7 @@ public interface RecipeServiceClient {
      *         count of items which should be skipped
      * @param maxItems
      *         max count of items to fetch
+     * @return a promise that will provide a list of {@link RecipeDescriptor}s, or rejects with an error
      */
     Promise<List<RecipeDescriptor>> searchRecipes(@NotNull List<String> tags, @Nullable String type, int skipCount, int maxItems);
 
@@ -74,9 +93,16 @@ public interface RecipeServiceClient {
      *
      * @param recipeUpdate
      *         describer of the recipe updater
+     * @return a promise that resolves to the {@link RecipeDescriptor}, or rejects with an error
      */
     Promise<RecipeDescriptor> updateRecipe(@NotNull RecipeUpdate recipeUpdate);
 
-    /** Remove recipe with the given ID. */
+    /**
+     * Remove recipe with the given ID.
+     *
+     * @param id
+     *         recipe's ID
+     * @return a promise that will resolve when the recipe has been removed, or rejects with an error
+     */
     Promise<Void> removeRecipe(@NotNull String id);
 }
