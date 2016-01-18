@@ -30,27 +30,6 @@ public interface PartStackUIResources extends ClientBundle {
         @ClassName("ide-PartStack-Content")
         String idePartStackContent();
 
-        @ClassName("ide-Base-Part-Toolbar-Bottom")
-        String idePartStackToolbarBottom();
-
-        @ClassName("ide-Base-Part-Toolbar-Separator")
-        String idePartStackToolbarSeparator();
-
-        @ClassName("ide-Base-Part-Toolbar-Bottom-Icon")
-        String idePartStackToolbarBottomIcon();
-
-        @ClassName("ide-Base-Part-Toolbar-Bottom-Button")
-        String idePartStackToolbarBottomButton();
-
-        @ClassName("ide-Base-Part-Toolbar-Bottom-Button-Right")
-        String idePartStackToolbarBottomButtonRight();
-
-        @ClassName("ide-Base-Part-Toolbar-Center-Panel-Project-Title")
-        String idePartStackToolbarCenterPanelProjectTitle();
-
-        @ClassName("ide-Base-Part-Toolbar-Project-Title")
-        String idePartStackToolbarProjectTitle();
-
         @ClassName("ide-Base-Part-Title-Label")
         String ideBasePartTitleLabel();
 
@@ -59,9 +38,6 @@ public interface PartStackUIResources extends ClientBundle {
 
         @ClassName("ide-PartStack-Tab-Line-Error")
         String lineError();
-
-        @ClassName("ide-part-stack-header-menu-button")
-        String headerMenuButton();
 
         @ClassName("leftTabs")
         String leftTabs();
@@ -79,7 +55,6 @@ public interface PartStackUIResources extends ClientBundle {
         String selectedBottomTab();
 
         String listItemPanel();
-
     }
 
     @Source({"partstack.css", "org/eclipse/che/ide/api/ui/style.css"})
@@ -96,9 +71,6 @@ public interface PartStackUIResources extends ClientBundle {
     @Source("collapse-expand-icon.svg")
     SVGResource collapseExpandIcon();
 
-    @Source("wrap-text.svg")
-    SVGResource wrapText();
-
     @Source("arrow-bottom.svg")
     SVGResource arrowBottom();
 
@@ -107,5 +79,4 @@ public interface PartStackUIResources extends ClientBundle {
 
     @Source("close-icon.svg")
     SVGResource closeIcon();
-
 }

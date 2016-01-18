@@ -26,27 +26,27 @@
 
     <g:DockLayoutPanel unit="PX" width="100%" height="100%" addStyleNames="{resources.workBenchCss.ideWorkBenchParentPanel}">
         <g:east size="24">
-            <g:FlowPanel ui:field="rightPanel" addStyleNames="{resources.workBenchCss.ideWorkBenchToolPanelRight}"/>
+            <g:FlowPanel ui:field="rightPanelContainer" debugId="rightPanel"/>
         </g:east>
         <g:west size="24">
-            <g:FlowPanel ui:field="leftPanel" addStyleNames="{resources.workBenchCss.ideWorkBenchToolPanelLeft}"/>
+            <g:FlowPanel ui:field="leftPanelContainer" debugId="leftPanel"/>
         </g:west>
         <g:south size="24">
-            <g:FlowPanel ui:field="bottomPanel" addStyleNames="{resources.workBenchCss.ideWorkBenchToolPanelBottom}"/>
+            <g:FlowPanel ui:field="bottomPanelContainer" debugId="bottomPanel"/>
         </g:south>
         <g:center>
             <g:SplitLayoutPanel ui:field="splitPanel" width="100%" height="100%">
                 <g:south size="0">
                     <g:SimpleLayoutPanel ui:field="infoPanel" width="100%" height="100%"
-                                   addStyleNames="{resources.workBenchCss.ideWorkBenchSplitPanelBottom}"/>
+                                   addStyleNames="{resources.workBenchCss.ideWorkBenchSplitPanelBottom}" debugId="infoPanel"/>
                 </g:south>
                 <g:west size="0">
                     <g:SimplePanel ui:field="navPanel" width="100%" height="100%"
-                                   addStyleNames="{resources.workBenchCss.ideWorkBenchSplitPanelLeft}"/>
+                                   addStyleNames="{resources.workBenchCss.ideWorkBenchSplitPanelLeft}" debugId="navPanel"/>
                 </g:west>
                 <g:east size="0">
                     <g:SimplePanel ui:field="toolPanel" width="100%" height="100%"
-                                   addStyleNames="{resources.workBenchCss.ideWorkBenchSplitPanelRight}"/>
+                                   addStyleNames="{resources.workBenchCss.ideWorkBenchSplitPanelRight}" debugId="toolPanel"/>
                 </g:east>
                 <g:center>
                     <g:ScrollPanel debugId="editorPanel" ui:field="editorPanel" width="100%" height="100%" addStyleNames="{style.bg}"/>
