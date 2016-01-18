@@ -12,6 +12,7 @@ package org.eclipse.che.ide.actions;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -19,6 +20,10 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.editor.EditorPartPresenter;
+import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
+import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
+import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
@@ -41,25 +46,38 @@ public class CopyAction extends Action {
 
     private PasteAction    pasteAction;
     private SelectionAgent agent;
+    private PartPresenter  activePart;
 
     @Inject
     public CopyAction(Resources resources,
                       AnalyticsEventLogger eventLogger,
                       ProjectExplorerPresenter projectExplorer,
                       CoreLocalizationConstant localization,
-                      AppContext appContext, PasteAction pasteAction, SelectionAgent agent) {
+                      AppContext appContext,
+                      PasteAction pasteAction,
+                      SelectionAgent agent,
+                      EventBus eventBus) {
         super(localization.copyItemsActionText(), localization.copyItemsActionDescription(), null, resources.copy());
         this.projectExplorer = projectExplorer;
         this.eventLogger = eventLogger;
         this.appContext = appContext;
         this.pasteAction = pasteAction;
         this.agent = agent;
+
+        eventBus.addHandler(ActivePartChangedEvent.TYPE, new ActivePartChangedHandler() {
+            @Override
+            public void onActivePartChanged(ActivePartChangedEvent event) {
+                activePart = event.getActivePart();
+            }
+        });
     }
 
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
-        if ((appContext.getCurrentProject() == null && !appContext.getCurrentUser().isUserPermanent())) {
+        if ((appContext.getCurrentProject() == null
+             && !appContext.getCurrentUser().isUserPermanent()
+             && !(activePart instanceof EditorPartPresenter))) {
             e.getPresentation().setVisible(true);
             e.getPresentation().setEnabled(false);
             return;
@@ -74,6 +92,10 @@ public class CopyAction extends Action {
      * @return <b>true</b> if the selection can be copied, otherwise returns <b>false</b>
      */
     private boolean canCopySelection() {
+        if (activePart instanceof EditorPartPresenter) {
+            return false;
+        }
+
         Selection<?> selection = agent.getSelection();
         if (selection == null || selection.isEmpty()) {
             return false;
