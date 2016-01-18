@@ -38,7 +38,6 @@
         <url>https://github.com/codenvy/che-core</url>
     </scm>
     <properties>
-        <maven.model.version>3.0.5</maven.model.version>
         <specification.version>1.0-beta2</specification.version>
     </properties>
     <repositories>

@@ -41,7 +41,6 @@
         <module>che-core-api-infrastructure-local</module>
     </modules>
     <properties>
-        <maven.model.version>3.0.5</maven.model.version>
         <specification.version>1.0-beta2</specification.version>
     </properties>
 </project>
