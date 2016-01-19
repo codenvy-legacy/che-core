@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,12 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.util;
 
-import org.eclipse.che.ide.api.extension.Extension;
-
 import org.apache.commons.io.FileUtils;
+import org.eclipse.che.ide.api.extension.Extension;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurationBuilder.*;
 
 /**
  * Generates {ExtensionManager} class source
@@ -187,7 +186,7 @@ public class ExtensionManagerGenerator {
      */
     @SuppressWarnings("unchecked")
     public static void findExtensions() throws IOException {
-        Reflections reflection = new Reflections(new SubTypesScanner(), new TypeAnnotationsScanner());
+        Reflections reflection = new Reflections(getConfigurationBuilder());
         Set<Class<?>> classes = reflection.getTypesAnnotatedWith(Extension.class);
         for (Class clazz : classes) {
             EXTENSIONS_FQN.put(clazz.getCanonicalName(), clazz.getSimpleName());

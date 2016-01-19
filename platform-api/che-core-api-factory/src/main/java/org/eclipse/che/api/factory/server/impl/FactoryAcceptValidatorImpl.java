@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.eclipse.che.api.factory.server.impl;
 
 import org.eclipse.che.api.account.server.dao.AccountDao;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.factory.server.FactoryAcceptValidator;
 import org.eclipse.che.api.factory.shared.dto.Factory;
@@ -31,7 +32,7 @@ public class FactoryAcceptValidatorImpl extends FactoryBaseValidator implements 
     }
 
     @Override
-    public void validateOnAccept(Factory factory) throws ConflictException {
+    public void validateOnAccept(Factory factory) throws BadRequestException {
         validateCurrentTimeBetweenSinceUntil(factory);
         validateProjectActions(factory);
     }

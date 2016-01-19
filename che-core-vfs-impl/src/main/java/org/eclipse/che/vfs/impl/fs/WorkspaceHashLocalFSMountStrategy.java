@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -50,7 +50,7 @@ public class WorkspaceHashLocalFSMountStrategy implements LocalFSMountStrategy {
     private final java.io.File mountTempRoot;
 
     @Inject
-    public WorkspaceHashLocalFSMountStrategy(@Named("vfs.local.fs_root_dir") java.io.File mountRoot,
+    public WorkspaceHashLocalFSMountStrategy(@Named("che.user.workspaces.storage") java.io.File mountRoot,
                                              @Named("vfs.local.tmp_workspace_fs_root_dir") java.io.File mountTempRoot) {
         this.mountRoot = mountRoot;
         this.mountTempRoot = mountTempRoot;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,10 +21,14 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.editor.AbstractEditorPresenter;
 import org.eclipse.che.ide.api.editor.EditorInput;
+import org.eclipse.che.ide.api.event.FileEvent;
+import org.eclipse.che.ide.api.event.FileEventHandler;
+import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
@@ -37,22 +41,28 @@ import javax.validation.constraints.NotNull;
  *
  * @author Ann Shumilova
  */
-public class ImageViewer extends AbstractEditorPresenter {
+public class ImageViewer extends AbstractEditorPresenter implements FileEventHandler {
 
     private ImageViewerResources     resources;
     private CoreLocalizationConstant constant;
     private DialogFactory            dialogFactory;
+    private WorkspaceAgent           workspaceAgent;
     private ScrollPanel              editorView;
 
     @Inject
     public ImageViewer(ImageViewerResources resources,
                        CoreLocalizationConstant constant,
-                       DialogFactory dialogFactory) {
+                       DialogFactory dialogFactory,
+                       EventBus eventBus,
+                       WorkspaceAgent workspaceAgent) {
         this.resources = resources;
         this.constant = constant;
         this.dialogFactory = dialogFactory;
+        this.workspaceAgent = workspaceAgent;
 
         resources.imageViewerCss().ensureInjected();
+
+        eventBus.addHandler(FileEvent.TYPE, this);
     }
 
     /** {@inheritDoc} */
@@ -157,18 +167,35 @@ public class ImageViewer extends AbstractEditorPresenter {
     protected void initializeEditor() {
     }
 
+    /** {@inheritDoc} */
     @Override
     public void close(final boolean save) {
         // nothing to do
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setVisible(boolean visible) {
         editorView.setVisible(visible);
     }
 
+    /** {@inheritDoc} */
     @Override
     public IsWidget getView() {
         return editorView;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onFileOperation(FileEvent event) {
+        if (event.getOperationType() != FileEvent.FileOperation.CLOSE) {
+            return;
+        }
+
+        final String eventFilePath = event.getFile().getPath();
+        final String filePath = input.getFile().getPath();
+        if (filePath.equals(eventFilePath)) {
+            workspaceAgent.removePart(this);
+        }
     }
 }

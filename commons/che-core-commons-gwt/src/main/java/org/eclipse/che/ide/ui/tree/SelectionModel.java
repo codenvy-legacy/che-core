@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -278,7 +278,6 @@ public class SelectionModel<D> {
     }
 
     private void insertAndSelectNode(D nodeData, int insertionIndex, boolean selectingNewNode) {
-
         // Visually represent it.
         visuallySelect(nodeData, selectingNewNode);
 
@@ -345,7 +344,6 @@ public class SelectionModel<D> {
     private void visuallySelect(D nodeData, boolean isSelected) {
         TreeNodeElement<D> renderedNode = dataAdapter.getRenderedTreeNode(nodeData);
         if (renderedNode != null) {
-//            renderedNode.setSelected(isSelected, css);
             renderedNode.setSelected(isSelected, active, css);
         }
     }

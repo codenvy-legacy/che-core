@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,7 +34,7 @@ public class GitUrlResolver {
     private final String            gitServerUriPrefix;
 
     @Inject
-    public GitUrlResolver(@Named("vfs.local.fs_root_dir") java.io.File mountRoot, @Named("git.server.uri.prefix") String gitServerUriPrefix, LocalPathResolver pathResolver) {
+    public GitUrlResolver(@Named("che.user.workspaces.storage") java.io.File mountRoot, @Named("git.server.uri.prefix") String gitServerUriPrefix, LocalPathResolver pathResolver) {
         this.mountPath = mountRoot.getAbsolutePath();
         this.pathResolver = pathResolver;
         this.gitServerUriPrefix = gitServerUriPrefix;

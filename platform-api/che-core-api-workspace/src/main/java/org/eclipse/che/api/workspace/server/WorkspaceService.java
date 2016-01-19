@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,11 +11,11 @@
 package org.eclipse.che.api.workspace.server;
 
 import com.google.common.collect.Maps;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
@@ -47,7 +47,6 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -95,20 +94,22 @@ public class WorkspaceService extends Service {
     private final WorkspaceManager  workspaceManager;
     private final PermissionManager permissionManager;
     private final MachineManager    machineManager;
+    //TODO: we need keep IDE context in some property to have possibility configure it because context is different in Che and Hosted packaging
+    //TODO: not good solution do it here but critical for this task  https://jira.codenvycorp.com/browse/IDEX-3619
+    private final String            ideContext;
 
     @Context
     private SecurityContext securityContext;
 
-    @Context
-    private ServletContext servletContext;
-
     @Inject
     public WorkspaceService(WorkspaceManager workspaceManager,
                             MachineManager machineManager,
-                            @Named("service.workspace.permission_manager") PermissionManager permissionManager) {
+                            @Named("service.workspace.permission_manager") PermissionManager permissionManager,
+                            @Named("che.ide.context") String ideContext) {
         this.workspaceManager = workspaceManager;
         this.machineManager = machineManager;
         this.permissionManager = permissionManager;
+        this.ideContext = ideContext;
     }
 
     @POST
@@ -862,7 +863,7 @@ public class WorkspaceService extends Service {
 
         //TODO here we add url to IDE with workspace name not good solution do it here but critical for this task  https://jira.codenvycorp.com/browse/IDEX-3619
         links.add(createLink("GET", uriBuilder.clone()
-                                              .replacePath(servletContext.getContextPath())
+                                              .replacePath(ideContext)
                                               .path(workspace.getName())
                                               .build()
                                               .toString(),

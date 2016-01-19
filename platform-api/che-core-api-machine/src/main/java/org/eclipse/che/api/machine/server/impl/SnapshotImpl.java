@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,8 +39,8 @@ public class SnapshotImpl implements Snapshot {
     private final boolean isDev;
     private final long    creationDate;
 
-    private String      description;
-    private InstanceKey instanceKey;
+    private String          description;
+    private InstanceKeyImpl instanceKey;
 
     public SnapshotImpl(Snapshot snapshot) {
         this(snapshot.getId(),
@@ -71,7 +71,7 @@ public class SnapshotImpl implements Snapshot {
         this.workspaceId = requireNonNull(workspaceId, "Required non-null workspace id for snapshot");
         this.machineName = requireNonNull(machineName, "Required non-null snapshot machine name");
         this.envName = requireNonNull(envName, "Required non-null environment name for snapshot");
-        this.instanceKey = instanceKey;
+        this.instanceKey = instanceKey != null ? new InstanceKeyImpl(instanceKey) : null;
         this.description = description;
         this.isDev = isDev;
         this.creationDate = creationDate;
@@ -127,7 +127,7 @@ public class SnapshotImpl implements Snapshot {
     }
 
     public void setInstanceKey(InstanceKey instanceKey) {
-        this.instanceKey = instanceKey;
+        this.instanceKey = instanceKey != null ? new InstanceKeyImpl(instanceKey.getFields()) : null;
     }
 
     public void setDescription(String description) {

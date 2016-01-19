@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,15 +11,21 @@
 package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.project.shared.dto.ProjectImporterData;
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Provide information about registered ProjectImporter's via REST.
@@ -31,19 +37,23 @@ public class ProjectImportersService extends Service {
 
     private final ProjectImporterRegistry importersRegistry;
 
+    private final Map<String, String> configuration;
+
     @Inject
-    public ProjectImportersService(ProjectImporterRegistry importersRegistry) {
+    public ProjectImportersService(ProjectImporterRegistry importersRegistry,
+                                   @Named("project.importer.default_importer_id") String defaultProjectImporter) {
         this.importersRegistry = importersRegistry;
+
+        this.configuration = new HashMap<>();
+        this.configuration.put("default-importer", defaultProjectImporter);
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectImporterDescriptor> getImporters() {
-        final List<ProjectImporter> importers = importersRegistry.getImporters();
-        final List<ProjectImporterDescriptor> descriptors = new ArrayList<>(importers.size());
-        for (ProjectImporter importer : importers) {
-            descriptors.add(DtoConverter.toImporterDescriptor(importer));
-        }
-        return descriptors;
+    public ProjectImporterData getImportersData() {
+        final List<ProjectImporterDescriptor> importers = importersRegistry.getImporters().stream()
+                                                                 .map(DtoConverter::toImporterDescriptor)
+                                                                 .collect(Collectors.toList());
+        return newDto(ProjectImporterData.class).withImporters(importers).withConfiguration(configuration);
     }
 }

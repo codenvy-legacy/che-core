@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.eclipse.che.api.workspace.gwt.client;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 
+import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.machine.shared.dto.SnapshotDto;
@@ -20,7 +21,6 @@ import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
-import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.RuntimeWorkspaceDto;
@@ -146,20 +146,6 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     @Override
     public Promise<List<RuntimeWorkspaceDto>> getRuntimeWorkspaces(int skip, int limit) {
         return null;
-    }
-
-    @Override
-    public Promise<UsersWorkspaceDto> getWorkspaceById(final String workspaceId) {
-        return newPromise(new RequestCall<UsersWorkspaceDto>() {
-            @Override
-            public void makeCall(AsyncCallback<UsersWorkspaceDto> callback) {
-                final String url = baseHttpUrl + "/" + workspaceId;
-                asyncRequestFactory.createGetRequest(url)
-                                   .header(ACCEPT, APPLICATION_JSON)
-                                   .loader(loaderFactory.newLoader("Getting info about workspace..."))
-                                   .send(newCallback(callback, dtoUnmarshallerFactory.newUnmarshaller(UsersWorkspaceDto.class)));
-            }
-        });
     }
 
     @Override
@@ -338,7 +324,7 @@ public class WorkspaceServiceClientImpl implements WorkspaceServiceClient {
     }
 
     @Override
-    public Promise<MachineStateDto> createMachine(final String wsId,final MachineConfigDto machineConfig) {
+    public Promise<MachineStateDto> createMachine(final String wsId, final MachineConfigDto machineConfig) {
         return newPromise(new RequestCall<MachineStateDto>() {
             @Override
             public void makeCall(AsyncCallback<MachineStateDto> callback) {

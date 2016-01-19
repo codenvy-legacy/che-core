@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,12 +12,11 @@ package org.eclipse.che.api.factory.server.impl;
 
 import org.eclipse.che.api.account.server.dao.AccountDao;
 import org.eclipse.che.api.account.server.dao.Member;
-import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.factory.server.FactoryEditValidator;
-import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.factory.shared.dto.Author;
+import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.commons.env.EnvironmentContext;
 
 import javax.inject.Inject;
@@ -45,11 +44,13 @@ public class FactoryEditValidatorImpl implements FactoryEditValidator {
      *
      * @param factory
      *         factory object to validate
-     * @throws org.eclipse.che.api.core.ApiException
-     *         - in case if factory is not valid
+     * @throws ForbiddenException
+     *         occurs if the current user is not granted to edit the factory
+     * @throws ServerException
+     *         when any server error occurs
      */
     @Override
-    public void validate(Factory factory) throws ApiException {
+    public void validate(Factory factory) throws ForbiddenException, ServerException {
         // ensure user has the correct permissions
         final String userId = EnvironmentContext.getCurrent().getUser().getId();
         boolean granted = validateAuthor(factory, userId);
@@ -64,15 +65,19 @@ public class FactoryEditValidatorImpl implements FactoryEditValidator {
 
     /**
      * Ensures that the given user is the same author than the one that has created the factory
-     * @param factory the factory to check
-     * @param userId the user id to check
+     *
+     * @param factory
+     *         the factory to check
+     * @param userId
+     *         the user id to check
      * @return true if this is matching, else false
      */
-    protected boolean validateAuthor(Factory factory, String userId) throws ApiException {
+    protected boolean validateAuthor(Factory factory, String userId) throws ServerException {
         // Checks if there is an author from the factory (It may be missing for some old factories)
         Author author = factory.getCreator();
         if (author == null || author.getUserId() == null) {
-            throw new ServerException(format("Invalid factory without author stored. Please contact the support about the factory ID '%s'", factory.getId()));
+            throw new ServerException(format("Invalid factory without author stored. Please contact the support about the factory ID '%s'",
+                                             factory.getId()));
         }
 
         // Gets the userId of the factory
@@ -84,11 +89,15 @@ public class FactoryEditValidatorImpl implements FactoryEditValidator {
 
     /**
      * Ensures that the given user may be an account owner
-     * @param factory the factory to check
-     * @param userId the user id to check
-     * @throws org.eclipse.che.api.core.ApiException
+     *
+     * @param factory
+     *         the factory to check
+     * @param userId
+     *         the user id to check
+     * @throws org.eclipse.che.api.core.ForbiddenException
+     *         occurs when cobra attack
      */
-    protected void validateAccountOwner(Factory factory, String userId) throws ApiException {
+    protected void validateAccountOwner(Factory factory, String userId) throws ForbiddenException, ServerException {
         // Checks if there is an author from the factory (It may be missing for some old factories)
         // And if there is an accountID
         Author author = factory.getCreator();

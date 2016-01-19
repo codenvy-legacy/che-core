@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -50,25 +50,5 @@ public interface AnalyticsEventLogger {
      */
     void log(Object action);
 
-    /**
-     * Logs a client-side IDE event without. Method is deprecated and isn't used anymore.
-     * Please uses {@link #log(Object, String, java.util.Map)}
-     */
-    @Deprecated
-    void log(Class<?> actionClass, String actionName, Map<String, String> additionalParams);
 
-    /**
-     * Logs a client-side IDE event without. Method is deprecated and isn't used anymore.
-     * Please uses {@link #log(Object, String)}
-     */
-    @Deprecated
-    void log(Class<?> actionClass, String actionName);
-
-
-    /**
-     * Logs a client-side IDE event without. Method is deprecated and isn't used anymore.
-     * Please uses {@link #log(Object)}}
-     */
-    @Deprecated
-    void log(String action);
 }

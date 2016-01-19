@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -44,7 +44,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -206,6 +205,7 @@ public class EditorPartStackPresenterTest {
     public void tabShouldBeClosed() {
         presenter.addPart(partPresenter1);
 
+        presenter.removePart(partPresenter1);
         presenter.onTabClose(editorTab1);
 
         verify(view).removeTab(partPresenter1);
@@ -231,6 +231,7 @@ public class EditorPartStackPresenterTest {
         presenter.addPart(partPresenter2);
 
         presenter.onTabClicked(editorTab2);
+        presenter.removePart(partPresenter2);
         presenter.onTabClose(editorTab2);
 
         assertEquals(presenter.getActivePart(), partPresenter1);

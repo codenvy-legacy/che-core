@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,17 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.popup;
 
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.Timer;
-import elemental.dom.Document;
 import elemental.dom.Element;
-import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.events.EventListener;
 import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
 import elemental.html.ClientRect;
 import elemental.html.Window;
+
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Timer;
 
 import org.eclipse.che.ide.util.dom.Elements;
 
@@ -55,13 +54,13 @@ public abstract class PopupWidget<T> {
      */
     private Element previousFocus;
 
-    public PopupWidget(final PopupResources popupResources) {
+    public PopupWidget(final PopupResources popupResources, String title) {
         this.popupResources = popupResources;
 
         popupElement = Elements.createDivElement(popupResources.popupStyle().popup());
 
         Element headerElement = Elements.createDivElement(popupResources.popupStyle().header());
-        headerElement.setInnerText("Proposals:");
+        headerElement.setInnerText(title);
         popupElement.appendChild(headerElement);
 
         popupBodyElement = Elements.createDivElement(popupResources.popupStyle().body());

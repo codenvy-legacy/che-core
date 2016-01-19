@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -56,7 +56,6 @@ import org.eclipse.che.ide.actions.UndoAction;
 import org.eclipse.che.ide.actions.UploadFileAction;
 import org.eclipse.che.ide.actions.UploadFolderAction;
 import org.eclipse.che.ide.actions.find.FindActionAction;
-import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -87,8 +86,6 @@ import org.eclipse.che.ide.util.browser.UserAgent;
 import org.eclipse.che.ide.util.input.KeyCodeMap;
 import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
-
-import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
 import static org.eclipse.che.ide.api.constraints.Constraints.FIRST;
@@ -387,58 +384,7 @@ public class StandardComponentInitializer {
         actionManager.registerAction("downloadAsZipAction", downloadAsZipAction);
         workspaceGroup.add(downloadAsZipAction);
 
-        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
-        workspaceGroup.add(showHiddenFilesAction);
-
         workspaceGroup.addSeparator();
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Export...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Import...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Clone...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
-
-        workspaceGroup.add(new AbstractPerspectiveAction(null, "Stop...", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
 
         // Project (New Menu)
         DefaultActionGroup projectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT);
@@ -473,6 +419,9 @@ public class StandardComponentInitializer {
         projectGroup.add(uploadFolderAction);
 
         projectGroup.add(downloadAsZipAction);
+
+        actionManager.registerAction("showHideHiddenFiles", showHiddenFilesAction);
+        projectGroup.add(showHiddenFilesAction);
 
         projectGroup.addSeparator();
 
@@ -522,18 +471,6 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("findActionAction", findActionAction);
         assistantGroup.add(findActionAction);
-
-        assistantGroup.add(new AbstractPerspectiveAction(null, "Find Text", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
 
         actionManager.registerAction("hotKeysList", hotKeysListAction);
         assistantGroup.add(hotKeysListAction);

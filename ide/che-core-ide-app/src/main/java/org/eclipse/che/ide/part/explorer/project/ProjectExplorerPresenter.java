@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.part.explorer.project;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
@@ -62,6 +64,7 @@ import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.core.problemDialog.ProjectProblemDialog;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerView.ActionDelegate;
+import org.eclipse.che.ide.part.explorer.project.synchronize.ProjectConfigSynchronizationListener;
 import org.eclipse.che.ide.project.event.ProjectExplorerLoadedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent;
 import org.eclipse.che.ide.project.event.ResourceNodeDeletedEvent.ResourceNodeDeletedHandler;
@@ -74,6 +77,7 @@ import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.projecttype.wizard.presenter.ProjectWizardPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
@@ -82,6 +86,8 @@ import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +146,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                     Resources resources,
                                     DtoUnmarshallerFactory dtoUnmarshaller,
                                     ProjectServiceClient projectService,
-                                    NotificationManager notificationManager) {
+                                    NotificationManager notificationManager,
+                                    ProjectConfigSynchronizationListener synchronizationListener) {
         this.view = view;
         this.view.setDelegate(this);
 
@@ -166,42 +173,13 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         eventBus.addHandler(ResourceNodeRenamedEvent.getType(), this);
         eventBus.addHandler(ResourceNodeDeletedEvent.getType(), this);
         eventBus.addHandler(ModuleCreatedEvent.getType(), this);
+
+        addBeforeExpandHandler(synchronizationListener);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
-        reloadProjectTree();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onProjectCreated(CreateProjectEvent event) {
-        final ProjectConfigDto projectConfig = event.getProjectConfig();
-
-        if (projectConfig == null) {
-            return;
-        }
-
-        if (view.isGoIntoActivated()) {
-            view.resetGoIntoMode();
-        }
-
-        final ProjectNode node = nodeManager.wrap(projectConfig);
-
-        view.addNode(null, node);
-        view.select(node, false);
-
-        if (!projectConfig.getProblems().isEmpty()) {
-            notificationManager.notify(locale.projectExplorerInvalidProjectDetected(), locale.projectExplorerDetectedUnconfiguredProject(),
-                                       projectConfig);
-            askUserToSetUpProject(projectConfig);
-        }
-
-    }
-
-    //TODO: temporary fix to make accept factory working
-    public void reloadProjectTree() {
         nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
             @Override
             public void apply(List<Node> nodes) throws OperationException {
@@ -220,6 +198,51 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                 notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
             }
         });
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onExtServerStopped(ExtServerStateEvent event) {
+        view.removeAllNodes();
+        appContext.setCurrentProject(null);
+        queryFieldViewer.setProjectName("");
+        notificationManager.notify(locale.projectExplorerExtensionServerStopped(),
+                                   locale.projectExplorerExtensionServerStoppedDescription(), FAIL, false);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void onProjectCreated(CreateProjectEvent event) {
+        final ProjectConfigDto projectConfig = event.getProjectConfig();
+
+        if (projectConfig == null) {
+            return;
+        }
+
+        List<Node> nodes = view.getAllNodes();
+
+        for (Node node : nodes) {
+            if (node.getName().equals(projectConfig.getName())) {
+                view.removeNode(node, true);
+            }
+        }
+
+        if (view.isGoIntoActivated()) {
+            view.resetGoIntoMode();
+        }
+
+        final ProjectNode node = nodeManager.wrap(projectConfig);
+
+        view.addNode(null, node);
+        view.select(node, false);
+
+        if (!projectConfig.getProblems().isEmpty()) {
+            notificationManager.notify(locale.projectExplorerInvalidProjectDetected(),
+                                       locale.projectExplorerDetectedUnconfiguredProject(), projectConfig);
+            //TODO move this logic to separate component
+            askUserToSetUpProject(projectConfig);
+        }
+
     }
 
     private void askUserToSetUpProject(final ProjectConfigDto descriptor) {
@@ -298,6 +321,8 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         if (view.isExpanded(node) && view.isLoaded(node)) {
             view.reloadChildren(node, true);
         }
+
+        updateAppContext(Collections.<Node>singletonList(node));
     }
 
     /** {@inheritDoc} */
@@ -375,16 +400,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
 
     /** {@inheritDoc} */
     @Override
-    public void onExtServerStopped(ExtServerStateEvent event) {
-        view.removeAllNodes();
-        appContext.setCurrentProject(null);
-        queryFieldViewer.setProjectName("");
-        notificationManager.notify(locale.projectExplorerExtensionServerStopped(),
-                                   locale.projectExplorerExtensionServerStoppedDescription(), FAIL, false);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void onModuleCreated(ModuleCreatedEvent event) {
         if (isGoIntoActivated()) {
             resetGoIntoMode();
@@ -414,7 +429,13 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     public void onConfigureProject(ConfigureProjectEvent event) {
         final ProjectConfigDto toConfigure = event.getProject();
         if (toConfigure != null) {
-            projectConfigWizard.show(toConfigure);
+            Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                @Override
+                public void execute() {
+                    //Scheduler need to wait when configuration wizard will create and prepare wizard pages
+                    projectConfigWizard.show(toConfigure);
+                }
+            });
         }
     }
 
@@ -757,7 +778,7 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     }
 
     /**
-     * Register befor node expand handler to allow custom functionality retrieve before expand event from the project tree.
+     * Register before node expand handler to allow custom functionality retrieve before expand event from the project tree.
      *
      * @param handler
      *         before expand handler
@@ -765,6 +786,17 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
      */
     public HandlerRegistration addBeforeExpandHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler) {
         return view.addBeforeExpandHandler(handler);
+    }
+
+    /**
+     * Register before node load handler to allow custom functionality retrieve before load event from the project tree.
+     *
+     * @param handler
+     *         before load handler
+     * @return handler registration
+     */
+    public HandlerRegistration addBeforeNodeLoadHandler(BeforeLoadEvent.BeforeLoadHandler handler) {
+        return view.addBeforeNodeLoadHandler(handler);
     }
 
     /**
@@ -805,4 +837,51 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         return view.getRootNodes();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void onRefreshProjectsRequested() {
+        //TODO method should be removed when new vfs will be implemented, but at this moment we need this method to handle refresh button
+        //click to synchronize project state between client and server
+        nodeManager.getProjectNodes().then(new Operation<List<Node>>() {
+            @Override
+            public void apply(List<Node> nodes) throws OperationException {
+                List<Node> sameNodes = new ArrayList<>(view.getRootNodes());
+                sameNodes.retainAll(nodes);
+
+                List<Node> removedNodes = new ArrayList<>(view.getRootNodes());
+                removedNodes.removeAll(sameNodes);
+                for (final Node node : removedNodes) {
+                    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                        @Override
+                        public void execute() {
+                            view.removeNode(node, true);
+                        }
+                    });
+                }
+
+                List<Node> addedNodes = new ArrayList<>(nodes);
+                addedNodes.removeAll(sameNodes);
+                for (final Node node : addedNodes) {
+                    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                        @Override
+                        public void execute() {
+                            view.addNode(null, node);
+                        }
+                    });
+                }
+
+                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        view.reloadChildren(null, true);
+                    }
+                });
+            }
+        }).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                notificationManager.notify(locale.projectExplorerProjectsLoadFailed());
+            }
+        });
+    }
 }

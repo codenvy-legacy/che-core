@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,9 @@ import org.eclipse.che.ide.api.project.tree.TreeNode;
  * Event uses for updating treeNodes data after rename
  *
  * @author Alexander Andrienko
+ * @deprecated event should be removed because renaming node is useless in current state
  */
+@Deprecated
 public class RenameNodeEvent extends GwtEvent<RenameNodeEventHandler> {
 
     public static final Type<RenameNodeEventHandler> TYPE = new Type<>();

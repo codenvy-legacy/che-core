@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.user.gwt.client;
 
+import com.google.inject.Inject;
+
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
 import org.eclipse.che.ide.MimeType;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -17,13 +19,11 @@ import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 
-import com.google.inject.Inject;
-
 import javax.validation.constraints.NotNull;
 
+import static com.google.gwt.http.client.RequestBuilder.DELETE;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENT_TYPE;
-import static com.google.gwt.http.client.RequestBuilder.DELETE;
 
 /**
  * Implementation of {@link UserServiceClient}.
@@ -97,8 +97,8 @@ public class UserServiceClientImpl implements UserServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void getUserByEmail(@NotNull String email, AsyncRequestCallback<UserDescriptor> callback) {
-        String requestUrl = FIND + "?email=" + email;
+    public void getUserByAlias(@NotNull String alias, AsyncRequestCallback<UserDescriptor> callback) {
+        String requestUrl = FIND + "?alias=" + alias;
 
         asyncRequestFactory.createGetRequest(requestUrl)
                            .header(ACCEPT, MimeType.APPLICATION_JSON)

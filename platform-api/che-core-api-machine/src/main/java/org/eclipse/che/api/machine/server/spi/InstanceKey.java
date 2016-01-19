@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,14 +17,8 @@ import java.util.Map;
  *
  * @author andrew00x
  * @author Alexander Garagatyi
+ * @author Sergii Kabashniuk
  */
 public interface InstanceKey {
     Map<String, String> getFields();
-
-    boolean equals(Object o);
-
-    int hashCode();
-
-    /** Serializes this {@code InstanceKey} in JSON format. */
-    String toJson();
 }

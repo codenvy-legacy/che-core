@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -416,10 +416,6 @@ public class Style {
         return theme.getDelimeterColor();
     }
 
-    public static String getOutputFontColor() {
-        return theme.getOutputFontColor();
-    }
-
     public static String getOutputLinkColor() {
         return theme.getOutputLinkColor();
     }
@@ -536,10 +532,6 @@ public class Style {
         return theme.getPrimaryHighlightColor();
     }
 
-    public static String getIconColor() {
-        return theme.getIconColor();
-    }
-
     public static String getSeparatorColor() {
         return theme.getSeparatorColor();
     }
@@ -572,27 +564,4 @@ public class Style {
         return theme.getListBoxDropdownBackgroundColor();
     }
 
-    public static String getProjectExplorerJointContainerFill() {
-        return theme.getProjectExplorerJointContainerFill();
-    }
-
-    public static String getProjectExplorerJointContainerShadow() {
-        return theme.getProjectExplorerJointContainerShadow();
-    }
-
-    public static String getProjectExplorerPresentableTextShadow() {
-        return theme.getProjectExplorerPresentableTextShadow();
-    }
-
-    public static String getProjectExplorerInfoTextShadow() {
-        return theme.getProjectExplorerInfoTextShadow();
-    }
-
-    public static String getProjectExplorerSelectedRowBackground() {
-        return theme.getProjectExplorerSelectedRowBackground();
-    }
-
-    public static String getProjectExplorerHoverRowBackground() {
-        return theme.getProjectExplorerHoverRowBackground();
-    }
 }

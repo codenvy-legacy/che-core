@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 package org.eclipse.che.commons.xml;
 
 
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -98,6 +97,25 @@ public class XMLTreeTest {
     @BeforeMethod
     private void resetLineSeparator() {
         System.setProperty("line.separator", "\n");
+    }
+
+    @Test(expectedExceptions = XMLTreeException.class)
+    public void shouldThrowExceptionWhenXMLContentContainsDoctypeDeclaration() throws Exception {
+        String xml = "<?xml version=\"1.0\"?>\n" +
+                     "<!DOCTYPE lolz [\n" +
+                     "<!ENTITY lol \"lol\">\n" +
+                     "<!ENTITY lol2 \"&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;\">\n" +
+                     "<!ENTITY lol3 \"&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;\">\n" +
+                     "<!ENTITY lol4 \"&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;\">\n" +
+                     "<!ENTITY lol5 \"&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;\">\n" +
+                     "<!ENTITY lol6 \"&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;\">\n" +
+                     "<!ENTITY lol7 \"&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;\">\n" +
+                     "<!ENTITY lol8 \"&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;\">\n" +
+                     "<!ENTITY lol9 \"&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;\">\n" +
+                     "]>\n" +
+                     "<lolz>&lol9;</lolz>";
+
+        XMLTree.from(xml);
     }
 
     @Test
@@ -1687,7 +1705,11 @@ public class XMLTreeTest {
     @Test(dataProvider = "custom-xml-files")
     public void shouldBeAbleToCreateTreeFromCustomXML(File xml) throws IOException {
         //should be able to parse file
-        XMLTree.from(xml);
+        try {
+            XMLTree.from(xml);
+        } catch (XMLTreeException ex) {
+            throw new XMLTreeException(ex.getMessage() + " file: " + xml.getAbsolutePath());
+        }
     }
 
     @DataProvider(name = "custom-xml-files")

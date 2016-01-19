@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -79,6 +79,19 @@ public interface ProjectManager {
      *         if workspace id will be null
      */
     ProjectConfigDto getProjectFromWorkspace(@NotNull String wsId, @NotNull String projectPath) throws ServerException;
+
+    /**
+     * Returns all projects which are in workspace.
+     *
+     * @param workspaceId
+     *         id of workspace to get projects
+     * @return list of of {@link ProjectConfigDto}
+     * @throws ServerException
+     *         if some error occurs
+     * @throws IllegalArgumentException
+     *         if workspace id will be null
+     */
+    List<ProjectConfigDto> getAllProjectsFromWorkspace(@NotNull String workspaceId) throws ServerException;
 
     /**
      * Creates new project.

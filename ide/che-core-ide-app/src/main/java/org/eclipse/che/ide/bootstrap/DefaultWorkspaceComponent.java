@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -109,11 +109,13 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
                     } else {
                         for (UsersWorkspaceDto workspace : workspaces) {
                             if (wsNameFromBrowser.equals(workspace.getName())) {
+                                Log.info(getClass(), workspace.getName());
                                 startWorkspaceById(workspace);
                                 return;
                             }
                         }
                     }
+                    createWorkspacePresenter.show(workspaces, callback);
                 }
             }
         }).catchError(new Operation<PromiseError>() {
@@ -124,8 +126,6 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
                 dialogFactory.createMessageDialog(locale.getWsErrorDialogTitle(),
                                                   locale.getWsErrorDialogContent(error.getMessage()),
                                                   null).show();
-
-                callback.onFailure(new Exception(error.getCause()));
             }
         });
     }

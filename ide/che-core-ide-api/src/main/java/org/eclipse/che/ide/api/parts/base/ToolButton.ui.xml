@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (c) 2012-2015 Codenvy, S.A.
+    Copyright (c) 2012-2016 Codenvy, S.A.
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the Eclipse Public License v1.0
     which accompanies this distribution, and is available at
@@ -15,54 +15,54 @@
              xmlns:g="urn:import:com.google.gwt.user.client.ui">
 
     <ui:style>
-
-        .controlPanel {
-            float: left;
-            overflow: hidden;
-
-            -moz-box-sizing: border-box !important;
-            box-sizing: border-box !important;
-
-            -webkit-user-select: none;
-            user-select: none;
-        }
+        @eval toolButtonSvgFill org.eclipse.che.ide.api.theme.Style.theme.toolButtonSvgFill();
+        @eval toolButtonBorder org.eclipse.che.ide.api.theme.Style.theme.toolButtonBorder();
+        @eval toolButtonHoverBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonHoverBackgroundColor();
+        @eval toolButtonActiveBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonActiveBackgroundColor();
+        @eval toolButtonHoverBoxShadow org.eclipse.che.ide.api.theme.Style.theme.toolButtonHoverBoxShadow();
+        @eval toolButtonActiveBoxShadow org.eclipse.che.ide.api.theme.Style.theme.toolButtonActiveBoxShadow();
 
         .button {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-
-            left: 2px;
-            top: 3px;
-
-            overflow: hidden;
-            border-radius: 2px;
+            width: 22px;
+            height: 22px;
         }
 
-        .iconPanel {
-            overflow: hidden;
+        .button svg {
+            display: block;
             position: absolute;
-            width: 10px;
-            height: 10px;
-            left: 3px;
-            top: 3px;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            width: 45%;
+            height: 45%;
+            padding: 3px;
+            fill: toolButtonSvgFill;
+
+            -webkit-transition: background-color 0.2s ease-in-out,
+                                box-shadow 0.2s ease-in-out,
+                                fill-opacity 0.2s ease-in-out;
+            transition: background-color 0.2s ease-in-out,
+                        box-shadow 0.2s ease-in-out,
+                        fill-opacity 0.2s ease-in-out;
         }
 
-        .iconPanel svg {
-            position: absolute;
-            left: 0px;
-            top: 0px;
-
-            width: 10px;
-            height: 10px;
+        .button:hover svg {
+            border: toolButtonBorder;
+            border-radius: 3px;
+            background-color: toolButtonHoverBackgroundColor;
+            box-shadow: toolButtonHoverBoxShadow;
         }
 
+        .button:active svg {
+            border: toolButtonBorder;
+            border-radius: 3px;
+            background-color: toolButtonActiveBackgroundColor;
+            box-shadow: toolButtonActiveBoxShadow;
+            fill-opacity: 0.8;
+        }
     </ui:style>
 
-    <g:HTML styleName="{style.controlPanel}" ui:field="controlPanel">
-        <div class="{style.button}" ui:field="buttonPanel">
-            <div class="{style.iconPanel}" ui:field="iconPanel"></div>
-        </div>
-    </g:HTML>
-
+    <g:FlowPanel ui:field="iconPanel" stylePrimaryName="{style.button}"/>
 </ui:UiBinder>

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,17 +33,19 @@ import org.eclipse.che.ide.api.ProductInfoDataProvider;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
-import org.eclipse.che.ide.api.event.project.ProjectReadyEvent;
-import org.eclipse.che.ide.api.event.project.ProjectReadyHandler;
+import org.eclipse.che.ide.bootstrap.StartUpActionsProcessor;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
+import org.eclipse.che.ide.util.StartUpAction;
+import org.eclipse.che.ide.util.StartUpActionsParser;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -91,6 +93,7 @@ public class BootstrapController {
 
     @Inject
     void startComponents(final Map<String, Provider<Component>> components) {
+        processStartupActionUrl();
         startComponents(components.values().iterator());
     }
 
@@ -103,6 +106,7 @@ public class BootstrapController {
                 public void onSuccess(Component result) {
                     Log.info(getClass(), result.getClass());
                     startComponents(componentProviderIterator);
+                    Log.info(getClass(), "components started");
                 }
 
                 @Override
@@ -117,7 +121,7 @@ public class BootstrapController {
 
     private void componentStartFail(Exception reason) {
         Log.error(BootstrapController.class, reason);
-        initializationFailed(reason);
+        initializationFailed(reason.getMessage());
     }
 
     /** Start extensions */
@@ -156,8 +160,6 @@ public class BootstrapController {
         workspacePresenter.go(mainPanel);
 
         Document.get().setTitle(productInfoDataProvider.getDocumentTitle());
-
-        processStartupParameters();
 
         final AnalyticsSessions analyticsSessions = new AnalyticsSessions();
 
@@ -231,31 +233,9 @@ public class BootstrapController {
         }
     }
 
-    private void processStartupParameters() {
-        final String projectNameToOpen = appContext.getWorkspace().getName();
-        if (projectNameToOpen != null) {
-            eventBus.addHandler(ProjectReadyEvent.TYPE, getStartupActionHandler());
-        } else {
-            processStartupAction();
-        }
-    }
 
-    private ProjectReadyHandler getStartupActionHandler() {
-        return new ProjectReadyHandler() {
-            //process action only after opening project
-
-            @Override
-            public void onProjectReady(ProjectReadyEvent event) {
-                processStartupAction();
-            }
-        };
-    }
-
-    private void processStartupAction() {
-        final String startupAction = queryFieldRenderer.getParameterFromURLByName("action");
-        if (!startupAction.isEmpty()) {
-            actionManager.performAction(startupAction, null);
-        }
+    private void processStartupActionUrl(){
+        appContext.setStartUpActions(StartUpActionsParser.getStartUpActions());
     }
 
     /**
@@ -265,7 +245,7 @@ public class BootstrapController {
      * @param reason
      *         failure encountered
      */
-    private native void initializationFailed(Exception reason) /*-{
+    private native void initializationFailed(String reason) /*-{
         try {
             $wnd.IDE.eventHandlers.initializationFailed(reason);
         } catch (e) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,14 +15,18 @@ import com.google.gwt.view.client.ProvidesKey;
 /**
  * ModelKeyProviders are responsible for returning a unique key for a given
  * model.
- * 
- * @param <T> the model type
+ *
+ * @param <T>
+ *         the model type
+ * @author Vlad Zhukovskyi
  */
 public interface UniqueKeyProvider<T> extends ProvidesKey<T> {
 
-  /**
-   * Gets a non-null key value that maps to this object. Keys must be consistent and
-   * unique for a given model, as a database primary key would be used.
-   */
-  String getKey(T item);
+    /**
+     * Gets a non-null key value that maps to this object. Keys must be consistent and
+     * unique for a given model, as a database primary key would be used.
+     *
+     * @return non-null {@link String} key for {@link T} object
+     */
+    String getKey(T item);
 }

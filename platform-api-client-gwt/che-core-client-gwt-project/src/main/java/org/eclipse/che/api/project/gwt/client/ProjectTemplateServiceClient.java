@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,10 +25,12 @@ public interface ProjectTemplateServiceClient {
     /**
      * Get information about all registered project templates for the specified {@code projectTypeId}.
      *
+     * @param tags
+     *         tags which associated with project templates
      * @param callback
      *         the callback to use for the response
      */
-    void getProjectTemplates(@NotNull String projectTypeId, @NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
+    void getProjectTemplates(@NotNull List<String> tags, @NotNull AsyncRequestCallback<List<ProjectTemplateDescriptor>> callback);
 
     /**
      * Get information about all registered project templates.

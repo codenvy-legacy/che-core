@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,6 @@ import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
 import org.eclipse.che.ide.api.editor.EditorOpenedEventHandler;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.parts.ConsolePart;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.debug.Breakpoint;
@@ -42,7 +41,6 @@ import org.eclipse.che.ide.jseditor.client.document.Document;
 import org.eclipse.che.ide.jseditor.client.texteditor.EmbeddedTextEditorPresenter;
 
 import javax.inject.Inject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -70,7 +68,6 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     private final Map<String, List<Breakpoint>> breakpoints;
     private final EditorAgent                   editorAgent;
     private final DebuggerManager               debuggerManager;
-    private final ConsolePart                   console;
     private final DtoFactory                    dtoFactory;
 
 
@@ -80,13 +77,11 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     @Inject
     public BreakpointManagerImpl(final EditorAgent editorAgent,
                                  final DebuggerManager debuggerManager,
-                                 final ConsolePart console,
                                  final EventBus eventBus,
                                  final DtoFactory dtoFactory) {
         this.editorAgent = editorAgent;
         this.breakpoints = new HashMap<>();
         this.debuggerManager = debuggerManager;
-        this.console = console;
         this.debuggerState = DISCONNECTED;
         this.dtoFactory = dtoFactory;
 
@@ -624,10 +619,7 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
                 BreakpointManagerImpl.this.onLineChange(file, firstLine, linesAdded, linesRemoved);
             }
         });
-
-        if (debuggerState == CONNECTED && breakpoint.isActive()) {
-            breakpointRenderer.setBreakpointActive(lineNumber, true);
-        }
+        breakpointRenderer.setBreakpointActive(lineNumber, breakpoint.isActive());
     }
 
     private void preserveBreakpoints() {

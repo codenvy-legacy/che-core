@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,11 +11,11 @@
 package org.eclipse.che.api.project.server;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 import org.apache.commons.fileupload.FileItem;
 import org.eclipse.che.api.core.BadRequestException;
@@ -48,6 +48,7 @@ import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
+import org.eclipse.che.api.workspace.shared.dto.ProjectProblemDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
@@ -87,6 +88,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import static org.eclipse.che.api.project.server.DtoConverter.toProjectConfig;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 
 /**
@@ -150,30 +154,65 @@ public class ProjectService extends Service {
 
         for (Project project : projects) {
             try {
-                projectConfigs.add(DtoConverter.toProjectConfig(project, getServiceContext().getServiceUriBuilder()));
+                projectConfigs.add(toProjectConfig(project, getServiceContext().getServiceUriBuilder()));
             } catch (RuntimeException exception) {
                 // Ignore known error for single project.
                 // In result we won't have them in explorer tree but at least 'bad' projects won't prevent to show 'good' projects.
                 LOG.warn(exception.getMessage(), exception);
 
                 NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-                projectConfigs.add(DtoConverter.toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder()));
+                projectConfigs.add(toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder()));
             }
         }
 
-        FolderEntry projectsRoot = projectManager.getProjectsRoot(workspace);
+        addNotSynchronizedProjectsFromVFS(projectConfigs, workspace);
+        addNotSynchronizedProjectsFromWorkspace(projectConfigs, workspace);
+
+        return projectConfigs;
+    }
+
+    private void addNotSynchronizedProjectsFromVFS(List<ProjectConfigDto> projectConfigs, String workspaceId) throws ServerException,
+                                                                                                                     ValueStorageException,
+                                                                                                                     NotFoundException,
+                                                                                                                     ForbiddenException {
+        FolderEntry projectsRoot = projectManager.getProjectsRoot(workspaceId);
         List<VirtualFileEntry> children = projectsRoot.getChildren();
         for (VirtualFileEntry child : children) {
             if (child.isFolder()) {
                 FolderEntry folderEntry = (FolderEntry)child;
                 if (!projectManager.isProjectFolder(folderEntry)) {
-                    NotValidProject notValidProject = new NotValidProject(folderEntry, projectManager);
-                    projectConfigs.add(DtoConverter.toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder()));
+                    Project notValidProject = new Project(folderEntry, projectManager);
+
+                    ProjectConfigDto projectConfig = toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder());
+
+                    ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(9)
+                                                                                   .withMessage("Project is not synchronized");
+                    projectConfig.getProblems().add(projectProblem);
+
+                    projectConfigs.add(projectConfig);
                 }
             }
         }
+    }
 
-        return projectConfigs;
+    private void addNotSynchronizedProjectsFromWorkspace(List<ProjectConfigDto> projectConfigs,
+                                                         String workspaceId) throws ServerException,
+                                                                                    ValueStorageException,
+                                                                                    NotFoundException,
+                                                                                    ForbiddenException {
+        List<ProjectConfigDto> allProjectsFromWorkspace = projectManager.getAllProjectsFromWorkspace(workspaceId);
+
+        List<String> configsNames = projectConfigs.stream().map(ProjectConfigDto::getName).collect(Collectors.toList());
+
+        allProjectsFromWorkspace.stream()
+                                .filter(projectFromWorkspace -> !configsNames.contains(projectFromWorkspace.getName()))
+                                .forEach(projectFromWorkspace -> {
+                                    ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(10)
+                                                                                                .withMessage("Project is not synchronized");
+                                    projectFromWorkspace.getProblems().add(projectProblem);
+
+                                    projectConfigs.add(projectFromWorkspace);
+                                });
     }
 
     @ApiOperation(value = "Gets project by ID of workspace and project's path",
@@ -216,11 +255,11 @@ public class ProjectService extends Service {
         }
 
         try {
-            return DtoConverter.toProjectConfig(project, getServiceContext().getServiceUriBuilder());
+            return toProjectConfig(project, getServiceContext().getServiceUriBuilder());
         } catch (InvalidValueException e) {
             NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
 
-            return DtoConverter.toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder());
+            return toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder());
         }
     }
 
@@ -253,7 +292,7 @@ public class ProjectService extends Service {
                                                        projectConfigDto,
                                                        options);
 
-        ProjectConfigDto configDto = DtoConverter.toProjectConfig(project, getServiceContext().getServiceUriBuilder());
+        ProjectConfigDto configDto = toProjectConfig(project, getServiceContext().getServiceUriBuilder());
 
         eventService.publish(new ProjectCreatedEvent(workspace, project.getPath()));
 
@@ -350,6 +389,8 @@ public class ProjectService extends Service {
 
         FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(path);
         if (project != null) {
+            projectConfigDto.getProblems().clear();
+
             project = projectManager.updateProject(workspace, path, projectConfigDto);
             reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
         } else {
@@ -361,11 +402,11 @@ public class ProjectService extends Service {
             } catch (ConflictException | ForbiddenException | ServerException e) {
                 project = new NotValidProject(baseProjectFolder, projectManager);
 
-                return DtoConverter.toProjectConfig(project, getServiceContext().getServiceUriBuilder());
+                return toProjectConfig(project, getServiceContext().getServiceUriBuilder());
             }
         }
 
-        return DtoConverter.toProjectConfig(project, getServiceContext().getServiceUriBuilder());
+        return toProjectConfig(project, getServiceContext().getServiceUriBuilder());
     }
 
     @ApiOperation(value = "Estimates if the folder supposed to be project of certain type",
@@ -583,7 +624,15 @@ public class ProjectService extends Service {
                        @PathParam("ws-id") String workspace,
                        @ApiParam("Path to a resource to be deleted")
                        @PathParam("path") String path) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        filesBuffer.addToBufferRecursive(getVirtualFileEntry(workspace, path).getVirtualFile());
+        try {
+            filesBuffer.addToBufferRecursive(getVirtualFileEntry(workspace, path).getVirtualFile());
+        } catch (NotFoundException exception) {
+            LOG.warn(exception.getMessage(), exception);
+
+            projectManager.delete(workspace, path);
+
+            return;
+        }
 
         projectManager.delete(workspace, path);
     }

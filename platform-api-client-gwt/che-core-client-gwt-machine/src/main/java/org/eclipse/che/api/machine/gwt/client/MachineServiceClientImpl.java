@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,13 +12,12 @@ package org.eclipse.che.api.machine.gwt.client;
 
 import com.google.inject.Inject;
 
-import org.eclipse.che.api.machine.shared.dto.CommandDto;
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.machine.shared.dto.MachineDto;
 import org.eclipse.che.api.machine.shared.dto.MachineProcessDto;
 import org.eclipse.che.api.machine.shared.dto.MachineStateDto;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
-import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.RestContext;
@@ -39,7 +38,6 @@ import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
  * @author Dmitry Shnurenko
  */
 public class MachineServiceClientImpl implements MachineServiceClient {
-    private final DtoFactory             dtoFactory;
     private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
     private final AsyncRequestFactory    asyncRequestFactory;
     private final LoaderFactory          loaderFactory;
@@ -47,11 +45,9 @@ public class MachineServiceClientImpl implements MachineServiceClient {
 
     @Inject
     protected MachineServiceClientImpl(@RestContext String restContext,
-                                       DtoFactory dtoFactory,
                                        DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        AsyncRequestFactory asyncRequestFactory,
                                        LoaderFactory loaderFactory) {
-        this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.asyncRequestFactory = asyncRequestFactory;
         this.loaderFactory = loaderFactory;
@@ -93,19 +89,15 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     @Override
     public Promise<Void> destroyMachine(@NotNull final String machineId) {
         return asyncRequestFactory.createRequest(DELETE, baseHttpUrl + '/' + machineId, null, false)
-                           .loader(loaderFactory.newLoader("Destroying machine..."))
-                           .send();
+                                  .loader(loaderFactory.newLoader("Destroying machine..."))
+                                  .send();
     }
 
     @Override
     public Promise<MachineProcessDto> executeCommand(@NotNull final String machineId,
-                                                     @NotNull final String commandName,
-                                                     @NotNull final String commandLine,
+                                                     @NotNull final Command command,
                                                      @Nullable final String outputChannel) {
-        final CommandDto request = dtoFactory.createDto(CommandDto.class)
-                                             .withCommandLine(commandLine)
-                                             .withName(commandName);
-        return asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command?outputChannel=" + outputChannel, request)
+        return asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/command?outputChannel=" + outputChannel, command)
                                   .header(ACCEPT, APPLICATION_JSON)
                                   .loader(loaderFactory.newLoader("Executing command..."))
                                   .send(dtoUnmarshallerFactory.newUnmarshaller(MachineProcessDto.class));
@@ -123,20 +115,6 @@ public class MachineServiceClientImpl implements MachineServiceClient {
     public Promise<Void> stopProcess(@NotNull final String machineId, final int processId) {
         return asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/process/" + processId)
                                   .loader(loaderFactory.newLoader("Stopping process..."))
-                                  .send();
-    }
-
-    @Override
-    public Promise<Void> bindProject(@NotNull final String machineId, @NotNull final String projectPath) {
-        return asyncRequestFactory.createPostRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath, null)
-                                  .loader(loaderFactory.newLoader("Binding project to machine..."))
-                                  .send();
-    }
-
-    @Override
-    public Promise<Void> unbindProject(@NotNull final String machineId, @NotNull final String projectPath) {
-        return asyncRequestFactory.createDeleteRequest(baseHttpUrl + '/' + machineId + "/binding/" + projectPath)
-                                  .loader(loaderFactory.newLoader("Unbinding project from machine..."))
                                   .send();
     }
 

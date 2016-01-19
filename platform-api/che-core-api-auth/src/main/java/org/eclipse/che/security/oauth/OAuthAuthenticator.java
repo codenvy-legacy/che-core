@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,35 +49,34 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 public abstract class OAuthAuthenticator {
     private static final Logger LOG = LoggerFactory.getLogger(OAuthAuthenticator.class);
 
-    protected final AuthorizationCodeFlow flow;
+    private AuthorizationCodeFlow flow;
+    private Map<Pattern, String>  redirectUrisMap;
 
-    private final Map<Pattern, String> redirectUrisMap;
-
-    public OAuthAuthenticator(AuthorizationCodeFlow flow, List<String> redirectUris) {
-        this.flow = flow;
-        this.redirectUrisMap = new HashMap<>(redirectUris.size());
-        for (String uri : redirectUris) {
-            // Redirect URI may be in form urn:ietf:wg:oauth:2.0:oob os use java.net.URI instead of java.net.URL
-            this.redirectUrisMap.put(Pattern.compile("([a-z0-9\\-]+\\.)?" + URI.create(uri).getHost()), uri);
-        }
+    /**
+     * @see {@link #configure(String, String, String[], String, String, MemoryDataStoreFactory, List)}
+     */
+    protected void configure(String clientId, String clientSecret, String[] redirectUris, String authUri, String tokenUri,
+                             MemoryDataStoreFactory dataStoreFactory) throws IOException {
+        configure(clientId, clientSecret, redirectUris, authUri, tokenUri, dataStoreFactory, Collections.emptyList());
     }
 
-    public OAuthAuthenticator(String clientId, String clientSecret, String[] redirectUris, String authUri, String tokenUri,
-                              MemoryDataStoreFactory dataStoreFactory) throws IOException {
-
-        this(new AuthorizationCodeFlow.Builder(
-                     BearerToken.authorizationHeaderAccessMethod(),
-                     new NetHttpTransport(),
-                     new JacksonFactory(),
-                     new GenericUrl(tokenUri),
-                     new ClientParametersAuthentication(
-                             clientId,
-                             clientSecret),
-                     clientId,
-                     authUri
-             ).setDataStoreFactory(dataStoreFactory).build(),
-             Arrays.asList(redirectUris)
-            );
+    /**
+     * This method should be invoked by child class for initialization default instance of {@link AuthorizationCodeFlow}
+     * that will be used for authorization
+     */
+    protected void configure(String clientId, String clientSecret, String[] redirectUris, String authUri, String tokenUri,
+                             MemoryDataStoreFactory dataStoreFactory, List<String> scopes) throws IOException {
+        final AuthorizationCodeFlow authorizationFlow = new AuthorizationCodeFlow.Builder(BearerToken.authorizationHeaderAccessMethod(),
+                                                                                          new NetHttpTransport(),
+                                                                                          new JacksonFactory(),
+                                                                                          new GenericUrl(tokenUri),
+                                                                                          new ClientParametersAuthentication(
+                                                                                                  clientId,
+                                                                                                  clientSecret),
+                                                                                          clientId,
+                                                                                          authUri).setDataStoreFactory(dataStoreFactory)
+                                                                                                  .setScopes(scopes)
+                                                                                                  .build();
 
         LOG.debug("clientId={}, clientSecret={}, redirectUris={} , authUri={}, tokenUri={}, dataStoreFactory={}",
                   clientId,
@@ -85,8 +85,22 @@ public abstract class OAuthAuthenticator {
                   authUri,
                   tokenUri,
                   dataStoreFactory);
+
+        configure(authorizationFlow, Arrays.asList(redirectUris));
     }
 
+    /**
+     * This method should be invoked by child class for setting instance of {@link AuthorizationCodeFlow}
+     * that will be used for authorization
+     */
+    protected void configure(AuthorizationCodeFlow flow, List<String> redirectUris) {
+        this.flow = flow;
+        this.redirectUrisMap = new HashMap<>(redirectUris.size());
+        for (String uri : redirectUris) {
+            // Redirect URI may be in form urn:ietf:wg:oauth:2.0:oob os use java.net.URI instead of java.net.URL
+            this.redirectUrisMap.put(Pattern.compile("([a-z0-9\\-]+\\.)?" + URI.create(uri).getHost()), uri);
+        }
+    }
 
     /**
      * Create authentication URL.
@@ -104,6 +118,10 @@ public abstract class OAuthAuthenticator {
      * @return URL for authentication
      */
     public String getAuthenticateUrl(URL requestUrl, String userId, List<String> scopes) throws OAuthAuthenticationException {
+        if (!isConfigured()) {
+            throw new OAuthAuthenticationException("Authenticator is not configured");
+        }
+
         AuthorizationCodeRequestUrl url = flow.newAuthorizationUrl().setRedirectUri(findRedirectUrl(requestUrl))
                                               .setScopes(scopes);
         StringBuilder state = new StringBuilder();
@@ -148,6 +166,10 @@ public abstract class OAuthAuthenticator {
      *         if authentication failed or <code>requestUrl</code> does not contain required parameters, e.g. 'code'
      */
     public String callback(URL requestUrl, List<String> scopes) throws OAuthAuthenticationException {
+        if (!isConfigured()) {
+            throw new OAuthAuthenticationException("Authenticator is not configured");
+        }
+
         AuthorizationCodeResponseUrl authorizationCodeResponseUrl = new AuthorizationCodeResponseUrl(requestUrl.toString());
         final String error = authorizationCodeResponseUrl.getError();
         if (error != null) {
@@ -243,6 +265,10 @@ public abstract class OAuthAuthenticator {
      * @see org.eclipse.che.api.auth.oauth.OAuthTokenProvider#getToken(String, String)
      */
     public OAuthToken getToken(String userId) throws IOException {
+        if (!isConfigured()) {
+            throw new IOException("Authenticator is not configured");
+        }
+
         Credential credential = flow.loadCredential(userId);
         if (credential != null) {
             Long expirationTime = credential.getExpiresInSeconds();
@@ -274,5 +300,15 @@ public abstract class OAuthAuthenticator {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Checks configuring of authenticator
+     *
+     * @return true only if authenticator have valid configuration data and it is able to authorize
+     * otherwise returns false
+     */
+    public boolean isConfigured() {
+        return flow != null;
     }
 }

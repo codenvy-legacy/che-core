@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -102,6 +102,7 @@ public class MachineManager {
     private final String                   apiEndpoint;
     private final int                      defaultMachineMemorySizeMB;
     private final MachineCleaner           machineCleaner;
+    private final WsAgentLauncher          wsAgentLauncher;
 
     @Inject
     public MachineManager(SnapshotDao snapshotDao,
@@ -110,11 +111,13 @@ public class MachineManager {
                           @Named("machine.logs.location") String machineLogsDir,
                           EventService eventService,
                           @Named("machine.default_mem_size_mb") int defaultMachineMemorySizeMB,
-                          @Named("api.endpoint") String apiEndpoint) {
+                          @Named("api.endpoint") String apiEndpoint,
+                          WsAgentLauncher wsAgentLauncher) {
         this.snapshotDao = snapshotDao;
         this.machineInstanceProviders = machineInstanceProviders;
         this.eventService = eventService;
         this.apiEndpoint = apiEndpoint;
+        this.wsAgentLauncher = wsAgentLauncher;
         this.machineLogsDir = new File(machineLogsDir);
         this.machineRegistry = machineRegistry;
         this.defaultMachineMemorySizeMB = defaultMachineMemorySizeMB;
@@ -358,9 +361,13 @@ public class MachineManager {
                 instance = instanceProvider.createInstance(instanceKey, machineState, machineLogger);
             }
 
+            instance.setStatus(MachineStatus.RUNNING);
+
             machineRegistry.update(instance);
 
-            instance.setStatus(MachineStatus.RUNNING);
+            if (machineState.isDev()) {
+                wsAgentLauncher.startWsAgent(machineState.getWorkspaceId());
+            }
 
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.RUNNING)
@@ -369,7 +376,7 @@ public class MachineManager {
                                            .withWorkspaceId(machineState.getWorkspaceId())
                                            .withMachineName(machineState.getName()));
 
-        } catch (ServerException | ConflictException e) {
+        } catch (ServerException | ConflictException | InterruptedException e) {
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.ERROR)
                                            .withMachineId(machineState.getId())
@@ -626,9 +633,10 @@ public class MachineManager {
         requiredNotNull(command, "Command is required");
         requiredNotNull(command.getCommandLine(), "Command line is required");
         requiredNotNull(command.getName(), "Command name is required");
+        requiredNotNull(command.getType(), "Command type is required");
 
         final Instance machine = getMachine(machineId);
-        final InstanceProcess instanceProcess = machine.createProcess(command.getName(), command.getCommandLine());
+        final InstanceProcess instanceProcess = machine.createProcess(command, outputChannel);
         final int pid = instanceProcess.getPid();
 
         final LineConsumer processLogger = getProcessLogger(machineId, pid, outputChannel);
@@ -814,6 +822,13 @@ public class MachineManager {
 
             snapshotWithKey = new SnapshotImpl(snapshot);
             snapshotWithKey.setInstanceKey(machine.saveToSnapshot(machine.getOwner()));
+            //TODO remove old snapshot
+            try {
+                snapshotDao.removeSnapshot(snapshotDao.getSnapshot(snapshot.getWorkspaceId(), snapshot.getEnvName(), snapshot.getMachineName()).getId());
+            } catch (NotFoundException ignored) {
+               //DO nothing if we has no snapshots
+            }
+
             snapshotDao.saveSnapshot(snapshotWithKey);
 
             LOG.info("Snapshot of machine [ws = {}: env = {}: machine = {}] was successfully created, its id is '{}'",

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -124,26 +124,6 @@ public class AnalyticsEventLoggerTest {
         assertEquals(params.get(AnalyticsEventLoggerImpl.WS_PARAM), "workspaceId");
         assertEquals(params.get(AnalyticsEventLoggerImpl.SOURCE_PARAM), "org.eclipse.che.ide.logger.AnalyticsEventLoggerTest$TestedAction");
         assertEquals(params.get(AnalyticsEventLoggerImpl.ACTION_PARAM), "IDE: Action");
-    }
-
-    @Test
-    public void shouldAction() {
-        doNothing().when(eventLogger).send(anyString(), anyMap());
-
-        ArgumentCaptor<String> eventParam = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Map> paramsParam = ArgumentCaptor.forClass(Map.class);
-
-        eventLogger.log("Autocompleting");
-
-        verify(eventLogger).send(eventParam.capture(), paramsParam.capture());
-
-        String event = eventParam.getValue();
-        assertEquals(event, "ide-usage");
-
-        Map<String, String> params = paramsParam.getValue();
-        assertEquals(params.size(), 2);
-        assertEquals(params.get(AnalyticsEventLoggerImpl.WS_PARAM), "workspaceId");
-        assertEquals(params.get(AnalyticsEventLoggerImpl.SOURCE_PARAM), "Autocompleting");
     }
 
     @Test

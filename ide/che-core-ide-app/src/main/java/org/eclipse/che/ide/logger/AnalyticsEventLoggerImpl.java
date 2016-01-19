@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -133,29 +133,6 @@ public class AnalyticsEventLoggerImpl implements AnalyticsEventLoggerExt {
     @Override
     public void logEvent(String event, Map<String, String> additionalParams) {
         doLog(event, null, null, additionalParams);
-    }
-
-    @Override
-    @Deprecated
-    public void log(String action) {
-        if (action != null) {
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put(SOURCE_PARAM, action);
-
-            doLog(IDE_EVENT, null, null, parameters);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public void log(Class<?> actionClass, String actionName) {
-        doLog(IDE_EVENT, actionClass, actionName, null);
-    }
-
-    @Override
-    @Deprecated
-    public void log(Class<?> actionClass, String actionName, Map<String, String> additionalParams) {
-        doLog(IDE_EVENT, actionClass, actionName, additionalParams);
     }
 
     private void doLog(@Nullable String event,

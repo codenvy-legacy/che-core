@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -78,7 +78,12 @@ public class CategoriesPagePresenter extends AbstractWizardPage<ProjectConfigDto
         final ProjectWizardMode wizardMode = ProjectWizardMode.parse(context.get(WIZARD_MODE_KEY));
         if (CREATE == wizardMode) {
             // set pre-selected project type
-            final String preSelectedProjectTypeId = preSelectedProjectTypeManager.getPreSelectedProjectTypeId();
+            final String preSelectedProjectTypeId;
+            if(dataObject.getType() != null ) {
+                preSelectedProjectTypeId = dataObject.getType();
+            } else {
+                preSelectedProjectTypeId = preSelectedProjectTypeManager.getPreSelectedProjectTypeId();
+            }
             if (wizardRegistry.getWizardRegistrar(preSelectedProjectTypeId) != null) {
                 dataObject.setType(preSelectedProjectTypeId);
             }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,7 @@ import org.everrest.core.impl.EverrestConfiguration;
 import org.everrest.core.impl.EverrestProcessor;
 import org.everrest.core.impl.ProviderBinder;
 import org.everrest.core.impl.ResourceBinderImpl;
+import org.everrest.core.impl.uri.UriBuilderImpl;
 import org.everrest.core.tools.DependencySupplierImpl;
 import org.everrest.core.tools.ResourceLauncher;
 import org.mockito.Mock;
@@ -44,13 +45,12 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
-import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -90,6 +90,8 @@ public class UserServiceTest {
     @Mock
     SecurityContext    securityContext;
 
+    UserService userService;
+
     ResourceLauncher launcher;
 
     @BeforeMethod
@@ -100,7 +102,16 @@ public class UserServiceTest {
         dependencies.addComponent(UserDao.class, userDao);
         dependencies.addComponent(TokenValidator.class, tokenValidator);
         dependencies.addComponent(PreferenceDao.class, preferenceDao);
-        resources.addResource(UserService.class, null);
+
+        userService = new UserService(userDao, profileDao, preferenceDao, tokenValidator, true);
+        final Field uriField = userService.getClass()
+                                          .getSuperclass()
+                                          .getDeclaredField("uriInfo");
+        uriField.setAccessible(true);
+        uriField.set(userService, uriInfo);
+
+        resources.addResource(userService, null);
+
         EverrestProcessor processor = new EverrestProcessor(resources,
                                                             new ApplicationProviderBinder(),
                                                             dependencies,
@@ -113,6 +124,8 @@ public class UserServiceTest {
         //set up user
         final User user = createUser();
         when(environmentContext.get(SecurityContext.class)).thenReturn(securityContext);
+
+        when(uriInfo.getBaseUriBuilder()).thenReturn(new UriBuilderImpl());
 
         org.eclipse.che.commons.env.EnvironmentContext.getCurrent().setUser(new org.eclipse.che.commons.user.User() {
 
@@ -152,7 +165,7 @@ public class UserServiceTest {
         final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create?token=" + token, null);
 
         assertEquals(response.getStatus(), CREATED.getStatusCode());
-        final UserDescriptor user = (UserDescriptor) response.getEntity();
+        final UserDescriptor user = (UserDescriptor)response.getEntity();
         assertEquals(user.getEmail(), userEmail);
         assertEquals(user.getPassword(), "<none>");
         verify(userDao).create(any(User.class));
@@ -173,6 +186,47 @@ public class UserServiceTest {
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
         assertEquals(descriptor.getName(), newUser.getName());
         assertEquals(descriptor.getPassword(), "<none>");
+        verify(userDao).create(any(User.class));
+        verify(profileDao).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldNotBeAbleToCreateNewUserWithoutSystemAdminRoleIfDeniedUserSelfCreation() throws Exception {
+        when(securityContext.isUserInRole("system/admin")).thenReturn(false);
+        final Field uriField = userService.getClass()
+                                          .getDeclaredField("userSelfCreationAllowed");
+        uriField.setAccessible(true);
+        uriField.set(userService, false);
+
+        final String userEmail = "test@email.com";
+        final String token = "test_token";
+        when(tokenValidator.validateToken(token)).thenReturn(userEmail);
+
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create?token=" + token, null);
+
+        assertEquals(response.getStatus(), FORBIDDEN.getStatusCode());
+        verify(userDao, never()).create(any(User.class));
+        verify(profileDao, never()).create(any(Profile.class));
+    }
+
+    @Test
+    public void shouldBeAbleToCreateNewUserWithSystemAdminRoleIfDeniedUserSelfCreation() throws Exception {
+        when(securityContext.isUserInRole("system/admin")).thenReturn(true);
+        final Field uriField = userService.getClass()
+                                          .getDeclaredField("userSelfCreationAllowed");
+        uriField.setAccessible(true);
+        uriField.set(userService, false);
+
+        final NewUser newUser = DtoFactory.getInstance()
+                                          .createDto(NewUser.class)
+                                          .withName("test");
+
+        final ContainerResponse response = makeRequest(HttpMethod.POST, SERVICE_PATH + "/create", newUser);
+
+        assertEquals(response.getStatus(), CREATED.getStatusCode());
+        final UserDescriptor user = (UserDescriptor)response.getEntity();
+        assertEquals(user.getName(), newUser.getName());
+        assertEquals(user.getPassword(), "<none>");
         verify(userDao).create(any(User.class));
         verify(profileDao).create(any(Profile.class));
     }
@@ -270,7 +324,7 @@ public class UserServiceTest {
     public void shouldBeAbleToGetUserByEmail() throws Exception {
         final User user = createUser();
 
-        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "?email=" + user.getEmail(), null);
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "?alias=" + user.getEmail(), null);
 
         assertEquals(response.getStatus(), OK.getStatusCode());
         final UserDescriptor descriptor = (UserDescriptor)response.getEntity();
@@ -483,6 +537,17 @@ public class UserServiceTest {
         assertEquals(userInRoleDescriptor.getIsInRole(), true);
         assertEquals(userInRoleDescriptor.getScope(), "system");
         assertEquals(userInRoleDescriptor.getScopeId(), "");
+    }
+
+    @Test
+    public void shouldBeAbleToGetSettingOfUserService() throws Exception {
+        final ContainerResponse response = makeRequest(HttpMethod.GET, SERVICE_PATH + "/settings", null);
+
+        assertEquals(response.getStatus(), OK.getStatusCode());
+        @SuppressWarnings("unchecked")
+        final Map<String, String> settings = (Map<String, String>)response.getEntity();
+        assertEquals(settings.size(), 1);
+        assertEquals(settings.get(UserService.USER_SELF_CREATION_ALLOWED), "true");
     }
 
     private User createUser() throws NotFoundException, ServerException {

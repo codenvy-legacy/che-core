@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,8 +16,8 @@ import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author Vitaly Parfonov
  */
-@Path("project-template/{ws-id}")
+@Path("project-template")
 public class ProjectTemplateService extends Service {
 
     private ProjectTemplateRegistry templateRegistry;
@@ -37,13 +37,13 @@ public class ProjectTemplateService extends Service {
     }
 
     @GET
-    @Path("{projectType}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProjectTemplateDescriptor> getProjectTemplates(@PathParam("projectType") String projectType) {
-        return templateRegistry.getTemplates(projectType);
+    public List<ProjectTemplateDescriptor> getProjectTemplates(@QueryParam("tag") List<String> tags) {
+        return templateRegistry.getTemplates(tags);
     }
 
     @GET
+    @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProjectTemplateDescriptor> getProjectTemplates() {
         return templateRegistry.getAllTemplates();

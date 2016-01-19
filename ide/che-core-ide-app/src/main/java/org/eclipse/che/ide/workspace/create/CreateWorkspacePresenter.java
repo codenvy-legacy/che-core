@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -231,7 +231,7 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
 
         List<MachineConfigDto> machineConfigs = new ArrayList<>();
         machineConfigs.add(dtoFactory.createDto(MachineConfigDto.class)
-                                     .withName("dev-machine")
+                                     .withName("ws-machine")
                                      .withType("docker")
                                      .withSource(dtoFactory.createDto(MachineSourceDto.class)
                                                            .withType("recipe")

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,9 +25,9 @@ import java.util.List;
  * @author Vlad Zhukovskiy
  */
 public class NodeDescriptor {
-    private TreeNodeStorage treeNodeStorage;
-    private Node            node;
-    private NodeDescriptor  parent;
+    private NodeStorage    nodeStorage;
+    private Node           node;
+    private NodeDescriptor parent;
     private List<NodeDescriptor> children = new ArrayList<>();
     private boolean root;
 
@@ -50,8 +50,8 @@ public class NodeDescriptor {
     private Element loadElement;
     private Element descendantsContainerElement;
 
-    public NodeDescriptor(TreeNodeStorage treeNodeStorage, Node node) {
-        this.treeNodeStorage = treeNodeStorage;
+    public NodeDescriptor(NodeStorage nodeStorage, Node node) {
+        this.nodeStorage = nodeStorage;
         if (node == null) {
             root = true;
         }
@@ -61,8 +61,8 @@ public class NodeDescriptor {
     protected void addChild(int index, NodeDescriptor child) {
         final int actualIndex;
 
-        if (treeNodeStorage.isSorted()) {
-            int insertPos = Collections.binarySearch(children, child, treeNodeStorage.buildFullComparator());
+        if (nodeStorage.isSorted()) {
+            int insertPos = Collections.binarySearch(children, child, nodeStorage.buildFullComparator());
             actualIndex = insertPos < 0 ? (-insertPos - 1) : insertPos;
         } else {
             actualIndex = index;
@@ -73,9 +73,9 @@ public class NodeDescriptor {
     }
 
     public void addChildren(int index, List<NodeDescriptor> children) {
-        if (treeNodeStorage.isSorted()) {
+        if (nodeStorage.isSorted()) {
             getChildren().addAll(children);
-            Collections.sort(getChildren(), treeNodeStorage.buildFullComparator());
+            Collections.sort(getChildren(), nodeStorage.buildFullComparator());
         } else {
             int actualIndex = index == 0 ? 0 : (getChildren().indexOf(getChildren().get(index - 1)) + 1);
             getChildren().addAll(actualIndex, children);

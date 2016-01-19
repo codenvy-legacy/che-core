@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -89,9 +89,9 @@ public class BrowserQueryFieldRenderer {
 
             browserUrl = urlParts.join("/");
 
-            document.title = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
+            window.top.document.title = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
                 productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle()();
-            window.history.pushState(window["_history_relocation_id"], document.title, browserUrl);
+            window.history.pushState(window["_history_relocation_id"], window.top.document.title, browserUrl);
             window["_history_relocation_id"]++;
         } catch (e) {
             console.log(e.message);
@@ -124,9 +124,9 @@ public class BrowserQueryFieldRenderer {
                 productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle()();
             var titleWithSelectedProject = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
                 productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle(Ljava/lang/String;)(projectName);
-            document.title = projectName.length == 0 ? titleWithoutSelectedProject : titleWithSelectedProject;
+            window.top.document.title = projectName.length == 0 ? titleWithoutSelectedProject : titleWithSelectedProject;
 
-            window.history.pushState(window["_history_relocation_id"], document.title, browserUrl);
+            window.history.pushState(window["_history_relocation_id"], window.top.document.title, browserUrl);
             window["_history_relocation_id"]++;
         } catch (e) {
             console.log(e.message);

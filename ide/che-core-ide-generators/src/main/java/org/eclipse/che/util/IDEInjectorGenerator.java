@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,18 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.util;
 
-import org.eclipse.che.ide.api.extension.ExtensionGinModule;
-
 import org.apache.commons.io.FileUtils;
+import org.eclipse.che.ide.api.extension.ExtensionGinModule;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurationBuilder.*;
 
 /**
  * This class looks for all the Gin Modules annotated with ExtensionGinModule annotation
@@ -150,7 +149,8 @@ public class IDEInjectorGenerator {
      */
     @SuppressWarnings("unchecked")
     public static void findGinModules(File rootFolder) throws IOException {
-        Reflections reflection = new Reflections(new SubTypesScanner(), new TypeAnnotationsScanner());
+        Reflections reflection = new Reflections(getConfigurationBuilder());
+
         Set<Class<?>> classes = reflection.getTypesAnnotatedWith(ExtensionGinModule.class);
         for (Class clazz : classes) {
             EXTENSIONS_FQN.add(clazz.getCanonicalName());

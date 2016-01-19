@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.eclipse.che.ide.projectimport.wizard;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
 import org.eclipse.che.api.promises.client.Operation;
@@ -41,6 +42,7 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.SUC
  *
  * @author Anton Korneta
  */
+@Singleton
 public class ImportProjectNotificationSubscriberImpl implements ImportProjectNotificationSubscriber {
 
     private final Operation<PromiseError>  logErrorHandler;
@@ -131,6 +133,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                 }
                 notification.setStatus(SUCCESS);
                 notification.setTitle(locale.importProjectMessageSuccess(projectName));
+                notification.setContent("");
             }
         }).catchError(logErrorHandler);
     }

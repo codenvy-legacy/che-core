@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -54,6 +54,13 @@ public interface Theme {
      * @return the color
      */
     String selectionBackground();
+
+    /**
+     * Background color for inactive selection.
+     *
+     * @return the color
+     */
+    String inactiveSelectionBackground();
 
     /**
      * Background color for inactive(not selected part button)
@@ -990,6 +997,27 @@ public interface Theme {
     String minimizeIconHoverColor();
 
     /**
+     * Background color for processes panel.
+     *
+     * @return color
+     */
+    String processTreeBackgroundColor();
+
+    /**
+     * Text color for DEV label in process tree.
+     *
+     * @return color
+     */
+    String processTreeDevLabel();
+
+    /**
+     * Background color for console output area.
+     *
+     * @return color
+     */
+    String outputBackgroundColor();
+
+    /**
      * @return the color of the output font.
      */
     String getOutputFontColor();
@@ -1154,9 +1182,18 @@ public interface Theme {
     String getPrimaryHighlightColor();
 
     /**
-     * @return the icon color.
+     * Default icon color
+     *
+     * @return color
      */
-    String getIconColor();
+    String iconColor();
+
+    /**
+     * Active icon color
+     *
+     * @return color
+     */
+    String activeIconColor();
 
     /**
      * @return the separator color.
@@ -1292,15 +1329,26 @@ public interface Theme {
 
     /********************************************************************************************
      *
+     * Tree
+     *
+     ********************************************************************************************/
+    String treeExpandArrowColor();
+    String treeExpandArrowShadow();
+
+    /********************************************************************************************
+     *
      * Project Explorer
      *
      ********************************************************************************************/
-    String getProjectExplorerJointContainerFill();
-    String getProjectExplorerJointContainerShadow();
-    String getProjectExplorerPresentableTextShadow();
-    String getProjectExplorerInfoTextShadow();
-    String getProjectExplorerSelectedRowBackground();
-    String getProjectExplorerHoverRowBackground();
+    String projectExplorerJointContainerFill();
+    String projectExplorerJointContainerShadow();
+    String projectExplorerPresentableTextShadow();
+    String projectExplorerInfoTextShadow();
+    String projectExplorerSelectedRowBackground();
+    String projectExplorerSelectedRowBorder();
+    String projectExplorerHoverRowBackground();
+    String projectExplorerHoverRowBorder();
+    
     /********************************************************************************************
      *
      * Loader
@@ -1357,6 +1405,8 @@ public interface Theme {
     String notificationPopupIconSuccessFill();
     String notificationPopupIconFailFill();
     String notificationPopupIconProgressFill();
+    String notificationPopupIconSvgFill();
+    String notificationPopupTextColor();
 
     String projectExplorerReadonlyItemBackground();
     String projectExplorerTestItemBackground();
@@ -1369,4 +1419,13 @@ public interface Theme {
     String loaderBoxShadow();
     String loaderSVGFill();
     String loaderLabelColor();
+
+    String outputBoxShadow();
+
+    String toolButtonSvgFill();
+    String toolButtonBorder();
+    String toolButtonHoverBackgroundColor();
+    String toolButtonActiveBackgroundColor();
+    String toolButtonHoverBoxShadow();
+    String toolButtonActiveBoxShadow();
 }

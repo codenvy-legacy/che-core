@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,9 +18,10 @@ import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.api.parts.base.BaseActionDelegate;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.ui.smartTree.TreeNodeStorage.StoreSortInfo;
+import org.eclipse.che.ide.ui.smartTree.NodeStorage.StoreSortInfo;
 import org.eclipse.che.ide.ui.smartTree.UniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.event.BeforeExpandNodeEvent;
+import org.eclipse.che.ide.ui.smartTree.event.BeforeLoadEvent;
 import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent;
@@ -313,6 +314,15 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
     HandlerRegistration addBeforeExpandHandler(BeforeExpandNodeEvent.BeforeExpandNodeHandler handler);
 
     /**
+     * Register before node load handler to allow custom functionality retrieve before load event from the project tree.
+     *
+     * @param handler
+     *         before load handler
+     * @return handler registration
+     */
+    HandlerRegistration addBeforeNodeLoadHandler(BeforeLoadEvent.BeforeLoadHandler handler);
+
+    /**
      * Register node collapse handler to allow custom functionality retrieve collapse event from the project tree.
      *
      * @param handler
@@ -359,5 +369,7 @@ public interface ProjectExplorerView extends View<ProjectExplorerView.ActionDele
         void onSelectionChanged(List<Node> selection);
 
         void onDeleteKeyPressed();
+
+        void onRefreshProjectsRequested();
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,7 @@ package org.eclipse.che.api.machine.shared.dto;
 import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.model.machine.Command;
-import org.eclipse.che.api.machine.shared.MachineProcess;
+import org.eclipse.che.api.core.model.machine.MachineProcess;
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
@@ -37,9 +37,17 @@ public interface MachineProcessDto extends MachineProcess, Hyperlinks {
 
     MachineProcessDto withAlive(boolean isAlive);
 
-    void setCommandName(String commandName);
+    void setName(String commandName);
 
-    MachineProcessDto withCommandName(String commandName);
+    MachineProcessDto withName(String commandName);
+
+    void setType(String type);
+
+    MachineProcessDto withType(String type);
+
+    void setOutputChannel(String outputChannel);
+
+    MachineProcessDto withOutputChannel(String outputChannel);
 
     @Override
     MachineProcessDto withLinks(List<Link> links);

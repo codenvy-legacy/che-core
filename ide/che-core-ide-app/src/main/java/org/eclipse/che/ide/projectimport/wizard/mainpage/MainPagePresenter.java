@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 
 import org.eclipse.che.api.project.gwt.client.ProjectImportersServiceClient;
+import org.eclipse.che.api.project.shared.dto.ProjectImporterData;
 import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -28,8 +29,9 @@ import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.NameUtils;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +44,8 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAI
  * @author Ann Shumilova
  */
 public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> implements MainPageView.ActionDelegate {
+
+    private static final String DEFAULT_PROJECT_IMPORTER = "default-importer";
 
     private final AppContext                    appContext;
     private final MainPageView                  view;
@@ -118,15 +122,29 @@ public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> impl
     }
 
     private void loadImporters() {
-        final Map<String, Set<ProjectImporterDescriptor>> importersByCategory = new HashMap<>();
+        final Map<String, Set<ProjectImporterDescriptor>> importersByCategory = new LinkedHashMap<>();
 
-        final Unmarshallable<List<ProjectImporterDescriptor>> unmarshaller =
-                dtoUnmarshallerFactory.newListUnmarshaller(ProjectImporterDescriptor.class);
+        final Unmarshallable<ProjectImporterData> unmarshaller =
+                dtoUnmarshallerFactory.newUnmarshaller(ProjectImporterData.class);
 
-        AsyncRequestCallback<List<ProjectImporterDescriptor>> callback =
-                new AsyncRequestCallback<List<ProjectImporterDescriptor>>(unmarshaller) {
+        AsyncRequestCallback<ProjectImporterData> callback =
+                new AsyncRequestCallback<ProjectImporterData>(unmarshaller) {
                     @Override
-                    protected void onSuccess(List<ProjectImporterDescriptor> result) {
+                    protected void onSuccess(ProjectImporterData data) {
+                        List<ProjectImporterDescriptor> result = data.getImporters();
+                        String defaultImporterId = data.getConfiguration().get(DEFAULT_PROJECT_IMPORTER);
+                        Iterator<ProjectImporterDescriptor> itr = result.iterator();
+                        while (itr.hasNext()) {
+                            ProjectImporterDescriptor importer = itr.next();
+                            if (importer.getId().equals(defaultImporterId)) {
+                                Set<ProjectImporterDescriptor> importersSet = new LinkedHashSet<>();
+                                importersSet.add(importer);
+                                importersByCategory.put(importer.getCategory(), importersSet);
+                                itr.remove();
+                            }
+                        }
+
+                        ProjectImporterDescriptor defaultImporter = null;
                         for (ProjectImporterDescriptor importer : result) {
                             if (importer.isInternal() || importer.getCategory() == null
                                 || importWizardRegistry.getWizardRegistrar(importer.getId()) == null) {
@@ -136,24 +154,30 @@ public class MainPagePresenter extends AbstractWizardPage<ProjectConfigDto> impl
                             if (importersByCategory.containsKey(importer.getCategory())) {
                                 importersByCategory.get(importer.getCategory()).add(importer);
                             } else {
-                                Set<ProjectImporterDescriptor> importersSet = new HashSet<>();
+                                Set<ProjectImporterDescriptor> importersSet = new LinkedHashSet<>();
                                 importersSet.add(importer);
                                 importersByCategory.put(importer.getCategory(), importersSet);
                             }
+
+                            if (importer.getId().equals(defaultImporterId)) {
+                                defaultImporter = importer;
+                            }
                         }
 
+                        setImporters(defaultImporter);
+                    }
+
+                    private void setImporters(final ProjectImporterDescriptor defaultImporter) {
                         new Timer() {
                             @Override
                             public void run() {
                                 view.setImporters(importersByCategory);
-                                if (importersByCategory.keySet().iterator().hasNext()) {
-                                    view.selectImporter(importersByCategory.get(importersByCategory.keySet().iterator().next())
-                                                                           .iterator().next());
-                                }
+                                view.selectImporter(defaultImporter != null ? defaultImporter
+                                                                            : importersByCategory.get(importersByCategory.keySet().iterator().next())
+                                                                                                 .iterator().next() );
                             }
                         }.schedule(300);
                     }
-
                     @Override
                     protected void onFailure(Throwable exception) {
                         notificationManager.notify(locale.failedToImportProject(), FAIL, true);

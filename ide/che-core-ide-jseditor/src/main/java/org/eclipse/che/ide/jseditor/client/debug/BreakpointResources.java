@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,26 +11,24 @@
 package org.eclipse.che.ide.jseditor.client.debug;
 
 import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.resources.client.CssResource;
 
 /**
  * Resources interface for the breakpoints marks.
  */
 public interface BreakpointResources extends ClientBundle {
+    @Source({"breakpoint.css", "org/eclipse/che/ide/api/ui/style.css"})
+    Css getCss();
 
-    /**
-     * Image for the breakpoint mark.
-     * 
-     * @return the image for a breakpoint
-     */
-    @Source("org/eclipse/che/ide/texteditor/renderer/breakpoint.png")
-    ImageResource breakpoint();
+    /** The CssResource interface for the breakpoints */
+    interface Css extends CssResource {
 
-    /**
-     * Image for the active/current breakpoint mark.
-     * 
-     * @return the image for the current breakpoint
-     */
-    @Source("org/eclipse/che/ide/texteditor/renderer/breakpoint-current.gif")
-    ImageResource currentBreakpoint();
+        /** Returns the CSS class name for active breakpoint mark */
+        String active();
+
+        /** Returns the CSS class name for inactive breakpoint mark */
+        String inactive();
+
+        String breakpoint();
+    }
 }

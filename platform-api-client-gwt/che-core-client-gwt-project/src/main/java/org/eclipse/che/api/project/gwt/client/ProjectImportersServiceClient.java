@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,15 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.gwt.client;
 
-import org.eclipse.che.api.project.shared.dto.ProjectImporterDescriptor;
+import org.eclipse.che.api.project.shared.dto.ProjectImporterData;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 
-import java.util.List;
 
 /**
  * @author Vitaly Parfonov
  */
 public interface ProjectImportersServiceClient {
 
-    void getProjectImporters(String workspaceId, AsyncRequestCallback<List<ProjectImporterDescriptor>> callback);
+    void getProjectImporters(String workspaceId, AsyncRequestCallback<ProjectImporterData> callback);
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.status;
 
+import com.google.common.base.Predicate;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
@@ -21,21 +22,21 @@ import javax.validation.constraints.NotNull;
 /**
  * @author Vlad Zhukovskiy
  */
-public abstract class StatusText {
+public class StatusText<T extends Widget> {
 
     public static final String DEFAULT_EMPTY_TEXT = "Nothing to show";
 
     private final VerticalPanel verticalPanel;
+    private final Predicate<T> showPredicate;
 
     private String myText = "";
-    private Widget widget;
+    private T widget;
 
-    protected StatusText(Widget widget) {
-        this();
-        bind(widget);
-    }
+    public StatusText(T widget, Predicate<T> showPredicate) {
 
-    public StatusText() {
+        this.showPredicate = showPredicate;
+        this.widget = widget;
+
         setText(DEFAULT_EMPTY_TEXT);
 
         verticalPanel = new VerticalPanel();
@@ -47,9 +48,6 @@ public abstract class StatusText {
         verticalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
     }
 
-    public void bind(Widget widget) {
-        this.widget = widget;
-    }
 
     @NotNull
     public String getText() {
@@ -70,17 +68,12 @@ public abstract class StatusText {
         return this;
     }
 
-    protected abstract boolean isStatusVisible();
-
     public void paint() {
         verticalPanel.clear();
 
-        if (!isStatusVisible()) {
-            return;
+        if (showPredicate.apply(widget)) {
+            verticalPanel.add(new Label(getText()));
+            widget.getElement().appendChild(verticalPanel.getElement());
         }
-
-        verticalPanel.add(new Label(getText()));
-
-        widget.getElement().appendChild(verticalPanel.getElement());
     }
 }

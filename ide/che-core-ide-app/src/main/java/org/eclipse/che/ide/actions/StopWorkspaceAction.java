@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,9 +18,10 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
+import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
 import javax.validation.constraints.NotNull;
-import java.util.Collections;
+import java.util.Arrays;
 
 /**
  * The class contains business logic to stop workspace.
@@ -29,8 +30,6 @@ import java.util.Collections;
  */
 public class StopWorkspaceAction extends AbstractPerspectiveAction {
 
-    private static final String MACHINE_PERSPECTIVE_ID = "Machine Perspective";
-
     private final AppContext             appContext;
     private final WorkspaceServiceClient workspaceService;
 
@@ -38,25 +37,23 @@ public class StopWorkspaceAction extends AbstractPerspectiveAction {
     public StopWorkspaceAction(CoreLocalizationConstant locale,
                                AppContext appContext,
                                WorkspaceServiceClient workspaceService) {
-        super(Collections.singletonList(MACHINE_PERSPECTIVE_ID), locale.stopWsTitle(), locale.stopWsDescription(), null, null);
+        super(Arrays.asList(PROJECT_PERSPECTIVE_ID), locale.stopWsTitle(), locale.stopWsDescription(), null, null);
 
         this.appContext = appContext;
         this.workspaceService = workspaceService;
     }
 
-    /** {@inheritDoc} */
     @Override
     public void updateInPerspective(@NotNull ActionEvent event) {
-        UsersWorkspaceDto workspace = appContext.getWorkspace();
-
-        event.getPresentation().setEnabled(workspace != null);
+        event.getPresentation().setEnabled(appContext.getWorkspace() != null);
     }
 
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent event) {
-        final UsersWorkspaceDto workspace = appContext.getWorkspace();
-
-        workspaceService.stop(workspace.getId());
+        UsersWorkspaceDto workspace = appContext.getWorkspace();
+        if (workspace != null) {
+            workspaceService.stop(workspace.getId());
+        }
     }
 }

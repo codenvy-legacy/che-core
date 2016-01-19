@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,6 @@ package org.eclipse.che.util;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.che.ide.dto.ClientDtoFactoryVisitor;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +21,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import static org.eclipse.che.util.IgnoreUnExistedResourcesReflectionConfigurationBuilder.*;
 
 /**
  * Generates {DtoFactoryVisitorRegistry} class source.
@@ -81,7 +81,7 @@ public class DtoFactoryVisitorRegistryGenerator {
      */
     @SuppressWarnings("unchecked")
     private static void findDtoFactoryVisitors() throws IOException {
-        Reflections reflection = new Reflections(new SubTypesScanner(), new TypeAnnotationsScanner());
+        Reflections reflection = new Reflections(getConfigurationBuilder());
         Set<Class<?>> classes = reflection.getTypesAnnotatedWith(ClientDtoFactoryVisitor.class);
         int i = 0;
         for (Class clazz : classes) {

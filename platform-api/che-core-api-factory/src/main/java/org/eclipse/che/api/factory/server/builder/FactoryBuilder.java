@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -107,7 +107,7 @@ public class FactoryBuilder {
      *         - json  InputStream from encoded factory.
      * @return - Factory object represented by given factory json.
      */
-    public Factory build(InputStream json) throws IOException, ApiException {
+    public Factory build(InputStream json) throws IOException, ConflictException {
         Factory factory = DtoFactory.getInstance()
                                     .createDtoFromJson(json, Factory.class);
         checkValid(factory);
@@ -119,9 +119,9 @@ public class FactoryBuilder {
      *
      * @param factory
      *         - factory object to validate
-     * @throws ApiException
+     * @throws ConflictException
      */
-    public void checkValid(Factory factory) throws ApiException {
+    public void checkValid(Factory factory) throws ConflictException {
         if (null == factory) {
             throw new ConflictException(FactoryConstants.UNPARSABLE_FACTORY_MESSAGE);
         }
@@ -178,13 +178,13 @@ public class FactoryBuilder {
      *         - version of factory
      * @param parentName
      *         - parent parameter queryParameterName
-     * @throws org.eclipse.che.api.core.ApiException
+     * @throws org.eclipse.che.api.core.ConflictException
      */
     void validateCompatibility(Object object,
                                Class methodsProvider,
                                Class allowedMethodsProvider,
                                Version version,
-                               String parentName) throws ApiException {
+                               String parentName) throws ConflictException {
         // validate source
         if (SourceStorageDto.class.equals(methodsProvider)) {
             sourceStorageParametersValidator.validate((SourceStorage)object, version);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.eclipse.che.api.machine.server;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.machine.Channels;
+import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.machine.Limits;
 import org.eclipse.che.api.core.model.machine.MachineConfig;
 import org.eclipse.che.api.core.model.machine.MachineMetadata;
@@ -54,19 +55,24 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 /**
+ * Unit tests for {@link MachineManager}
+ *
  * @author Anton Korneta
+ * @author Alexander Garagatyi
  */
 @Listeners(MockitoTestNGListener.class)
 public class MachineManagerTest {
-    private static final int DEFAULT_MACHINE_MEMORY_SIZE_MB = 1000;
-
-    private MachineManager manager;
+    private static final int    DEFAULT_MACHINE_MEMORY_SIZE_MB = 1000;
+    private static final String WS_ID                          = "testWsId";
+    private static final String ENVIRONMENT_NAME               = "testEnvName";
 
     @Mock
     private MachineInstanceProviders machineInstanceProviders;
@@ -75,7 +81,15 @@ public class MachineManagerTest {
     @Mock
     private MachineRegistry          machineRegistry;
     @Mock
+    private WsAgentLauncher          wsAgentLauncher;
+    @Mock
     private Instance                 instance;
+    @Mock
+    private MachineConfig            machineConfig;
+    @Mock
+    private Limits                   limits;
+
+    private MachineManager manager;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -88,11 +102,34 @@ public class MachineManagerTest {
                                          machineLogsDir,
                                          eventService,
                                          DEFAULT_MACHINE_MEMORY_SIZE_MB,
-                                         "apiEndpoint"));
+                                         "apiEndpoint",
+                                         wsAgentLauncher));
 
         EnvironmentContext envCont = new EnvironmentContext();
         envCont.setUser(new UserImpl("user", null, null, null, false));
         EnvironmentContext.setCurrent(envCont);
+
+        RecipeImpl recipe = new RecipeImpl().withScript("script").withType("Dockerfile");
+        when(machineConfig.isDev()).thenReturn(false);
+        when(machineConfig.getName()).thenReturn("MachineName");
+        when(machineConfig.getType()).thenReturn("docker");
+        when(machineConfig.getSource()).thenReturn(new MachineSourceImpl("Recipe", "location"));
+        when(machineConfig.getLimits()).thenReturn(new LimitsImpl(1024));
+        when(instance.getId()).thenReturn("machineId");
+        when(instance.getChannels()).thenReturn(new ChannelsImpl("chan1", "chan2"));
+        when(instance.getEnvName()).thenReturn("env1");
+        when(instance.getLimits()).thenAnswer(invocation -> machineConfig.getLimits());
+        when(instance.isDev()).thenAnswer(invocation -> machineConfig.isDev());
+        when(instance.getName()).thenAnswer(invocation -> machineConfig.getName());
+        when(instance.getOwner()).thenReturn("owner");
+        when(instance.getSource()).thenAnswer(invocation -> machineConfig.getSource());
+        when(instance.getStatus()).thenReturn(MachineStatus.CREATING);
+        when(instance.getType()).thenAnswer(invocation -> machineConfig.getType());
+        when(instance.getWorkspaceId()).thenReturn(WS_ID);
+        doReturn(recipe).when(manager).getRecipeByLocation(any(MachineConfig.class));
+        when(machineInstanceProviders.getProvider(anyString())).thenReturn(instanceProvider);
+        when(instanceProvider.createInstance(eq(recipe), any(MachineState.class), any(LineConsumer.class))).thenReturn(instance);
+        when(machineRegistry.get(anyString())).thenReturn(instance);
     }
 
     @AfterMethod
@@ -118,34 +155,30 @@ public class MachineManagerTest {
 
     @Test
     public void shouldBeAbleToCreateMachineWithValidName() throws Exception {
-        String expectedName = "MachineName";
-        String workspaceId = "wsId";
-        String environmentName = "env1";
-        RecipeImpl recipe = new RecipeImpl().withScript("script").withType("Dockerfile");
-        MachineConfig machineConfig = new MachineConfigImpl(false,
-                                                            expectedName,
-                                                            "docker",
-                                                            new MachineSourceImpl("Recipe", "location"),
-                                                            new LimitsImpl(1024));
-        final NoOpInstanceImpl noOpInstance = new NoOpInstanceImpl("machineId",
-                                                                   machineConfig.getType(),
-                                                                   workspaceId,
-                                                                   "owner",
-                                                                   machineConfig.isDev(),
-                                                                   machineConfig.getName(),
-                                                                   new ChannelsImpl("chan1", "chan2"),
-                                                                   machineConfig.getLimits(),
-                                                                   machineConfig.getSource(),
-                                                                   MachineStatus.CREATING,
-                                                                   environmentName);
-        doReturn(recipe).when(manager).getRecipeByLocation(any(MachineConfig.class));
-        when(machineInstanceProviders.getProvider(anyString())).thenReturn(instanceProvider);
-        when(instanceProvider.createInstance(eq(recipe), any(MachineState.class), any(LineConsumer.class))).thenReturn(noOpInstance);
-        when(machineRegistry.get(anyString())).thenReturn(noOpInstance);
+        String expectedName = "validMachineName";
+        when(machineConfig.getName()).thenReturn(expectedName);
 
-        final MachineImpl machine = manager.createMachineSync(machineConfig, workspaceId, environmentName);
+        final MachineImpl machine = manager.createMachineSync(machineConfig, WS_ID, ENVIRONMENT_NAME);
 
         assertEquals(machine.getName(), expectedName);
+    }
+
+    @Test
+    public void shouldCallWsAgentLauncherAfterDevMachineStart() throws Exception {
+        when(machineConfig.isDev()).thenReturn(true);
+
+        manager.createMachineSync(machineConfig, WS_ID, ENVIRONMENT_NAME);
+
+        verify(wsAgentLauncher).startWsAgent(WS_ID);
+    }
+
+    @Test
+    public void shouldNotCallWsAgentLauncherAfterNonDevMachineStart() throws Exception {
+        when(machineConfig.isDev()).thenReturn(false);
+
+        manager.createMachineSync(machineConfig, WS_ID, ENVIRONMENT_NAME);
+
+        verify(wsAgentLauncher, never()).startWsAgent(WS_ID);
     }
 
     private static Path targetDir() throws Exception {
@@ -186,7 +219,8 @@ public class MachineManagerTest {
         }
 
         @Override
-        public InstanceProcess createProcess(String commandName, String commandLine) throws MachineException {
+        public InstanceProcess createProcess(Command command, String outputChannel)
+                throws MachineException {
             return null;
         }
 

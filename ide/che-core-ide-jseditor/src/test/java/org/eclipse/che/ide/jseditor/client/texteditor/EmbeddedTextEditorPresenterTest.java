@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,10 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.texteditor;
+
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwtmockito.GwtMockitoTestRunner;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.ide.api.editor.EditorInitException;
 import org.eclipse.che.ide.api.editor.EditorInput;
@@ -22,11 +26,7 @@ import org.eclipse.che.ide.jseditor.client.document.DocumentStorage;
 import org.eclipse.che.ide.jseditor.client.editorconfig.TextEditorConfiguration;
 import org.eclipse.che.ide.jseditor.client.formatter.ContentFormatter;
 import org.eclipse.che.ide.jseditor.client.quickfix.QuickAssistantFactory;
-
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwtmockito.GwtMockitoTestRunner;
-import com.google.web.bindery.event.shared.EventBus;
-
+import org.eclipse.che.ide.jseditor.client.texteditor.EditorWidget.WidgetInitializedCallback;
 import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.ui.loaders.request.MessageLoader;
 import org.junit.Test;
@@ -43,6 +43,7 @@ import java.util.Map;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -199,27 +200,26 @@ public class EmbeddedTextEditorPresenterTest {
      */
     public void initializeAndInitEditor() throws EditorInitException {
         reset(Scheduler.get());
-        ArgumentCaptor<Scheduler.ScheduledCommand> commandCaptor =
-                ArgumentCaptor.forClass(Scheduler.ScheduledCommand.class);
+        ArgumentCaptor<EditorInitCallback> callBackCaptor = ArgumentCaptor.forClass(EditorInitCallback.class);
+        ArgumentCaptor<WidgetInitializedCallback> widgetInitializedCallbackCaptor =
+                ArgumentCaptor.forClass(WidgetInitializedCallback.class);
 
-        ArgumentCaptor<EditorInitCallback> callBackCaptor =
-                ArgumentCaptor.forClass(EditorInitCallback.class);
         doReturn(loader).when(loaderFactory).newLoader();
-        doReturn(editorWidget).when(editorWidgetFactory).createEditorWidget(Matchers.<List<String>>anyObject());
+        doReturn(editorWidget).when(editorWidgetFactory).createEditorWidget(Matchers.<List<String>>anyObject(),
+                                                                            Matchers.<WidgetInitializedCallback>anyObject());
         doReturn(document).when(editorWidget).getDocument();
 
         embeddedTextEditorPresenter.injectAsyncLoader(loaderFactory);
         embeddedTextEditorPresenter.initialize(configuration, notificationManager);
         embeddedTextEditorPresenter.init(editorInput);
 
-        verify(Scheduler.get()).scheduleDeferred(commandCaptor.capture());
-
-        Scheduler.ScheduledCommand sheScheduledCommand = commandCaptor.getValue();
-        sheScheduledCommand.execute();
-
         verify(documentStorage).getDocument(any(VirtualFile.class), callBackCaptor.capture());
 
         EditorInitCallback editorInitCallBack = callBackCaptor.getValue();
         editorInitCallBack.onReady("test");
+
+        verify(editorWidgetFactory).createEditorWidget(anyListOf(String.class), widgetInitializedCallbackCaptor.capture());
+        WidgetInitializedCallback callback = widgetInitializedCallbackCaptor.getValue();
+        callback.initialized(editorWidget);
     }
 }

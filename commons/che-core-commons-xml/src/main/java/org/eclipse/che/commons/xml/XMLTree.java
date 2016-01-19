@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2015 Codenvy, S.A.
+ * Copyright (c) 2012-2016 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,12 +18,14 @@ import org.w3c.dom.NodeList;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathFactoryConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +39,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+import static javax.xml.stream.XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES;
+import static javax.xml.stream.XMLInputFactory.SUPPORT_DTD;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.SPACES_IN_TAB;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.UTF_8;
 import static org.eclipse.che.commons.xml.XMLTreeUtil.asElement;
@@ -98,6 +103,10 @@ import static org.w3c.dom.Node.TEXT_NODE;
  * XMLTree provides methods which do the same
  * as model methods but sometimes they are more convenient,
  * you can use tree methods as well as model methods.
+ *
+ * <p> XMLTree disallows using of {@code DOCTYPE} definition
+ * in security reasons(XML Entity Expansion injection, XML External Entity Injection).
+ *
  * <pre>
  *     For example:
  *
@@ -166,6 +175,30 @@ public final class XMLTree {
     private static final XPathFactory           XPATH_FACTORY            = XPathFactory.newInstance();
     private static final String                 ROOT_TEMPLATE            = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<%s>\n</%s>";
     private static final int                    EXPECTED_NAMESPACES_SIZE = 2;
+
+    /** Factories configuration. */
+    static {
+        try {
+            // Disable doctype declaration to avoid: XML Entity Expansion injection, XML External Entity Injection
+            DOCUMENT_BUILDER_FACTORY.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            // Force parser to use secure settings
+            DOCUMENT_BUILDER_FACTORY.setFeature(FEATURE_SECURE_PROCESSING, true);
+            // Disable usage of entity references to avoid: XML External Entity Injection
+            // It is not needed as long as doctype is disabled, but when doctype is enabled
+            // this adjustment guarantees avoiding of entity references expansion
+            DOCUMENT_BUILDER_FACTORY.setExpandEntityReferences(false);
+
+            // Force xpath factory to use secure settings
+            XPATH_FACTORY.setFeature(FEATURE_SECURE_PROCESSING, true);
+
+            // Disable DTD support at all to avoid: XML Entity Expansion injection, XML External Entity Injection
+            XML_INPUT_FACTORY.setProperty(SUPPORT_DTD, false);
+            // Disable usage of external entities to avoid: XML External Entity Injection
+            XML_INPUT_FACTORY.setProperty(IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        } catch (ParserConfigurationException | XPathFactoryConfigurationException confEx) {
+            throw XMLTreeException.wrap(confEx);
+        }
+    }
 
     private Document            document;
     private Map<String, String> namespaces;
