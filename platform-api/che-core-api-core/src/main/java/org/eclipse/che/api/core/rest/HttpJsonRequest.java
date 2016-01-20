@@ -122,13 +122,13 @@ public interface HttpJsonRequest {
     HttpJsonRequest addQueryParam(@NotNull String name, @NotNull Object value);
 
     /**
-     * Sets request timeout.
+     * Sets request timeout in milliseconds.
      *
-     * @param timeout
-     *         request timeout
+     * @param timeoutMs
+     *         request timeout in milliseconds
      * @return this request instance
      */
-    HttpJsonRequest setTimeout(int timeout);
+    HttpJsonRequest setTimeout(int timeoutMs);
 
     /**
      * Makes http request with content type "application/json" and authorization headers

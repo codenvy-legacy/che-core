@@ -11,12 +11,15 @@
 package org.eclipse.che.api.user.server;
 
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 import com.google.common.annotations.Beta;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
@@ -43,6 +46,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -58,7 +62,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,6 +85,7 @@ import static org.eclipse.che.api.user.server.Constants.LINK_REL_REMOVE_USER_BY_
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_PASSWORD;
 import static org.eclipse.che.api.user.server.Constants.PASSWORD_LENGTH;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Provides REST API for user management
@@ -91,21 +95,26 @@ import static org.eclipse.che.commons.lang.NameGenerator.generate;
 @Api(value = "/user", description = "User manager")
 @Path("/user")
 public class UserService extends Service {
+    @VisibleForTesting
+    static final String USER_SELF_CREATION_ALLOWED = "user.self.creation.allowed";
 
     private final UserDao        userDao;
     private final UserProfileDao profileDao;
     private final PreferenceDao  preferenceDao;
     private final TokenValidator tokenValidator;
+    private final boolean        userSelfCreationAllowed;
 
     @Inject
     public UserService(UserDao userDao,
                        UserProfileDao profileDao,
                        PreferenceDao preferenceDao,
-                       TokenValidator tokenValidator) {
+                       TokenValidator tokenValidator,
+                       @Named(USER_SELF_CREATION_ALLOWED) boolean userSelfCreationAllowed) {
         this.userDao = userDao;
         this.profileDao = profileDao;
         this.preferenceDao = preferenceDao;
         this.tokenValidator = tokenValidator;
+        this.userSelfCreationAllowed = userSelfCreationAllowed;
     }
 
     /**
@@ -151,6 +160,10 @@ public class UserService extends Service {
                            @ApiParam(value = "Authentication token") @QueryParam("token") String token,
                            @ApiParam(value = "User type") @QueryParam("temporary") @DefaultValue("false") Boolean isTemporary,
                            @Context SecurityContext context) throws ApiException {
+        if (!context.isUserInRole("system/admin") && !userSelfCreationAllowed) {
+            throw new ForbiddenException("Currently only admins can create accounts. Please contact our Admin Team for further info.");
+        }
+
         final User user = context.isUserInRole("system/admin") ? fromEntity(newUser) : fromToken(token);
 
         userDao.create(user.withId(generate("user", ID_LENGTH))
@@ -341,7 +354,7 @@ public class UserService extends Service {
     @GET
     @Path("/inrole")
     @GenerateLink(rel = LINK_REL_INROLE)
-    @RolesAllowed({"user", "system/admin", "system/manager"})
+    @RolesAllowed({"temp_user", "user", "system/admin", "system/manager"})
     @Produces(APPLICATION_JSON)
     @Beta
     public UserInRoleDescriptor inRole(@Required @Description("role inside a scope") @QueryParam("role") String role,
@@ -365,10 +378,10 @@ public class UserService extends Service {
             throw new ForbiddenException(String.format("Only system scope is handled for now. Provided scope is %s", scope));
         }
 
-        return DtoFactory.getInstance().createDto(UserInRoleDescriptor.class).withIsInRole(isInRole).withRoleName(role).withScope(scope)
-                         .withScopeId(
-                                 scopeId);
-
+        return newDto(UserInRoleDescriptor.class).withIsInRole(isInRole)
+                                                 .withRoleName(role)
+                                                 .withScope(scope)
+                                                 .withScopeId(scopeId);
     }
 
     /**
@@ -399,6 +412,16 @@ public class UserService extends Service {
                                     SecurityContext context) throws NotFoundException, ServerException {
         final User user = userDao.getByName(name);
         return toDescriptor(user, context);
+    }
+
+    /**
+     * Get setting of user service
+     */
+    @GET
+    @Path("/settings")
+    @Produces(APPLICATION_JSON)
+    public Map<String, String> getSettings() {
+        return ImmutableMap.of(USER_SELF_CREATION_ALLOWED, Boolean.toString(userSelfCreationAllowed));
     }
 
     private User fromEntity(NewUser newUser) throws ForbiddenException {

@@ -60,7 +60,8 @@ public class TreeNodeElement<D> extends JsLIElement {
      * @return a new {@link TreeNodeElement} created from the supplied data.
      */
     static <D> TreeNodeElement<D> create(
-            D data, NodeDataAdapter<D> dataAdapter, NodeRenderer<D> nodeRenderer, Tree.Css css) {
+            D data, NodeDataAdapter<D> dataAdapter, NodeRenderer<D> nodeRenderer,
+            Tree.Css css, Tree.Resources resources) {
 
         @SuppressWarnings("unchecked")
         TreeNodeElement<D> treeNode = (TreeNodeElement<D>)Elements.createElement("li", css.treeNode());
@@ -79,6 +80,10 @@ public class TreeNodeElement<D> extends JsLIElement {
                         DivElement expand = Elements.createDivElement();
                         Elements.addClassName(css.expandControl(), expand);
                         nodeBody.appendChild(expand);
+
+                        expand.setInnerHTML(resources.collapsedIcon().getSvg().getElement().getString() +
+                                resources.expandedIcon().getSvg().getElement().getString());
+                        ((Element)expand.getChildNodes().item(1)).getStyle().setDisplay("none");
 
                         SpanElement nodeContent = nodeRenderer.renderNodeContents(data);
                         Elements.addClassName(css.treeNodeLabel(), nodeContent);
@@ -116,7 +121,6 @@ public class TreeNodeElement<D> extends JsLIElement {
             e.printStackTrace();
         }
     }
-
 
     /**
      * Appends the specified child to this TreeNodeElement's child container
@@ -164,8 +168,14 @@ public class TreeNodeElement<D> extends JsLIElement {
 
     private void setOpen(Tree.Css css, boolean isOpen) {
         if (isOpen != isOpen()) {
-            CssUtils.setClassNameEnabled(getExpandControl(), css.openedIcon(), isOpen);
-            CssUtils.setClassNameEnabled(getExpandControl(), css.closedIcon(), !isOpen);
+            if (isOpen) {
+                ((Element)getExpandControl().getChildNodes().item(0)).getStyle().setDisplay("none");
+                ((Element)getExpandControl().getChildNodes().item(1)).getStyle().setDisplay("block");
+            } else {
+                ((Element)getExpandControl().getChildNodes().item(0)).getStyle().setDisplay("block");
+                ((Element)getExpandControl().getChildNodes().item(1)).getStyle().setDisplay("none");
+            }
+
             setOpenImpl(isOpen);
             getRenderer().updateNodeContents(this);
         }
@@ -195,19 +205,14 @@ public class TreeNodeElement<D> extends JsLIElement {
         DomUtils.removeFromParent(this);
     }
 
-    /** Sets whether or not this node has the active node styling applied. */
-    public final void setActive(boolean isActive, Tree.Css css) {
-        // Show the selection on the element returned by the node renderer
-        Element selectionElement = getSelectionElement();
-        CssUtils.setClassNameEnabled(selectionElement, css.active(), isActive);
-        if (isActive) {
-            selectionElement.focus();
-        }
-    }
-
-//    /** Sets whether or not this node has the selected styling applied. */
-//    public final void setSelected(boolean isSelected, Tree.Css css) {
-//        CssUtils.setClassNameEnabled(getSelectionElement(), css.selected(), isSelected);
+//    /** Sets whether or not this node has the active node styling applied. */
+//    public final void setActive(boolean isActive, Tree.Css css) {
+//        // Show the selection on the element returned by the node renderer
+//        Element selectionElement = getSelectionElement();
+//        CssUtils.setClassNameEnabled(selectionElement, css.active(), isActive);
+//        if (isActive) {
+//            selectionElement.focus();
+//        }
 //    }
 
     /** Sets whether or not this node has the selected styling applied. */
@@ -217,6 +222,9 @@ public class TreeNodeElement<D> extends JsLIElement {
 
         if (selected) {
             Elements.addClassName(active ? css.selected() : css.selectedInactive(), getSelectionElement());
+            getSelectionElement().setAttribute("selected", "true");
+        } else {
+            getSelectionElement().removeAttribute("selected");
         }
     }
 
@@ -308,7 +316,9 @@ public class TreeNodeElement<D> extends JsLIElement {
                 Element childrenContainer = Elements.createElement("ul", css.childrenContainer());
                 this.appendChild(childrenContainer);
                 childrenContainer.getStyle().setDisplay(CSSStyleDeclaration.Display.NONE);
-                getExpandControl().setClassName(css.expandControl() + " " + css.closedIcon());
+                ((Element)getExpandControl().getChildNodes().item(0)).getStyle().setDisplay("block");
+                ((Element)getExpandControl().getChildNodes().item(1)).getStyle().setDisplay("none");
+
             } else {
                 getExpandControl().setClassName(css.expandControl() + " " + css.leafIcon());
             }

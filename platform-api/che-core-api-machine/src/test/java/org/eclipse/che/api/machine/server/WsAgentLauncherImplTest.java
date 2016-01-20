@@ -23,6 +23,7 @@ import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
 import org.eclipse.che.api.machine.server.model.impl.ServerImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
+import org.eclipse.che.commons.test.SelfReturningAnswer;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
@@ -37,7 +38,6 @@ import java.net.URI;
 import java.util.Collections;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -48,14 +48,19 @@ import static org.mockito.Mockito.when;
 
 @Listeners(MockitoTestNGListener.class)
 public class WsAgentLauncherImplTest {
-    private static final String WS_ID                         = "wsId";
-    private static final String MACHINE_ID                    = "machineId";
-    private static final String WS_AGENT_START_CMD_LINE       = "cmdLine";
-    private static final String API_ENDPOINT_PATH             = "/some/path";
-    private static final String WS_AGENT_PORT                 = Integer.toString(WsAgentLauncherImpl.WS_AGENT_PORT);
-    private static final long   WS_AGENT_MAX_START_TIME_MS    = 1000;
-    private static final long   WS_AGENT_PING_DELAY_MS        = 1;
-    private static final int    WS_AGENT_PING_CONN_TIMEOUT_MS = 1;
+    private static final String     WS_ID                         = "wsId";
+    private static final String     MACHINE_ID                    = "machineId";
+    private static final String     WS_AGENT_START_CMD_LINE       = "cmdLine";
+    private static final String     API_ENDPOINT_PATH             = "/some/path/";
+    private static final String     WS_AGENT_PORT                 = Integer.toString(WsAgentLauncherImpl.WS_AGENT_PORT);
+    private static final long       WS_AGENT_MAX_START_TIME_MS    = 1000;
+    private static final long       WS_AGENT_PING_DELAY_MS        = 1;
+    private static final int        WS_AGENT_PING_CONN_TIMEOUT_MS = 1;
+    private static final String     WS_AGENT_SERVER_LOCATION      = "ws-agent.com:456789";
+    private static final String     WS_AGENT_SERVER_URL           = "http://" + WS_AGENT_SERVER_LOCATION;
+    private static final ServerImpl SERVER                        = new ServerImpl("ref",
+                                                                                   WS_AGENT_SERVER_LOCATION,
+                                                                                   WS_AGENT_SERVER_URL);
 
     @Mock
     private MachineManager         machineManager;
@@ -64,10 +69,11 @@ public class WsAgentLauncherImplTest {
     @Mock
     private Instance               machineInstance;
     @Mock
-    private HttpJsonRequest        pingRequest;
-    @Mock
     private HttpJsonResponse       pingResponse;
+    @Mock
+    private MachineMetadata        machineMetadata;
 
+    private HttpJsonRequest     pingRequest;
     private WsAgentLauncherImpl wsAgentLauncher;
 
     @BeforeMethod
@@ -79,23 +85,18 @@ public class WsAgentLauncherImplTest {
                                                   WS_AGENT_MAX_START_TIME_MS,
                                                   WS_AGENT_PING_DELAY_MS,
                                                   WS_AGENT_PING_CONN_TIMEOUT_MS);
-
+        pingRequest = mock(HttpJsonRequest.class, new SelfReturningAnswer());
         when(machineManager.getDevMachine(WS_ID)).thenReturn(machineInstance);
         when(machineInstance.getId()).thenReturn(MACHINE_ID);
+        when(machineInstance.getMetadata()).thenReturn(machineMetadata);
+        doReturn(Collections.<String, Server>singletonMap(WS_AGENT_PORT, SERVER)).when(machineMetadata).getServers();
+        when(requestFactory.fromUrl(anyString())).thenReturn(pingRequest);
+        when(pingRequest.request()).thenReturn(pingResponse);
+        when(pingResponse.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
     }
 
     @Test
     public void shouldStartWsAgentUsingMachineExec() throws Exception {
-        final MachineMetadata machineMetadata = mock(MachineMetadata.class);
-        when(machineInstance.getMetadata()).thenReturn(machineMetadata);
-        final ServerImpl server = new ServerImpl("ref", "ws-agent.com:456789", "http://ws-agent.com:456789");
-        doReturn(Collections.<String, Server>singletonMap(WS_AGENT_PORT, server)).when(machineMetadata).getServers();
-        when(requestFactory.fromUrl(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setMethod(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setTimeout(anyInt())).thenReturn(pingRequest);
-        when(pingRequest.request()).thenReturn(pingResponse);
-        when(pingResponse.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-
         wsAgentLauncher.startWsAgent(WS_ID);
 
         verify(machineManager).exec(eq(MACHINE_ID),
@@ -108,19 +109,9 @@ public class WsAgentLauncherImplTest {
 
     @Test
     public void shouldPingWsAgentAfterStart() throws Exception {
-        final MachineMetadata machineMetadata = mock(MachineMetadata.class);
-        when(machineInstance.getMetadata()).thenReturn(machineMetadata);
-        final ServerImpl server = new ServerImpl("ref", "ws-agent.com:456789", "http://ws-agent.com:456789");
-        doReturn(Collections.<String, Server>singletonMap(WS_AGENT_PORT, server)).when(machineMetadata).getServers();
-        when(requestFactory.fromUrl(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setMethod(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setTimeout(anyInt())).thenReturn(pingRequest);
-        when(pingRequest.request()).thenReturn(pingResponse);
-        when(pingResponse.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-
         wsAgentLauncher.startWsAgent(WS_ID);
 
-        verify(requestFactory).fromUrl(UriBuilder.fromUri(server.getUrl())
+        verify(requestFactory).fromUrl(UriBuilder.fromUri(WS_AGENT_SERVER_URL)
                                                  .replacePath(API_ENDPOINT_PATH)
                                                  .build()
                                                  .toString());
@@ -132,22 +123,14 @@ public class WsAgentLauncherImplTest {
 
     @Test
     public void shouldPingWsAgentMultipleTimesAfterStartIfPingFailsWithException() throws Exception {
-        final MachineMetadata machineMetadata = mock(MachineMetadata.class);
-        when(machineInstance.getMetadata()).thenReturn(machineMetadata);
-        final ServerImpl server = new ServerImpl("ref", "ws-agent.com:456789", "http://ws-agent.com:456789");
-        doReturn(Collections.<String, Server>singletonMap(WS_AGENT_PORT, server)).when(machineMetadata).getServers();
-        when(requestFactory.fromUrl(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setMethod(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setTimeout(anyInt())).thenReturn(pingRequest);
         when(pingRequest.request()).thenThrow(new ServerException(""),
                                               new BadRequestException(""),
                                               new IOException())
                                    .thenReturn(pingResponse);
-        when(pingResponse.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
 
         wsAgentLauncher.startWsAgent(WS_ID);
 
-        verify(requestFactory).fromUrl(UriBuilder.fromUri(server.getUrl())
+        verify(requestFactory).fromUrl(UriBuilder.fromUri(WS_AGENT_SERVER_URL)
                                                  .replacePath(API_ENDPOINT_PATH)
                                                  .build()
                                                  .toString());
@@ -159,21 +142,13 @@ public class WsAgentLauncherImplTest {
 
     @Test
     public void shouldPingWsAgentMultipleTimesAfterStartIfPingReturnsNotOKResponseCode() throws Exception {
-        final MachineMetadata machineMetadata = mock(MachineMetadata.class);
-        when(machineInstance.getMetadata()).thenReturn(machineMetadata);
-        final ServerImpl server = new ServerImpl("ref", "ws-agent.com:456789", "http://ws-agent.com:456789");
-        doReturn(Collections.<String, Server>singletonMap(WS_AGENT_PORT, server)).when(machineMetadata).getServers();
-        when(requestFactory.fromUrl(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setMethod(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setTimeout(anyInt())).thenReturn(pingRequest);
-        when(pingRequest.request()).thenReturn(pingResponse);
         when(pingResponse.getResponseCode()).thenReturn(HttpURLConnection.HTTP_CREATED,
                                                         HttpURLConnection.HTTP_NO_CONTENT,
                                                         HttpURLConnection.HTTP_OK);
 
         wsAgentLauncher.startWsAgent(WS_ID);
 
-        verify(requestFactory).fromUrl(UriBuilder.fromUri(server.getUrl())
+        verify(requestFactory).fromUrl(UriBuilder.fromUri(WS_AGENT_SERVER_URL)
                                                  .replacePath(API_ENDPOINT_PATH)
                                                  .build()
                                                  .toString());
@@ -185,16 +160,8 @@ public class WsAgentLauncherImplTest {
 
     @Test
     public void shouldNotPingWsAgentAfterFirstSuccessfulPing() throws Exception {
-        final MachineMetadata machineMetadata = mock(MachineMetadata.class);
-        when(machineInstance.getMetadata()).thenReturn(machineMetadata);
-        final ServerImpl server = new ServerImpl("ref", "ws-agent.com:456789", "http://ws-agent.com:456789");
-        doReturn(Collections.<String, Server>singletonMap(WS_AGENT_PORT, server)).when(machineMetadata).getServers();
-        when(requestFactory.fromUrl(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setMethod(anyString())).thenReturn(pingRequest);
-        when(pingRequest.setTimeout(anyInt())).thenReturn(pingRequest);
         when(pingRequest.request()).thenThrow(new ServerException(""))
                                    .thenReturn(pingResponse);
-        when(pingResponse.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
 
         wsAgentLauncher.startWsAgent(WS_ID);
 
@@ -247,5 +214,32 @@ public class WsAgentLauncherImplTest {
         wsAgentLauncher.startWsAgent(WS_ID);
 
         verify(machineManager).exec(anyString(), any(Command.class), anyString());
+    }
+
+    @Test(expectedExceptions = ServerException.class,
+          expectedExceptionsMessageRegExp = "Workspace agent is not responding. Workspace " + WS_ID + " will be stopped")
+    public void shouldThrowMachineExceptionIfPingsWereUnsuccessfulTooLong() throws Exception {
+        when(pingRequest.request()).thenThrow(new ServerException(""));
+
+        wsAgentLauncher.startWsAgent(WS_ID);
+    }
+
+    @Test
+    public void shouldAddTrailingSlashToPingPath() throws Exception {
+        String pingUrlWithoutTrailingSlash = WS_AGENT_SERVER_URL.substring(0, WS_AGENT_SERVER_URL.length() - 1);
+        ServerImpl server = new ServerImpl(SERVER);
+        server.setUrl(pingUrlWithoutTrailingSlash);
+        doReturn(Collections.<String, Server>singletonMap(WS_AGENT_PORT, server)).when(machineMetadata).getServers();
+
+        wsAgentLauncher.startWsAgent(WS_ID);
+
+        verify(requestFactory).fromUrl(UriBuilder.fromUri(pingUrlWithoutTrailingSlash + "/")
+                                                 .replacePath(API_ENDPOINT_PATH)
+                                                 .build()
+                                                 .toString());
+        verify(pingRequest).setMethod(HttpMethod.OPTIONS);
+        verify(pingRequest).setTimeout(WS_AGENT_PING_CONN_TIMEOUT_MS);
+        verify(pingRequest).request();
+        verify(pingResponse).getResponseCode();
     }
 }

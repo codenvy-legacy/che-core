@@ -29,7 +29,6 @@ import org.eclipse.che.ide.actions.DownloadItemAction;
 import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.ExpandNodeAction;
-import org.eclipse.che.ide.actions.ExportConfigAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
 import org.eclipse.che.ide.actions.FoldersAlwaysOnTopAction;
 import org.eclipse.che.ide.actions.FormatterAction;
@@ -57,7 +56,6 @@ import org.eclipse.che.ide.actions.UndoAction;
 import org.eclipse.che.ide.actions.UploadFileAction;
 import org.eclipse.che.ide.actions.UploadFolderAction;
 import org.eclipse.che.ide.actions.find.FindActionAction;
-import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.ActionManager;
@@ -88,8 +86,6 @@ import org.eclipse.che.ide.util.browser.UserAgent;
 import org.eclipse.che.ide.util.input.KeyCodeMap;
 import org.eclipse.che.ide.xml.NewXmlFileAction;
 import org.vectomatic.dom.svg.ui.SVGResource;
-
-import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.api.action.IdeActions.GROUP_FILE_NEW;
 import static org.eclipse.che.ide.api.constraints.Constraints.FIRST;
@@ -195,9 +191,6 @@ public class StandardComponentInitializer {
 
     @Inject
     private ExpandNodeAction expandNodeAction;
-
-    @Inject
-    private ExportConfigAction exportConfigAction;
 
     @Inject
     private OpenSelectedFileAction openSelectedFileAction;
@@ -393,9 +386,6 @@ public class StandardComponentInitializer {
 
         workspaceGroup.addSeparator();
 
-        actionManager.registerAction("exportConfig", exportConfigAction);
-        workspaceGroup.add(exportConfigAction);
-
         // Project (New Menu)
         DefaultActionGroup projectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_PROJECT);
 
@@ -481,18 +471,6 @@ public class StandardComponentInitializer {
 
         actionManager.registerAction("findActionAction", findActionAction);
         assistantGroup.add(findActionAction);
-
-        assistantGroup.add(new AbstractPerspectiveAction(null, "Find Text", null, null, null) {
-            @Override
-            public void updateInPerspective(@NotNull ActionEvent event) {
-                event.getPresentation().setVisible(true);
-                event.getPresentation().setEnabled(false);
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-            }
-        });
 
         actionManager.registerAction("hotKeysList", hotKeysListAction);
         assistantGroup.add(hotKeysListAction);

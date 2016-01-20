@@ -278,7 +278,6 @@ public class SelectionModel<D> {
     }
 
     private void insertAndSelectNode(D nodeData, int insertionIndex, boolean selectingNewNode) {
-
         // Visually represent it.
         visuallySelect(nodeData, selectingNewNode);
 
@@ -345,7 +344,6 @@ public class SelectionModel<D> {
     private void visuallySelect(D nodeData, boolean isSelected) {
         TreeNodeElement<D> renderedNode = dataAdapter.getRenderedTreeNode(nodeData);
         if (renderedNode != null) {
-//            renderedNode.setSelected(isSelected, css);
             renderedNode.setSelected(isSelected, active, css);
         }
     }

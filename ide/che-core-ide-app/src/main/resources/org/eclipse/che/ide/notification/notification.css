@@ -15,6 +15,8 @@
 @eval notificationPopupIconSuccessFill org.eclipse.che.ide.api.theme.Style.theme.notificationPopupIconSuccessFill();
 @eval notificationPopupIconFailFill org.eclipse.che.ide.api.theme.Style.theme.notificationPopupIconFailFill();
 @eval notificationPopupIconProgressFill org.eclipse.che.ide.api.theme.Style.theme.notificationPopupIconProgressFill();
+@eval notificationPopupIconSvgFill org.eclipse.che.ide.api.theme.Style.theme.notificationPopupIconSvgFill();
+@eval notificationPopupTextColor org.eclipse.che.ide.api.theme.Style.theme.notificationPopupTextColor();
 
 .notificationPanel {
     cursor: pointer;
@@ -173,7 +175,7 @@
 .notificationPopupIconWrapper > svg > g,
 .notificationPopupIconWrapper > svg > rect,
 .notificationPopupIconWrapper > svg > path {
-    fill: activeTabIconColor;
+    fill: notificationPopupIconSvgFill;
 }
 
 .notificationPopupCloseButtonWrapper {
@@ -208,7 +210,7 @@
     font-size: 13px;
     font-family: mainFontFamily;
     font-weight: bold;
-    color: mainFontColor;
+    color: notificationPopupTextColor;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -219,7 +221,7 @@
 }
 
 .notificationPopupMessageWrapper > div {
-    color: mainFontColor;
+    color: notificationPopupTextColor;
     margin: 0;
 }
 

@@ -33,6 +33,7 @@ import org.eclipse.che.ide.api.event.FileEventHandler;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.texteditor.HandlesTextOperations;
 import org.eclipse.che.ide.api.texteditor.HandlesUndoRedo;
 import org.eclipse.che.ide.api.texteditor.HasReadOnlyProperty;
@@ -345,6 +346,7 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         if (editorWidget != null) {
             editorWidget.refresh();
             editorWidget.setFocus();
+            setSelection(new Selection<>(input.getFile()));
         } else {
             this.delayedFocus = true;
         }
@@ -543,14 +545,6 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
             final List<String> types = this.fileTypeIdentifier.identifyType(file);
             if (types != null && !types.isEmpty()) {
                 result.addAll(types);
-            }
-            // use the registered media type if there is one
-            final String storedContentType = file.getMediaType();
-            if (storedContentType != null
-                && !storedContentType.isEmpty()
-                // give another chance at detection
-                && !DEFAULT_CONTENT_TYPE.equals(storedContentType)) {
-                result.add(storedContentType);
             }
         }
 

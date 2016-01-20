@@ -664,7 +664,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getToolbarIconColor() {
-        return this.getIconColor();
+        return iconColor();
     }
 
     @Override
@@ -749,6 +749,11 @@ public class LightTheme implements Theme {
 
     @Override
     public String processTreeBackgroundColor() {
+        return "white";
+    }
+
+    @Override
+    public String processTreeDevLabel() {
         return "white";
     }
 
@@ -913,8 +918,13 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getIconColor() {
+    public String iconColor() {
         return "#7c7c7c";
+    }
+
+    @Override
+    public String activeIconColor() {
+        return "#3E3A3A";
     }
 
     @Override
@@ -1143,33 +1153,53 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String getProjectExplorerJointContainerFill() {
+    public String treeExpandArrowColor() {
         return "#5D5D5D";
     }
 
     @Override
-    public String getProjectExplorerJointContainerShadow() {
+    public String treeExpandArrowShadow() {
+        return "1px 1px 0 rgba(0, 0, 0, 0.1)";
+    }
+
+    @Override
+    public String projectExplorerJointContainerFill() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String projectExplorerJointContainerShadow() {
         return "drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.1))";
     }
 
     @Override
-    public String getProjectExplorerPresentableTextShadow() {
+    public String projectExplorerPresentableTextShadow() {
         return "1px 1px 1px rgba(0, 0, 0, 0.1)";
     }
 
     @Override
-    public String getProjectExplorerInfoTextShadow() {
+    public String projectExplorerInfoTextShadow() {
         return "1px 1px 1px rgba(0, 0, 0, 0.1)";
     }
 
     @Override
-    public String getProjectExplorerSelectedRowBackground() {
-        return "rgba(73,143,225,0.40)";
+    public String projectExplorerSelectedRowBackground() {
+        return "rgba(0, 0, 0, 0.2)";
     }
 
     @Override
-    public String getProjectExplorerHoverRowBackground() {
-        return "rgba(215,215,215,0.45)";
+    public String projectExplorerHoverRowBackground() {
+        return "rgba(0, 0, 0, 0.12)";
+    }
+
+    @Override
+    public String projectExplorerSelectedRowBorder() {
+        return "#555";
+    }
+
+    @Override
+    public String projectExplorerHoverRowBorder() {
+        return "#7b7b7b";
     }
 
     @Override
@@ -1239,7 +1269,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String notificationPopupPanelShadow() {
-        return "0 0 10px rgba(0,0,0,0.6)";
+        return "0 0 7px rgba(0,0,0,0.2)";
     }
 
     @Override
@@ -1255,6 +1285,16 @@ public class LightTheme implements Theme {
     @Override
     public String notificationPopupIconProgressFill() {
         return "#9b9b9b";
+    }
+
+    @Override
+    public String notificationPopupIconSvgFill() {
+        return "#FFFFFF";
+    }
+
+    @Override
+    public String notificationPopupTextColor() {
+        return "#FFFFFF";
     }
 
     @Override

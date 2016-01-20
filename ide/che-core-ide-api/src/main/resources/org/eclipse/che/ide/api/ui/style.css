@@ -311,7 +311,10 @@
 /*Colors*/
 @eval panelBackgroundColor org.eclipse.che.ide.api.theme.Style.getPanelBackgroundColor();
 @eval primaryHighlightColor org.eclipse.che.ide.api.theme.Style.getPrimaryHighlightsColor();
-@eval iconColor org.eclipse.che.ide.api.theme.Style.getIconColor();
+
+@eval iconColor org.eclipse.che.ide.api.theme.Style.theme.iconColor();
+@eval activeIconColor org.eclipse.che.ide.api.theme.Style.theme.activeIconColor();
+
 @eval separatorColor org.eclipse.che.ide.api.theme.Style.getSeparatorColor();
 @eval errorColor org.eclipse.che.ide.api.theme.Style.getErrorColor();
 @eval successColor org.eclipse.che.ide.api.theme.Style.getSuccessColor();

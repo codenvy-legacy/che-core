@@ -115,7 +115,7 @@ public class NodeLoader implements LoaderHandler.HasLoaderHandlers {
             List<Node> newNodes = findNewNodes(requested, event.getReceivedNodes());
 
             if (removedNodes.isEmpty() && newNodes.equals(event.getReceivedNodes())) {
-                tree.getNodeStorage().add(parent, newNodes);
+                tree.getNodeStorage().replaceChildren(parent, newNodes);
             } else {
                 for (NodeDescriptor removed : removedNodes) {
                     if (!tree.getNodeStorage().remove(removed.getNode())) {
@@ -164,7 +164,6 @@ public class NodeLoader implements LoaderHandler.HasLoaderHandlers {
                 return;
             }
 
-            requested.setLoading(true);
             requested.setLoading(true);
         }
     }

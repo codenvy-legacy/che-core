@@ -19,6 +19,8 @@ import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
 import org.eclipse.che.api.machine.server.spi.Instance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -40,6 +42,7 @@ public class WsAgentLauncherImpl implements WsAgentLauncher {
     public static final String WS_AGENT_PROCESS_NAME           = "CheWsAgent";
     public static final int    WS_AGENT_PORT                   = 4401;
 
+    private static final Logger LOG                             = LoggerFactory.getLogger(WsAgentLauncherImpl.class);
     private static final String WS_AGENT_PROCESS_OUTPUT_CHANNEL = "workspace:%s:ext-server:output";
 
     private final MachineManager         machineManager;
@@ -64,7 +67,8 @@ public class WsAgentLauncherImpl implements WsAgentLauncher {
         this.wsAgentMaxStartTimeMs = wsAgentMaxStartTimeMs;
         this.wsAgentPingDelayMs = wsAgentPingDelayMs;
         this.wsAgentPingConnectionTimeoutMs = wsAgentPingConnectionTimeoutMs;
-        this.wsAgentPingPath = apiEndpoint.getPath();
+        // everest respond 404 to path to rest without trailing slash
+        this.wsAgentPingPath = apiEndpoint.getPath().endsWith("/") ? apiEndpoint.getPath() : apiEndpoint.getPath() + "/";
     }
 
     public static String getWsAgentProcessOutputChannel(String workspaceId) {
@@ -82,14 +86,22 @@ public class WsAgentLauncherImpl implements WsAgentLauncher {
             final HttpJsonRequest wsAgentPingRequest = createPingRequest(devMachine);
 
             long pingStartTimestamp = System.currentTimeMillis();
-            boolean pingPassed;
-            do {
-                pingPassed = pingWsAgent(wsAgentPingRequest);
-                Thread.sleep(wsAgentPingDelayMs);
-            } while (!pingPassed && System.currentTimeMillis() - pingStartTimestamp < wsAgentMaxStartTimeMs);
+            LOG.debug("Starts pinging ws agent. Workspace ID:{}. Url:{}. Timestamp:{}",
+                      workspaceId,
+                      wsAgentPingRequest,
+                      pingStartTimestamp);
+
+            while (System.currentTimeMillis() - pingStartTimestamp < wsAgentMaxStartTimeMs) {
+                if (pingWsAgent(wsAgentPingRequest)) {
+                    return;
+                } else {
+                    Thread.sleep(wsAgentPingDelayMs);
+                }
+            }
         } catch (BadRequestException wsAgentLaunchingExc) {
             throw new MachineException(wsAgentLaunchingExc.getLocalizedMessage(), wsAgentLaunchingExc);
         }
+        throw new MachineException("Workspace agent is not responding. Workspace " + workspaceId + " will be stopped");
     }
 
     private HttpJsonRequest createPingRequest(Instance devMachine) {

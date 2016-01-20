@@ -66,7 +66,7 @@ public class FindResultPresenter extends BasePresenter implements FindResultView
 
     @Override
     public String getTitleToolTip() {
-        return localizationConstant.actionFullTextSearch();
+        return localizationConstant.actionFullTextSearchDescription();
     }
 
     @Override

@@ -12,7 +12,7 @@ package org.eclipse.che.api.project.shared.dto;
 
 import com.google.common.annotations.Beta;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 import org.eclipse.che.dto.shared.DTO;
 
 /**

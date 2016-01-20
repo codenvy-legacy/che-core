@@ -1,13 +1,5 @@
-# Eclipse Che Core
-[![Join the chat at https://gitter.im/eclipse/che](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/eclipse/che?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/codenvy/che-core.svg?branch=master)](https://travis-ci.org/codenvy/che-core) 
-
-[![License](https://img.shields.io/github/license/codenvy/che-core.svg)](https://github.com/codenvy/che-core)
-[![Latest tag](https://img.shields.io/github/tag/codenvy/che-core.svg)](https://github.com/codenvy/che-core/tags)
-
-Requirements: Maven 3.1.1+, Java 1.8 (JDK)
-```
-If master is unstable, checkout the latest tagged version.
+## About Eclipse Che
+Eclipse Che is a next generation Eclipse IDE and open source alternative to IntelliJ. This repository is licensed under the Eclipse Public License 1.0. Visit [Eclipse Che's Web site](http://eclipse.org/che) for feature information or the main [Che assembly repository](http://github.com/codenvy/che) for a description of all participating repositories.
 
 ## Build
 ```sh

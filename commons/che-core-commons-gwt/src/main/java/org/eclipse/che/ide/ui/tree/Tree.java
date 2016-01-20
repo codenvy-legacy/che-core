@@ -106,15 +106,11 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
 
         String childrenContainer();
 
-        String closedIcon();
-
         String expandControl();
 
         String isDropTarget();
 
         String leafIcon();
-
-        String openedIcon();
 
         String selected();
 
@@ -227,11 +223,12 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      * {@link Tree.Resources#treeCss()}.
      */
     public interface Resources extends ClientBundle {
-        @Source("iconExpanded.svg")
-        SVGResource expansionIcon();
 
-        @Source("iconCollapsed.svg")
-        SVGResource collapseIcon();
+        @Source("expandedIcon.svg")
+        SVGResource expandedIcon();
+
+        @Source("collapsedIcon.svg")
+        SVGResource collapsedIcon();
 
         // Default Stylesheet.
         @Source({"org/eclipse/che/ide/ui/constants.css", "Tree.css", "org/eclipse/che/ide/api/ui/style.css"})
@@ -901,7 +898,7 @@ public class Tree<D> extends UiComponent<Tree.View<D>> implements IsWidget {
      */
     public TreeNodeElement<D> createNode(D nodeData) {
         return TreeNodeElement.create(nodeData, getModel().dataAdapter, getModel().nodeRenderer,
-                                      getModel().resources.treeCss());
+                                      getModel().resources.treeCss(), getModel().resources);
     }
 
     /** @see: {@link #expandNode(TreeNodeElement, boolean, boolean)}. */

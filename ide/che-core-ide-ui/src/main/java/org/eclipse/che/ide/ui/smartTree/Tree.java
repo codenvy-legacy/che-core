@@ -168,7 +168,7 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
                                                  HasBlurHandlers,
                                                  HasNodeAddedEventHandlers {
 
-    private static final String NULL_NODE_MSG = "Node should not be a null";
+    private static final String NULL_NODE_MSG         = "Node should not be a null";
     private static final String NULL_NODE_STORAGE_MSG = "Node should not be a null";
 
     /**
@@ -659,8 +659,8 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
             return;
         }
         container.scrollIntoView();
-        focusEl.getStyle().setLeft(container.getAbsoluteLeft(), Style.Unit.PX);
-        focusEl.getStyle().setTop(container.getAbsoluteTop(), Style.Unit.PX);
+        focusEl.getStyle().setLeft((nodeStorage.getDepth(node) - 1) * 16, Style.Unit.PX);
+        focusEl.getStyle().setTop(container.getOffsetTop(), Style.Unit.PX);
     }
 
     /**
@@ -1437,6 +1437,9 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
                     setExpanded(descriptor.getNode(), false);
                 }
                 moveFocus(nodeDescriptor.getRootContainer());
+                if (autoSelect) {
+                    selectionModel.select(parent, true);
+                }
             }
         }
 
@@ -1519,7 +1522,7 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
                 ((HasAction) nodeDescriptor.getNode()).actionPerformed();
             }
         } else {
-            setExpanded(nodeDescriptor.getNode(), !nodeDescriptor.isExpanded());
+            toggle(nodeDescriptor.getNode());
         }
     }
 
@@ -1533,8 +1536,6 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
             }
         }
 
-        focusEl.getStyle().setTop(event.getClientY(), Style.Unit.PX);
-        focusEl.getStyle().setLeft(event.getClientX(), Style.Unit.PX);
         focus();
     }
 

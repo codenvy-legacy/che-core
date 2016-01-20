@@ -21,7 +21,6 @@ import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
 import org.eclipse.che.ide.api.editor.EditorOpenedEventHandler;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.parts.ConsolePart;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.debug.Breakpoint;
@@ -69,7 +68,6 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     private final Map<String, List<Breakpoint>> breakpoints;
     private final EditorAgent                   editorAgent;
     private final DebuggerManager               debuggerManager;
-    private final ConsolePart                   console;
     private final DtoFactory                    dtoFactory;
 
 
@@ -79,13 +77,11 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
     @Inject
     public BreakpointManagerImpl(final EditorAgent editorAgent,
                                  final DebuggerManager debuggerManager,
-                                 final ConsolePart console,
                                  final EventBus eventBus,
                                  final DtoFactory dtoFactory) {
         this.editorAgent = editorAgent;
         this.breakpoints = new HashMap<>();
         this.debuggerManager = debuggerManager;
-        this.console = console;
         this.debuggerState = DISCONNECTED;
         this.dtoFactory = dtoFactory;
 

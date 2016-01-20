@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>4.0.0-beta-9-SNAPSHOT</version>
+        <version>4.0.0-beta-13-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>che-core-api-parent</artifactId>
@@ -41,7 +41,6 @@
         <module>che-core-api-infrastructure-local</module>
     </modules>
     <properties>
-        <maven.model.version>3.0.5</maven.model.version>
         <specification.version>1.0-beta2</specification.version>
     </properties>
 </project>
