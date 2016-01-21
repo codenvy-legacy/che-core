@@ -193,7 +193,7 @@ public class ProjectWizardTest {
     public void moduleShouldBeCreated() {
         Selection selection = mock(Selection.class);
         //noinspection unchecked
-        when(selectionAgent.getSelection()).thenReturn(selection);
+        when(selectionAgent.getActivePartSelection()).thenReturn(selection);
         when(dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class)).thenReturn(projectConfigUnmarshallable);
         prepareWizard(CREATE_MODULE);
 
@@ -210,7 +210,7 @@ public class ProjectWizardTest {
     public void someErrorHappenedDuringModuleCreating() {
         Selection selection = mock(Selection.class);
         //noinspection unchecked
-        when(selectionAgent.getSelection()).thenReturn(selection);
+        when(selectionAgent.getActivePartSelection()).thenReturn(selection);
         Throwable throwable = mock(Throwable.class);
         when(dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class)).thenReturn(projectConfigUnmarshallable);
         prepareWizard(CREATE_MODULE);

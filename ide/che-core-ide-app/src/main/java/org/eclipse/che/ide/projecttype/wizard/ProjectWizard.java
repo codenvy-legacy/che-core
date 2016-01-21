@@ -159,7 +159,7 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
     }
 
     private String getPathToSelectedNodeParent() {
-        Selection<?> selection = selectionAgent.getSelection();
+        Selection<?> selection = selectionAgent.getActivePartSelection();
 
         if (selection.isMultiSelection() || selection.isEmpty()) {
             return "";

@@ -123,7 +123,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        final Selection<?> selection = selectionAgent.getSelection();
+        final Selection<?> selection = selectionAgent.getActivePartSelection();
 
         if (selection == null || selection.isEmpty()) {
             throw new IllegalStateException("Nodes weren't found in the selection agent");
@@ -279,7 +279,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
     public void updateInPerspective(@NotNull ActionEvent event) {
         event.getPresentation().setVisible(true);
 
-        final Selection<?> selection = selectionAgent.getSelection();
+        final Selection<?> selection = selectionAgent.getActivePartSelection();
 
         if (selection == null || selection.isEmpty()) {
             event.getPresentation().setEnabled(false);

@@ -17,6 +17,8 @@ import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
+
 import com.google.inject.Inject;
 import com.google.web.bindery.event.shared.EventBus;
 
@@ -29,22 +31,29 @@ public class SelectionAgentImpl implements ActivePartChangedHandler, PropertyLis
 
     private       PartPresenter activePart;
     private final EventBus      eventBus;
+    private final ProjectExplorerPresenter projectExplorer;
 
     @Inject
-    public SelectionAgentImpl(EventBus eventBus) {
+    public SelectionAgentImpl(EventBus eventBus, ProjectExplorerPresenter projectExplorer) {
         this.eventBus = eventBus;
+        this.projectExplorer = projectExplorer;
         // bind event listener
         eventBus.addHandler(ActivePartChangedEvent.TYPE, this);
     }
 
     /** {@inheritDoc} */
     @Override
-    public Selection<?> getSelection() {
+    public Selection<?> getActivePartSelection() {
         return activePart != null ? activePart.getSelection() : null;
     }
 
+    @Override
+    public Selection<?> getProjectExplorerSelection() {
+        return projectExplorer.getSelection();
+    }
+
     protected void notifySelectionChanged() {
-        eventBus.fireEvent(new SelectionChangedEvent(getSelection()));
+        eventBus.fireEvent(new SelectionChangedEvent(getActivePartSelection()));
     }
 
     /** {@inheritDoc} */
