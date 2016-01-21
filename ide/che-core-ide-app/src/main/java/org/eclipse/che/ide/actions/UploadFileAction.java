@@ -64,7 +64,7 @@ public class UploadFileAction extends AbstractPerspectiveAction {
     public void updateInPerspective(@NotNull ActionEvent event) {
         event.getPresentation().setVisible(true);
         boolean enabled = false;
-        Selection<?> selection = selectionAgent.getSelection();
+        Selection<?> selection = selectionAgent.getActivePartSelection();
         if (selection != null) {
             enabled = selection.getHeadElement() != null;
         }

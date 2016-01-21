@@ -32,7 +32,7 @@ import java.util.List;
 public interface PartPresenter extends Presenter {
     /** The property id for <code>getTitle</code>, <code>getTitleImage</code> and <code>getTitleToolTip</code>. */
     int TITLE_PROPERTY     = 0x001;
-    /** The property id for <code>getSelection</code>. */
+    /** The property id for <code>getActivePartSelection</code>. */
     int SELECTION_PROPERTY = 0x002;
 
     /** @return Title of the Part */

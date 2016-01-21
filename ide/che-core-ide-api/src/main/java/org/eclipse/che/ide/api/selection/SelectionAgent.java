@@ -12,6 +12,7 @@ package org.eclipse.che.ide.api.selection;
 
 import org.eclipse.che.ide.api.event.SelectionChangedEvent;
 import org.eclipse.che.ide.api.extension.SDK;
+
 import com.google.web.bindery.event.shared.EventBus;
 
 /**
@@ -28,7 +29,14 @@ public interface SelectionAgent {
     /**
      * Provides a way of getting current app-wide Selection.
      *
-     * @return
+     * @return Active part selection
      */
-    Selection<?> getSelection();
+    Selection<?> getActivePartSelection();
+
+    /**
+     * Provides a way of getting project explorer Selection.
+     *
+     * @return Project explorer selection
+     */
+    Selection<?> getProjectExplorerSelection();
 }

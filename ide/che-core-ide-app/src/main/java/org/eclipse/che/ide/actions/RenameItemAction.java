@@ -76,7 +76,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        final Selection<?> selection = selectionAgent.getSelection();
+        final Selection<?> selection = selectionAgent.getActivePartSelection();
         if (selection == null || selection.isEmpty()) {
             return;
         }
@@ -99,7 +99,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
             return;
         }
 
-        final Selection<?> selection = selectionAgent.getSelection();
+        final Selection<?> selection = selectionAgent.getActivePartSelection();
 
         if (selection == null || selection.isEmpty()) {
             e.getPresentation().setEnabled(false);

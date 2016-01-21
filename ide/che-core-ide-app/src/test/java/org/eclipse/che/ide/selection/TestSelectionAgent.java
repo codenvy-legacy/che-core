@@ -23,6 +23,7 @@ import org.eclipse.che.ide.api.event.SelectionChangedHandler;
 import org.eclipse.che.ide.api.parts.AbstractPartPresenter;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -46,25 +48,36 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class TestSelectionAgent {
 
-    private EventBus eventBus = new SimpleEventBus();
-
-    private SelectionAgentImpl agent = new SelectionAgentImpl(eventBus);
+    @Mock
+    private PartPresenter            part;
 
     @Mock
-    private PartPresenter part;
+    private ProjectExplorerPresenter projectExplorer;
 
     @Mock
-    private Selection selection;
+    private Selection                selection;
+
+    private SelectionAgentImpl       agent;
+    private EventBus                 eventBus = new SimpleEventBus();
 
     @Before
     public void disarm() {
         // don't throw an exception if GWT.create() invoked
         GWTMockUtilities.disarm();
+        agent = new SelectionAgentImpl(eventBus, projectExplorer);
     }
 
     @After
     public void restore() {
         GWTMockUtilities.restore();
+    }
+    
+    /** Check proper Selection returned when getProjectExplorerSelection method called */
+    @Test
+    public void shouldReturnProjectExplorerSelection() {
+        when(projectExplorer.getSelection()).thenReturn(selection);
+
+        assertEquals(selection, agent.getProjectExplorerSelection());
     }
 
     /** Check proper Selection returned when part changed */
@@ -75,7 +88,7 @@ public class TestSelectionAgent {
         // fire event, for agent to get information about active part
         eventBus.fireEvent(new ActivePartChangedEvent(part));
 
-        assertEquals("Agent should return proper Selection", selection, agent.getSelection());
+        assertEquals("Agent should return proper Selection", selection, agent.getActivePartSelection());
     }
 
     /** Event should be fired, when active part changed */

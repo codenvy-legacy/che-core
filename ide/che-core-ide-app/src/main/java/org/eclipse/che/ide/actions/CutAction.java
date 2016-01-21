@@ -96,7 +96,7 @@ public class CutAction extends Action {
             return false;
         }
 
-        Selection<?> selection = agent.getSelection();
+        Selection<?> selection = agent.getActivePartSelection();
         if (selection == null || selection.isEmpty()) {
             return false;
         }
