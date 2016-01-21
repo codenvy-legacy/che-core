@@ -25,6 +25,7 @@
     <name>Che Core Parent</name>
     <modules>
         <module>commons</module>
+        <module>che-core-api-model</module>
         <module>platform-api</module>
         <module>platform-api-client-gwt</module>
         <module>ide</module>
