@@ -26,6 +26,7 @@ import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -131,15 +132,11 @@ public class MachineExtensionProxyServlet extends HttpServlet {
             throw new ServerException("No extension server found in machine.");
         }
 
-        final StringBuilder url = new StringBuilder("http://")
-                .append(server.getAddress())
-                .append(req.getRequestURI());
+        final UriBuilder uriBuilder = UriBuilder.fromUri(server.getUrl())
+                                                .replacePath(req.getRequestURI())
+                                                .replaceQuery(req.getQueryString());
 
-        if (req.getQueryString() != null) {
-            url.append("?").append(req.getQueryString());
-        }
-
-        return url.toString();
+        return uriBuilder.build().toString();
     }
 
     private void setResponse(HttpServletResponse resp, HttpURLConnection conn) throws ServerException {
