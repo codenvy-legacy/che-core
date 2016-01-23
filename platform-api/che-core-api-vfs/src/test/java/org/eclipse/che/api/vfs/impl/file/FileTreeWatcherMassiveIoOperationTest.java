@@ -64,7 +64,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
 
         List<String> allFilesAndDirs = fileWatcherTestTree.createTree("", 7, 5);
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
@@ -83,11 +83,11 @@ public class FileTreeWatcherMassiveIoOperationTest {
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
         fileTreeWatcher.startup();
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         assertTrue(fileWatcherTestTree.delete(""));
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
@@ -106,7 +106,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
         fileTreeWatcher.startup();
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         List<String> updated = fileWatcherTestTree.findAllFilesInTree("");
 
@@ -114,7 +114,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
             fileWatcherTestTree.updateFile(file);
         }
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
@@ -134,7 +134,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
         fileTreeWatcher.startup();
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         List<String> updated = fileWatcherTestTree.findAllFilesInTree("").stream()
                                                   .filter(path -> path.hashCode() % 2 == 0).collect(Collectors.toList());
@@ -143,7 +143,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
             fileWatcherTestTree.updateFile(file);
         }
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
@@ -162,7 +162,7 @@ public class FileTreeWatcherMassiveIoOperationTest {
         FileWatcherNotificationListener notificationListener = aNotificationListener();
         fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
         fileTreeWatcher.startup();
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         List<String> allFiles = fileWatcherTestTree.findAllFilesInTree("");
         List<String> updated = newArrayList(allFiles.subList(0, allFiles.size() / 2));
@@ -178,14 +178,14 @@ public class FileTreeWatcherMassiveIoOperationTest {
             fileWatcherTestTree.delete(file);
         }
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         updated.addAll(created.subList(0, created.size() / 2));
         for (String file : updated) {
             fileWatcherTestTree.updateFile(file);
         }
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
 

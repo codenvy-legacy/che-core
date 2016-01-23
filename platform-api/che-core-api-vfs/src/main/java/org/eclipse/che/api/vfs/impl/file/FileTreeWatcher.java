@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p/>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.vfs.impl.file;
 
@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -64,10 +65,12 @@ public class FileTreeWatcher {
     private final ExecutorService                 executor;
     private final AtomicBoolean                   running;
     private       WatchService                    watchService;
+    private       WatchEvent.Modifier[]           watchEventModifiers;
 
     public FileTreeWatcher(File watchRoot,
                            List<PathMatcher> excludePatterns,
                            FileWatcherNotificationListener fileWatcherNotificationListener) {
+        watchEventModifiers = new WatchEvent.Modifier[0];
         this.watchRoot = toCanonicalFile(watchRoot);
         this.watchRootPath = this.watchRoot.toPath();
         this.excludePatterns = newArrayList(excludePatterns);
@@ -89,10 +92,28 @@ public class FileTreeWatcher {
 
     public void startup() throws IOException {
         watchService = FileSystems.getDefault().newWatchService();
+        if (isPollingWatchService(watchService)) {
+            watchEventModifiers = new WatchEvent.Modifier[]{createSensitivityWatchEventModifier()};
+        }
         running.set(true);
         walkTreeAndSetupWatches(watchRootPath);
         executor.execute(new WatchEventTask());
         fileWatcherNotificationListener.started(watchRoot);
+    }
+
+    private boolean isPollingWatchService(WatchService watchService) {
+        return "sun.nio.fs.PollingWatchService".equals(watchService.getClass().getName());
+    }
+
+    private WatchEvent.Modifier createSensitivityWatchEventModifier() {
+        try {
+            Class<?> aModifierEnum = Class.forName("com.sun.nio.file.SensitivityWatchEventModifier");
+            Object[] sensitivityEnumConstants = aModifierEnum.getEnumConstants();
+            return (WatchEvent.Modifier)sensitivityEnumConstants[0];
+        } catch (Exception e) {
+            LOG.warn("Can't create 'com.sun.nio.file.SensitivityWatchEventModifier'", e);
+        }
+        return null;
     }
 
     public void shutdown() {
@@ -179,7 +200,9 @@ public class FileTreeWatcher {
 
     private void setupDirectoryWatcher(Path directory) throws IOException {
         if (watchedDirectories.get(directory) == null) {
-            WatchKey watchKey = directory.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY, OVERFLOW);
+            WatchKey watchKey = directory.register(watchService,
+                                                   new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY, OVERFLOW},
+                                                   watchEventModifiers);
             WatchedDirectory watchedDirectory = new WatchedDirectory(directory, watchKey);
             try (DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
                 for (Path entry : entries) {

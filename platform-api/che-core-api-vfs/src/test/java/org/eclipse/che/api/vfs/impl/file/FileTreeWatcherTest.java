@@ -73,7 +73,7 @@ public class FileTreeWatcherTest {
                                          fileWatcherTestTree.createDirectory("watched"),
                                          fileWatcherTestTree.createFile("watched"));
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
@@ -94,7 +94,7 @@ public class FileTreeWatcherTest {
 
         List<String> created = fileWatcherTestTree.createTree("", 2, 2);
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
@@ -115,11 +115,11 @@ public class FileTreeWatcherTest {
 
         String directory = fileWatcherTestTree.createDirectory("");
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         String file = fileWatcherTestTree.createFile(directory);
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
@@ -146,7 +146,7 @@ public class FileTreeWatcherTest {
         fileWatcherTestTree.updateFile(notifiedFile1);
         fileWatcherTestTree.updateFile(notifiedFile2);
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
@@ -172,7 +172,7 @@ public class FileTreeWatcherTest {
 
         fileWatcherTestTree.delete("watched");
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
@@ -201,7 +201,7 @@ public class FileTreeWatcherTest {
 
         Set<String> created = newHashSet(directory, file);
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
@@ -227,7 +227,7 @@ public class FileTreeWatcherTest {
 
         Set<String> created = newHashSet(file);
 
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
         verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
@@ -260,7 +260,7 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(500);
         fileWatcherTestTree.createFile("");
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         verify(notificationListener).errorOccurred(eq(testDirectory), eq(error));
     }
