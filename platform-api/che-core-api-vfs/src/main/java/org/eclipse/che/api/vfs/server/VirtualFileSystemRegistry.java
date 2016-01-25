@@ -53,7 +53,7 @@ public class VirtualFileSystemRegistry {
                     provider = newProvider;
                 }
             } else {
-                throw new ServerException(String.format("Virtual file system %s does not exist.  This is a serious error and likely occurs in an on premises configuration.  " +
+                throw new NotFoundException(String.format("Virtual file system %s does not exist.  This is a serious error and likely occurs in an on premises configuration.  " +
                                                         "Contact support for assistance. ", vfsId));
             }
         }
