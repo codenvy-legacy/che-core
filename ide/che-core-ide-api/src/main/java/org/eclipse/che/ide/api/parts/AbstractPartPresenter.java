@@ -41,8 +41,8 @@ public abstract class AbstractPartPresenter implements PartPresenter {
 
     public AbstractPartPresenter() {
         manager = ListenerManager.create();
-
         rules = new ArrayList<>();
+        selection = new Selection.NoSelectionProvided();
     }
 
     /** {@inheritDoc} */

@@ -130,4 +130,7 @@ public class Selection<T> {
     public List<T> getAllElements() {
         return new ArrayList<>(this.elements);
     }
+
+    public static class NoSelectionProvided extends Selection<Void> {
+    }
 }
