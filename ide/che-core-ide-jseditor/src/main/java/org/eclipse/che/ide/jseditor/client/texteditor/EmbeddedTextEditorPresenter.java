@@ -754,7 +754,10 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
             // handle delayed focus
             // should also check if I am visible, but how ?
             if (delayedFocus) {
+                editorWidget.refresh();
                 editorWidget.setFocus();
+                setSelection(new Selection<>(input.getFile()));
+
                 delayedFocus = false;
             }
 
