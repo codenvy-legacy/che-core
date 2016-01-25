@@ -30,22 +30,17 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.ide.api.ProductInfoDataProvider;
-import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
-import org.eclipse.che.ide.bootstrap.StartUpActionsProcessor;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
-import org.eclipse.che.ide.util.StartUpAction;
 import org.eclipse.che.ide.util.StartUpActionsParser;
 import org.eclipse.che.ide.util.loging.Log;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,11 +56,9 @@ public class BootstrapController {
     private final Provider<WorkspacePresenter> workspaceProvider;
     private final ExtensionInitializer         extensionInitializer;
     private final EventBus                     eventBus;
-    private final ActionManager                actionManager;
     private final ProductInfoDataProvider      productInfoDataProvider;
     private final Provider<AppStateManager>    appStateManagerProvider;
     private final AppContext                   appContext;
-    private final BrowserQueryFieldRenderer    queryFieldRenderer;
 
     @Inject
     public BootstrapController(Provider<WorkspacePresenter> workspaceProvider,
@@ -73,20 +66,16 @@ public class BootstrapController {
                                DtoRegistrar dtoRegistrar,
                                AnalyticsEventLoggerExt analyticsEventLoggerExt,
                                EventBus eventBus,
-                               ActionManager actionManager,
                                ProductInfoDataProvider productInfoDataProvider,
                                Provider<AppStateManager> appStateManagerProvider,
-                               AppContext appContext,
-                               BrowserQueryFieldRenderer queryFieldRenderer) {
+                               AppContext appContext) {
         this.workspaceProvider = workspaceProvider;
         this.extensionInitializer = extensionInitializer;
         this.eventBus = eventBus;
-        this.actionManager = actionManager;
         this.analyticsEventLoggerExt = analyticsEventLoggerExt;
         this.productInfoDataProvider = productInfoDataProvider;
         this.appStateManagerProvider = appStateManagerProvider;
         this.appContext = appContext;
-        this.queryFieldRenderer = queryFieldRenderer;
 
         dtoRegistrar.registerDtoProviders();
     }

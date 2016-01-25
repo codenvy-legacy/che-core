@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.workspace;
+package org.eclipse.che.ide.context;
 
 import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
@@ -89,7 +89,7 @@ public class BrowserQueryFieldRenderer {
 
             browserUrl = urlParts.join("/");
 
-            window.top.document.title = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
+            window.top.document.title = this.@org.eclipse.che.ide.context.BrowserQueryFieldRenderer::
                 productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle()();
             window.history.pushState(window["_history_relocation_id"], window.top.document.title, browserUrl);
             window["_history_relocation_id"]++;
@@ -120,9 +120,9 @@ public class BrowserQueryFieldRenderer {
 
             browserUrl = urlParts.join("/") + projectName;
 
-            var titleWithoutSelectedProject = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
+            var titleWithoutSelectedProject = this.@org.eclipse.che.ide.context.BrowserQueryFieldRenderer::
                 productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle()();
-            var titleWithSelectedProject = this.@org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer::
+            var titleWithSelectedProject = this.@org.eclipse.che.ide.context.BrowserQueryFieldRenderer::
                 productInfoDataProvider.@org.eclipse.che.ide.api.ProductInfoDataProvider::getDocumentTitle(Ljava/lang/String;)(projectName);
             window.top.document.title = projectName.length == 0 ? titleWithoutSelectedProject : titleWithSelectedProject;
 
@@ -133,7 +133,7 @@ public class BrowserQueryFieldRenderer {
         }
     }-*/;
 
-    /** Returns workspace name from browser query fiels */
+    /** Returns workspace name from browser query fields. */
     public String getWorkspaceName() {
         String browserUrl = Window.Location.getPath();
 
