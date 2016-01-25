@@ -16,6 +16,8 @@ public class QueryExpression {
     private String path;
     private String mediaType;
     private String text;
+    private int    skipCount;
+    private int    maxItems;
 
     public String getPath() {
         return path;
@@ -53,6 +55,24 @@ public class QueryExpression {
         return this;
     }
 
+    public int getSkipCount() {
+        return skipCount;
+    }
+
+    public QueryExpression setSkipCount(int skipCount) {
+        this.skipCount = skipCount;
+        return this;
+    }
+
+    public int getMaxItems() {
+        return maxItems;
+    }
+
+    public QueryExpression setMaxItems(int maxItems) {
+        this.maxItems = maxItems;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "QueryExpression{" +
@@ -60,6 +80,8 @@ public class QueryExpression {
                ", path='" + path + '\'' +
                ", mediaType='" + mediaType + '\'' +
                ", text='" + text + '\'' +
+               ", skipCount=" + skipCount +
+               ", maxItems=" + maxItems +
                '}';
     }
 }

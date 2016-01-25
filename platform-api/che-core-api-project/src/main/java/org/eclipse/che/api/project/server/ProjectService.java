@@ -1230,35 +1230,26 @@ public class ProjectService extends Service {
                                       @ApiParam(value = "Skip count")
                                       @QueryParam("skipCount") int skipCount)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-
         // to search from workspace root path should end with "/" i.e /{ws}/search/?<query>
         final FolderEntry folder = path.isEmpty() ? projectManager.getProjectsRoot(workspace) : asFolder(workspace, path);
-
         if (searcherProvider != null) {
             if (skipCount < 0) {
                 throw new ConflictException(String.format("Invalid 'skipCount' parameter: %d.", skipCount));
             }
-            final QueryExpression expr = new QueryExpression()
-                    .setPath(path.startsWith("/") ? path : ('/' + path))
-                    .setName(name)
-                    .setText(text);
+            final QueryExpression query = new QueryExpression().setPath(path.startsWith("/") ? path : ('/' + path))
+                                                               .setName(name)
+                                                               .setText(text)
+                                                               .setSkipCount(skipCount)
+                                                               .setMaxItems(maxItems);
 
-            final String[] result = searcherProvider.getSearcher(folder.getVirtualFile().getMountPoint(), true).search(expr);
-            if (skipCount > 0) {
-                if (skipCount > result.length) {
-                    throw new ConflictException(
-                            String.format("'skipCount' parameter: %d is greater then total number of items in result: %d.",
-                                          skipCount, result.length));
-                }
-            }
-            final int length = maxItems > 0 ? Math.min(result.length, maxItems) : result.length;
-            final List<ItemReference> items = new ArrayList<>(length);
+            final String[] paths = searcherProvider.getSearcher(folder.getVirtualFile().getMountPoint(), true).search(query);
+            final List<ItemReference> items = new ArrayList<>(paths.length);
             final FolderEntry root = projectManager.getProjectsRoot(workspace);
             final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-            for (int i = skipCount; i < length; i++) {
+            for (String relativePath : paths) {
                 VirtualFileEntry child = null;
                 try {
-                    child = root.getChild(result[i]);
+                    child = root.getChild(relativePath);
                 } catch (ForbiddenException ignored) {
                     // Ignore item that user can't access
                 }
