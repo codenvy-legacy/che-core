@@ -10,115 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.app;
 
-import com.google.inject.Inject;
-
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
-import org.eclipse.che.ide.api.project.ProjectImpl;
-import org.eclipse.che.ide.api.project.WorkspaceProjects;
 import org.eclipse.che.ide.util.StartUpAction;
 
-import javax.inject.Singleton;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Describes current state of application.
- * E.g. current project, current workspace and etc.
+ * Represents current context of the IDE application.
  *
  * @author Vitaly Parfonov
+ * @author Artem Zatsarynnyi
  */
-@Singleton
-public class AppContext {
+public interface AppContext {
 
-    private UsersWorkspaceDto workspace;
-    private CurrentProject    currentProject;
-    private CurrentUser       currentUser;
-    private Factory           factory;
-    private String            devMachineId;
-    private String            projectsRoot;
+    /** Returns list of start-up actions with parameters that comes form URL during IDE initialization. */
+    List<StartUpAction> getStartAppActions();
 
-    private final List<String> projectsInImport = new ArrayList<>();
+    UsersWorkspaceDto getWorkspace();
 
-    /**
-     * Returns list of projects paths which are in importing state.
-     *
-     * @return list of project paths
-     */
-    public List<String> getImportingProjects() {
-        return projectsInImport;
-    }
-
-    /**
-     * Adds project path to list of projects which are in importing state.
-     *
-     * @param pathToProject
-     *         project path
-     */
-    public void addProjectToImporting(String pathToProject) {
-        projectsInImport.add(pathToProject);
-    }
-
-    /**
-     * Removes project path to list of projects which are in importing state.
-     *
-     * @param pathToProject
-     *         project path
-     */
-    public void removeProjectFromImporting(String pathToProject) {
-        projectsInImport.remove(pathToProject);
-    }
-
-    /**
-     * List of action with params that comes from startup URL.
-     * Can be proccesed after IDE itialization as usual after starting Extension Server
-     * and Project API initialization
-     */
-    private List<StartUpAction> startAppActions;
-
-
-    /**
-     * List of action with params that comes from startup URL.
-     * Can be proccesed after IDE itialization as usual after starting Extension Server
-     * and Project API initialization
-     */
-    public void setStartUpActions(List<StartUpAction> startUpActions) {
-        this.startAppActions = startUpActions;
-    }
-
-    /**
-     * List of startUp actions with parameters that comes form URL during IDE itialization
-     * @return
-     */
-    public List<StartUpAction> getStartAppActions() {
-        return startAppActions;
-    }
-
-    private ProjectImpl       activeProject;
-    private WorkspaceProjects projectFactory;
-
-    @Inject
-    public AppContext(WorkspaceProjects projectFactory) {
-        this.projectFactory = projectFactory;
-    }
-
-    public UsersWorkspaceDto getWorkspace() {
-        return workspace;
-    }
-
-    public void setWorkspace(UsersWorkspaceDto workspace) {
-        this.workspace = workspace;
-        projectFactory.init(workspace.getProjects());
-    }
+    void setWorkspace(UsersWorkspaceDto workspace);
 
     /** Returns id of current workspace of throws IllegalArgumentException if workspace is null. */
-    public String getWorkspaceId() {
-        if (workspace == null) {
-            throw new IllegalArgumentException(getClass() + " Workspace can not be null.");
-        }
-
-        return workspace.getId();
-    }
+    String getWorkspaceId();
 
     /**
      * Returns {@link CurrentProject} instance that describes the project
@@ -128,29 +42,46 @@ public class AppContext {
      *
      * @return opened project or <code>null</code> if none opened
      */
-    public CurrentProject getCurrentProject() {
-        return currentProject;
-    }
-
-    /**
-     * Set the current project instance.
-     * <p/>
-     * Should not be called directly as the current
-     * project is managed by the core.
-     */
-    public void setCurrentProject(CurrentProject currentProject) {
-        this.currentProject = currentProject;
-    }
+    CurrentProject getCurrentProject();
 
     /**
      * Returns current user.
      *
      * @return current user
      */
-    public CurrentUser getCurrentUser() {
-        return currentUser;
-    }
+    CurrentUser getCurrentUser();
 
+    void setCurrentUser(CurrentUser currentUser);
+
+    /**
+     * Returns list of projects paths which are in importing state.
+     *
+     * @return list of project paths
+     */
+    List<String> getImportingProjects();
+
+    /**
+     * Adds project path to list of projects which are in importing state.
+     *
+     * @param pathToProject
+     *         project path
+     */
+    void addProjectToImporting(String pathToProject);
+
+    /**
+     * Removes project path to list of projects which are in importing state.
+     *
+     * @param pathToProject
+     *         project path
+     */
+    void removeProjectFromImporting(String pathToProject);
+
+    /**
+     * List of action with params that comes from startup URL.
+     * Can be processed after IDE initialization as usual after
+     * starting Extension Server and Project API initialization.
+     */
+    void setStartUpActions(List<StartUpAction> startUpActions);
 
     /**
      * Returns {@link Factory} instance which id was set on startup,
@@ -158,52 +89,16 @@ public class AppContext {
      *
      * @return loaded factory or {@code null}
      */
-    public Factory getFactory() {
-        return factory;
-    }
+    Factory getFactory();
 
-    public void setCurrentUser(CurrentUser currentUser) {
-        this.currentUser = currentUser;
-    }
+    void setFactory(Factory factory);
 
     /** Returns ID of the developer machine (where workspace is bound). */
-    public String getDevMachineId() {
-        return devMachineId;
-    }
+    String getDevMachineId();
 
-    public void setDevMachineId(String id) {
-        this.devMachineId = id;
-    }
+    void setDevMachineId(String id);
 
-    public void setFactory(Factory factory) {
-        this.factory = factory;
-    }
+    String getProjectsRoot();
 
-    public String getProjectsRoot() {
-        return projectsRoot;
-    }
-
-    public void setProjectsRoot(String projectsRoot) {
-        this.projectsRoot = projectsRoot;
-    }
-
-
-    /**
-     * TODO experimental
-     * @return
-     */
-    public ProjectImpl getActiveProject() {
-        return activeProject;
-
-    }
-
-    /**
-     * TODO experimental
-     * @param configDto
-     */
-    public void setActiveProject(String projectName) {
-        //this.activeProject = projectFactory.createProject(configDto);
-        this.activeProject = projectFactory.getProject(projectName);
-    }
-
+    void setProjectsRoot(String projectsRoot);
 }
