@@ -119,13 +119,13 @@ public interface CoreLocalizationConstant extends Messages {
     String renameNodeDialogTitle();
 
     @Key("renameFileDialogTitle")
-    String renameFileDialogTitle();
+    String renameFileDialogTitle(String name);
 
     @Key("renameFolderDialogTitle")
-    String renameFolderDialogTitle();
+    String renameFolderDialogTitle(String name);
 
     @Key("renameProjectDialogTitle")
-    String renameProjectDialogTitle();
+    String renameProjectDialogTitle(String name);
 
     @Key("renameDialogNewNameLabel")
     String renameDialogNewNameLabel();

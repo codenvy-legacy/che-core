@@ -138,13 +138,12 @@ public class InputDialogPresenter implements InputDialog, InputDialogView.Action
         }
 
         String errorMessage = violation.getMessage();
-        if (errorMessage != null) {
-            errorMessage = errorMessage.isEmpty() ? localizationConstant.validationErrorMessage() : errorMessage;
-            view.showErrorHint(errorMessage);
-            return false;
+        if (errorMessage == null) {
+            view.hideErrorHint();
+            return true;
         }
 
-        view.hideErrorHint();
-        return true;
+        view.showErrorHint(errorMessage);
+        return false;
     }
 }
