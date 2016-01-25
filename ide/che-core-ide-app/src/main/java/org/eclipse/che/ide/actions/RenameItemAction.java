@@ -168,11 +168,11 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
     private String getDialogTitle(ResourceBasedNode<?> node) {
         if (node instanceof FileReferenceNode) {
-            return localization.renameFileDialogTitle();
+            return localization.renameFileDialogTitle(node.getName());
         } else if (node instanceof FolderReferenceNode) {
-            return localization.renameFolderDialogTitle();
+            return localization.renameFolderDialogTitle(node.getName());
         } else if (node instanceof ProjectNode) {
-            return localization.renameProjectDialogTitle();
+            return localization.renameProjectDialogTitle(node.getName());
         }
         return localization.renameNodeDialogTitle();
     }
@@ -190,7 +190,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
                 return new Violation() {
                     @Override
                     public String getMessage() {
-                        return localization.invalidName();
+                        return "";
                     }
 
                     @Override

@@ -1437,6 +1437,9 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
                     setExpanded(descriptor.getNode(), false);
                 }
                 moveFocus(nodeDescriptor.getRootContainer());
+                if (autoSelect) {
+                    selectionModel.select(parent, true);
+                }
             }
         }
 
