@@ -81,8 +81,11 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
 
     private static ProjectConfigDto getRootConfig(Node selectedNode) {
         Node parent = selectedNode.getParent();
-        if (parent == null && selectedNode instanceof ProjectNode) {
-            return ((ProjectNode)selectedNode).getData();
+        if (parent == null) {
+            if (selectedNode instanceof ProjectNode) {
+                return ((ProjectNode)selectedNode).getData();
+            }
+            return null;
         }
 
         return getRootConfig(parent);
@@ -198,6 +201,10 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
     @Override
     public void onSelectionChanged(SelectionChangedEvent event) {
         final Selection<?> selection = event.getSelection();
+        if (selection instanceof Selection.NoSelectionProvided) {
+            return;
+        }
+
         if (selection == null) {
             currentProject = null;
             browserQueryFieldRenderer.setProjectName("");
@@ -225,7 +232,10 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
         }
 
         if (headElement instanceof Node) {
-            final ProjectConfigDto rootConfig = getRootConfig((Node)headElement);
+            ProjectConfigDto rootConfig = getRootConfig((Node)headElement);
+            if (rootConfig == null) {
+                rootConfig = currentProject.getProjectConfig();
+            }
             currentProject.setRootProject(rootConfig);
             browserQueryFieldRenderer.setProjectName(rootConfig.getName());
         }
