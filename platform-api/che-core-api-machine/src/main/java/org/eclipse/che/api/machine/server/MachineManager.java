@@ -49,6 +49,7 @@ import org.eclipse.che.api.machine.server.spi.InstanceProcess;
 import org.eclipse.che.api.machine.server.spi.InstanceProvider;
 import org.eclipse.che.api.machine.shared.dto.event.MachineProcessEvent;
 import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
@@ -428,7 +429,7 @@ public class MachineManager {
     }
 
     /**
-     * Find machines connected with specific workspace/project
+     * Find machines connected with specific workspace
      *
      * @param owner
      *         id of owner of machine
@@ -627,7 +628,7 @@ public class MachineManager {
      * @throws MachineException
      *         if other error occur
      */
-    public InstanceProcess exec(final String machineId, final Command command, String outputChannel)
+    public InstanceProcess exec(final String machineId, final Command command, @Nullable String outputChannel)
             throws NotFoundException, MachineException, BadRequestException {
         requiredNotNull(machineId, "Machine ID is required");
         requiredNotNull(command, "Command is required");
