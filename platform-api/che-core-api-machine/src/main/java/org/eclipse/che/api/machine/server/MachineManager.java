@@ -347,6 +347,7 @@ public class MachineManager {
                                 InstanceKey instanceKey,
                                 MachineState machineState,
                                 LineConsumer machineLogger) throws MachineException, NotFoundException {
+        Instance instance = null;
         try {
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.CREATING)
@@ -355,7 +356,6 @@ public class MachineManager {
                                            .withWorkspaceId(machineState.getWorkspaceId())
                                            .withMachineName(machineState.getName()));
 
-            final Instance instance;
             if (instanceKey == null) {
                 instance = instanceProvider.createInstance(recipe, machineState, machineLogger);
             } else {
@@ -378,6 +378,10 @@ public class MachineManager {
                                            .withMachineName(machineState.getName()));
 
         } catch (ServerException | ConflictException | InterruptedException e) {
+            if (instance != null) {
+                instance.destroy();
+            }
+
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.ERROR)
                                            .withMachineId(machineState.getId())
