@@ -86,7 +86,7 @@ import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriberFactory;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
@@ -151,7 +151,7 @@ import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.node.icon.DockerfileIconProvider;
 import org.eclipse.che.ide.project.node.icon.FileIconProvider;
 import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
-import org.eclipse.che.ide.projectimport.wizard.ImportProjectNotificationSubscriberImpl;
+import org.eclipse.che.ide.projectimport.wizard.ProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
 import org.eclipse.che.ide.projectimport.zip.ZipImportWizardRegistrar;
@@ -312,7 +312,7 @@ public class CoreGinModule extends AbstractGinModule {
         GinMultibinder.newSetBinder(binder(), ImportWizardRegistrar.class).addBinding().to(ZipImportWizardRegistrar.class);
         bind(ImportWizardRegistry.class).to(ImportWizardRegistryImpl.class).in(Singleton.class);
         install(new GinFactoryModuleBuilder().build(ImportWizardFactory.class));
-        bind(ImportProjectNotificationSubscriber.class).to(ImportProjectNotificationSubscriberImpl.class);
+        bind(ProjectNotificationSubscriber.class).to(ProjectNotificationSubscriberImpl.class);
     }
 
     /** Configure GWT-clients for Codenvy Platform API services */
@@ -395,8 +395,8 @@ public class CoreGinModule extends AbstractGinModule {
                                              .build(DialogFactory.class));
         install(new GinFactoryModuleBuilder().implement(ConsoleButton.class, ConsoleButtonImpl.class)
                                              .build(ConsoleButtonFactory.class));
-        install(new GinFactoryModuleBuilder().implement(ImportProjectNotificationSubscriber.class,
-                                                        ImportProjectNotificationSubscriberImpl.class)
+        install(new GinFactoryModuleBuilder().implement(ProjectNotificationSubscriber.class,
+                                                        ProjectNotificationSubscriberImpl.class)
                                              .build(ImportProjectNotificationSubscriberFactory.class));
 
         install(new GinFactoryModuleBuilder().build(FindResultNodeFactory.class));

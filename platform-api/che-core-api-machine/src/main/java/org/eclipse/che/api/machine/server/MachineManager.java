@@ -347,6 +347,7 @@ public class MachineManager {
                                 InstanceKey instanceKey,
                                 MachineState machineState,
                                 LineConsumer machineLogger) throws MachineException, NotFoundException {
+        Instance instance = null;
         try {
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.CREATING)
@@ -355,7 +356,6 @@ public class MachineManager {
                                            .withWorkspaceId(machineState.getWorkspaceId())
                                            .withMachineName(machineState.getName()));
 
-            final Instance instance;
             if (instanceKey == null) {
                 instance = instanceProvider.createInstance(recipe, machineState, machineLogger);
             } else {
@@ -378,6 +378,10 @@ public class MachineManager {
                                            .withMachineName(machineState.getName()));
 
         } catch (ServerException | ConflictException | InterruptedException e) {
+            if (instance != null) {
+                instance.destroy();
+            }
+
             eventService.publish(DtoFactory.newDto(MachineStatusEvent.class)
                                            .withEventType(MachineStatusEvent.EventType.ERROR)
                                            .withMachineId(machineState.getId())
@@ -437,11 +441,12 @@ public class MachineManager {
      *         workspace binding
      * @return list of machines or empty list
      */
-    public List<Instance> getMachines(String owner, String workspaceId) throws MachineException {
+    public List<Instance> getMachines(String owner, String workspaceId) throws MachineException, BadRequestException {
+        requiredNotNull(owner, "Owner");
+
         return machineRegistry.getMachines()
                               .stream()
-                              .filter(machine -> owner != null
-                                                 && owner.equals(machine.getOwner())
+                              .filter(machine -> owner.equals(machine.getOwner())
                                                  && machine.getWorkspaceId().equals(workspaceId))
                               .collect(Collectors.toList());
     }
@@ -459,11 +464,12 @@ public class MachineManager {
      *         workspace binding
      * @return list of machines or empty list
      */
-    public List<MachineStateImpl> getMachinesStates(String owner, String workspaceId) throws MachineException {
+    public List<MachineStateImpl> getMachinesStates(String owner, String workspaceId) throws MachineException, BadRequestException {
+        requiredNotNull(owner, "Owner");
+
         return machineRegistry.getStates()
                               .stream()
-                              .filter(machine -> owner != null
-                                                 && owner.equals(machine.getOwner())
+                              .filter(machine -> owner.equals(machine.getOwner())
                                                  && machine.getWorkspaceId().equals(workspaceId))
                               .collect(Collectors.toList());
     }
@@ -1018,7 +1024,7 @@ public class MachineManager {
      */
     private void requiredNotNull(Object object, String message) throws BadRequestException {
         if (object == null) {
-            throw new BadRequestException(message);
+            throw new BadRequestException(message + " required");
         }
     }
 

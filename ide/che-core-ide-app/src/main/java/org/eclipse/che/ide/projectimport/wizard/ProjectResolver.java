@@ -22,7 +22,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.Wizard.CompleteCallback;
 import org.eclipse.che.ide.projectimport.ErrorMessageUtils;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -47,25 +47,25 @@ import static org.eclipse.che.ide.util.StringUtils.isNullOrEmpty;
 @Singleton
 public class ProjectResolver {
 
-    private final DtoUnmarshallerFactory              dtoUnmarshallerFactory;
-    private final ProjectServiceClient                projectService;
-    private final ProjectTypeRegistry                 projectTypeRegistry;
-    private final String                              workspaceId;
-    private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
-    private final ProjectUpdater                      projectUpdater;
+    private final DtoUnmarshallerFactory        dtoUnmarshallerFactory;
+    private final ProjectServiceClient          projectService;
+    private final ProjectTypeRegistry           projectTypeRegistry;
+    private final String                        workspaceId;
+    private final ProjectNotificationSubscriber projectNotificationSubscriber;
+    private final ProjectUpdater                projectUpdater;
 
     @Inject
     public ProjectResolver(DtoUnmarshallerFactory dtoUnmarshallerFactory,
                            ProjectServiceClient projectService,
                            ProjectTypeRegistry projectTypeRegistry,
                            AppContext appContext,
-                           ImportProjectNotificationSubscriber importProjectNotificationSubscriber,
+                           ProjectNotificationSubscriber projectNotificationSubscriber,
                            ProjectUpdater projectUpdater) {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectService = projectService;
         this.projectTypeRegistry = projectTypeRegistry;
         this.workspaceId = appContext.getWorkspaceId();
-        this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
+        this.projectNotificationSubscriber = projectNotificationSubscriber;
         this.projectUpdater = projectUpdater;
     }
 
@@ -126,7 +126,7 @@ public class ProjectResolver {
 
             @Override
             protected void onFailure(Throwable exception) {
-                importProjectNotificationSubscriber.onFailure(exception.getMessage());
+                projectNotificationSubscriber.onFailure(exception.getMessage());
                 String errorMessage = ErrorMessageUtils.getErrorMessage(exception);
                 callback.onFailure(new Exception(errorMessage));
             }

@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
 
 import org.eclipse.che.api.core.BadRequestException;
@@ -23,6 +24,8 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.Service;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.core.rest.shared.dto.LinkParameter;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.impl.SnapshotImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
@@ -42,6 +45,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -49,10 +53,18 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.singletonList;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.eclipse.che.api.core.util.LinksHelper.createLink;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Machine API
@@ -74,12 +86,9 @@ public class MachineService extends Service {
     @Path("/{machineId}")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_MACHINE) TODO
     @ApiOperation(value = "Get machine by ID")
-//                  notes = "This operation can be performed only by the machine owner"
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested machine entity"),
                    @ApiResponse(code = 404, message = "Machine with specified id does not exist"),
-//                   @ApiResponse(code = 403, message = "User is not machine owner"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public MachineDto getMachineById(@ApiParam(value = "Machine ID")
                                      @PathParam("machineId")
@@ -92,19 +101,16 @@ public class MachineService extends Service {
 
         checkCurrentUserPermissions(machine);
 
-        return DtoConverter.asDto(machine);
+        return injectLinks(DtoConverter.asDto(machine));
     }
 
     @GET
     @Path("/{machineId}/state")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_MACHINE_STATE) TODO
     @ApiOperation(value = "Get machine state by ID")
-//                  notes = "This operation can be performed only by the machine owner",
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested machine state entity"),
                    @ApiResponse(code = 404, message = "Machine with specified id does not exist"),
-//                   @ApiResponse(code = 403, message = "User is not machine owner"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public MachineStateDto getMachineStateById(@ApiParam(value = "Machine ID")
                                                @PathParam("machineId")
@@ -117,24 +123,23 @@ public class MachineService extends Service {
 
         checkCurrentUserPermissions(machineState);
 
-        return DtoConverter.asDto(machineState);
+        return injectLinks(DtoConverter.asDto(machineState));
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_MACHINES) TODO
     @ApiOperation(value = "Get all machines of workspace with specified ID",
                   response = MachineDto.class,
                   responseContainer = "List")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested list of machine entities"),
-                   @ApiResponse(code = 403, message = "Workspace ID is not specified"), // TODO change to 400
+                   @ApiResponse(code = 400, message = "Workspace ID is not specified"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public List<MachineDto> getMachines(@ApiParam(value = "Workspace ID", required = true)
                                         @QueryParam("workspace")
                                         String workspaceId)
             throws ServerException,
-                   ForbiddenException {
+                   BadRequestException {
 
         requiredNotNull(workspaceId, "Parameter workspace");
 
@@ -143,6 +148,7 @@ public class MachineService extends Service {
         return machineManager.getMachines(userId, workspaceId)
                              .stream()
                              .map(DtoConverter::asDto)
+                             .map(this::injectLinks)
                              .collect(Collectors.toList());
     }
 
@@ -150,18 +156,17 @@ public class MachineService extends Service {
     @Path("/state")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_MACHINES_STATES) TODO
     @ApiOperation(value = "Get all states of all machines of workspace with specified ID",
                   response = MachineStateDto.class,
                   responseContainer = "List")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested list of machine state entities"),
-                   @ApiResponse(code = 403, message = "Workspace ID is not specified"), // TODO change to 400
+                   @ApiResponse(code = 400, message = "Workspace ID is not specified"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public List<MachineStateDto> getMachinesStates(@ApiParam(value = "Workspace ID", required = true)
                                                    @QueryParam("workspace")
                                                    String workspaceId)
             throws ServerException,
-                   ForbiddenException {
+                   BadRequestException {
 
         requiredNotNull(workspaceId, "Parameter workspace");
 
@@ -170,6 +175,7 @@ public class MachineService extends Service {
 
         return machines.stream()
                        .map(DtoConverter::asDto)
+                       .map(this::injectLinks)
                        .collect(Collectors.toList());
     }
 
@@ -177,12 +183,9 @@ public class MachineService extends Service {
     @Path("/{machineId}")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_DESTROY_MACHINE) TODO
     @ApiOperation(value = "Destroy machine")
-//                  notes = "This operation can be performed only by the machine owner",
     @ApiResponses({@ApiResponse(code = 204, message = "Machine was successfully destroyed"),
                    @ApiResponse(code = 404, message = "Machine with specified id does not exist"),
-//                   @ApiResponse(code = 403, message = "User is not machine owner"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public void destroyMachine(@ApiParam(value = "Machine ID")
                                @PathParam("machineId")
@@ -200,18 +203,17 @@ public class MachineService extends Service {
     @Path("/snapshot")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_SNAPSHOTS) TODO
     @ApiOperation(value = "Get all snapshots of machines in workspace",
                   response = SnapshotDto.class,
                   responseContainer = "List")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested list of snapshot entities"),
-                   @ApiResponse(code = 403, message = "Workspace ID is not specified"), // TODO change to 400
+                   @ApiResponse(code = 400, message = "Workspace ID is not specified"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public List<SnapshotDto> getSnapshots(@ApiParam(value = "Workspace ID", required = true)
                                           @QueryParam("workspace")
                                           String workspaceId)
             throws ServerException,
-                   ForbiddenException {
+                   BadRequestException {
 
         requiredNotNull(workspaceId, "Parameter workspace");
 
@@ -219,6 +221,7 @@ public class MachineService extends Service {
 
         return snapshots.stream()
                         .map(DtoConverter::asDto)
+                        .map(this::injectLinks)
                         .collect(Collectors.toList());
     }
 
@@ -227,11 +230,9 @@ public class MachineService extends Service {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_SAVE_SNAPSHOT) TODO
     @ApiOperation(value = "Save snapshot of machine")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested snapshot entity"),
-                   @ApiResponse(code = 403, message = "Snapshot description is not specified"), // TODO change to 400
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
+                   @ApiResponse(code = 400, message = "Snapshot description is not specified"),
                    @ApiResponse(code = 404, message = "Snapshot with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public SnapshotDto saveSnapshot(@ApiParam(value = "Machine ID")
@@ -241,23 +242,22 @@ public class MachineService extends Service {
                                     NewSnapshotDescriptor newSnapshotDescriptor)
             throws NotFoundException,
                    ServerException,
-                   ForbiddenException {
+                   ForbiddenException,
+                   BadRequestException {
 
         requiredNotNull(newSnapshotDescriptor, "Snapshot description");
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        return DtoConverter.asDto(machineManager.save(machineId,
-                                                      EnvironmentContext.getCurrent().getUser().getId(),
-                                                      newSnapshotDescriptor.getDescription()));
+        return injectLinks(DtoConverter.asDto(machineManager.save(machineId,
+                                                                  EnvironmentContext.getCurrent().getUser().getId(),
+                                                                  newSnapshotDescriptor.getDescription())));
     }
 
     @DELETE
     @Path("/snapshot/{snapshotId}")
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_REMOVE_SNAPSHOT) TODO
     @ApiOperation(value = "Remove snapshot of machine")
     @ApiResponses({@ApiResponse(code = 204, message = "Snapshot was successfully removed"),
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
                    @ApiResponse(code = 404, message = "Snapshot with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public void removeSnapshot(@ApiParam(value = "Snapshot ID")
@@ -276,12 +276,9 @@ public class MachineService extends Service {
     @Path("/{machineId}/command")
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_EXECUTE_COMMAND) TODO
     @ApiOperation(value = "Start specified command in machine")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains entity of created machine process"),
                    @ApiResponse(code = 400, message = "Command entity is invalid"),
-                   @ApiResponse(code = 403, message = "Command entity is invalid"), // TODO change to 400
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
                    @ApiResponse(code = 404, message = "Machine with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public MachineProcessDto executeCommandInMachine(@ApiParam(value = "Machine ID")
@@ -301,17 +298,17 @@ public class MachineService extends Service {
         requiredNotNull(command.getCommandLine(), "Commandline");
         checkCurrentUserPermissions(machineManager.getMachine(machineId));
 
-        return DtoConverter.asDto(machineManager.exec(machineId, command, outputChannel));
+        return injectLinks(DtoConverter.asDto(machineManager.exec(machineId, command, outputChannel)), machineId);
     }
 
     @GET
     @Path("/{machineId}/process")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_PROCESSES) TODO
-    @ApiOperation(value = "Get processes of machine")
+    @ApiOperation(value = "Get processes of machine",
+                  response = MachineProcessDto.class,
+                  responseContainer = "List")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains machine process entities"),
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
                    @ApiResponse(code = 404, message = "Machine with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public List<MachineProcessDto> getProcesses(@ApiParam(value = "Machine ID")
@@ -326,16 +323,15 @@ public class MachineService extends Service {
         return machineManager.getProcesses(machineId)
                              .stream()
                              .map(DtoConverter::asDto)
+                             .map(machineProcess -> injectLinks(machineProcess, machineId))
                              .collect(Collectors.toList());
     }
 
     @DELETE
     @Path("/{machineId}/process/{processId}")
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_STOP_PROCESS) TODO
     @ApiOperation(value = "Stop process in machine")
     @ApiResponses({@ApiResponse(code = 204, message = "Process was successfully stopped"),
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
                    @ApiResponse(code = 404, message = "Machine with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public void stopProcess(@ApiParam(value = "Machine ID")
@@ -357,10 +353,8 @@ public class MachineService extends Service {
     @Path("/{machineId}/logs")
     @Produces(MediaType.TEXT_PLAIN)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_MACHINE_LOGS) TODO
     @ApiOperation(value = "Get logs of machine")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains logs"),
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
                    @ApiResponse(code = 404, message = "Machine with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public void getMachineLogs(@ApiParam(value = "Machine ID")
@@ -382,12 +376,9 @@ public class MachineService extends Service {
     @Path("/{machineId}/process/{pid}/logs")
     @Produces(MediaType.TEXT_PLAIN)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_PROCESS_LOGS) TODO
     @ApiOperation(value = "Get logs of machine process")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains logs"),
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
-                   @ApiResponse(code = 404, message = "Machine with specified ID does not exist"),
-                   @ApiResponse(code = 404, message = "Process with specified ID does not exist"),
+                   @ApiResponse(code = 404, message = "Machine or process with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public void getProcessLogs(@ApiParam(value = "Machine ID")
                                @PathParam("machineId")
@@ -424,10 +415,8 @@ public class MachineService extends Service {
     @Path("/{machineId}/filepath/{path:.*}")
     @Produces(MediaType.TEXT_PLAIN)
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_GET_FILE_CONTENT) TODO
     @ApiOperation(value = "Get content of file in machine")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains file content"),
-//                   @ApiResponse(code = 403, message = "User is not owner of machine"),
                    @ApiResponse(code = 404, message = "Machine with specified ID does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public String getFileContent(@ApiParam(value = "Machine ID")
@@ -477,15 +466,9 @@ public class MachineService extends Service {
     @POST
     @Path("/copy")
     @RolesAllowed("user")
-//    @GenerateLink(rel = LINK_REL_COPY_FILES) TODO
     @ApiOperation(value = "Copy files from one machine to another")
     @ApiResponses({@ApiResponse(code = 200, message = "Files were copied successfully"),
-                   @ApiResponse(code = 403, message = "Source machine ID is not specified"), // TODO change to 400
-                   @ApiResponse(code = 403, message = "Target machine ID is not specified"), // TODO change to 400
-                   @ApiResponse(code = 403, message = "Source path is not specified"), // TODO change to 400
-                   @ApiResponse(code = 403, message = "Target path is not specified"), // TODO change to 400
-//                   @ApiResponse(code = 403, message = "User is not owner of source machine"),
-//                   @ApiResponse(code = 403, message = "User is not owner of target machine"),
+                   @ApiResponse(code = 400, message = "Machine ID or path is not specified"),
                    @ApiResponse(code = 404, message = "Source machine does not exist"),
                    @ApiResponse(code = 404, message = "Target machine does not exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
@@ -507,7 +490,8 @@ public class MachineService extends Service {
                                          Boolean overwrite)
             throws NotFoundException,
                    ServerException,
-                   ForbiddenException {
+                   ForbiddenException,
+                   BadRequestException {
 
         requiredNotNull(sourceMachineId, "Source machine id");
         requiredNotNull(targetMachineId, "Target machine id");
@@ -521,6 +505,155 @@ public class MachineService extends Service {
         checkCurrentUserPermissions(targetMachine);
 
         targetMachine.copy(sourceMachine, sourcePath, targetPath, overwrite);
+    }
+
+    private MachineDto injectLinks(MachineDto machine) {
+        injectLinks((MachineStateDto)machine);
+
+        machine.getLinks().stream()
+               .filter(link -> "self link".equals(link.getRel()) ||
+                               Constants.LINK_REL_GET_MACHINE.equals(link.getRel()))
+               .forEach(link -> {
+                   if ("self link".equals(link.getRel())) {
+                       link.setRel(Constants.LINK_REL_GET_MACHINE_STATE);
+                   } else {
+                       link.setRel("self link");
+                   }
+               });
+
+        return machine;
+    }
+
+    private MachineStateDto injectLinks(MachineStateDto machine) {
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+        final List<Link> links = new ArrayList<>();
+
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getMachineById")
+                                       .build(machine.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_GET_MACHINE));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getMachineStateById")
+                                       .build(machine.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             "self link"));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getMachines")
+                                       .build()
+                                       .toString(),
+                             null,
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_GET_MACHINES,
+                             newDto(LinkParameter.class).withName("workspace")
+                                                        .withRequired(true)
+                                                        .withDefaultValue(machine.getWorkspaceId())));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getMachinesStates")
+                                       .build()
+                                       .toString(),
+                             null,
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_GET_MACHINES_STATES,
+                             newDto(LinkParameter.class).withName("workspace")
+                                                        .withRequired(true)
+                                                        .withDefaultValue(machine.getWorkspaceId())));
+        links.add(createLink(HttpMethod.DELETE,
+                             uriBuilder.clone()
+                                       .path(getClass(), "destroyMachine")
+                                       .build(machine.getId())
+                                       .toString(),
+                             Constants.LINK_REL_DESTROY_MACHINE));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getSnapshots")
+                                       .build()
+                                       .toString(),
+                             null,
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_GET_SNAPSHOTS,
+                             newDto(LinkParameter.class).withName("workspace")
+                                                        .withRequired(true)
+                                                        .withDefaultValue(machine.getWorkspaceId())));
+        links.add(createLink(HttpMethod.POST,
+                             uriBuilder.clone()
+                                       .path(getClass(), "saveSnapshot")
+                                       .build(machine.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_SAVE_SNAPSHOT));
+        links.add(createLink(HttpMethod.POST,
+                             uriBuilder.clone()
+                                       .path(getClass(), "executeCommandInMachine")
+                                       .build(machine.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_EXECUTE_COMMAND,
+                             newDto(LinkParameter.class).withName("outputChannel")
+                                                        .withRequired(false)));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getProcesses")
+                                       .build(machine.getId())
+                                       .toString(),
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_GET_PROCESSES));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getMachineLogs")
+                                       .build(machine.getId())
+                                       .toString(),
+                             TEXT_PLAIN,
+                             Constants.LINK_REL_GET_MACHINE_LOGS));
+
+        return machine.withLinks(links);
+    }
+
+    private MachineProcessDto injectLinks(MachineProcessDto process, String machineId) {
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+        final List<Link> links = Lists.newArrayListWithExpectedSize(3);
+
+        links.add(createLink(HttpMethod.DELETE,
+                             uriBuilder.clone()
+                                       .path(getClass(), "stopProcess")
+                                       .build(machineId, process.getPid())
+                                       .toString(),
+                             Constants.LINK_REL_STOP_PROCESS));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getProcessLogs")
+                                       .build(machineId, process.getPid())
+                                       .toString(),
+                             TEXT_PLAIN,
+                             Constants.LINK_REL_GET_PROCESS_LOGS));
+        links.add(createLink(HttpMethod.GET,
+                             uriBuilder.clone()
+                                       .path(getClass(), "getProcesses")
+                                       .build(machineId)
+                                       .toString(),
+                             APPLICATION_JSON,
+                             Constants.LINK_REL_GET_PROCESSES));
+
+        return process.withLinks(links);
+    }
+
+    private SnapshotDto injectLinks(SnapshotDto snapshot) {
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+
+        return snapshot.withLinks(singletonList(createLink(HttpMethod.DELETE,
+                                                           uriBuilder.clone()
+                                                                     .path(getClass(), "removeSnapshot")
+                                                                     .build(snapshot.getId())
+                                                                     .toString(),
+                                                           Constants.LINK_REL_REMOVE_SNAPSHOT)));
     }
 
     private void addLogsToResponse(Reader logsReader, HttpServletResponse httpServletResponse) throws IOException {
@@ -561,12 +694,12 @@ public class MachineService extends Service {
      *         object reference to check
      * @param subject
      *         used as subject of exception message "{subject} required"
-     * @throws ForbiddenException
+     * @throws BadRequestException
      *         when object reference is {@code null}
      */
-    private void requiredNotNull(Object object, String subject) throws ForbiddenException { // TODO change to BadRequestException
+    private void requiredNotNull(Object object, String subject) throws BadRequestException {
         if (object == null) {
-            throw new ForbiddenException(subject + " required");
+            throw new BadRequestException(subject + " required");
         }
     }
 }

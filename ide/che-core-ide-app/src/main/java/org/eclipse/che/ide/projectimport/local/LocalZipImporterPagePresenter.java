@@ -22,7 +22,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.json.JsonHelper;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -38,17 +38,17 @@ import javax.validation.constraints.NotNull;
  */
 public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.ActionDelegate {
 
-    private final AppContext                          appContext;
-    private final CoreLocalizationConstant            locale;
-    private final LocalZipImporterPageView            view;
-    private final DtoFactory                          dtoFactory;
-    private final String                              workspaceId;
-    private final String                              extPath;
-    private final EventBus                            eventBus;
-    private final VfsServiceClient                    vfsServiceClient;
-    private final ProjectServiceClient                projectServiceClient;
-    private final DialogFactory                       dialogFactory;
-    private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    private final AppContext                    appContext;
+    private final CoreLocalizationConstant      locale;
+    private final LocalZipImporterPageView      view;
+    private final DtoFactory                    dtoFactory;
+    private final String                        workspaceId;
+    private final String                        extPath;
+    private final EventBus                      eventBus;
+    private final VfsServiceClient              vfsServiceClient;
+    private final ProjectServiceClient          projectServiceClient;
+    private final DialogFactory                 dialogFactory;
+    private final ProjectNotificationSubscriber projectNotificationSubscriber;
 
     @Inject
     public LocalZipImporterPagePresenter(LocalZipImporterPageView view,
@@ -60,7 +60,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
                                          VfsServiceClient vfsServiceClient,
                                          ProjectServiceClient projectServiceClient,
                                          DialogFactory dialogFactory,
-                                         ImportProjectNotificationSubscriber importProjectNotificationSubscriber) {
+                                         ProjectNotificationSubscriber projectNotificationSubscriber) {
         this.view = view;
         this.locale = locale;
         this.dtoFactory = dtoFactory;
@@ -71,7 +71,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
         this.appContext = appContext;
         this.projectServiceClient = projectServiceClient;
         this.dialogFactory = dialogFactory;
-        this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
+        this.projectNotificationSubscriber = projectNotificationSubscriber;
         this.view.setDelegate(this);
     }
 
@@ -118,7 +118,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
 
     private void importSuccess(ProjectConfigDto projectConfig) {
         view.closeDialog();
-        importProjectNotificationSubscriber.onSuccess();
+        projectNotificationSubscriber.onSuccess();
 
         eventBus.fireEvent(new CreateProjectEvent(projectConfig));
     }
@@ -148,7 +148,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
 
     private void importProject() {
         final String projectName = view.getProjectName();
-        importProjectNotificationSubscriber.subscribe(projectName);
+        projectNotificationSubscriber.subscribe(projectName);
 
         view.setEncoding(FormPanel.ENCODING_MULTIPART);
         view.setAction(extPath + "/project/" + workspaceId + "/upload/zipproject/" + projectName + "?force=false");
@@ -159,7 +159,7 @@ public class LocalZipImporterPagePresenter implements LocalZipImporterPageView.A
     private void importFailure(String error) {
         deleteProject(view.getProjectName());
         view.closeDialog();
-        importProjectNotificationSubscriber.onFailure(error);
+        projectNotificationSubscriber.onFailure(error);
     }
 
     /** Updates view from data-object. */

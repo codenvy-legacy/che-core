@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
@@ -23,8 +29,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.eclipse.che.api.project.server.DtoConverter.toTypeDefinition;
 
@@ -33,31 +39,42 @@ import static org.eclipse.che.api.project.server.DtoConverter.toTypeDefinition;
  *
  * @author gazarenkov
  */
+@Api(value = "/project-type", description = "Project type REST API")
 @Path("project-type/{ws-id}")
 public class ProjectTypeService extends Service {
 
-    private ProjectTypeRegistry registry;
+    private final ProjectTypeRegistry registry;
+
+    @PathParam("ws-id")
+    @ApiParam("The id of the workspace")
+    private String wsId;
 
     @Inject
     public ProjectTypeService(ProjectTypeRegistry registry) {
         this.registry = registry;
     }
 
-    @GenerateLink(rel = Constants.LINK_REL_PROJECT_TYPES)
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @GenerateLink(rel = Constants.LINK_REL_PROJECT_TYPES)
+    @ApiOperation(value = "Get project types",
+                  responseContainer = "List",
+                  response = ProjectTypeDto.class)
+    @ApiResponses(@ApiResponse(code = 200, message = "Project types successfully fetched"))
     public List<ProjectTypeDto> getProjectTypes() {
-        final List<ProjectTypeDto> types = new LinkedList<>();
-        for (ProjectTypeDef type : registry.getProjectTypes()) {
-            types.add(toTypeDefinition(type));
-        }
-        return types;
+        return registry.getProjectTypes()
+                       .stream()
+                       .map(DtoConverter::toTypeDefinition)
+                       .collect(Collectors.toList());
     }
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ProjectTypeDto getProjectType(@PathParam("id") String id) throws NotFoundException {
+    @ApiOperation("Get the project type by the id")
+    @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested project type entity"),
+                   @ApiResponse(code = 404, message = "The project type with such id doesn't exist")})
+    public ProjectTypeDto getProjectType(@ApiParam("Project type id") @PathParam("id") String id) throws NotFoundException {
         final ProjectTypeDef projectType = registry.getProjectType(id);
         return toTypeDefinition(projectType);
     }

@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.fileupload.FileItem;
 import org.eclipse.che.api.core.BadRequestException;
@@ -186,7 +187,7 @@ public class ProjectService extends Service {
                     ProjectConfigDto projectConfig = toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder());
 
                     ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(9)
-                                                                                   .withMessage("Project is not synchronized");
+                                                                                      .withMessage("Project is not synchronized");
                     projectConfig.getProblems().add(projectProblem);
 
                     projectConfigs.add(projectConfig);
@@ -208,7 +209,8 @@ public class ProjectService extends Service {
                                 .filter(projectFromWorkspace -> !configsNames.contains(projectFromWorkspace.getName()))
                                 .forEach(projectFromWorkspace -> {
                                     ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(10)
-                                                                                                .withMessage("Project is not synchronized");
+                                                                                                      .withMessage(
+                                                                                                              "Project is not synchronized");
                                     projectFromWorkspace.getProblems().add(projectProblem);
 
                                     projectConfigs.add(projectFromWorkspace);
@@ -286,6 +288,8 @@ public class ProjectService extends Service {
             throws ConflictException, ForbiddenException, ServerException, NotFoundException {
 
         Map<String, String> options = Collections.emptyMap();
+
+        projectConfigDto.setPath('/' + name);
 
         Project project = projectManager.createProject(workspace,
                                                        name,
@@ -385,17 +389,29 @@ public class ProjectService extends Service {
                                                                                     ForbiddenException,
                                                                                     ServerException,
                                                                                     IOException {
-        Project project = projectManager.getProject(workspace, path);
+        projectConfigDto.getProblems().clear();
 
-        FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(path);
+        String oldProjectName = path.startsWith("/") ? path.substring(1) : path;
+        String newProjectName = projectConfigDto.getName();
+
+        if (!oldProjectName.equals(newProjectName)) {
+            projectManager.rename(workspace, path, newProjectName, null);
+        }
+
+        String newProjectPath = '/' + newProjectName;
+
+        projectConfigDto.setName(newProjectName);
+        projectConfigDto.setPath(newProjectPath);
+
+        Project project = projectManager.getProject(workspace, newProjectPath);
+
+        FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(newProjectPath);
         if (project != null) {
-            projectConfigDto.getProblems().clear();
-
-            project = projectManager.updateProject(workspace, path, projectConfigDto);
+            project = projectManager.updateProject(workspace, newProjectPath, projectConfigDto);
             reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
         } else {
             try {
-                project = projectManager.convertFolderToProject(workspace, path, projectConfigDto);
+                project = projectManager.convertFolderToProject(workspace, newProjectPath, projectConfigDto);
                 reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
                 eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
                 logProjectCreatedEvent(projectConfigDto.getName(), projectConfigDto.getType());
@@ -1230,35 +1246,26 @@ public class ProjectService extends Service {
                                       @ApiParam(value = "Skip count")
                                       @QueryParam("skipCount") int skipCount)
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-
         // to search from workspace root path should end with "/" i.e /{ws}/search/?<query>
         final FolderEntry folder = path.isEmpty() ? projectManager.getProjectsRoot(workspace) : asFolder(workspace, path);
-
         if (searcherProvider != null) {
             if (skipCount < 0) {
                 throw new ConflictException(String.format("Invalid 'skipCount' parameter: %d.", skipCount));
             }
-            final QueryExpression expr = new QueryExpression()
-                    .setPath(path.startsWith("/") ? path : ('/' + path))
-                    .setName(name)
-                    .setText(text);
+            final QueryExpression query = new QueryExpression().setPath(path.startsWith("/") ? path : ('/' + path))
+                                                               .setName(name)
+                                                               .setText(text)
+                                                               .setSkipCount(skipCount)
+                                                               .setMaxItems(maxItems);
 
-            final String[] result = searcherProvider.getSearcher(folder.getVirtualFile().getMountPoint(), true).search(expr);
-            if (skipCount > 0) {
-                if (skipCount > result.length) {
-                    throw new ConflictException(
-                            String.format("'skipCount' parameter: %d is greater then total number of items in result: %d.",
-                                          skipCount, result.length));
-                }
-            }
-            final int length = maxItems > 0 ? Math.min(result.length, maxItems) : result.length;
-            final List<ItemReference> items = new ArrayList<>(length);
+            final String[] paths = searcherProvider.getSearcher(folder.getVirtualFile().getMountPoint(), true).search(query);
+            final List<ItemReference> items = new ArrayList<>(paths.length);
             final FolderEntry root = projectManager.getProjectsRoot(workspace);
             final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-            for (int i = skipCount; i < length; i++) {
+            for (String relativePath : paths) {
                 VirtualFileEntry child = null;
                 try {
-                    child = root.getChild(result[i]);
+                    child = root.getChild(relativePath);
                 } catch (ForbiddenException ignored) {
                     // Ignore item that user can't access
                 }
