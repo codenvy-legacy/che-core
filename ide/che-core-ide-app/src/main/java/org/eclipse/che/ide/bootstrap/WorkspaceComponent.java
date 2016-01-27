@@ -50,7 +50,7 @@ import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.events.MessageHandler;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceEvent;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;

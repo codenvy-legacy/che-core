@@ -61,8 +61,9 @@ public interface EditorWidget extends IsWidget,
      *
      * @param newValue
      *         the new contents
+     * @param initializationHandler must be called when content injected in the Editor Widget
      */
-    void setValue(String newValue);
+    void setValue(String newValue, ContentInitializedHandler initializationHandler);
 
     /**
      * Returns the current language mode for highlighting.

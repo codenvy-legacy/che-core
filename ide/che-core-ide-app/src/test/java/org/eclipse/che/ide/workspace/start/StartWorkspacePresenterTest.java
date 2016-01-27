@@ -19,7 +19,7 @@ import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initialization.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;

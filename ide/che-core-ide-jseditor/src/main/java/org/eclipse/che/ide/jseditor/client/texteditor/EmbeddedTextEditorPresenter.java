@@ -250,8 +250,12 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
 
             @Override
             public void onDocumentReceived(final String content) {
-                editorWidget.setValue(content);
-                document.setCursorPosition(currentCursor);
+                editorWidget.setValue(content, new ContentInitializedHandler() {
+                    @Override
+                    public void onContentInitialized() {
+                        document.setCursorPosition(currentCursor);
+                    }
+                });
             }
 
             @Override
@@ -751,23 +755,31 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
                                      document.getLineCount(),
                                      configuration.getTabWidth());
 
-            // handle delayed focus
+            //TODO: delayed activation
+            // handle delayed focus (initialization editor widget)
             // should also check if I am visible, but how ?
             if (delayedFocus) {
+                editorWidget.refresh();
                 editorWidget.setFocus();
+                setSelection(new Selection<>(input.getFile()));
                 delayedFocus = false;
             }
 
             // delayed keybindings creation ?
             switchHasKeybinding();
 
-            editorWidget.setValue(content);
-            generalEventBus.fireEvent(new DocumentReadyEvent(getEditorHandle(), document));
+            editorWidget.setValue(content, new ContentInitializedHandler() {
+                @Override
+                public void onContentInitialized() {
+                    generalEventBus.fireEvent(new DocumentReadyEvent(getEditorHandle(), document));
+                    firePropertyChange(PROP_INPUT);
+                    setupEventHandlers();
+                    setupFileContentUpdateHandler();
+                }
 
-            firePropertyChange(PROP_INPUT);
+            });
 
-            setupEventHandlers();
-            setupFileContentUpdateHandler();
         }
     }
+
 }
