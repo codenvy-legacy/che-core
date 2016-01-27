@@ -437,11 +437,12 @@ public class MachineManager {
      *         workspace binding
      * @return list of machines or empty list
      */
-    public List<Instance> getMachines(String owner, String workspaceId) throws MachineException {
+    public List<Instance> getMachines(String owner, String workspaceId) throws MachineException, BadRequestException {
+        requiredNotNull(owner, "Owner");
+
         return machineRegistry.getMachines()
                               .stream()
-                              .filter(machine -> owner != null
-                                                 && owner.equals(machine.getOwner())
+                              .filter(machine -> owner.equals(machine.getOwner())
                                                  && machine.getWorkspaceId().equals(workspaceId))
                               .collect(Collectors.toList());
     }
@@ -459,11 +460,12 @@ public class MachineManager {
      *         workspace binding
      * @return list of machines or empty list
      */
-    public List<MachineStateImpl> getMachinesStates(String owner, String workspaceId) throws MachineException {
+    public List<MachineStateImpl> getMachinesStates(String owner, String workspaceId) throws MachineException, BadRequestException {
+        requiredNotNull(owner, "Owner");
+
         return machineRegistry.getStates()
                               .stream()
-                              .filter(machine -> owner != null
-                                                 && owner.equals(machine.getOwner())
+                              .filter(machine -> owner.equals(machine.getOwner())
                                                  && machine.getWorkspaceId().equals(workspaceId))
                               .collect(Collectors.toList());
     }
@@ -1018,7 +1020,7 @@ public class MachineManager {
      */
     private void requiredNotNull(Object object, String message) throws BadRequestException {
         if (object == null) {
-            throw new BadRequestException(message);
+            throw new BadRequestException(message + " required");
         }
     }
 
