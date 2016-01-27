@@ -25,14 +25,15 @@ import java.util.List;
  */
 public class ProjectTypeImpl implements ProjectType {
 
-    protected final String                    id;
-    protected final boolean                   persisted;
-    protected final boolean                   mixable;
-    protected final boolean                   primaryable;
-    protected final String                    displayName;
-    protected final List<String>              parents;
-    protected final List<String> ancestors = new ArrayList<>();
-    protected       List<? extends Attribute> attributes;
+    protected final String       id;
+    protected final boolean      persisted;
+    protected final boolean      mixable;
+    protected final boolean      primaryable;
+    protected final String       displayName;
+    protected final List<String> parents;
+    protected final List<String> ancestors;
+
+    protected List<? extends Attribute> attributes;
 
     public ProjectTypeImpl(String id,
                            boolean persisted,
@@ -41,6 +42,8 @@ public class ProjectTypeImpl implements ProjectType {
                            String displayName,
                            List<? extends Attribute> attributes,
                            List<String> parents) {
+        ancestors = new ArrayList<>();
+
         this.id = id;
         this.persisted = persisted;
         this.mixable = mixable;

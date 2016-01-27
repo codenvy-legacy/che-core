@@ -10,14 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype;
 
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,16 +33,11 @@ public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
     @Nullable
     @Override
     public ProjectTypeImpl getProjectType(@NotNull String id) {
-        if (types.isEmpty()) {
-            return null;
-        }
-
         for (ProjectTypeImpl type : types) {
             if (id.equals(type.getId())) {
                 return type;
             }
         }
-
         return null;
     }
 
@@ -54,14 +47,7 @@ public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
     }
 
     @Override
-    public void register(ProjectTypeDto dto) {
-        types.add(new ProjectTypeImpl(dto));
-    }
-
-    @Override
-    public void registerAll(List<ProjectTypeDto> dtoList) {
-        for (ProjectTypeDto dto : dtoList) {
-            register(dto);
-        }
+    public void register(ProjectTypeImpl projectType) {
+        types.add(projectType);
     }
 }

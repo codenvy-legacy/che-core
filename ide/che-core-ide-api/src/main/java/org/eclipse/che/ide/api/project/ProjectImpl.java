@@ -39,7 +39,7 @@ public class ProjectImpl implements Project {
     private List<String>              mixins;
     private List<ProjectImpl>         modules;
 
-    ProjectImpl(ProjectConfigDto configDto, Set<String> types) {
+    public ProjectImpl(ProjectConfigDto configDto, Set<String> types) {
         this.types = types;
         this.name = configDto.getName();
         this.path = configDto.getPath();

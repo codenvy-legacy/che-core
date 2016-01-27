@@ -27,10 +27,10 @@ import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
 import org.eclipse.che.ide.api.event.project.ProjectUpdatedEvent;
 import org.eclipse.che.ide.api.event.project.ProjectUpdatedEvent.ProjectUpdatedHandler;
 import org.eclipse.che.ide.api.project.ProjectImpl;
-import org.eclipse.che.ide.api.project.WorkspaceProjects;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.project.WorkspaceProjects;
 import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.util.StartUpAction;
 
@@ -122,8 +122,9 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
     }
 
     /**
-     * * TODO experimental
-     * * @return
+     * TODO experimental
+     *
+     * @return
      */
     public ProjectImpl getActiveProject() {
         return activeProject;

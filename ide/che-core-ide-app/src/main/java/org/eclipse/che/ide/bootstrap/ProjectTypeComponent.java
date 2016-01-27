@@ -20,6 +20,7 @@ import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.core.Component;
 
@@ -50,7 +51,9 @@ public class ProjectTypeComponent implements Component {
         projectTypeService.getProjectTypes(appContext.getWorkspace().getId()).then(new Operation<List<ProjectTypeDto>>() {
             @Override
             public void apply(List<ProjectTypeDto> arg) throws OperationException {
-                projectTypeRegistry.registerAll(arg);
+                for (ProjectTypeDto projectTypeDto : arg) {
+                    projectTypeRegistry.register(new ProjectTypeImpl(projectTypeDto));
+                }
                 callback.onSuccess(ProjectTypeComponent.this);
             }
         }).catchError(new Operation<PromiseError>() {
