@@ -12,7 +12,6 @@ package org.eclipse.che.api.runner.internal;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
 
 /**
  * Guice Module for initialization runner API components.
@@ -25,6 +24,5 @@ public class RunnerModule extends AbstractModule {
         // Initialize empty set of Runners.
         Multibinder.newSetBinder(binder(), Runner.class);
         bind(RunnerRegistryPlugin.class).asEagerSingleton();
-        bindConstant().annotatedWith(Names.named("org.everrest.security")).to("false");
     }
 }

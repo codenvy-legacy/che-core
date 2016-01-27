@@ -12,7 +12,6 @@ package org.eclipse.che.api.builder.internal;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
 
 /** @author andrew00x */
 public class BuilderModule extends AbstractModule {
@@ -21,6 +20,5 @@ public class BuilderModule extends AbstractModule {
         // Initialize empty set of Builders.
         Multibinder.newSetBinder(binder(), Builder.class);
         bind(BuilderRegistryPlugin.class).asEagerSingleton();
-        bindConstant().annotatedWith(Names.named("org.everrest.security")).to("false");
     }
 }
