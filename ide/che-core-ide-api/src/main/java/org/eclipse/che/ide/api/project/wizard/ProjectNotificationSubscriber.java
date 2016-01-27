@@ -16,7 +16,7 @@ import org.eclipse.che.ide.api.notification.StatusNotification;
  * Client service that subscribes a project to import project output notifications. Default implementation get the output stream of the
  * remote import process through a Websocket channel.
  */
-public interface ImportProjectNotificationSubscriber {
+public interface ProjectNotificationSubscriber {
 
     /**
      * Subscribe to display the import output notifications. To be called before triggering the import. Reusing already shown notification.
