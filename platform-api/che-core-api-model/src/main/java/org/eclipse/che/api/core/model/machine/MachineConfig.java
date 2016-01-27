@@ -10,8 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.model.machine;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author gazarenkov
+ * @author Alexander Garagatyi
  */
 public interface MachineConfig {
 
@@ -39,4 +43,19 @@ public interface MachineConfig {
      * Machine limits such as RAM size.
      */
     Limits getLimits();
+
+    /**
+     * Servers that can be started in machine
+     */
+    List<ServerConf> getServers();
+
+    /**
+     * Environment variables that will be injected in machine at runtime
+     * <p>
+     * To inject host and port of server use {SERVER_{server-port}_ADDRESS} as value of env variable.
+     * Example:
+     * <br>Entry < MY_APP_ADDRESS, {SERVER_8080_ADDRESS}> will appear at runtime as something like
+     * <br>MY_APP_ADDRESS=machine.hostname:35012 at runtime
+     */
+    Map<String, String> getEnvVariables();
 }
