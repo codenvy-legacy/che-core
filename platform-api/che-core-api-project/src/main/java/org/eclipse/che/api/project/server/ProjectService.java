@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.api.project.server;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.fileupload.FileItem;
 import org.eclipse.che.api.core.BadRequestException;
@@ -186,7 +187,7 @@ public class ProjectService extends Service {
                     ProjectConfigDto projectConfig = toProjectConfig(notValidProject, getServiceContext().getServiceUriBuilder());
 
                     ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(9)
-                                                                                   .withMessage("Project is not synchronized");
+                                                                                      .withMessage("Project is not synchronized");
                     projectConfig.getProblems().add(projectProblem);
 
                     projectConfigs.add(projectConfig);
@@ -208,7 +209,8 @@ public class ProjectService extends Service {
                                 .filter(projectFromWorkspace -> !configsNames.contains(projectFromWorkspace.getName()))
                                 .forEach(projectFromWorkspace -> {
                                     ProjectProblemDto projectProblem = newDto(ProjectProblemDto.class).withCode(10)
-                                                                                                .withMessage("Project is not synchronized");
+                                                                                                      .withMessage(
+                                                                                                              "Project is not synchronized");
                                     projectFromWorkspace.getProblems().add(projectProblem);
 
                                     projectConfigs.add(projectFromWorkspace);
@@ -286,6 +288,8 @@ public class ProjectService extends Service {
             throws ConflictException, ForbiddenException, ServerException, NotFoundException {
 
         Map<String, String> options = Collections.emptyMap();
+
+        projectConfigDto.setPath('/' + name);
 
         Project project = projectManager.createProject(workspace,
                                                        name,
@@ -385,17 +389,29 @@ public class ProjectService extends Service {
                                                                                     ForbiddenException,
                                                                                     ServerException,
                                                                                     IOException {
-        Project project = projectManager.getProject(workspace, path);
+        projectConfigDto.getProblems().clear();
 
-        FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(path);
+        String oldProjectName = path.startsWith("/") ? path.substring(1) : path;
+        String newProjectName = projectConfigDto.getName();
+
+        if (!oldProjectName.equals(newProjectName)) {
+            projectManager.rename(workspace, path, newProjectName, null);
+        }
+
+        String newProjectPath = '/' + newProjectName;
+
+        projectConfigDto.setName(newProjectName);
+        projectConfigDto.setPath(newProjectPath);
+
+        Project project = projectManager.getProject(workspace, newProjectPath);
+
+        FolderEntry baseProjectFolder = (FolderEntry)projectManager.getProjectsRoot(workspace).getChild(newProjectPath);
         if (project != null) {
-            projectConfigDto.getProblems().clear();
-
-            project = projectManager.updateProject(workspace, path, projectConfigDto);
+            project = projectManager.updateProject(workspace, newProjectPath, projectConfigDto);
             reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
         } else {
             try {
-                project = projectManager.convertFolderToProject(workspace, path, projectConfigDto);
+                project = projectManager.convertFolderToProject(workspace, newProjectPath, projectConfigDto);
                 reindexProject(System.currentTimeMillis(), baseProjectFolder, project);
                 eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
                 logProjectCreatedEvent(projectConfigDto.getName(), projectConfigDto.getType());

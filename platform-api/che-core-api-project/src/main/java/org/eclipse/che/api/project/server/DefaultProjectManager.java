@@ -24,7 +24,6 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.project.type.Attribute;
 import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
-import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
@@ -451,8 +450,8 @@ public final class DefaultProjectManager implements ProjectManager {
         }
 
         final ProjectConfigDto projectConfigDto = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
-                                                            .withPath(project.getPath())
-                                                            .withName(project.getName())
+                                                            .withPath(projectConfig.getPath())
+                                                            .withName(projectConfig.getName())
                                                             .withType(projectConfig.getType())
                                                             .withMixins(projectConfig.getMixins())
                                                             .withAttributes(projectConfig.getAttributes())
@@ -807,9 +806,11 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig)
-            throws ConflictException, ForbiddenException, ServerException, NotFoundException, IOException {
-
+    public Project convertFolderToProject(String workspace, String path, ProjectConfig projectConfig) throws ConflictException,
+                                                                                                             ForbiddenException,
+                                                                                                             ServerException,
+                                                                                                             NotFoundException,
+                                                                                                             IOException {
         final VirtualFileEntry projectEntry = getProjectsRoot(workspace).getChild(path);
         if (projectEntry == null || !projectEntry.isFolder())
             throw new NotFoundException("Not found or not a folder " + path);
@@ -818,20 +819,16 @@ public final class DefaultProjectManager implements ProjectManager {
 
         final Project project = new Project(projectFolder, this);
 
-        // Update config
-        if (projectConfig != null && projectConfig.getType() != null) {
+        if (projectConfig.getType() != null) {
             //TODO: need add checking for concurrency attributes name in giving config and in estimation
             for (Map.Entry<String, AttributeValue> entry : estimateProject(workspace, path, projectConfig.getType()).entrySet()) {
                 projectConfig.getAttributes().put(entry.getKey(), entry.getValue().getList());
             }
             project.updateConfig(projectConfig);
-        } else {  // try to get config (it will throw exception in case config is not valid)
-            projectConfig = project.getConfig();
         }
 
         if (projectConfig.getType() != null) {
-            PostImportProjectHandler postImportProjectHandler =
-                    handlers.getPostImportProjectHandler(projectConfig.getType());
+            PostImportProjectHandler postImportProjectHandler = handlers.getPostImportProjectHandler(projectConfig.getType());
             if (postImportProjectHandler != null) {
                 postImportProjectHandler.onProjectImported(project.getBaseFolder());
             }
@@ -845,10 +842,13 @@ public final class DefaultProjectManager implements ProjectManager {
     }
 
     @Override
-    public VirtualFileEntry rename(String workspace, String path, String newName, String newMediaType)
-            throws ForbiddenException, ServerException, ConflictException, NotFoundException {
+    public VirtualFileEntry rename(String workspace, String path, String newName, String newMediaType) throws ForbiddenException,
+                                                                                                              ServerException,
+                                                                                                              ConflictException,
+                                                                                                              NotFoundException {
         final FolderEntry root = getProjectsRoot(workspace);
         final VirtualFileEntry entry = root.getChild(path);
+
         if (entry == null) {
             return null;
         }
@@ -856,45 +856,73 @@ public final class DefaultProjectManager implements ProjectManager {
         if (entry.isFile() && newMediaType != null) {
             // Use the same rules as in method createFile to make client side simpler.
             ((FileEntry)entry).rename(newName, newMediaType);
-        } else {
-            final Project project = getProject(workspace, path);
-
+        } else if (entry.isFolder() && !isProjectFolder((FolderEntry)entry)) {
             entry.rename(newName);
+        } else {
+            UsersWorkspaceDto usersWorkspace = getWorkspace(workspace);
 
-            if (project != null) {
-                // get UsersWorkspaceDto
-                final UsersWorkspaceDto usersWorkspace = getWorkspace(workspace);
-                // replace path in all projects
-                final String oldProjectPath = path.startsWith("/") ? path : "/" + path;
-                usersWorkspace.getProjects()
-                              .stream()
-                              .filter(projectConfigDto -> projectConfigDto.getPath().startsWith(oldProjectPath))
-                              .forEach(projectConfigDto -> {
-                                  if (oldProjectPath.equals(projectConfigDto.getPath())) {
-                                      projectConfigDto.setName(newName);
-                                  }
-                                  projectConfigDto.setPath(projectConfigDto.getPath().replaceFirst(oldProjectPath, entry.getPath()));
-                              });
-                // update workspace with a new WorkspaceConfig
-                updateWorkspace(workspace, org.eclipse.che.api.workspace.server.DtoConverter.asDto((WorkspaceConfig)usersWorkspace));
+            String oldProjectPath = path.startsWith("/") ? path : "/" + path;
+            String newProjectPath = '/' + newName;
+
+            List<ProjectConfigDto> projects = usersWorkspace.getProjects();
+
+            if (projects.isEmpty()) {
+                renameProjectOnFileSystem(workspace, oldProjectPath, newName);
             }
 
-            final String projectName = projectPath(path);
-            // We should not edit Modules if resource to rename is project
-            if (!projectName.equals(path) && entry.isFolder()) {
-                final Project rootProject = getProject(workspace, projectName);
-                // TODO: rework
-//                if (rootProject != null) {
-//                    // We need module path without projectName, f.e projectName/module1/oldModuleName -> module1/oldModuleName
-//                    String oldModulePath = path.replaceFirst(projectName + "/", "");
-//                    // Calculates new module path, f.e module1/oldModuleName -> module1/newModuleName
-//                    String newModulePath = oldModulePath.substring(0, oldModulePath.lastIndexOf("/") + 1) + newName;
-//
-//                    rootProject.getModules().update(oldModulePath, newModulePath);
-//                }
+            for (ProjectConfigDto projectConfig : projects) {
+                String projectPath = projectConfig.getPath();
+
+                if (projectPath == null) {
+                    projectPath = '/' + projectConfig.getName();
+                }
+
+                if (projectPath.equals(oldProjectPath)) {
+                    entry.rename(newName);
+
+                    deleteProjectFromWorkspace(projectConfig, workspace);
+
+                    projectConfig.setPath(newProjectPath);
+                    projectConfig.setName(newName);
+
+                    replaceModulesPaths(projectConfig, newProjectPath);
+
+                    updateProjectInWorkspace(workspace, projectConfig);
+                }
             }
         }
+
         return entry;
+    }
+
+    private void renameProjectOnFileSystem(String workspaceId, String oldProjectPath, String newName) throws ServerException,
+                                                                                                             NotFoundException,
+                                                                                                             ConflictException,
+                                                                                                             ForbiddenException {
+        FolderEntry projectsRoot = getProjectsRoot(workspaceId);
+        List<VirtualFileEntry> children = projectsRoot.getChildren();
+
+        for (VirtualFileEntry virtualFileEntry : children) {
+            if (virtualFileEntry.getPath().equals(oldProjectPath)) {
+                virtualFileEntry.rename(newName);
+            }
+        }
+    }
+
+    private void replaceModulesPaths(ProjectConfigDto projectConfig, String newProjectPath) {
+        for (ProjectConfigDto module : projectConfig.getModules()) {
+            String modulePath = module.getPath();
+
+            String oldPath = modulePath.startsWith("/") ? modulePath.substring(1) : modulePath;
+
+            int endProjectNameIndex = oldPath.indexOf('/');
+
+            String newModulePath = newProjectPath + oldPath.substring(endProjectNameIndex);
+
+            module.setPath(newModulePath);
+
+            replaceModulesPaths(module, newProjectPath);
+        }
     }
 
     @Override
