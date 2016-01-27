@@ -84,8 +84,6 @@ public class MachineExtensionProxyServletTest {
 
     private ExtensionApiRequest extensionApiRequest;
 
-    private MachineMetadata machineMetadata;
-
     // Todo
     // send entity to destination
     // check that proxy doesn't copy hop-by-hop headers
@@ -125,19 +123,18 @@ public class MachineExtensionProxyServletTest {
         while (!org.eclipse.jetty.server.Server.STARTED.equals(jettyServer.getState())) {
             Thread.sleep(500);
         }
-
-
-        Map<String, Server> machineServers = Collections.<String, Server>singletonMap(String.valueOf(EXTENSIONS_API_PORT),
-                                                                                      new ServerImpl(null,
-                                                                                                     "localhost:" +
-                                                                                                     jettyServer.getURI().getPort(),
-                                                                                                     null));
-
-        machineMetadata = new MachineMetadataImpl(null, null, machineServers);
     }
 
     @BeforeMethod
     public void setUpMethod() throws Exception {
+        String serverAddress = "localhost:" + jettyServer.getURI().getPort();
+        Map<String, Server> machineServers = Collections.<String, Server>singletonMap(String.valueOf(EXTENSIONS_API_PORT),
+                                                                                      new ServerImpl(null,
+                                                                                                     serverAddress,
+                                                                                                     "http://" + serverAddress));
+
+        MachineMetadata machineMetadata = new MachineMetadataImpl(null, null, machineServers);
+
         machineManager = mock(MachineManager.class);
 
         machine = mock(Instance.class);
@@ -174,7 +171,7 @@ public class MachineExtensionProxyServletTest {
     }
 
     @DataProvider(name = "methodProvider")
-    public String[][] methodProvider() {
+    public Object[][] methodProvider() {
         return new String[][]{{"GET"}, {"PUT"}, {"POST"}, {"DELETE"}, {"OPTIONS"}};
     }
 
