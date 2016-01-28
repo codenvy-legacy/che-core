@@ -9,24 +9,18 @@
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 .ide-PartStack-Tab {
-    width: 80px;
-
-    height: 24px;
+    display: inline-block;
+    height: 23px;
     cursor: default;
-    float: left;
-    line-height: 18px;
-
     color: tabTextColor;
-
+    padding: 3px 10px 0 10px;
+    vertical-align: middle;
     font-size: 11px;
-
     border-left: 1px solid tabsPanelBackground;
     border-right: 1px solid tabsPanelBackground;
-
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
-
     -webkit-transition: color 0.1s ease-in-out,
     fill 0.1s ease-in-out,
     stroke 0.1s ease-in-out;
@@ -38,15 +32,13 @@
 .ide-PartStack-Tab svg {
     width: 14px;
     height: 14px;
-    margin-top: 5px;
-    margin-left: 1px;
+    margin-right: 8px;
 }
 
 .ide-PartStack-Tab svg,
 .ide-PartStack-Tab svg rect,
 .ide-PartStack-Tab svg path {
     fill: tabTextColor;
-
     -webkit-transition: color 0.1s ease-in-out,
     fill 0.1s ease-in-out,
     stroke 0.1s ease-in-out;
@@ -66,34 +58,23 @@
 }
 
 .leftTabs {
-    transform: rotate(270deg);
-    -webkit-transform: rotate(270deg);
-    -moz-transform: rotate(270deg);
+    transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+}
 
-    transform-origin: 42px 42px;
-    -webkit-transform-origin: 42px 42px;
-    -moz-transform-origin: 42px 42px;
+.leftTabs:first-of-type {
+    margin-left: 22px;
 }
 
 .rightTabs {
-    transform: rotate(90deg);
-    -webkit-transform: rotate(90deg);
-    -moz-transform: rotate(90deg);
+}
 
-    transform-origin: 12px 11px;
-    -webkit-transform-origin: 12px 11px;
-    -moz-transform-origin: 12px 11px;
+.rightTabs:first-of-type {
+    margin-left: 22px;
 }
 
 .bottomTabs {
-    top: -1px;
-}
-
-.leftTabs,
-.rightTabs,
-.bottomTabs {
-    /* A little hack is needed to tune tab button border. */
-    border-radius: 5px;
 }
 
 .selectedBottomTab,
@@ -103,9 +84,6 @@
     background-color: activeTabBackground;
     border-left: 1px solid activeTabBorderColor;
     border-right: 1px solid activeTabBorderColor;
-
-    /* Unhack the panel */
-    border-radius: 0px;
 }
 
 .selectedBottomTab svg,
@@ -125,8 +103,8 @@
 .listItemPanel {
     background-color: openedFilesDropdownListBackgroundColor;
     border: 1px solid openedFilesDropdownListBorderColor;
-    box-shadow: 0px 2px 2px 0px openedFilesDropdownListShadowColor;
-    border-radius: 0px 0px 3px 3px;
+    box-shadow: 0 2px 2px 0 openedFilesDropdownListShadowColor;
+    border-radius: 0 0 3px 3px;
 }
 
 .ide-PartStack-Content {
@@ -145,15 +123,9 @@
 
 .ide-Base-Part-Title-Label {
     display: inline-block;
-    line-height: 23px;
+    line-height: 20px;
     margin-left: 10px;
-    vertical-align: middle;
     cursor: default;
-}
-
-.ide-part-stack-header-menu-button {
-    float: right;
-    margin-top: -1px;
 }
 
 .ide-Base-Part-Toolbar {
@@ -161,96 +133,6 @@
     border-bottom: 1px solid tabBorderColor;
     font-size: 11px;
     color: mainFontColor;
-}
-
-.ide-Base-Part-Toolbar-Bottom {
-    background-color: partToolbar;
-    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.5);
-    color: mainFontColor;
-    font-weight: bold;
-    width: 100%;
-    line-height: 26px;
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
-.ide-Base-Part-Toolbar-Separator {
-    border-top: 1px solid partToolbarSeparatorTopColor;
-    background-color: partToolbarSeparatorBottomColor;
-    height: 1px;
-    width: 100%;
-}
-
-.ide-Base-Part-Toolbar-Bottom-Icon {
-    fill: toolbarIconColor;
-    height: 16px;
-    width: 16px;
-    margin-top: 4px;
-}
-
-.ide-Base-Part-Toolbar-Bottom-Icon {
-    margin-right: 8px;
-    margin-left: 10px;
-    float: left;
-}
-
-.ide-Base-Part-Toolbar-Bottom-Button {
-    -moz-box-sizing: border-box !important;
-    box-sizing: border-box !important;
-
-    -webkit-user-select: none;
-    user-select: none;
-
-    float: left;
-
-    width: 22px;
-    height: 18px;
-    margin-top: 4px;
-    overflow: hidden;
-    position: relative;
-
-    border-radius: 2px;
-}
-
-.ide-Base-Part-Toolbar-Bottom-Button-Right {
-    margin-right: 5px;
-    position: absolute;
-    top: 1px;
-    right: 0px;
-}
-
-.ide-Base-Part-Toolbar-Bottom-Button > svg {
-    margin-left: 4px;
-    margin-top: 2px;
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    fill: toolbarIconColor;
-}
-
-.ide-Base-Part-Toolbar-Center-Panel-Project-Title {
-    display: -webkit-flex;
-    display: -moz-flex;
-    display: flex;
-}
-
-.ide-Base-Part-Toolbar-Project-Title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-}
-
-.ide-Base-Part-Toolbar-Bottom-Button:HOVER {
-    -webkit-box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
-    -moz-box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
-    box-shadow: 0px 0px 2px rgba(50, 50, 50, 1);
-}
-
-.ide-Base-Part-Toolbar-Bottom-Button:ACTIVE {
-    -webkit-transform: scale(0.9);
-    -moz-transform: scale(0.9);
-    transform: scale(0.9);
 }
 
 @sprite .ide-PartStack-Tab-Line-Error {

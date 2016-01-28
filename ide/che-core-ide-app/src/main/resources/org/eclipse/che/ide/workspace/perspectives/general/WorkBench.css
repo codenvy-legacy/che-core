@@ -17,25 +17,28 @@
 .ide-work-bench-tool-panel-left,
 .ide-work-bench-tool-panel-right,
 .ide-work-bench-tool-panel-bottom {
-    position: relative;
-
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
-
     background-color: tabsPanelBackground;
 }
 
 .ide-work-bench-tool-panel-left {
-    width: 24px;
-    border-right: 1px solid tabBorderColor;
-    padding-top: 26px;
+    height: 24px;
+    transform: rotate(90deg);
+    transform-origin: 12px 12px;
+    border-top: 1px solid tabBorderColor;
+    position: fixed;
+    width: 100%;
 }
 
 .ide-work-bench-tool-panel-right {
-    width: 24px;
-    border-left: 1px solid tabBorderColor;
-    padding-top: 31px;
+    height: 24px;
+    transform: rotate(90deg);
+    transform-origin: 12px 12px;
+    border-bottom: 1px solid tabBorderColor;
+    position: fixed;
+    width: 100%;
 }
 
 .ide-work-bench-tool-panel-bottom {

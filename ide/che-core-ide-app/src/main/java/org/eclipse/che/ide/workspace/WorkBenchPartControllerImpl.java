@@ -38,6 +38,8 @@ public class WorkBenchPartControllerImpl implements WorkBenchPartController {
         this.widget = widget;
         this.hideWidgetCallback = hideWidgetCallback;
 
+        splitLayoutPanel.setWidgetToggleDisplayAllowed(widget, true);
+        splitLayoutPanel.setWidgetMinSize(widget, 100);
         splitLayoutPanel.setWidgetHidden(widget, true);
         splitLayoutPanel.forceLayout();
     }

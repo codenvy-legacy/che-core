@@ -65,10 +65,8 @@ public interface PartStackView extends View<PartStackView.ActionDelegate> {
          *
          * @param tabPosition
          *         orientation of the Tab (e.g. LEFT or RIGHT)
-         * @param countWidgets
-         *         number of widgets(tabs) which are including in the current part. It is necessary for ranking the tab.
          */
-        void setTabPosition(@NotNull TabPosition tabPosition, @Min(value=0) int countWidgets);
+        void setTabPosition(@NotNull TabPosition tabPosition);
     }
 
     /** Add Tab */

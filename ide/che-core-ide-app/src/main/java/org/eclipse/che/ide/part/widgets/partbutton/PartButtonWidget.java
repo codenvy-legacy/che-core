@@ -19,7 +19,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -30,46 +29,39 @@ import org.eclipse.che.ide.api.parts.PartStackView.TabPosition;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+
 import org.eclipse.che.commons.annotation.Nullable;
 
-import static com.google.gwt.dom.client.Style.Unit.PX;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.RIGHT;
 
 /**
+ * Widget that response for displaying part tab.
+ *
  * @author Dmitry Shnurenko
  * @author Valeriy Svydenko
  * @author Vitaliy Guliy
+ * @author Vlad Zhukovskyi
  */
 public class PartButtonWidget extends Composite implements PartButton {
 
-    /** Shifting left and right panels from the top */
-    private final static int TOP_SHIFT = 63;
-
-    interface PartButtonWidgetUiBinder extends UiBinder<Widget, PartButtonWidget> {
-    }
-
     private static final PartButtonWidgetUiBinder UI_BINDER = GWT.create(PartButtonWidgetUiBinder.class);
+
+    @UiField
+    FlowPanel iconPanel;
+
+    @UiField
+    Label tabName;
 
     private final Resources resources;
 
-    @UiField
-    SimplePanel icon;
-
-    @UiField
-    Label       buttonName;
-
     private ActionDelegate delegate;
+    private Widget         badgeWidget;
     private TabPosition    tabPosition;
-
-    private Widget badgeWidget;
-
-    private boolean selected;
-
-    private SVGResource iconResource;
+    private boolean        tabSelected;
+    private SVGResource    tabIcon;
 
     @Inject
     public PartButtonWidget(Resources resources, @Assisted String title) {
@@ -77,27 +69,23 @@ public class PartButtonWidget extends Composite implements PartButton {
 
         initWidget(UI_BINDER.createAndBindUi(this));
         setStyleName(resources.partStackCss().idePartStackTab());
-        this.ensureDebugId("partButton-" + title);
+        ensureDebugId("partButton-" + title);
 
         addDomHandler(this, ClickEvent.getType());
 
-        buttonName.setText(title);
+        tabName.setText(title);
     }
 
     /** {@inheritDoc} */
     @NotNull
     @Override
     public IsWidget getView() {
-        return this.asWidget();
+        return asWidget();
     }
 
     @Override
     public Widget getIcon() {
-        if (iconResource != null) {
-            return new SVGImage(iconResource);
-        }
-
-        return null;
+        return tabIcon != null ? new SVGImage(tabIcon) : null;
     }
 
     /** {@inheritDoc} */
@@ -111,11 +99,11 @@ public class PartButtonWidget extends Composite implements PartButton {
     @NotNull
     @Override
     public PartButton setIcon(@Nullable SVGResource iconResource) {
-        this.iconResource = iconResource;
-        icon.clear();
+        this.tabIcon = iconResource;
+        iconPanel.clear();
 
-        if (iconResource != null) {
-            icon.setWidget(new SVGImage(iconResource));
+        if (tabIcon != null) {
+            iconPanel.add(new SVGImage(tabIcon));
         }
 
         return this;
@@ -136,7 +124,7 @@ public class PartButtonWidget extends Composite implements PartButton {
 
         badgeWidget = getBadge(unreadMessages);
         if (badgeWidget != null) {
-            icon.getParent().getElement().appendChild(badgeWidget.asWidget().getElement());
+            iconPanel.getParent().getElement().appendChild(badgeWidget.asWidget().getElement());
             updateBadge();
         }
     }
@@ -144,7 +132,8 @@ public class PartButtonWidget extends Composite implements PartButton {
     /**
      * Creates a badge widget with a message
      *
-     * @param messages messages count
+     * @param messages
+     *         messages count
      * @return new badge widget
      */
     private Widget getBadge(int messages) {
@@ -195,13 +184,10 @@ public class PartButtonWidget extends Composite implements PartButton {
     /** {@inheritDoc} */
     @Override
     public void select() {
-        selected = true;
+        tabSelected = true;
 
-        if (BELOW.equals(tabPosition)) {
-            addStyleName(resources.partStackCss().selectedBottomTab());
-        } else {
-            addStyleName(resources.partStackCss().selectedRightOrLeftTab());
-        }
+        addStyleName(tabPosition == BELOW ? resources.partStackCss().selectedBottomTab()
+                                          : resources.partStackCss().selectedRightOrLeftTab());
 
         updateBadge();
     }
@@ -209,13 +195,10 @@ public class PartButtonWidget extends Composite implements PartButton {
     /** {@inheritDoc} */
     @Override
     public void unSelect() {
-        selected = false;
+        tabSelected = false;
 
-        if (BELOW.equals(tabPosition)) {
-            removeStyleName(resources.partStackCss().selectedBottomTab());
-        } else {
-            removeStyleName(resources.partStackCss().selectedRightOrLeftTab());
-        }
+        removeStyleName(tabPosition == BELOW ? resources.partStackCss().selectedBottomTab()
+                                             : resources.partStackCss().selectedRightOrLeftTab());
 
         updateBadge();
     }
@@ -228,7 +211,7 @@ public class PartButtonWidget extends Composite implements PartButton {
             return;
         }
 
-        if (selected) {
+        if (tabSelected) {
             badgeWidget.getElement().getStyle().setBorderColor(org.eclipse.che.ide.api.theme.Style.theme.activeTabBackground());
         } else {
             badgeWidget.getElement().getStyle().setBorderColor(org.eclipse.che.ide.api.theme.Style.theme.tabsPanelBackground());
@@ -237,18 +220,12 @@ public class PartButtonWidget extends Composite implements PartButton {
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value=0) int countWidgets) {
+    public void setTabPosition(@NotNull TabPosition tabPosition) {
         this.tabPosition = tabPosition;
 
-        if (LEFT.equals(tabPosition)) {
-            addStyleName(resources.partStackCss().leftTabs());
-            getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
-        } else if (RIGHT.equals(tabPosition)) {
-            addStyleName(resources.partStackCss().rightTabs());
-            getElement().getStyle().setTop((countWidgets - 1) * TOP_SHIFT, PX);
-        } else {
-            addStyleName(resources.partStackCss().bottomTabs());
-        }
+        addStyleName(tabPosition == LEFT ? resources.partStackCss().leftTabs()
+                                         : tabPosition == RIGHT ? resources.partStackCss().rightTabs()
+                                                                : resources.partStackCss().bottomTabs());
     }
 
     /** {@inheritDoc} */
@@ -257,4 +234,6 @@ public class PartButtonWidget extends Composite implements PartButton {
         this.delegate = delegate;
     }
 
+    interface PartButtonWidgetUiBinder extends UiBinder<Widget, PartButtonWidget> {
+    }
 }
