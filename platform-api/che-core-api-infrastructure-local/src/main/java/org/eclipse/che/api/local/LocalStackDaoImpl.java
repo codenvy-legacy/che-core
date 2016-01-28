@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.local;
 
-import com.google.common.collect.FluentIterable;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Singleton;
 
@@ -117,7 +116,7 @@ public class LocalStackDaoImpl implements StackDao {
         lock.writeLock().lock();
         try {
             if (stacks.containsKey(stack.getId())) {
-                throw new ConflictException(format("Stack with %s is already exist", stack.getId()));
+                throw new ConflictException(format("Stack with id %s is already exist", stack.getId()));
             }
             stacks.put(stack.getId(), stack);
         } finally {
