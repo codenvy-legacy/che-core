@@ -514,11 +514,13 @@ public interface GitServiceClient {
      *         id of current workspace
      * @param project
      *         project (root of GIT repository)
+     * @param fileFilter
+     *         range of files to filter revisions list
      * @param isTextFormat
      *         if <code>true</code> the loq response will be in text format
      * @param callback
      */
-    void log(String workspaceId, ProjectConfigDto project, boolean isTextFormat, AsyncRequestCallback<LogResponse> callback);
+    void log(String workspaceId, ProjectConfigDto project, List<String> fileFilter, boolean isTextFormat, AsyncRequestCallback<LogResponse> callback);
 
     /**
      * Merge the pointed commit with current HEAD.
