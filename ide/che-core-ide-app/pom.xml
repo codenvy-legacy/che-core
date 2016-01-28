@@ -23,6 +23,7 @@
     <name>Che Core :: IDE :: App</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
+        <findbugs.failonerror>false</findbugs.failonerror>
         <generated.sources.directory>${project.build.directory}/generated-sources/gen</generated.sources.directory>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
