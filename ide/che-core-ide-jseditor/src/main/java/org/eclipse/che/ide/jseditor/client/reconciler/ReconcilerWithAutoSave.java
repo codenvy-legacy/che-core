@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.reconciler;
 
@@ -52,10 +52,10 @@ public class ReconcilerWithAutoSave implements Reconciler {
     private final DocumentPartitioner partitioner;
 
     private DirtyRegionQueue dirtyRegionQueue;
-    private DocumentHandle documentHandle;
-    private TextEditor     editor;
-    private boolean autoSaveEnabled = true;
-    private final Timer autoSaveTimer = new Timer() {
+    private DocumentHandle   documentHandle;
+    private TextEditor       editor;
+    private       boolean autoSaveEnabled = true;
+    private final Timer   autoSaveTimer   = new Timer() {
 
         @Override
         public void run() {
@@ -91,6 +91,9 @@ public class ReconcilerWithAutoSave implements Reconciler {
     @Override
     public void uninstall() {
         autoSaveTimer.cancel();
+        for (ReconcilingStrategy strategy : strategies.values()) {
+            strategy.closeReconciler();
+        }
     }
 
     private void save() {
