@@ -22,6 +22,9 @@
     <artifactId>che-core-vfs-impl</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Virtual File System (Deprecated)</name>
+    <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

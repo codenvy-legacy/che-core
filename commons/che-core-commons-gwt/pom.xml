@@ -21,6 +21,7 @@
     <artifactId>che-core-commons-gwt</artifactId>
     <name>Che Core :: Commons :: GWT</name>
     <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
         <generated.test.sources.directory>${project.build.directory}/generated-test-sources/dto</generated.test.sources.directory>
     </properties>
     <dependencies>

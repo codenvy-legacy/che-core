@@ -23,6 +23,7 @@
     <name>Che Core :: IDE :: API</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/gen</dto-generator-out-directory>
+        <findbugs.failonerror>false</findbugs.failonerror>
     </properties>
     <dependencies>
         <dependency>

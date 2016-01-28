@@ -23,7 +23,6 @@
     <name>Che Core :: Commons :: Java API extension classes</name>
     <properties>
         <findbugs.excludeFilterFile>${project.build.testSourceDirectory}/../resources/findbugs-exclude.xml</findbugs.excludeFilterFile>
-        <findbugs.failonerror>true</findbugs.failonerror>
     </properties>
     <dependencies>
         <dependency>

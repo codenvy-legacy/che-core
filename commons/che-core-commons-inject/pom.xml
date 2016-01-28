@@ -21,9 +21,6 @@
     <artifactId>che-core-commons-inject</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Commons :: Dependency Injecting</name>
-    <properties>
-        <findbugs.failonerror>true</findbugs.failonerror>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
