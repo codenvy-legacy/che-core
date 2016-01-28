@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 
@@ -50,7 +51,9 @@ public class LocalSnapshotDaoImpl implements SnapshotDao {
     @Inject
     public LocalSnapshotDaoImpl(LocalStorageFactory storageFactory) throws IOException {
         snapshots = new HashMap<>();
-        snapshotStorage = storageFactory.create("snapshots.json", singletonMap(InstanceKey.class, new InstanceKeyAdapter()));
+        snapshotStorage = storageFactory.create("snapshots.json",
+                                                singletonMap(InstanceKey.class, new InstanceKeyAdapter()),
+                                                emptyMap());
     }
 
     @Override

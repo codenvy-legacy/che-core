@@ -40,6 +40,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
@@ -58,7 +59,7 @@ public class LocalRecipeDaoImpl implements RecipeDao {
     public LocalRecipeDaoImpl(LocalStorageFactory storageFactory) throws IOException {
         Map<Class<?>, Object> adapters = ImmutableMap.of(Permissions.class, new PermissionsSerializer(),
                                                          Group.class, new GroupSerializer());
-        this.recipeStorage = storageFactory.create("recipes.json", adapters);
+        this.recipeStorage = storageFactory.create("recipes.json", adapters, emptyMap());
         this.recipes = new HashMap<>();
         lock = new ReentrantReadWriteLock();
     }
