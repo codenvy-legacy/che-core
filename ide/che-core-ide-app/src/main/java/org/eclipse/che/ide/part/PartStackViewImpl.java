@@ -45,7 +45,6 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
     private final AcceptsOneWidget            partViewContainer;
     private final DeckLayoutPanel             contentPanel;
     private final FlowPanel                   tabsPanel;
-    private final FlowPanel                   tabsRotationPanel;
     private final TabPosition                 tabPosition;
 
     private ActionDelegate delegate;
@@ -53,21 +52,17 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
     @Inject
     public PartStackViewImpl(PartStackUIResources resources,
-                             FlowPanel tabsRotationPanel,
                              final DeckLayoutPanel contentPanel,
                              @Assisted @NotNull TabPosition tabPosition,
                              @Assisted @NotNull FlowPanel tabsPanel) {
         this.tabsPanel = tabsPanel;
         this.tabPosition = tabPosition;
-        this.tabsRotationPanel = tabsRotationPanel;
 
         this.contentPanel = contentPanel;
         this.contentPanel.setStyleName(resources.partStackCss().idePartStackContent());
         initWidget(contentPanel);
 
         this.tabs = new HashMap<>();
-
-        tabsPanel.add(tabsRotationPanel);
 
         partViewContainer = new AcceptsOneWidget() {
             @Override
@@ -101,11 +96,11 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
     /** {@inheritDoc} */
     @Override
     public void addTab(@NotNull TabItem tabItem, @NotNull PartPresenter presenter) {
-        tabsRotationPanel.add(tabItem.getView());
+        tabsPanel.add(tabItem.getView());
         presenter.go(partViewContainer);
 
         tabs.put(presenter, tabItem);
-        tabItem.setTabPosition(tabPosition, tabsRotationPanel.getWidgetCount());
+        tabItem.setTabPosition(tabPosition);
     }
 
     /** {@inheritDoc} */
@@ -127,7 +122,7 @@ public class PartStackViewImpl extends ResizeComposite implements PartStackView,
 
             TabItem tabItem = tabs.get(partPresenter);
 
-            tabsRotationPanel.insert(tabItem.getView(), tabIndex);
+            tabsPanel.insert(tabItem.getView(), tabIndex);
         }
     }
 
