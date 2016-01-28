@@ -17,16 +17,10 @@ import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
-import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Data object for {@link UsersWorkspace}.
@@ -34,21 +28,14 @@ import static java.util.stream.Collectors.toMap;
  * @author Eugene Voevodin
  * @author gazarenkov
  */
-public class UsersWorkspaceImpl implements UsersWorkspace {
+public class UsersWorkspaceImpl extends WorkspaceConfigImpl implements UsersWorkspace {
 
     public static UsersWorkspaceImplBuilder builder() {
         return new UsersWorkspaceImplBuilder();
     }
 
     private String                            id;
-    private String                            name;
     private String                            owner;
-    private String                            defaultEnvName;
-    private List<CommandImpl>                 commands;
-    private List<ProjectConfigImpl>           projects;
-    private Map<String, String>               attributes;
-    private Map<String, EnvironmentStateImpl> environments;
-    private String                            description;
     private boolean                           isTemporary;
     private WorkspaceStatus                   status;
 
@@ -61,29 +48,10 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                               Map<String, ? extends Environment> environments,
                               String defaultEnvironment,
                               String description) {
+        super(name, description, defaultEnvironment, commands, projects, environments, attributes);
         this.id = id;
         this.name = name;
         this.owner = owner;
-        this.description = description;
-        if (environments != null) {
-            this.environments = environments.values()
-                                            .stream()
-                                            .collect(toMap(Environment::getName, EnvironmentStateImpl::new));
-        }
-        if (commands != null) {
-            this.commands = commands.stream()
-                                    .map(CommandImpl::new)
-                                    .collect(toList());
-        }
-        if (projects != null) {
-            this.projects = projects.stream()
-                                    .map(ProjectConfigImpl::new)
-                                    .collect(toList());
-        }
-        if (attributes != null) {
-            this.attributes = new HashMap<>(attributes);
-        }
-        setDefaultEnvName(defaultEnvironment);
     }
 
     public UsersWorkspaceImpl(WorkspaceConfig workspaceConfig, String id, String owner) {
@@ -104,30 +72,12 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
     public String getOwner() {
         return owner;
     }
 
     public void setOwner(String owner) {
         this.owner = owner;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     @Override
@@ -145,70 +95,6 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
 
     public void setStatus(WorkspaceStatus status) {
         this.status = status;
-    }
-
-    @Override
-    public String getDefaultEnvName() {
-        return defaultEnvName;
-    }
-
-    /**
-     * Sets particular environment configured for this workspace  as default
-     * Throws NullPointerException if no Env with incoming name configured
-     */
-    public void setDefaultEnvName(String name) {
-        if (environments.get(name) == null) {
-            throw new NullPointerException("No Environment named '" + name + "' found");
-        }
-        defaultEnvName = name;
-    }
-
-    @Override
-    public Map<String, String> getAttributes() {
-        if (attributes == null) {
-            attributes = new HashMap<>();
-        }
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
-    }
-
-    @Override
-    public List<CommandImpl> getCommands() {
-        if (commands == null) {
-            commands = new ArrayList<>();
-        }
-        return commands;
-    }
-
-    public void setCommands(List<CommandImpl> commands) {
-        this.commands = commands;
-    }
-
-    @Override
-    public List<ProjectConfigImpl> getProjects() {
-        if (projects == null) {
-            projects = new ArrayList<>();
-        }
-        return projects;
-    }
-
-    public void setProjects(List<ProjectConfigImpl> projects) {
-        this.projects = projects;
-    }
-
-    @Override
-    public Map<String, EnvironmentStateImpl> getEnvironments() {
-        if (environments == null) {
-            environments = new HashMap<>();
-        }
-        return environments;
-    }
-
-    public void setEnvironments(Map<String, EnvironmentStateImpl> environments) {
-        this.environments = environments;
     }
 
     @Override
@@ -268,7 +154,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
      *
      * @see UsersWorkspaceImpl#builder()
      */
-    public static class UsersWorkspaceImplBuilder {
+    public static class UsersWorkspaceImplBuilder extends WorkspaceConfigBuilder {
 
         protected String                             id;
         protected String                             name;
