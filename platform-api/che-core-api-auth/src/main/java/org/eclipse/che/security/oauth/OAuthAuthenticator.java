@@ -124,6 +124,11 @@ public abstract class OAuthAuthenticator {
 
         AuthorizationCodeRequestUrl url = flow.newAuthorizationUrl().setRedirectUri(findRedirectUrl(requestUrl))
                                               .setScopes(scopes);
+        url.setState(prepareState(requestUrl, userId));
+        return url.build();
+    }
+
+    protected String prepareState(URL requestUrl, String userId) {
         StringBuilder state = new StringBuilder();
         String query = requestUrl.getQuery();
         if (query != null) {
@@ -139,18 +144,18 @@ public abstract class OAuthAuthenticator {
             state.append("userId=");
             state.append(userId);
         }
-        url.setState(state.toString());
-        return url.build();
+        return state.toString();
     }
 
     private String findRedirectUrl(URL requestUrl) {
-        final String requestHost = requestUrl.getHost();
-        for (Map.Entry<Pattern, String> e : redirectUrisMap.entrySet()) {
-            if (e.getKey().matcher(requestHost).matches()) {
-                return e.getValue();
-            }
-        }
-        return null; // TODO : throw exception instead of return null ???
+//        final String requestHost = requestUrl.getHost();
+//        for (Map.Entry<Pattern, String> e : redirectUrisMap.entrySet()) {
+//            if (e.getKey().matcher(requestHost).matches()) {
+//                return e.getValue();
+//            }
+//        }
+//        return null; // TODO : throw exception instead of return null ???
+        return redirectUrisMap.entrySet().iterator().next().getValue();
     }
 
     /**
