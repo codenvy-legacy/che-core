@@ -4,9 +4,9 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ * Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.texteditor;
 
@@ -91,16 +91,16 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAI
  * Presenter part for the embedded variety of editor implementations.
  */
 public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends AbstractEditorPresenter
-        implements EmbeddedTextEditor,
-                   FileEventHandler,
-                   UndoableEditor,
-                   HasBreakpointRenderer,
-                   HasReadOnlyProperty,
-                   HandlesTextOperations,
-                   EditorWithAutoSave,
-                   EditorWithErrors,
-                   HasHotKeyItems,
-                   Delegate {
+                                                                 implements EmbeddedTextEditor,
+                                                                            FileEventHandler,
+                                                                            UndoableEditor,
+                                                                            HasBreakpointRenderer,
+                                                                            HasReadOnlyProperty,
+                                                                            HandlesTextOperations,
+                                                                            EditorWithAutoSave,
+                                                                            EditorWithErrors,
+                                                                            HasHotKeyItems,
+                                                                            Delegate {
 
     /** File type used when we have no idea of the actual content type. */
     public final static String DEFAULT_CONTENT_TYPE = "text/plain";
@@ -121,18 +121,18 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     /** The editor handle for this editor. */
     private final EditorHandle handle = new EditorHandle() {
     };
-    private List<EditorUpdateAction> updateActions;
-    private TextEditorConfiguration  configuration;
-    private EditorWidget             editorWidget;
-    private Document                 document;
-    private CursorModelWithHandler   cursorModel;
-    private HasKeybindings keyBindingsManager = new TemporaryKeybindingsManager();
-    private LoaderFactory       loaderFactory;
-    private NotificationManager notificationManager;
+    private List<EditorUpdateAction>  updateActions;
+    private TextEditorConfiguration   configuration;
+    private EditorWidget              editorWidget;
+    private Document                  document;
+    private CursorModelWithHandler    cursorModel;
+    private HasKeybindings            keyBindingsManager = new TemporaryKeybindingsManager();
+    private LoaderFactory             loaderFactory;
+    private NotificationManager       notificationManager;
     /** The editor's error state. */
-    private EditorState         errorState;
-    private boolean delayedFocus = false;
-    private boolean isFocused    = false;
+    private EditorState               errorState;
+    private boolean                   delayedFocus = false;
+    private boolean                   isFocused    = false;
     private BreakpointRendererFactory breakpointRendererFactory;
     private BreakpointRenderer        breakpointRenderer;
     private List<String>              fileTypes;
@@ -202,7 +202,8 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
         documentStorage.getDocument(input.getFile(), dualCallback);
         if (!moduleReady) {
             editorModule.waitReady(dualCallback);
-        }    }
+        }
+    }
 
     private void createEditor(final String content) {
         this.fileTypes = detectFileType(getEditorInput().getFile());
@@ -281,6 +282,10 @@ public class EmbeddedTextEditorPresenter<T extends EditorWidget> extends Abstrac
     @Override
     public void close(final boolean save) {
         this.documentStorage.documentClosed(this.document);
+        final Reconciler reconciler = configuration.getReconciler();
+        if (reconciler != null) {
+            reconciler.uninstall();
+        }
     }
 
     @Inject
