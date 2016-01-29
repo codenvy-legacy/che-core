@@ -26,6 +26,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
+ * Resolves user for git based on environment context.
+ *
  * @author Max Shaposhnik
  *
  */
@@ -35,36 +37,33 @@ public class LocalUserResolver implements UserResolver {
 
     private PreferenceDao preferenceDao;
 
-
     @Inject
     public LocalUserResolver(PreferenceDao preferenceDao) {
         this.preferenceDao = preferenceDao;
-
     }
 
     @Override
     public GitUser getUser() {
-        User user = EnvironmentContext.getCurrent().getUser();
-        GitUser gitUser = newDto(GitUser.class);
-        if (user.isTemporary()) {
-            gitUser.setEmail("anonymous@noemail.com");
-            gitUser.setName("Anonymous");
-        } else {
+        final User user = EnvironmentContext.getCurrent().getUser();
+        GitUser gitUser = newDto(GitUser.class).withName("Anonymous").withEmail("anonymous@noemail.com");
+        if (!user.isTemporary()) {
             String name = null;
             String email = null;
             try {
-                Map<String, String> preferences = preferenceDao.getPreferences(EnvironmentContext.getCurrent().getUser().getId(),
-                                                                               "git.committer.\\w+");
+                Map<String, String> preferences = preferenceDao.getPreferences(user.getId(), "git.committer.\\w+");
                 name = preferences.get("git.committer.name");
                 email = preferences.get("git.committer.email");
             } catch (ServerException e) {
                 LOG.error(e.getLocalizedMessage(), e);
             }
 
-            gitUser.setName(isNullOrEmpty(name) ? "Anonymous" : name);
-            gitUser.setEmail(isNullOrEmpty(email) ? "anonymous@noemail.com" : email);
+            if (!isNullOrEmpty(name)) {
+                gitUser.setName(name);
+            }
+            if (!isNullOrEmpty(email)) {
+                gitUser.setEmail(email);
+            }
         }
-
         return gitUser;
     }
 }
