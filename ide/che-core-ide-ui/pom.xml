@@ -20,6 +20,9 @@
     </parent>
     <artifactId>che-core-ide-ui</artifactId>
     <name>Che Core :: IDE :: UI</name>
+    <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

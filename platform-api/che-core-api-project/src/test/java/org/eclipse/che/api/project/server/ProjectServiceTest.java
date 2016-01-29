@@ -115,6 +115,7 @@ import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -150,17 +151,17 @@ public class ProjectServiceTest {
     private List<ProjectConfigDto> modules;
 
     @Mock
-    private UserDao                           userDao;
+    private UserDao                   userDao;
     @Mock
-    private UsersWorkspaceDto                 usersWorkspaceMock;
+    private UsersWorkspaceDto         usersWorkspaceMock;
     @Mock
-    private Provider<AttributeFilter>         filterProvider;
+    private Provider<AttributeFilter> filterProvider;
     @Mock
-    private AttributeFilter                   filter;
+    private AttributeFilter           filter;
     @Mock
-    private HttpJsonRequestFactory            httpJsonRequestFactory;
+    private HttpJsonRequestFactory    httpJsonRequestFactory;
     @Mock
-    private HttpJsonResponse                  httpJsonResponse;
+    private HttpJsonResponse          httpJsonResponse;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -172,11 +173,11 @@ public class ProjectServiceTest {
                 new MemoryFileSystemProvider(workspace,
                                              eventService,
                                              new VirtualFileSystemUserContext() {
-                    @Override
-                    public VirtualFileSystemUser getVirtualFileSystemUser() {
-                        return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
-                    }
-                },
+                                                 @Override
+                                                 public VirtualFileSystemUser getVirtualFileSystemUser() {
+                                                     return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
+                                                 }
+                                             },
                                              vfsRegistry,
                                              new SystemPathsFilter(singleton(new ProjectMiscPathFilter())));
 
@@ -234,9 +235,9 @@ public class ProjectServiceTest {
         when(usersWorkspaceMock.getProjects()).thenReturn(projects);
 
         pm.createProject(workspace, "my_project", testProjectConfigMock, null);
-        verify(httpJsonRequestFactory).fromLink(eq(DtoFactory.newDto(Link.class)
-                                                             .withHref(apiEndpoint + "/workspace/" + workspace + "/project")
-                                                             .withMethod(PUT)));
+        verify(httpJsonRequestFactory).fromLink(eq(newDto(Link.class)
+                                                           .withHref(apiEndpoint + "/workspace/" + workspace + "/project")
+                                                           .withMethod(PUT)));
 
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
         importerRegistry = new ProjectImporterRegistry(Collections.<ProjectImporter>emptySet());
@@ -679,29 +680,20 @@ public class ProjectServiceTest {
         };
         pm.getProjectTypeRegistry().registerProjectType(pt);
 
-        pm.createProject(workspace, "testUpdateProject",
-                         DtoFactory.getInstance().createDto(ProjectConfigDto.class).withDescription("created project").withType(
-                                 "testUpdateProject"), null);
+        pm.createProject(workspace, "module1", newDto(ProjectConfigDto.class).withDescription("created project")
+                                                                             .withType("testUpdateProject"), null);
 
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("my_attribute", singletonList("to be or not to be"));
-        ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+        ProjectConfigDto descriptor = DtoFactory.newDto(ProjectConfigDto.class)
                                                 .withName("module1")
+                                                .withPath("/module1")
                                                 .withType("testUpdateProject")
                                                 .withDescription("updated project")
                                                 .withAttributes(attributeValues);
 
-        final ProjectConfigDto newProjectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
-                                                            .withPath("/testUpdateProject")
-                                                            .withName("testUpdateProject")
-                                                            .withDescription("updated project")
-                                                            .withType("testUpdateProject")
-                                                            .withAttributes(attributeValues)
-                                                            .withSource(DtoFactory.getInstance().createDto(SourceStorageDto.class));
-        projects.add(newProjectConfig);
-
         ContainerResponse response = launcher.service(PUT,
-                                                      String.format("http://localhost:8080/api/project/%s/testUpdateProject", workspace),
+                                                      String.format("http://localhost:8080/api/project/%s/module1", workspace),
                                                       "http://localhost:8080/api",
                                                       headers,
                                                       DtoFactory.getInstance().toJson(descriptor).getBytes(),
@@ -709,12 +701,11 @@ public class ProjectServiceTest {
 
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
 
-        Project project = pm.getProject(workspace, "testUpdateProject");
-        assertNotNull(project);
-        ProjectConfig config = project.getConfig();
+        ProjectConfigDto config = (ProjectConfigDto)response.getEntity();
+        assertNotNull(config);
 
-        assertEquals(config.getDescription(), newProjectConfig.getDescription());
-        assertEquals(config.getType(), newProjectConfig.getType());
+        assertEquals(descriptor.getName(), config.getName());
+        assertEquals(descriptor.getPath(), config.getPath());
     }
 
     @Test
@@ -727,6 +718,8 @@ public class ProjectServiceTest {
         Map<String, List<String>> attributeValues = new LinkedHashMap<>();
         attributeValues.put("my_attribute", singletonList("to be or not to be"));
         ProjectConfigDto descriptor = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                                                .withName("not_project")
+                                                .withPath("/not_project")
                                                 .withType("my_project_type")
                                                 .withDescription("updated project")
                                                 .withAttributes(attributeValues);
@@ -925,7 +918,8 @@ public class ProjectServiceTest {
         String myContent = "<test>hello</test>";
         pm.getProject(workspace, "my_project").getBaseFolder().createFile("test.xml", "to be or not to be".getBytes());
         ContainerResponse response = launcher.service(PUT,
-                                                      String.format("http://localhost:8080/api/project/%s/file/my_project/test.xml", workspace),
+                                                      String.format("http://localhost:8080/api/project/%s/file/my_project/test.xml",
+                                                                    workspace),
                                                       "http://localhost:8080/api", null, myContent.getBytes(), null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         VirtualFileEntry file = pm.getProject(workspace, "my_project").getBaseFolder().getChild("test.xml");
@@ -1013,9 +1007,9 @@ public class ProjectServiceTest {
         assertEquals(response.getStatus(), 204, "Error: " + response.getEntity());
         Assert.assertNull(pm.getProject(workspace, "my_project"));
 
-        verify(httpJsonRequestFactory).fromLink(eq(DtoFactory.newDto(Link.class)
-                                                             .withHref(apiEndpoint + "/workspace/" + workspace + "/project/my_project")
-                                                             .withMethod(DELETE)));
+        verify(httpJsonRequestFactory).fromLink(eq(newDto(Link.class)
+                                                           .withHref(apiEndpoint + "/workspace/" + workspace + "/project/my_project")
+                                                           .withMethod(DELETE)));
     }
 
     @Test
@@ -1398,7 +1392,7 @@ public class ProjectServiceTest {
         myProject.getBaseFolder().createFile("test.txt", "hello".getBytes());
         ContainerResponse response = launcher.service(POST,
                                                       String.format(
-                                                              "http://localhost:8080/api/project/%s/rename/my_project/test.txt?name=_test.txt",
+                                                              "http://localhost:8080/api/project/%s/rename/my_project/test.txt?name=_test.txt&mediaType=txt",
                                                               workspace),
                                                       "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 201, "Error: " + response.getEntity());
@@ -1629,21 +1623,23 @@ public class ProjectServiceTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put(CONTENT_TYPE, singletonList(APPLICATION_JSON));
 
-        SourceStorageDto source = DtoFactory.newDto(SourceStorageDto.class)
-                                            .withParameters(Collections.emptyMap())
-                                            .withLocation("location/new_project.ext")
-                                            .withType(importType);
+        SourceStorageDto source = newDto(SourceStorageDto.class)
+                .withParameters(Collections.emptyMap())
+                .withLocation("location/new_project.ext")
+                .withType(importType);
 
-        ProjectConfigDto pModule = DtoFactory.newDto(ProjectConfigDto.class)
-                                             .withName("module1")
-                                             .withPath("/module1")
-                                             .withType("module_type")
-                                             .withDescription("module description");
+        ProjectConfigDto pModule = newDto(ProjectConfigDto.class)
+                .withName("module1")
+                .withPath("/module1")
+                .withType("module_type")
+                .withDescription("module description");
 
-        ProjectConfigDto project = DtoFactory.newDto(ProjectConfigDto.class)
-                                             .withDescription("import test")
-                                             .withType("chuck_project_type")
-                                             .withModules(singletonList(pModule));
+        ProjectConfigDto project = newDto(ProjectConfigDto.class)
+                .withName("new_project")
+                .withPath("/new_project")
+                .withDescription("import test")
+                .withType("chuck_project_type")
+                .withModules(singletonList(pModule));
 
         ContainerResponse response1 = launcher.service(POST,
                                                        String.format("http://localhost:8080/api/project/%s/import/new_project", workspace),
@@ -1776,9 +1772,9 @@ public class ProjectServiceTest {
         FolderEntry a = pm.getProjectsRoot(workspace).createFolder("a");
         a.createFile("test.txt", "test".getBytes());
         ContainerResponse response = launcher.service(GET,
-                String.format("http://localhost:8080/api/project/%s/item/a/test.txt",
-                        workspace),
-                "http://localhost:8080/api", null, null, null);
+                                                      String.format("http://localhost:8080/api/project/%s/item/a/test.txt",
+                                                                    workspace),
+                                                      "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
         ItemReference result = (ItemReference)response.getEntity();
         assertEquals(result.getType(), "file");
@@ -1788,9 +1784,9 @@ public class ProjectServiceTest {
     @Test
     public void testGetMissingItem() throws Exception {
         ContainerResponse response = launcher.service(GET,
-                String.format("http://localhost:8080/api/project/%s/item/some_missing_project/a/b",
-                        workspace),
-                "http://localhost:8080/api", null, null, null);
+                                                      String.format("http://localhost:8080/api/project/%s/item/some_missing_project/a/b",
+                                                                    workspace),
+                                                      "http://localhost:8080/api", null, null, null);
         assertEquals(response.getStatus(), 404, "Error: " + response.getEntity());
     }
 

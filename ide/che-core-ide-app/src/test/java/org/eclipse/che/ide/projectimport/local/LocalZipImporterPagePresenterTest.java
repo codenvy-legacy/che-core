@@ -22,7 +22,7 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
@@ -76,25 +76,25 @@ public class LocalZipImporterPagePresenterTest {
     private ArgumentCaptor<AsyncRequestCallback<Item>> callbackCaptorForItem;
 
     @Mock
-    private ProjectServiceClient                projectServiceClient;
+    private ProjectServiceClient          projectServiceClient;
     @Mock
-    private VfsServiceClient                    vfsServiceClient;
+    private VfsServiceClient              vfsServiceClient;
     @Mock
-    private DtoFactory                          dtoFactory;
+    private DtoFactory                    dtoFactory;
     @Mock
-    private DialogFactory                       dialogFactory;
+    private DialogFactory                 dialogFactory;
     @Mock
-    private AppContext                          appContext;
+    private AppContext                    appContext;
     @Mock
-    private EventBus                            eventBus;
+    private EventBus                      eventBus;
     @Mock
-    private CoreLocalizationConstant            locale;
+    private CoreLocalizationConstant      locale;
     @Mock
-    private ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    private ProjectNotificationSubscriber projectNotificationSubscriber;
     @Mock
-    private LocalZipImporterPageView            view;
+    private LocalZipImporterPageView      view;
     @Mock
-    private UsersWorkspaceDto                   workspace;
+    private UsersWorkspaceDto             workspace;
 
     private LocalZipImporterPagePresenter presenter;
 
@@ -111,7 +111,7 @@ public class LocalZipImporterPagePresenterTest {
                                                       vfsServiceClient,
                                                       projectServiceClient,
                                                       dialogFactory,
-                                                      importProjectNotificationSubscriber);
+                                                      projectNotificationSubscriber);
     }
 
     @Test
@@ -217,9 +217,9 @@ public class LocalZipImporterPagePresenterTest {
         verify(view).setInputsEnableState(eq(true));
         verify(dtoFactory).createDtoFromJson(PARSED_RESPONSE, ProjectConfigDto.class);
         verify(view).closeDialog();
-        verify(importProjectNotificationSubscriber).onSuccess();
+        verify(projectNotificationSubscriber).onSuccess();
         verify(eventBus).fireEvent(Matchers.<Event<OpenProjectEvent>>anyObject());
-        verify(importProjectNotificationSubscriber, never()).onFailure(anyString());
+        verify(projectNotificationSubscriber, never()).onFailure(anyString());
     }
 
     @Test
@@ -256,7 +256,7 @@ public class LocalZipImporterPagePresenterTest {
 
         verify(dialogFactory, never()).createMessageDialog(anyString(), anyString(), any(ConfirmCallback.class));
         verify(dialog, never()).show();
-        verify(importProjectNotificationSubscriber).subscribe(eq(PROJECT_NAME));
+        verify(projectNotificationSubscriber).subscribe(eq(PROJECT_NAME));
         verify(view).setEncoding(eq(FormPanel.ENCODING_MULTIPART));
         verify(view).setAction(anyString());
         verify(view).submit();

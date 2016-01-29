@@ -33,8 +33,6 @@ public abstract class PopupWidget<T> {
     private static final int MIN_WIDTH = 400;
     private static final int MIN_HEIGHT = 130;
 
-    /** The main element for the popup. */
-    private final Element popupElement;
     protected final Element popupBodyElement;
 
     /** The list (ul) element for the popup. */
@@ -53,6 +51,8 @@ public abstract class PopupWidget<T> {
      * The previously focused element.
      */
     private Element previousFocus;
+    /** The main element for the popup. */
+    private Element popupElement;
 
     public PopupWidget(final PopupResources popupResources, String title) {
         this.popupResources = popupResources;
@@ -197,8 +197,11 @@ public abstract class PopupWidget<T> {
         new Timer() {
             @Override
             public void run() {
-                // detach assist popup
-                popupElement.getParentNode().removeChild(popupElement);
+                if (popupElement != null) {
+                    // detach assist popup
+                    popupElement.getParentNode().removeChild(popupElement);
+                    popupElement = null;
+                }
                 // remove all items from popup element
                 listElement.setInnerHTML("");
             }

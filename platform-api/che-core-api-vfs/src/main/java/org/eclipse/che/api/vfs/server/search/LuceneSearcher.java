@@ -28,6 +28,8 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TermQuery;
@@ -126,6 +128,40 @@ public abstract class LuceneSearcher implements Searcher {
 
     @Override
     public String[] search(QueryExpression query) throws ServerException {
+        IndexSearcher luceneSearcher = null;
+        try {
+            searcherManager.maybeRefresh();
+            luceneSearcher = searcherManager.acquire();
+
+            Query luceneQuery = createLuceneQuery(query);
+
+            ScoreDoc after = null;
+            final int numSkipDocs = Math.max(0, query.getSkipCount());
+            if (numSkipDocs > 0) {
+                after = skipScoreDocs(luceneSearcher, luceneQuery, numSkipDocs);
+            }
+
+            final int numDocs = query.getMaxItems() > 0 ? Math.min(query.getMaxItems(), RESULT_LIMIT) : RESULT_LIMIT;
+            final TopDocs topDocs = luceneSearcher.searchAfter(after, luceneQuery, numDocs);
+            final String[] result = new String[topDocs.scoreDocs.length];
+            for (int i = 0, length = result.length; i < length; i++) {
+                result[i] = luceneSearcher.doc(topDocs.scoreDocs[i].doc).getField("path").stringValue();
+            }
+            return result;
+        } catch (IOException e) {
+            throw new ServerException(e.getMessage(), e);
+        } finally {
+            try {
+                if (luceneSearcher != null) {
+                    searcherManager.release(luceneSearcher);
+                }
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+            }
+        }
+    }
+
+    private Query createLuceneQuery(QueryExpression query) throws ServerException {
         final BooleanQuery luceneQuery = new BooleanQuery();
         final String name = query.getName();
         final String path = query.getPath();
@@ -149,28 +185,28 @@ public abstract class LuceneSearcher implements Searcher {
                 throw new ServerException(e.getMessage());
             }
         }
-        IndexSearcher luceneSearcher = null;
-        try {
-            searcherManager.maybeRefresh();
-            luceneSearcher = searcherManager.acquire();
-            final TopDocs topDocs = luceneSearcher.search(luceneQuery, RESULT_LIMIT);
-            if (topDocs.totalHits > RESULT_LIMIT) {
-                throw new ServerException(String.format("Too many (%d) matched results found. ", topDocs.totalHits));
+        return luceneQuery;
+    }
+
+    private ScoreDoc skipScoreDocs(IndexSearcher luceneSearcher, Query luceneQuery, int numSkipDocs) throws IOException {
+        final int readFrameSize = Math.min(numSkipDocs, RESULT_LIMIT);
+        ScoreDoc scoreDoc = null;
+        int retrievedDocs = 0;
+        TopDocs topDocs;
+        do {
+            topDocs = luceneSearcher.searchAfter(scoreDoc, luceneQuery, readFrameSize);
+            if (topDocs.scoreDocs.length > 0) {
+                scoreDoc = topDocs.scoreDocs[topDocs.scoreDocs.length - 1];
             }
-            final String[] result = new String[topDocs.scoreDocs.length];
-            for (int i = 0, length = result.length; i < length; i++) {
-                result[i] = luceneSearcher.doc(topDocs.scoreDocs[i].doc).getField("path").stringValue();
-            }
-            return result;
-        } catch (IOException e) {
-            throw new ServerException(e.getMessage(), e);
-        } finally {
-            try {
-                searcherManager.release(luceneSearcher);
-            } catch (IOException e) {
-                LOG.error(e.getMessage());
-            }
+            retrievedDocs += topDocs.scoreDocs.length;
+        } while (retrievedDocs < numSkipDocs && topDocs.scoreDocs.length > 0);
+
+        if (retrievedDocs > numSkipDocs) {
+            int lastScoreDocIndex = topDocs.scoreDocs.length - (retrievedDocs - numSkipDocs);
+            scoreDoc = topDocs.scoreDocs[lastScoreDocIndex];
         }
+
+        return scoreDoc;
     }
 
     @Override

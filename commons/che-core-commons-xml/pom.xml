@@ -21,6 +21,9 @@
     <artifactId>che-core-commons-xml</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Commons :: XML</name>
+    <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

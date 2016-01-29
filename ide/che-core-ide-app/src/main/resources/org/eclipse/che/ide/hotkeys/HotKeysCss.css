@@ -28,7 +28,7 @@
 }
 
 .blackBorder > div {
-    border: 1px solid #121416;
+    border: 1px solid windowFooterBorderColor;
     font-family: "Open Sans", sans-serif;
 }
 

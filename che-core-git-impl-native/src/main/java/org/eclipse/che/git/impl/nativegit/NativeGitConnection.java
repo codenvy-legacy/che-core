@@ -377,7 +377,7 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public LogPage log(LogRequest request) throws GitException {
-        return new LogPage(nativeGit.createLogCommand().execute());
+        return new LogPage(nativeGit.createLogCommand().setFileFilter(request.getFileFilter()).execute());
     }
 
     @Override

@@ -24,7 +24,7 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.notification.StatusNotification;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.commons.exception.UnmarshallerException;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.websocket.Message;
@@ -43,7 +43,7 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.SUC
  * @author Anton Korneta
  */
 @Singleton
-public class ImportProjectNotificationSubscriberImpl implements ImportProjectNotificationSubscriber {
+public class ProjectNotificationSubscriberImpl implements ProjectNotificationSubscriber {
 
     private final Operation<PromiseError>  logErrorHandler;
     private final CoreLocalizationConstant locale;
@@ -57,10 +57,10 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
     private SubscriptionHandler<String> subscriptionHandler;
 
     @Inject
-    public ImportProjectNotificationSubscriberImpl(CoreLocalizationConstant locale,
-                                                   AppContext appContext,
-                                                   NotificationManager notificationManager,
-                                                   ExtServerStateController extServerStateController) {
+    public ProjectNotificationSubscriberImpl(CoreLocalizationConstant locale,
+                                             AppContext appContext,
+                                             NotificationManager notificationManager,
+                                             ExtServerStateController extServerStateController) {
         this.locale = locale;
         this.notificationManager = notificationManager;
         this.workspaceId = appContext.getWorkspace().getId();
@@ -68,7 +68,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
         this.logErrorHandler = new Operation<PromiseError>() {
             @Override
             public void apply(PromiseError error) throws OperationException {
-                Log.error(ImportProjectNotificationSubscriberImpl.class, error);
+                Log.error(ProjectNotificationSubscriberImpl.class, error);
             }
         };
     }
@@ -115,7 +115,7 @@ public class ImportProjectNotificationSubscriberImpl implements ImportProjectNot
                 try {
                     messageBus.subscribe(wsChannel, subscriptionHandler);
                 } catch (WebSocketException wsEx) {
-                    Log.error(ImportProjectNotificationSubscriberImpl.class, wsEx);
+                    Log.error(ProjectNotificationSubscriberImpl.class, wsEx);
                 }
             }
         }).catchError(logErrorHandler);

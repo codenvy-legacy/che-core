@@ -23,7 +23,7 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriberFactory;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -69,17 +69,17 @@ public class ProjectImporterTest {
 
     //additional mocks
     @Mock
-    private ImportProjectNotificationSubscriber subscriber;
+    private ProjectNotificationSubscriber subscriber;
     @Mock
-    private ProjectConfigDto                    projectConfig;
+    private ProjectConfigDto              projectConfig;
     @Mock
-    private EventBus                            eventBus;
+    private EventBus                      eventBus;
     @Mock
-    private SourceStorageDto                    source;
+    private SourceStorageDto              source;
     @Mock
-    private Wizard.CompleteCallback             completeCallback;
+    private Wizard.CompleteCallback       completeCallback;
     @Mock
-    private Promise<Void>                       importPromise;
+    private Promise<Void>                 importPromise;
 
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<Item>> callbackCaptorForItem;

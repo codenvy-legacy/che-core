@@ -536,7 +536,9 @@ public abstract class VirtualFileSystemImpl implements VirtualFileSystem {
                     .setPath(query.getFirst("path"))
                     .setName(query.getFirst("name"))
                     .setMediaType(query.getFirst("mediaType"))
-                    .setText(query.getFirst("text"));
+                    .setText(query.getFirst("text"))
+                    .setSkipCount(skipCount)
+                    .setMaxItems(maxItems);
 
             final String[] result = searcherProvider.getSearcher(mountPoint, true).search(expr);
             if (skipCount > 0) {

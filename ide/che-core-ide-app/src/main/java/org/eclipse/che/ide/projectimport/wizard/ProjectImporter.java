@@ -25,7 +25,7 @@ import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.importer.AbstractImporter;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriberFactory;
 import org.eclipse.che.ide.api.wizard.Wizard.CompleteCallback;
 import org.eclipse.che.ide.projectimport.ErrorMessageUtils;
@@ -83,7 +83,7 @@ public class ProjectImporter extends AbstractImporter {
     protected Promise<Void> importProject(@NotNull String pathToProject,
                                           @NotNull String projectName,
                                           @NotNull SourceStorageDto sourceStorage) {
-        final ImportProjectNotificationSubscriber subscriber = subscriberFactory.createSubscriber();
+        final ProjectNotificationSubscriber subscriber = subscriberFactory.createSubscriber();
         subscriber.subscribe(projectName);
 
         Promise<Void> importPromise = projectService.importProject(workspaceId, pathToProject, false, sourceStorage);

@@ -114,8 +114,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
         final Object possibleNode = selection.getHeadElement();
 
-        boolean enable = !(possibleNode instanceof ProjectNode)
-                         && possibleNode instanceof SupportRename
+        boolean enable = (possibleNode instanceof ProjectNode)
                          && ((SupportRename)possibleNode).getRenameProcessor() != null;
 
         e.getPresentation().setEnabled(enable);
