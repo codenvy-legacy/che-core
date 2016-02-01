@@ -23,8 +23,10 @@ import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.event.RenameNodeEvent;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 
@@ -38,14 +40,14 @@ import static org.eclipse.che.api.promises.client.callback.PromiseHelper.*;
 public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemReference> {
     
     private final String workspaceId;
-    
+
     @Inject
     public ItemReferenceProcessor(EventBus eventBus,
                                   AppContext appContext,
                                   ProjectServiceClient projectServiceClient,
                                   DtoUnmarshallerFactory unmarshallerFactory) {
         super(eventBus, projectServiceClient, unmarshallerFactory);
-        
+
         this.workspaceId = appContext.getWorkspace().getId();
     }
 
@@ -71,11 +73,11 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
 
     @Override
     public Promise<ItemReference> rename(@Nullable final HasStorablePath parent, final @NotNull HasDataObject<ItemReference> node, final @NotNull String newName) {
-
+        final String parentPath = parent.getStorablePath();
         return newPromise(new RequestCall<Void>() {
             @Override
             public void makeCall(AsyncCallback<Void> callback) {
-                projectService.rename(workspaceId, parent.getStorablePath() + "/" + node.getData().getName(), newName, null, newCallback(callback));
+                projectService.rename(workspaceId, parentPath + "/" + node.getData().getName(), newName, null, newCallback(callback));
             }
         }).thenPromise(new Function<Void, Promise<ItemReference>>() {
             @Override
@@ -83,7 +85,12 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
                 return newPromise(new RequestCall<ItemReference>() {
                     @Override
                     public void makeCall(AsyncCallback<ItemReference> callback) {
-                        projectService.getItem(workspaceId, parent.getStorablePath() + "/" + newName, newCallback(callback, unmarshallerFactory.newUnmarshaller(ItemReference.class)));
+
+                        projectService.getItem(workspaceId, parentPath + "/" + newName,
+                                               newCallback(callback, unmarshallerFactory.newUnmarshaller(ItemReference.class)));
+                        if (node instanceof ItemReferenceBasedNode) {
+                            eventBus.fireEvent(new RenameNodeEvent((ItemReferenceBasedNode)node, parentPath + "/" + newName));
+                        }
                     }
                 });
             }
