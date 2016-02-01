@@ -1,22 +1,17 @@
-// Copyright 2012 Google Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
+/*******************************************************************************
+ * Copyright (c) 2012-2016 Codenvy, S.A.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Codenvy, S.A. - initial API and implementation
+ *******************************************************************************/
 package org.eclipse.che.ide;
 
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.CssResource.NotStrict;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.TextResource;
 
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
@@ -37,12 +32,8 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
  * Interface for resources, e.g., css, images, text files, etc.
- * <p/>
- * Tree.Resources,
- * Editor.Resources,
- * LineNumberRenderer.Resources,
- * EditableContentArea.Resources,
- * PartStackUIResources,
+ *
+ * @author Artem Zatsarynnyi
  */
 public interface Resources extends Tree.Resources,
                                    PartStackUIResources,
@@ -58,38 +49,6 @@ public interface Resources extends Tree.Resources,
                                    DropDownHeaderWidgetImpl.Resources,
                                    ButtonLoaderResources,
                                    ProjectWizardResources {
-
-    /** Interface for css resources. */
-    interface CoreCss extends CssResource {
-        String simpleListContainer();
-
-        String mainText();
-
-        // wizard's styles
-        String mainFont();
-
-        String mainBoldFont();
-
-        String defaultFont();
-
-        String warningFont();
-
-        String errorFont();
-
-        String greyFontColor();
-
-        String cursorPointer();
-
-        String line();
-
-        String editorFullScreen();
-
-        String editorFullScreenSvgDown();
-
-        String createWsTagsPopup();
-
-        String tagsPanel();
-    }
 
     @Source({"Core.css", "org/eclipse/che/ide/ui/constants.css", "org/eclipse/che/ide/api/ui/style.css"})
     @NotStrict
@@ -223,4 +182,36 @@ public interface Resources extends Tree.Resources,
 
     @Source("hotkeys/print_template.html")
     TextResource printTemplate();
+
+    /** Interface for css resources. */
+    interface CoreCss extends CssResource {
+        String simpleListContainer();
+
+        String mainText();
+
+        // wizard's styles
+        String mainFont();
+
+        String mainBoldFont();
+
+        String defaultFont();
+
+        String warningFont();
+
+        String errorFont();
+
+        String greyFontColor();
+
+        String cursorPointer();
+
+        String line();
+
+        String editorFullScreen();
+
+        String editorFullScreenSvgDown();
+
+        String createWsTagsPopup();
+
+        String tagsPanel();
+    }
 }
