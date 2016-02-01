@@ -67,4 +67,21 @@ public class CredentialsLoader {
 
         return null;
     }
+
+    /**
+     * Searches for CredentialsProvider instances by url and if needed instance exists, it asks for info,
+     * or return null otherwise.
+     *
+     * @param url
+     *         given URL
+     * @return credentials from provider
+     */
+    public ProviderInfo getProviderInfo(String url) {
+        for (CredentialsProvider cp : credentialsProviders.values()) {
+            if (url != null && cp.canProvideCredentials(url)) {
+                return cp.getProviderInfo();
+            }
+        }
+        return null;
+    }
 }

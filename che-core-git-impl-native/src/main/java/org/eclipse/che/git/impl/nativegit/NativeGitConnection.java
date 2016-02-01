@@ -19,6 +19,7 @@ import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.LogPage;
+import org.eclipse.che.api.git.ProviderInfo;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.UserResolver;
 import org.eclipse.che.api.git.shared.AddRequest;
@@ -582,7 +583,12 @@ public class NativeGitConnection implements GitConnection {
             if (!isOperationNeedAuth(gitEx.getMessage())) {
                 throw gitEx;
             }
-            throw new UnauthorizedException(gitEx.getMessage());
+            ProviderInfo info  = credentialsLoader.getProviderInfo(command.getRemoteUri());
+            if (info != null) {
+                throw new OauthUnauthorizedException(info.getProviderId(), info.getAuthenticateUrl(), gitEx.getMessage());
+            } else {
+                throw new UnauthorizedException(gitEx.getMessage());
+            }
         }
     }
 
