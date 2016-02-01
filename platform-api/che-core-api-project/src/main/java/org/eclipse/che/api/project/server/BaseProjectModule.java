@@ -11,13 +11,9 @@
 package org.eclipse.che.api.project.server;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.matcher.Matchers;
 import com.google.inject.multibindings.Multibinder;
 
 import org.eclipse.che.api.project.server.handlers.ProjectHandler;
-import org.eclipse.che.api.project.server.watcher.WatcherService;
-
-import static org.eclipse.che.inject.Matchers.names;
 
 /**
  * Deploys project API components.
@@ -33,11 +29,11 @@ public class BaseProjectModule extends AbstractModule {
         bind(ProjectService.class);
         bind(ProjectTypeService.class);
         bind(ProjectImportersService.class);
-        bind(WatcherService.class);
+//        bind(WatcherService.class);
 
-        ProjectImporterInterceptor projectImporterInterceptor = new ProjectImporterInterceptor();
-        requestInjection(projectImporterInterceptor);
-
-        bindInterceptor(Matchers.subclassesOf(ProjectImporter.class), names("importSources"), projectImporterInterceptor);
+//        ProjectImporterInterceptor projectImporterInterceptor = new ProjectImporterInterceptor();
+//        requestInjection(projectImporterInterceptor);
+//
+//        bindInterceptor(Matchers.subclassesOf(ProjectImporter.class), names("importSources"), projectImporterInterceptor);
     }
 }

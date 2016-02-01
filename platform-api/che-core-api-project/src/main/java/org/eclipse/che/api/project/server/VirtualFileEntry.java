@@ -14,8 +14,8 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.server.MountPoint;
-import org.eclipse.che.api.vfs.server.VirtualFile;
+import org.eclipse.che.api.vfs.Path;
+import org.eclipse.che.api.vfs.VirtualFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,23 +26,24 @@ import java.util.Map;
  * @author andrew00x
  */
 public abstract class VirtualFileEntry {
-    private final String      workspace;
+
+    //private final String      workspace;
     private       VirtualFile virtualFile;
     protected Map<String, String> attributes;
 
-    public VirtualFileEntry(String workspace, VirtualFile virtualFile) {
-        this.workspace = workspace;
+    public VirtualFileEntry(VirtualFile virtualFile) {
+        //this.workspace = workspace;
         this.virtualFile = virtualFile;
         this.attributes = new HashMap<>();
     }
 
-    /**
-     *
-     * @return creation date
-     */
-    public long getCreated() {
-        return virtualFile.getCreationDate();
-    }
+//    /**
+//     *
+//     * @return creation date
+//     */
+//    public long getCreated() {
+//        return virtualFile.getCreationDate();
+//    }
 
     /**
      *
@@ -53,9 +54,9 @@ public abstract class VirtualFileEntry {
     }
 
     /** Gets id of workspace which file belongs to. */
-    public String getWorkspace() {
-        return workspace;
-    }
+//    public String getWorkspace() {
+//        return workspace;
+//    }
 
     /**
      * Tests whether this item is a regular file.
@@ -89,7 +90,7 @@ public abstract class VirtualFileEntry {
      *
      * @see org.eclipse.che.api.vfs.server.VirtualFile#getPath()
      */
-    public String getPath() {
+    public Path getPath() {
         return virtualFile.getPath();
     }
 
@@ -103,7 +104,7 @@ public abstract class VirtualFileEntry {
         if (virtualFile.isRoot()) {
             return null;
         }
-        return new FolderEntry(workspace, virtualFile.getParent());
+        return new FolderEntry(virtualFile.getParent());
     }
 
     /**
@@ -181,8 +182,11 @@ public abstract class VirtualFileEntry {
      * @throws ServerException if other error occurs
      */
     public void moveTo(String newParent, String name, boolean overWrite) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        final MountPoint mp = virtualFile.getMountPoint();
-        virtualFile = virtualFile.moveTo(mp.getVirtualFile(newParent), name, overWrite, null);
+        //VirtualFile parent = virtualFile.getFileSystem().getRoot().getChild(Path.of(newParent));
+        // TODO what about lockTocken (null)
+        virtualFile.moveTo(virtualFileByPath(newParent), name, overWrite, null);
+//        final MountPoint mp = virtualFile.getMountPoint();
+//        virtualFile = virtualFile.moveTo(mp.getVirtualFile(newParent), name, overWrite, null);
     }
 
     /**
@@ -198,7 +202,7 @@ public abstract class VirtualFileEntry {
      *         if other error occurs
      */
     public void rename(String newName) throws ConflictException, ForbiddenException, ServerException {
-        virtualFile = virtualFile.rename(newName, null, null);
+        virtualFile = virtualFile.rename(newName);
     }
 
     public VirtualFile getVirtualFile() {
@@ -211,5 +215,9 @@ public abstract class VirtualFileEntry {
 
     void setVirtualFile(VirtualFile virtualFile) {
         this.virtualFile = virtualFile;
+    }
+
+    protected VirtualFile virtualFileByPath(String path) throws ServerException {
+        return virtualFile.getFileSystem().getRoot().getChild(Path.of(path));
     }
 }

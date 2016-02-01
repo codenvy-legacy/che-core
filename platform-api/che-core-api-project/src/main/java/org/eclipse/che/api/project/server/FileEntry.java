@@ -14,11 +14,8 @@ import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.vfs.server.ContentStream;
-import org.eclipse.che.api.vfs.server.MountPoint;
-import org.eclipse.che.api.vfs.server.Path;
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import com.google.common.io.ByteStreams;
+import org.eclipse.che.api.vfs.Path;
+import org.eclipse.che.api.vfs.VirtualFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -31,8 +28,8 @@ import java.io.InputStream;
  */
 public class FileEntry extends VirtualFileEntry {
 
-    public FileEntry(String workspace, VirtualFile virtualFile) {
-        super(workspace, virtualFile);
+    public FileEntry(VirtualFile virtualFile) {
+        super(virtualFile);
     }
 
     @Override
@@ -42,12 +39,12 @@ public class FileEntry extends VirtualFileEntry {
 
     @Override
     public FileEntry copyTo(String newParent, String newName, boolean override) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        if (Path.fromString(newParent).isRoot()) {
+        if (Path.of(newParent).isRoot()) {
             throw new ServerException(String.format("Invalid path %s. Can't create file outside of project.", newParent));
         }
         final VirtualFile vf = getVirtualFile();
-        final MountPoint mp = vf.getMountPoint();
-        return new FileEntry(getWorkspace(), vf.copyTo(mp.getVirtualFile(newParent), newName, override));
+        //final MountPoint mp = vf.getMountPoint();
+        return new FileEntry(vf.copyTo(virtualFileByPath(newParent), newName, override));
     }
 
     @Override
@@ -57,35 +54,35 @@ public class FileEntry extends VirtualFileEntry {
 
     @Override
     public void moveTo(String newParent, String name, boolean overWrite) throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-        if (Path.fromString(newParent).isRoot()) {
+        if (Path.of(newParent).isRoot()) {
             throw new ServerException(String.format("Invalid path %s. Can't move this item outside of project.", newParent));
         }
         super.moveTo(newParent, name, overWrite); //To change body of generated methods, choose Tools | Templates.
     }
 
-    /**
-     * Gets media type of this file.
-     *
-     * @throws ServerException
-     *         if an error occurs
-     * @see org.eclipse.che.api.vfs.server.VirtualFile#getMediaType()
-     */
-    public String getMediaType() throws ServerException {
-        return getVirtualFile().getMediaType();
-    }
+//    /**
+//     * Gets media type of this file.
+//     *
+//     * @throws ServerException
+//     *         if an error occurs
+//     * @see org.eclipse.che.api.vfs.server.VirtualFile#getMediaType()
+//     */
+//    public String getMediaType() throws ServerException {
+//        return getVirtualFile().getMediaType();
+//    }
 
-    /**
-     * Updates media type of this file.
-     *
-     * @param mediaType
-     *         new media type
-     * @throws ServerException
-     *         if an error occurs
-     * @see org.eclipse.che.api.vfs.server.VirtualFile#setMediaType(String)
-     */
-    public void setMediaType(String mediaType) throws ServerException {
-        getVirtualFile().setMediaType(mediaType);
-    }
+//    /**
+//     * Updates media type of this file.
+//     *
+//     * @param mediaType
+//     *         new media type
+//     * @throws ServerException
+//     *         if an error occurs
+//     * @see org.eclipse.che.api.vfs.server.VirtualFile#setMediaType(String)
+//     */
+//    public void setMediaType(String mediaType) throws ServerException {
+//        getVirtualFile().setMediaType(mediaType);
+//    }
 
     /**
      * Gets content of file as stream.
@@ -97,7 +94,7 @@ public class FileEntry extends VirtualFileEntry {
      *         if other error occurs
      */
     public InputStream getInputStream() throws IOException, ServerException {
-        return getContentStream().getStream();
+        return getContentStream();
     }
 
     /**
@@ -109,23 +106,17 @@ public class FileEntry extends VirtualFileEntry {
      * @throws ServerException
      *         if other error occurs
      */
-    public byte[] contentAsBytes() throws IOException, ServerException {
-        final ContentStream contentStream = getContentStream();
-        final int contentLength = (int)contentStream.getLength();
-        if (contentLength == 0) {
-            return new byte[0];
+    public byte[] contentAsBytes() throws ServerException {
+        try {
+            return getVirtualFile().getContentAsBytes();
+        } catch (ForbiddenException e) {
+            // A ForbiddenException might be thrown if backend VirtualFile isn't regular file but folder. This isn't expected here.
+            throw new IllegalStateException(e.getMessage(), e);
         }
-        try (InputStream stream = contentStream.getStream()) {
-            if (contentLength < 0) {
-                return ByteStreams.toByteArray(stream);
-            }
-            final byte[] b = new byte[contentLength];
-            ByteStreams.readFully(stream, b);
-            return b;
-        }
+
     }
 
-    private ContentStream getContentStream() throws ServerException {
+    private InputStream getContentStream() throws ServerException {
         try {
             return getVirtualFile().getContent();
         } catch (ForbiddenException e) {
@@ -177,7 +168,7 @@ public class FileEntry extends VirtualFileEntry {
      *         if other error occurs
      */
     public void rename(String newName, String newMediaType) throws ConflictException, ForbiddenException, ServerException {
-        final VirtualFile rVf = getVirtualFile().rename(newName, newMediaType, null);
+        final VirtualFile rVf = getVirtualFile().rename(newName);
         setVirtualFile(rVf);
     }
 }
