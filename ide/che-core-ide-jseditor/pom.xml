@@ -21,6 +21,7 @@
     <artifactId>che-core-ide-jseditor</artifactId>
     <name>Che Core :: IDE :: JsEditor</name>
     <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <requirejs.upstream.url>http://requirejs.org/docs/release/${requirejs.upstream.version}/comments/</requirejs.upstream.url>
         <requirejs.upstream.version>2.1.15</requirejs.upstream.version>

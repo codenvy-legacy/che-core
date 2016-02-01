@@ -400,8 +400,8 @@ public class GitServiceClientImpl implements GitServiceClient{
 
     /** {@inheritDoc} */
     @Override
-    public void log(String workspaceId, ProjectConfigDto project, boolean isTextFormat, @NotNull AsyncRequestCallback<LogResponse> callback) {
-        LogRequest logRequest = dtoFactory.createDto(LogRequest.class);
+    public void log(String workspaceId, ProjectConfigDto project, List<String> fileFilter, boolean isTextFormat, @NotNull AsyncRequestCallback<LogResponse> callback) {
+        LogRequest logRequest = dtoFactory.createDto(LogRequest.class).withFileFilter(fileFilter);
         String url = extPath + "/git/" + workspaceId + LOG + "?projectPath=" + project.getPath();
         if (isTextFormat) {
             asyncRequestFactory.createPostRequest(url, logRequest).send(callback);

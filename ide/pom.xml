@@ -28,6 +28,7 @@
         <module>che-core-ide-ui</module>
         <module>che-core-ide-app</module>
         <module>che-core-ide-jseditor</module>
+        <module>che-core-ide-templates</module>
     </modules>
     <build>
         <pluginManagement>

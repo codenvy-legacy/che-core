@@ -21,6 +21,9 @@
     <artifactId>che-core-ide-generators</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: IDE :: Generators</name>
+    <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.inject</groupId>

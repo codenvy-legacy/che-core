@@ -52,10 +52,10 @@ public class ReconcilerWithAutoSave implements Reconciler {
     private final DocumentPartitioner partitioner;
 
     private DirtyRegionQueue dirtyRegionQueue;
-    private DocumentHandle documentHandle;
-    private TextEditor     editor;
-    private boolean autoSaveEnabled = true;
-    private final Timer autoSaveTimer = new Timer() {
+    private DocumentHandle   documentHandle;
+    private TextEditor       editor;
+    private       boolean autoSaveEnabled = true;
+    private final Timer   autoSaveTimer   = new Timer() {
 
         @Override
         public void run() {
@@ -91,6 +91,9 @@ public class ReconcilerWithAutoSave implements Reconciler {
     @Override
     public void uninstall() {
         autoSaveTimer.cancel();
+        for (ReconcilingStrategy strategy : strategies.values()) {
+            strategy.closeReconciler();
+        }
     }
 
     private void save() {

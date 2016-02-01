@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.git.shared;
 
+import java.util.List;
+
 import org.eclipse.che.dto.shared.DTO;
 
 /**
@@ -19,6 +21,13 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface LogRequest extends GitRequest {
+    /** Filter revisions list by range of files. */
+    List<String> getFileFilter();
+
+    void setFileFilter(List<String> fileFilter);
+
+    LogRequest withFileFilter(List<String> fileFilter);
+    
     /** @return revision range since */
     String getRevisionRangeSince();
     /** @return revision range since */

@@ -20,6 +20,9 @@
     </parent>
     <artifactId>che-core-api-infrastructure-local</artifactId>
     <name>Che Core :: API :: Local Infrastructure</name>
+    <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>

@@ -31,8 +31,6 @@ import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.Description;
 import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.core.rest.annotations.Required;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.Profile;
 import org.eclipse.che.api.user.server.dao.User;
@@ -42,7 +40,6 @@ import org.eclipse.che.api.user.shared.dto.NewUser;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
 import org.eclipse.che.api.user.shared.dto.UserInRoleDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -52,7 +49,6 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -61,10 +57,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -76,14 +69,14 @@ import static javax.ws.rs.core.Response.status;
 import static org.eclipse.che.api.user.server.Constants.ID_LENGTH;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_CREATE_USER;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_CURRENT_USER;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_CURRENT_USER_PROFILE;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_EMAIL;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_BY_ID;
-import static org.eclipse.che.api.user.server.Constants.LINK_REL_GET_USER_PROFILE_BY_ID;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_INROLE;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_REMOVE_USER_BY_ID;
 import static org.eclipse.che.api.user.server.Constants.LINK_REL_UPDATE_PASSWORD;
 import static org.eclipse.che.api.user.server.Constants.PASSWORD_LENGTH;
+import static org.eclipse.che.api.user.server.DtoConverter.toDescriptor;
+import static org.eclipse.che.api.user.server.LinksInjector.injectLinks;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
@@ -176,7 +169,7 @@ public class UserService extends Service {
         preferences.put("codenvy:created", Long.toString(System.currentTimeMillis()));
         preferenceDao.setPreferences(user.getId(), preferences);
 
-        return status(CREATED).entity(toDescriptor(user, context)).build();
+        return status(CREATED).entity(injectLinks(toDescriptor(user), getServiceContext())).build();
     }
 
     /**
@@ -199,7 +192,7 @@ public class UserService extends Service {
     @Produces(APPLICATION_JSON)
     public UserDescriptor getCurrent(@Context SecurityContext context) throws NotFoundException, ServerException {
         final User user = userDao.getById(currentUser().getId());
-        return toDescriptor(user, context);
+        return injectLinks(toDescriptor(user), getServiceContext());
     }
 
     /**
@@ -263,7 +256,7 @@ public class UserService extends Service {
     public UserDescriptor getById(@ApiParam(value = "User ID") @PathParam("id") String id,
                                   @Context SecurityContext context) throws NotFoundException, ServerException {
         final User user = userDao.getById(id);
-        return toDescriptor(user, context);
+        return injectLinks(toDescriptor(user), getServiceContext());
     }
 
     /**
@@ -299,7 +292,7 @@ public class UserService extends Service {
             throw new ConflictException("Missed parameter alias");
         }
         final User user = userDao.getByAlias(alias);
-        return toDescriptor(user, context);
+        return injectLinks(toDescriptor(user), getServiceContext());
     }
 
     /**
@@ -411,7 +404,7 @@ public class UserService extends Service {
                                     @Context
                                     SecurityContext context) throws NotFoundException, ServerException {
         final User user = userDao.getByName(name);
-        return toDescriptor(user, context);
+        return injectLinks(toDescriptor(user), getServiceContext());
     }
 
     /**
@@ -466,83 +459,6 @@ public class UserService extends Service {
         if (numOfDigits == 0 || numOfLetters == 0) {
             throw new ForbiddenException("Password should contain letters and digits");
         }
-    }
-
-    private UserDescriptor toDescriptor(User user, SecurityContext context) {
-        final List<Link> links = new LinkedList<>();
-        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        if (context.isUserInRole("user")) {
-            links.add(LinksHelper.createLink(HttpMethod.GET,
-                                             getServiceContext().getBaseUriBuilder().path(UserProfileService.class)
-                                                                .path(UserProfileService.class, "getCurrent")
-                                                                .build()
-                                                                .toString(),
-                                             null,
-                                             APPLICATION_JSON,
-                                             LINK_REL_GET_CURRENT_USER_PROFILE));
-            links.add(LinksHelper.createLink(HttpMethod.GET,
-                                             uriBuilder.clone()
-                                                       .path(getClass(), "getCurrent")
-                                                       .build()
-                                                       .toString(),
-                                             null,
-                                             APPLICATION_JSON,
-                                             LINK_REL_GET_CURRENT_USER));
-            links.add(LinksHelper.createLink(HttpMethod.POST,
-                                             uriBuilder.clone()
-                                                       .path(getClass(), "updatePassword")
-                                                       .build()
-                                                       .toString(),
-                                             APPLICATION_FORM_URLENCODED,
-                                             null,
-                                             LINK_REL_UPDATE_PASSWORD));
-        }
-        if (context.isUserInRole("system/admin") || context.isUserInRole("system/manager")) {
-            links.add(LinksHelper.createLink(HttpMethod.GET,
-                                             uriBuilder.clone()
-                                                       .path(getClass(), "getById")
-                                                       .build(user.getId())
-                                                       .toString(),
-                                             null,
-                                             APPLICATION_JSON,
-                                             LINK_REL_GET_USER_BY_ID));
-            links.add(LinksHelper.createLink(HttpMethod.GET,
-                                             getServiceContext().getBaseUriBuilder()
-                                                                .path(UserProfileService.class).path(UserProfileService.class, "getById")
-                                                                .build(user.getId())
-                                                                .toString(),
-                                             null,
-                                             APPLICATION_JSON,
-                                             LINK_REL_GET_USER_PROFILE_BY_ID));
-            if (user.getEmail() != null) {
-                links.add(LinksHelper.createLink(HttpMethod.GET,
-                                                 uriBuilder.clone()
-                                                           .path(getClass(), "getByAlias")
-                                                           .queryParam("email", user.getEmail())
-                                                           .build()
-                                                           .toString(),
-                                                 null,
-                                                 APPLICATION_JSON,
-                                                 LINK_REL_GET_USER_BY_EMAIL));
-            }
-        }
-        if (context.isUserInRole("system/admin")) {
-            links.add(LinksHelper.createLink(HttpMethod.DELETE,
-                                             uriBuilder.clone()
-                                                       .path(getClass(), "remove")
-                                                       .build(user.getId())
-                                                       .toString(),
-                                             null,
-                                             null,
-                                             LINK_REL_REMOVE_USER_BY_ID));
-        }
-        return DtoFactory.getInstance().createDto(UserDescriptor.class)
-                         .withId(user.getId())
-                         .withEmail(user.getEmail())
-                         .withName(user.getName())
-                         .withAliases(user.getAliases())
-                         .withPassword("<none>")
-                         .withLinks(links);
     }
 
     private org.eclipse.che.commons.user.User currentUser() {
