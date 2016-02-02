@@ -11,7 +11,29 @@
 package org.eclipse.che.api.project.server;
 
 import com.google.common.collect.ImmutableMap;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import static java.util.Collections.singletonList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
@@ -83,43 +105,18 @@ import org.everrest.core.tools.DependencySupplierImpl;
 import org.everrest.core.tools.ResourceLauncher;
 import org.everrest.test.mock.MockHttpServletRequest;
 import org.mockito.Mock;
-import org.mockito.testng.MockitoTestNGListener;
-import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Listeners;
-import org.testng.annotations.Test;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import org.mockito.testng.MockitoTestNGListener;
+import org.testng.Assert;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
 
 /**
  * @author andrew00x
@@ -2702,7 +2699,6 @@ public class ProjectServiceTest {
         Assert.assertTrue(result.get(0).getPath().equals("/my_project/c/test"));
     }
 
-
     @SuppressWarnings("unchecked")
     @Test
     public void testSearchFromWSRoot() throws Exception {
@@ -2720,6 +2716,32 @@ public class ProjectServiceTest {
         List<ItemReference> result = (List<ItemReference>)response.getEntity();
         assertEquals(result.size(), 1);
         Assert.assertTrue(result.get(0).getPath().equals("/my_project/c/test"));
+    }
+    
+    @Test
+    public void testSearchCappedByMaxItems() throws Exception{
+        Project myProject = pm.getProject(workspace, "my_project");
+        myProject.getBaseFolder().createFolder("a/b").createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
+
+        // maxItems should cap actual result (expected to be 2) to 1
+        ContainerResponse response = launcher.service(HttpMethod.GET,
+                String.format(
+                        "http://localhost:8080/api/project/%s/search/?text=test&maxItems=1",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        List<ItemReference> result = (List<ItemReference>)response.getEntity();
+        assertEquals(result.size(), 1);
+    }
+    
+    @Test
+    public void testSearchCappedByMaxItemsZeroShouldFail() throws Exception{
+        ContainerResponse response = launcher.service(HttpMethod.GET,
+                String.format(
+                        "http://localhost:8080/api/project/%s/search/?text=test&maxItems=0",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 500, "Error: " + response.getEntity());
     }
 
     @Test
