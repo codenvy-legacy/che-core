@@ -853,12 +853,12 @@ public final class DefaultProjectManager implements ProjectManager {
             return null;
         }
 
-        if (entry.isFile() && newMediaType != null) {
+        if (entry.isFile()) {
             // Use the same rules as in method createFile to make client side simpler.
             ((FileEntry)entry).rename(newName, newMediaType);
         } else if (entry.isFolder() && !isProjectFolder((FolderEntry)entry)) {
             entry.rename(newName);
-        } else {
+        } else if (isProjectFolder((FolderEntry)entry)) {
             UsersWorkspaceDto usersWorkspace = getWorkspace(workspace);
 
             String oldProjectPath = path.startsWith("/") ? path : "/" + path;
