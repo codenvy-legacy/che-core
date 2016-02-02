@@ -31,7 +31,7 @@ import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.event.DeleteNodesEvent;
+import org.eclipse.che.ide.event.NodesDeletedEvent;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
@@ -128,7 +128,7 @@ public class DeleteItemAction extends AbstractPerspectiveAction implements Promi
                 if (actionCompletedCallBack != null) {
                     actionCompletedCallBack.onSuccess(null);
                 }
-                eventBus.fireEvent(new DeleteNodesEvent(nodes));
+                eventBus.fireEvent(new NodesDeletedEvent(nodes));
             }
         };
     }

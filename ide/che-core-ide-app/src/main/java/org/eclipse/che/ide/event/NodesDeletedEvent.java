@@ -21,18 +21,18 @@ import java.util.List;
  *
  * @author Igor Vinokur
  */
-public class DeleteNodesEvent extends GwtEvent<DeleteNodesEventHandler> {
+public class NodesDeletedEvent extends GwtEvent<NodesDeletedEventHandler> {
 
-    public static final Type<DeleteNodesEventHandler> TYPE = new Type<>();
+    public static final Type<NodesDeletedEventHandler> TYPE = new Type<>();
 
     private final List<ResourceBasedNode<?>> nodes;
 
-    public DeleteNodesEvent(List<ResourceBasedNode<?>> nodes) {
+    public NodesDeletedEvent(List<ResourceBasedNode<?>> nodes) {
         this.nodes = nodes;
     }
 
     @Override
-    public Type<DeleteNodesEventHandler> getAssociatedType() {
+    public Type<NodesDeletedEventHandler> getAssociatedType() {
         return TYPE;
     }
 
@@ -44,7 +44,7 @@ public class DeleteNodesEvent extends GwtEvent<DeleteNodesEventHandler> {
     }
 
     @Override
-    protected void dispatch(DeleteNodesEventHandler handler) {
+    protected void dispatch(NodesDeletedEventHandler handler) {
         handler.onNodesDeleted(this);
     }
 }

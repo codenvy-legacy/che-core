@@ -13,14 +13,12 @@ package org.eclipse.che.ide.event;
 import com.google.gwt.event.shared.EventHandler;
 
 /**
- * Handler for {@link CreateFileNodeEvent}
+ * Handler for {@link NodeRenamedEvent}
  *
  * @author Igor Vinokur
  */
-public interface CreateFileNodeEventHandler extends EventHandler {
+public interface NodeRenamedEventHandler extends EventHandler {
 
-    /**
-     *  File node created
-     */
-    void onFileNodeCreated(CreateFileNodeEvent event);
+    /** Called when Node has been renamed.*/
+    void onNodeRenamed(NodeRenamedEvent event);
 }

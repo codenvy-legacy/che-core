@@ -13,14 +13,12 @@ package org.eclipse.che.ide.event;
 import com.google.gwt.event.shared.EventHandler;
 
 /**
- * Handler for {@link DeleteNodesEvent}
+ * Handler for {@link FileNodeCreatedEvent}
  *
  * @author Igor Vinokur
  */
-public interface DeleteNodesEventHandler extends EventHandler {
+public interface FileNodeCreatedEventHandler extends EventHandler {
 
-    /**
-     *  Nodes deleted
-     */
-    void onNodesDeleted(DeleteNodesEvent event);
+    /** Called when file node has been created.*/
+    void onFileNodeCreated(FileNodeCreatedEvent event);
 }

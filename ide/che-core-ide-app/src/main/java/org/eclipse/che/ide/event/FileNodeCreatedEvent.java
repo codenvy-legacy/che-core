@@ -19,30 +19,30 @@ import org.eclipse.che.ide.project.node.FileReferenceNode;
  *
  * @author Igor Vinokur
  */
-public class CreateFileNodeEvent extends GwtEvent<CreateFileNodeEventHandler> {
+public class FileNodeCreatedEvent extends GwtEvent<FileNodeCreatedEventHandler> {
 
-    public static final Type<CreateFileNodeEventHandler> TYPE = new Type<>();
+    public static final Type<FileNodeCreatedEventHandler> TYPE = new Type<>();
 
     private final FileReferenceNode node;
 
-    public CreateFileNodeEvent(FileReferenceNode node) {
+    public FileNodeCreatedEvent(FileReferenceNode node) {
         this.node = node;
     }
 
     @Override
-    public Type<CreateFileNodeEventHandler> getAssociatedType() {
+    public Type<FileNodeCreatedEventHandler> getAssociatedType() {
         return TYPE;
     }
 
     /**
      * Returns created node
      */
-    public FileReferenceNode getItem() {
+    public FileReferenceNode getCreatedNode() {
         return node;
     }
 
     @Override
-    protected void dispatch(CreateFileNodeEventHandler handler) {
+    protected void dispatch(FileNodeCreatedEventHandler handler) {
         handler.onFileNodeCreated(this);
     }
 }

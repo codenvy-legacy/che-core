@@ -23,7 +23,7 @@ import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.RequestCall;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.event.RenameNodeEvent;
+import org.eclipse.che.ide.event.NodeRenamedEvent;
 import org.eclipse.che.ide.api.project.node.HasDataObject;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
@@ -89,7 +89,7 @@ public class ItemReferenceProcessor extends AbstractResourceProcessor<ItemRefere
                         projectService.getItem(workspaceId, parentPath + "/" + newName,
                                                newCallback(callback, unmarshallerFactory.newUnmarshaller(ItemReference.class)));
                         if (node instanceof ItemReferenceBasedNode) {
-                            eventBus.fireEvent(new RenameNodeEvent((ItemReferenceBasedNode)node, parentPath + "/" + newName));
+                            eventBus.fireEvent(new NodeRenamedEvent((ItemReferenceBasedNode)node, parentPath + "/" + newName));
                         }
                     }
                 });

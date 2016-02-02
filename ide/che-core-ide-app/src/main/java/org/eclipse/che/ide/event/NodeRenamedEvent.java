@@ -19,14 +19,14 @@ import org.eclipse.che.ide.project.node.ItemReferenceBasedNode;
  *
  * @author Igor Vinokur
  */
-public class RenameNodeEvent extends GwtEvent<RenameNodeEventHandler> {
+public class NodeRenamedEvent extends GwtEvent<NodeRenamedEventHandler> {
 
-    public static final Type<RenameNodeEventHandler> TYPE = new Type<>();
+    public static final Type<NodeRenamedEventHandler> TYPE = new Type<>();
 
     private final ItemReferenceBasedNode node;
-    private final String            newPathName;
+    private final String                 newPathName;
 
-    public RenameNodeEvent(ItemReferenceBasedNode node, String newPathName) {
+    public NodeRenamedEvent(ItemReferenceBasedNode node, String newPathName) {
         this.node = node;
         this.newPathName = newPathName;
     }
@@ -48,12 +48,12 @@ public class RenameNodeEvent extends GwtEvent<RenameNodeEventHandler> {
     }
 
     @Override
-    public Type<RenameNodeEventHandler> getAssociatedType() {
+    public Type<NodeRenamedEventHandler> getAssociatedType() {
         return TYPE;
     }
 
     @Override
-    protected void dispatch(RenameNodeEventHandler handler) {
+    protected void dispatch(NodeRenamedEventHandler handler) {
         handler.onNodeRenamed(this);
     }
 }

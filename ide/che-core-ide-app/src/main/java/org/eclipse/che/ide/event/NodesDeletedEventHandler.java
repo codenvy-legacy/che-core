@@ -13,12 +13,12 @@ package org.eclipse.che.ide.event;
 import com.google.gwt.event.shared.EventHandler;
 
 /**
- * Handler for {@link RenameNodeEvent}
+ * Handler for {@link NodesDeletedEvent}
  *
  * @author Igor Vinokur
  */
-public interface RenameNodeEventHandler extends EventHandler {
+public interface NodesDeletedEventHandler extends EventHandler {
 
-    /** Called when Node has been renamed.*/
-    void onNodeRenamed(RenameNodeEvent event);
+    /** Called when Nodes has been deleted.*/
+    void onNodesDeleted(NodesDeletedEvent event);
 }
