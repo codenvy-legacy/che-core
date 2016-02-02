@@ -17,6 +17,7 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerReadyEvent;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.ui.loaders.initialization.InitialLoadingInfo;
@@ -113,7 +114,9 @@ public class ExtServerStateController implements ConnectionOpenedHandler, Connec
             @Override
             public void onOpen() {
                 messageBus.removeOnOpenHandler(this);
-                eventBus.fireEvent(ExtServerStateEvent.createExtServerStartedEvent());
+//                eventBus.fireEvent(ExtServerStateEvent.createExtServerStartedEvent());
+                // TODO: think about better event name
+                eventBus.fireEvent(new ExtServerReadyEvent());
             }
         });
 

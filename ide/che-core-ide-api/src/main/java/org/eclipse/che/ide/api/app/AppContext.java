@@ -13,7 +13,6 @@ package org.eclipse.che.ide.api.app;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.project.ProjectImpl;
-import org.eclipse.che.ide.util.StartUpAction;
 
 import java.util.List;
 
@@ -24,9 +23,6 @@ import java.util.List;
  * @author Artem Zatsarynnyi
  */
 public interface AppContext {
-
-    /** Returns list of start-up actions with parameters that comes form URL during IDE initialization. */
-    List<StartUpAction> getStartAppActions();
 
     UsersWorkspaceDto getWorkspace();
 
@@ -80,6 +76,9 @@ public interface AppContext {
      *         project path
      */
     void removeProjectFromImporting(String pathToProject);
+
+    /** Returns list of start-up actions with parameters that comes form URL during IDE initialization. */
+    List<StartUpAction> getStartAppActions();
 
     /**
      * List of action with params that comes from startup URL.

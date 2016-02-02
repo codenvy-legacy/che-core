@@ -10,10 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.bootstrap;
 
+import com.google.gwt.core.client.Callback;
 
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.util.StartUpAction;
+import org.eclipse.che.ide.api.app.StartUpAction;
+import org.eclipse.che.ide.api.component.WorkspaceAgentComponent;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,28 +29,25 @@ import java.util.List;
  * @author Vitalii Parfonov
  */
 @Singleton
-public class StartUpActionsProcessor  {
+public class StartUpActionsProcessor implements WorkspaceAgentComponent {
 
     private final AppContext    appContext;
     private final ActionManager actionManager;
 
-
     @Inject
-    public StartUpActionsProcessor(AppContext appContext,
-                                   ActionManager actionManager) {
-
+    public StartUpActionsProcessor(AppContext appContext, ActionManager actionManager) {
         this.appContext = appContext;
         this.actionManager = actionManager;
     }
 
-
-    public void performStartUpActions() {
+    @Override
+    public void start(Callback<WorkspaceAgentComponent, Exception> callback) {
         final List<StartUpAction> startAppActions = appContext.getStartAppActions();
         if (startAppActions != null && !startAppActions.isEmpty()) {
             for (StartUpAction action : startAppActions) {
                 actionManager.performAction(action.getActionId(), action.getParameters());
             }
         }
-
+        callback.onSuccess(this);
     }
 }

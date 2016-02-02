@@ -21,6 +21,7 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.app.CurrentUser;
+import org.eclipse.che.ide.api.app.StartUpAction;
 import org.eclipse.che.ide.api.event.SelectionChangedEvent;
 import org.eclipse.che.ide.api.event.SelectionChangedHandler;
 import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
@@ -32,7 +33,6 @@ import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.project.WorkspaceProjects;
 import org.eclipse.che.ide.project.node.ProjectNode;
-import org.eclipse.che.ide.util.StartUpAction;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -92,11 +92,6 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
     }
 
     @Override
-    public List<StartUpAction> getStartAppActions() {
-        return startAppActions;
-    }
-
-    @Override
     public UsersWorkspaceDto getWorkspace() {
         return workspace;
     }
@@ -104,7 +99,6 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
     @Override
     public void setWorkspace(UsersWorkspaceDto workspace) {
         this.workspace = workspace;
-        projectFactory.init(workspace.getProjects());
     }
 
     @Override
@@ -162,6 +156,11 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
     @Override
     public void removeProjectFromImporting(String pathToProject) {
         projectsInImport.remove(pathToProject);
+    }
+
+    @Override
+    public List<StartUpAction> getStartAppActions() {
+        return startAppActions;
     }
 
     @Override
@@ -244,6 +243,7 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
 
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
+        projectFactory.init(workspace.getProjects());
     }
 
     @Override

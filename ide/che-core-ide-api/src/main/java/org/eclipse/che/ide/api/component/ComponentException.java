@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.core;
+package org.eclipse.che.ide.api.component;
 
 /**
  * Encapsulates Component Error

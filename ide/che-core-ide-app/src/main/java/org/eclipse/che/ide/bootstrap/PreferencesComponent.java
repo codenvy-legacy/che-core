@@ -16,7 +16,7 @@ import org.eclipse.che.ide.api.app.CurrentUser;
 import org.eclipse.che.ide.api.theme.Style;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
-import org.eclipse.che.ide.core.Component;
+import org.eclipse.che.ide.api.component.Component;
 import org.eclipse.che.ide.preferences.PreferencesManagerImpl;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.StringMapUnmarshaller;

@@ -28,7 +28,7 @@ import org.eclipse.che.ide.actions.WorkspaceSnapshotCreator;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.core.Component;
+import org.eclipse.che.ide.api.component.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.statepersistance.dto.AppState;
@@ -109,7 +109,7 @@ public class DefaultWorkspaceComponent extends WorkspaceComponent implements Com
                     } else {
                         for (UsersWorkspaceDto workspace : workspaces) {
                             if (wsNameFromBrowser.equals(workspace.getName())) {
-                                Log.info(getClass(), workspace.getName());
+                                Log.info(getClass(), "Starting workspace " + workspace.getName());
                                 startWorkspaceById(workspace);
                                 return;
                             }

@@ -58,6 +58,8 @@ import org.eclipse.che.ide.actions.find.FindActionView;
 import org.eclipse.che.ide.actions.find.FindActionViewImpl;
 import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.component.Component;
+import org.eclipse.che.ide.api.component.WorkspaceAgentComponent;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
@@ -86,24 +88,23 @@ import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
-import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriberFactory;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
 import org.eclipse.che.ide.bootstrap.DefaultIconsComponent;
-import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
-import org.eclipse.che.ide.bootstrap.FactoryWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
+import org.eclipse.che.ide.bootstrap.ProjectTemplatesComponent;
+import org.eclipse.che.ide.bootstrap.ProjectTypeComponent;
 import org.eclipse.che.ide.bootstrap.StandartComponent;
 import org.eclipse.che.ide.bootstrap.StartUpActionsProcessor;
-import org.eclipse.che.ide.bootstrap.StartupComponent;
+import org.eclipse.che.ide.bootstrap.WorkspaceComponentProvider;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
 import org.eclipse.che.ide.context.AppContextImpl;
-import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
 import org.eclipse.che.ide.core.editor.EditorRegistryImpl;
@@ -151,9 +152,9 @@ import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.node.icon.DockerfileIconProvider;
 import org.eclipse.che.ide.project.node.icon.FileIconProvider;
 import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
-import org.eclipse.che.ide.projectimport.wizard.ProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
+import org.eclipse.che.ide.projectimport.wizard.ProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.zip.ZipImportWizardRegistrar;
 import org.eclipse.che.ide.projecttree.TreeStructureProviderRegistryImpl;
 import org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar;
@@ -285,20 +286,22 @@ public class CoreGinModule extends AbstractGinModule {
         install(new GinFactoryModuleBuilder().implement(RecipeWidget.class, RecipeWidgetImpl.class)
                                              .implement(WorkspaceWidget.class, WorkspaceWidgetImpl.class)
                                              .build(WorkspaceWidgetFactory.class));
-        bind(StartUpActionsProcessor.class).in(Singleton.class);
     }
 
     private void configureComponents() {
-        GinMapBinder<String, Component> mapBinder = GinMapBinder.newMapBinder(binder(), String.class, Component.class);
-        mapBinder.addBinding("Default Icons").to(DefaultIconsComponent.class);
-        mapBinder.addBinding("ZeroClipboard").to(ZeroClipboardInjector.class);
-        mapBinder.addBinding("Preferences").to(PreferencesComponent.class);
-        mapBinder.addBinding("Startup").to(StartupComponent.class);
-        mapBinder.addBinding("Profile").to(ProfileComponent.class);
-        mapBinder.addBinding("Standard components").to(StandartComponent.class);
+        GinMapBinder<String, Component> componentsBinder = GinMapBinder.newMapBinder(binder(), String.class, Component.class);
+        componentsBinder.addBinding("Default Icons").to(DefaultIconsComponent.class);
+        componentsBinder.addBinding("ZeroClipboard").to(ZeroClipboardInjector.class);
+        componentsBinder.addBinding("Preferences").to(PreferencesComponent.class);
+        componentsBinder.addBinding("Profile").to(ProfileComponent.class);
+        componentsBinder.addBinding("Project templates").to(ProjectTemplatesComponent.class);
+        componentsBinder.addBinding("Workspace").toProvider(WorkspaceComponentProvider.class);
+        componentsBinder.addBinding("Standard components").to(StandartComponent.class); // have to be the last component
 
-        bind(DefaultWorkspaceComponent.class).in(Singleton.class);
-        bind(FactoryWorkspaceComponent.class).in(Singleton.class);
+        GinMapBinder<String, WorkspaceAgentComponent> wsAgentComponentsBinder =
+                GinMapBinder.newMapBinder(binder(), String.class, WorkspaceAgentComponent.class);
+        wsAgentComponentsBinder.addBinding("Project types").to(ProjectTypeComponent.class);
+        wsAgentComponentsBinder.addBinding("Start-up actions processor").to(StartUpActionsProcessor.class);
     }
 
     private void configureProjectWizard() {

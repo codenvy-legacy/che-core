@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.bootstrap;
 
-import org.eclipse.che.ide.core.Component;
+import org.eclipse.che.ide.api.component.Component;
 import org.eclipse.che.ide.util.loging.Log;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
