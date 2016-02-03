@@ -30,14 +30,13 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  * Resolves user for git based on environment context.
  *
  * @author Max Shaposhnik
- *
  */
 @Singleton
 public class LocalUserResolver implements UserResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalUserResolver.class);
 
-    private PreferenceDao preferenceDao;
+    private final PreferenceDao preferenceDao;
 
     @Inject
     public LocalUserResolver(PreferenceDao preferenceDao) {

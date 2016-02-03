@@ -16,7 +16,6 @@ import org.eclipse.che.api.git.shared.GitUser;
  * Resolves git user.
  *
  * @author Max Shaposhnik
- *
  */
 public interface UserResolver {
 
