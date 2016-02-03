@@ -414,7 +414,7 @@ public class WorkspaceManager {
         // Temporary workspace is not persistent one, which means
         // that it is created when runtime workspace instance created(workspace started)
         hooks.beforeCreate(workspace, accountId);
-        final RuntimeWorkspaceImpl runtime = performSyncStart(workspace, workspace.getDefaultEnvName(), false, accountId);
+        final RuntimeWorkspaceImpl runtime = performSyncStart(workspace, workspace.getDefaultEnv(), false, accountId);
         hooks.afterCreate(runtime, accountId);
 
         // TODO move 'analytics' logs to the appropriate interceptors
@@ -560,7 +560,7 @@ public class WorkspaceManager {
     }
 
     private void addChannels(UsersWorkspaceImpl workspace) {
-        for (EnvironmentStateImpl environment : workspace.getEnvironments().values()) {
+        for (EnvironmentStateImpl environment : workspace.getEnvironments()) {
             for (MachineStateImpl machineState : environment.getMachineConfigs()) {
                 machineState.setChannels(MachineManager.createMachineChannels(machineState.getName(),
                                                                               workspace.getId(),
@@ -610,7 +610,7 @@ public class WorkspaceManager {
         addChannels(workspace);
         executor.execute(ThreadLocalPropagateContext.wrap(() -> {
             try {
-                performSyncStart(workspace, firstNonNull(envName, workspace.getDefaultEnvName()), recover, accountId);
+                performSyncStart(workspace, firstNonNull(envName, workspace.getDefaultEnv()), recover, accountId);
             } catch (BadRequestException | ServerException | NotFoundException | ConflictException | ForbiddenException ex) {
                 LOG.error(ex.getLocalizedMessage(), ex);
             }

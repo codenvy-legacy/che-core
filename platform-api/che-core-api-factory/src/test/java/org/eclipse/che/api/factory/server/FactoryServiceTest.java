@@ -968,8 +968,8 @@ public class FactoryServiceTest {
                                                        .withLocation("location"))));
         ws.setName("wsname");
         ws.setOwner("id-2314");
-        ws.setDefaultEnvName("env1");
-        ws.setEnvironments(Collections.singletonMap("env1", dto.createDto(EnvironmentDto.class).withName("env1")));
+        ws.setDefaultEnv("env1");
+        ws.setEnvironments(Collections.singletonList(dto.createDto(EnvironmentDto.class).withName("env1")));
         ws.setStatus(WorkspaceStatus.RUNNING);
         ws.setCommands(Collections.singletonList(dto.createDto(CommandDto.class)
                                                     .withName("MCI")
@@ -990,8 +990,8 @@ public class FactoryServiceTest {
         Factory result = dto.createDtoFromJson(response.getBody().asString(), Factory.class);
         assertEquals(result.getWorkspace().getProjects().size(), 2);
         assertEquals(result.getWorkspace().getName(), usersWorkspace.getName());
-        assertEquals(result.getWorkspace().getEnvironments().get("env1").toString(),
-                     asDto(usersWorkspace.getEnvironments().get("env1")).toString());
+        assertEquals(result.getWorkspace().getEnvironments().get(0).toString(),
+                     asDto(usersWorkspace.getEnvironments().get(0)).toString());
         assertEquals(result.getWorkspace().getCommands().get(0), asDto(usersWorkspace.getCommands().get(0)));
     }
 
@@ -1013,8 +1013,8 @@ public class FactoryServiceTest {
                                                        .withLocation("location"))));
         ws.setName("wsname");
         ws.setOwner("id-2314");
-        ws.setEnvironments(Collections.singletonMap("env1", dto.createDto(EnvironmentDto.class).withName("env1")));
-        ws.setDefaultEnvName("env1");
+        ws.setEnvironments(Collections.singletonList(dto.createDto(EnvironmentDto.class).withName("env1")));
+        ws.setDefaultEnv("env1");
         ws.setStatus(WorkspaceStatus.RUNNING);
         ws.setCommands(Collections.singletonList(dto.createDto(CommandDto.class)
                                                     .withName("MCI")
@@ -1191,8 +1191,8 @@ public class FactoryServiceTest {
                                         .withPath("/proj2")));
         ws.setName("wsname");
         ws.setOwner("id-2314");
-        ws.setEnvironments(Collections.singletonMap("env1", dto.createDto(EnvironmentDto.class).withName("env1")));
-        ws.setDefaultEnvName("env1");
+        ws.setEnvironments(Collections.singletonList(dto.createDto(EnvironmentDto.class).withName("env1")));
+        ws.setDefaultEnv("env1");
         ws.setStatus(WorkspaceStatus.RUNNING);
         ws.setCommands(Collections.singletonList(
                 dto.createDto(CommandDto.class).withName("MCI").withType("mvn").withCommandLine("clean install")));

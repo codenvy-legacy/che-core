@@ -37,11 +37,11 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
 
     @Override
     @FactoryParameter(obligation = MANDATORY)
-    String getDefaultEnvName();
+    String getDefaultEnv();
 
-    void setDefaultEnvName(String defaultEnvironment);
+    void setDefaultEnv(String defaultEnvironment);
 
-    WorkspaceConfigDto withDefaultEnvName(String defaultEnvironment);
+    WorkspaceConfigDto withDefaultEnv(String defaultEnvironment);
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)
@@ -69,11 +69,11 @@ public interface WorkspaceConfigDto extends WorkspaceConfig, Hyperlinks {
 
     @Override
     @FactoryParameter(obligation = MANDATORY)
-    Map<String, EnvironmentDto> getEnvironments();
+    List<EnvironmentDto> getEnvironments();
 
-    void setEnvironments(Map<String, EnvironmentDto> environments);
+    void setEnvironments(List<EnvironmentDto> environments);
 
-    WorkspaceConfigDto withEnvironments(Map<String, EnvironmentDto> environments);
+    WorkspaceConfigDto withEnvironments(List<EnvironmentDto> environments);
 
     @Override
     @FactoryParameter(obligation = OPTIONAL)

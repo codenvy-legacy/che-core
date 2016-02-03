@@ -65,7 +65,7 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     RuntimeWorkspaceDto withName(String name);
 
     @Override
-    RuntimeWorkspaceDto withDefaultEnvName(String defaultEnvironment);
+    RuntimeWorkspaceDto withDefaultEnv(String defaultEnvironment);
 
     @Override
     RuntimeWorkspaceDto withDescription(String description);
@@ -83,10 +83,10 @@ public interface RuntimeWorkspaceDto extends UsersWorkspaceDto, RuntimeWorkspace
     RuntimeWorkspaceDto withProjects(List<ProjectConfigDto> projects);
 
     @Override
-    Map<String, EnvironmentStateDto> getEnvironments();
+    List<EnvironmentStateDto> getEnvironments();
 
     @Override
-    RuntimeWorkspaceDto withEnvironments(Map<String, EnvironmentStateDto> environments);
+    RuntimeWorkspaceDto withEnvironments(List<EnvironmentStateDto> environments);
 
     @Override
     RuntimeWorkspaceDto withAttributes(Map<String, String> attributes);
