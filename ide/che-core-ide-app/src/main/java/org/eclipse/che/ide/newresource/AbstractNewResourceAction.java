@@ -11,21 +11,20 @@
 package org.eclipse.che.ide.newresource;
 
 import com.google.inject.Inject;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.analytics.client.logger.AnalyticsEventLogger;
-import org.eclipse.che.api.git.gwt.client.GitServiceClient;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
-import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.event.FileNodeCreatedEvent;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
@@ -35,22 +34,15 @@ import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.ui.dialogs.CancelCallback;
-import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
 import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;
 import org.eclipse.che.ide.ui.dialogs.input.InputValidator;
 import org.eclipse.che.ide.util.NameUtils;
-import org.eclipse.che.ide.websocket.WebSocketException;
-import org.eclipse.che.ide.websocket.rest.RequestCallback;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import static org.eclipse.che.ide.workspace.perspectives.project.ProjectPerspective.PROJECT_PERSPECTIVE_ID;
 
@@ -76,11 +68,7 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
     @Inject
     private AppContext               appContext;
     @Inject
-    private GitServiceClient         gitServiceClient;
-    @Inject
-    private NotificationManager      notificationManager;
-    @Inject
-    private CoreLocalizationConstant localizationConstant;
+    private EventBus                 eventBus;
 
     /**
      * Creates new action.
@@ -140,11 +128,9 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
 
                 projectExplorer.getNodeByPath(path, true)
                                .then(selectNode())
-                               .then(openNode());
+                               .then(openNode())
+                               .then(fireEvent());
 
-                if ("file".equals(itemReference.getType())) {
-                    askAddToIndex(path.getStorablePath(), itemReference.getName());
-                }
             }
 
             @Override
@@ -152,54 +138,6 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
                 dialogFactory.createMessageDialog("", JsonHelper.parseJsonMessage(exception.getMessage()), null).show();
             }
         };
-    }
-
-    private void askAddToIndex(final String path, final String fileName) {
-        final ProjectConfigDto project = appContext.getCurrentProject().getRootProject();
-        Map<String, List<String>> attributes = project.getAttributes();
-        if (!(attributes.containsKey("vcs.provider.name") && attributes.get("vcs.provider.name").contains("git"))) {
-            return;
-        }
-
-        ConfirmCallback confirmCallback = new ConfirmCallback() {
-            @Override
-            public void accepted() {
-                String filePath = path.substring(project.getName().length() + 2);
-                try {
-                    gitServiceClient
-                            .add(appContext.getWorkspaceId(), project, false, Collections.singletonList(filePath),
-                                 new RequestCallback<Void>() {
-                                     @Override
-                                     protected void onSuccess(Void result) {
-                                         notificationManager.notify(localizationConstant.actionGitIndexUpdated(),
-                                                                    localizationConstant.actionNewFileAddToIndexNotification(fileName));
-                                     }
-
-                                     @Override
-                                     protected void onFailure(Throwable exception) {
-                                         notificationManager.notify(localizationConstant.actionGitIndexUpdateFailed(),
-                                                                    exception.getMessage());
-                                     }
-                                 });
-                } catch (WebSocketException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        CancelCallback cancelCallback = new CancelCallback() {
-            @Override
-            public void cancelled() {
-                //Do nothing
-            }
-        };
-
-        dialogFactory.createConfirmDialog(localizationConstant.actionNewFileAddToIndexTitle(),
-                                          localizationConstant.actionNewFileAddToIndexText(fileName),
-                                          "Yes",
-                                          "No",
-                                          confirmCallback,
-                                          cancelCallback).show();
     }
 
     protected Function<Node, Node> selectNode() {
@@ -219,6 +157,19 @@ public abstract class AbstractNewResourceAction extends AbstractPerspectiveActio
             public Node apply(Node node) throws FunctionException {
                 if (node instanceof FileReferenceNode) {
                     ((FileReferenceNode)node).actionPerformed();
+                }
+
+                return node;
+            }
+        };
+    }
+
+    protected Function<Node, Node> fireEvent() {
+        return new Function<Node, Node>() {
+            @Override
+            public Node apply(Node node) throws FunctionException {
+                if (node instanceof FileReferenceNode) {
+                    eventBus.fireEvent(new FileNodeCreatedEvent((FileReferenceNode)node));
                 }
 
                 return node;

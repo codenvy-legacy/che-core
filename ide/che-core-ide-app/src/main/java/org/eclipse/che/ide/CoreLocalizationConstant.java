@@ -84,21 +84,6 @@ public interface CoreLocalizationConstant extends Messages {
     @Key("deleteDialogTitle")
     String deleteDialogTitle();
 
-    @Key("deleteAddToIndexDialogTitle")
-    String deleteAddToIndexDialogTitle();
-
-    @Key("deleteAddToIndexDialogText")
-    String deleteAddToIndexDialogText();
-
-    @Key("deleteAddToIndexIndexFailedToUpdate")
-    String deleteAddToIndexIndexFailedToUpdate();
-
-    @Key("deleteAddToIndexIndexUpdated")
-    String deleteAddToIndexIndexUpdated();
-
-    @Key("deleteAddToIndexDialogNotification")
-    String deleteAddToIndexDialogNotification();
-
     @Key("deleteAllFilesAndSubdirectories")
     String deleteAllFilesAndSubdirectories(String name);
 
@@ -304,21 +289,6 @@ public interface CoreLocalizationConstant extends Messages {
 
     @Key("action.newFile.description")
     String actionNewFileDescription();
-
-    @Key("action.newFile.add.to.index.title")
-    String actionNewFileAddToIndexTitle();
-
-    @Key("action.newFile.add.to.index.text")
-    String actionNewFileAddToIndexText(String file);
-
-    @Key("action.newFile.add.to.index.notification")
-    String actionNewFileAddToIndexNotification(String file);
-
-    @Key("action.git.index.updated")
-    String actionGitIndexUpdated();
-
-    @Key("action.git.index.update.failed")
-    String actionGitIndexUpdateFailed();
 
     @Key("action.newXmlFile.title")
     String actionNewXmlFileTitle();
