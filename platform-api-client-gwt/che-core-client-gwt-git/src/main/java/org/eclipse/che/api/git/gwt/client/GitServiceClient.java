@@ -26,6 +26,7 @@ import org.eclipse.che.api.git.shared.Revision;
 import org.eclipse.che.api.git.shared.ShowFileContentResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
@@ -66,7 +67,7 @@ public interface GitServiceClient {
 
     /**
      * Fetch changes from remote repository to local one (sends request over WebSocket).
-     * 
+     *
      * @param workspaceId
      *         id of current workspace
      * @param project
@@ -114,7 +115,7 @@ public interface GitServiceClient {
 
     /**
      * Delete branch.
-     * 
+     *
      * @param workspaceId
      *         id of current workspace
      * @param project
@@ -133,7 +134,7 @@ public interface GitServiceClient {
 
     /**
      * Checkout the branch with pointed name.
-     * 
+     *
      * @param workspaceId
      *         id of current workspace
      * @param project
@@ -152,7 +153,7 @@ public interface GitServiceClient {
 
     /**
      * Create new branch with pointed name.
-     * 
+     *
      * @param workspaceId
      *         id of current workspace
      * @param project
@@ -178,8 +179,8 @@ public interface GitServiceClient {
                   AsyncRequestCallback<String> callback);
 
     /**
-     * Get the list of remote repositories for pointed by <code>workDir</code> parameter one.
-     * 
+     * Get the list of remote repositories for pointed by {@code projectConfig} parameter one.
+     *
      * @param workspaceId
      *         id of current workspace
      * @param projectConfig
@@ -189,6 +190,8 @@ public interface GitServiceClient {
      * @param verbose
      *         If <code>true</code> show remote url and name otherwise show remote name
      * @param callback
+     *
+     * @deprecated instead of this method should use {@link GitServiceClient#remoteList(String, ProjectConfigDto, String, boolean)}
      */
     void remoteList(String workspaceId,
                     ProjectConfigDto projectConfig,
@@ -197,8 +200,24 @@ public interface GitServiceClient {
                     AsyncRequestCallback<List<Remote>> callback);
 
     /**
+     * Get the list of remote repositories for pointed by {@code projectConfig} parameter one.
+     *
+     * @param workspaceId
+     *         id of current workspace
+     * @param projectConfig
+     *         project (root of GIT repository)
+     * @param remoteName
+     *         remote repository's name. Can be null in case when it is need to fetch all {@link Remote}
+     * @param verbose
+     *         If <code>true</code> show remote url and name otherwise show remote name
+     * @return a promise that provides list {@link Remote} repositories for the {@code workspaceId}, {@code projectConfig},
+     *         {@code remoteName}, {@code verbose} or rejects with an error.
+     */
+    Promise<List<Remote>> remoteList(String workspaceId, ProjectConfigDto projectConfig, @Nullable String remoteName, boolean verbose);
+
+    /**
      * Adds remote repository to the list of remote repositories.
-     * 
+     *
      * @param workspaceId
      *         id of current workspace
      * @param project
