@@ -37,7 +37,7 @@ public interface WorkspaceConfig {
      * It is mandatory, implementation should guarantee that environment
      * with returned name exists for current workspace config
      */
-    String getDefaultEnvName();
+    String getDefaultEnv();
 
     /**
      * Returns commands which are related to workspace,
@@ -57,7 +57,7 @@ public interface WorkspaceConfig {
      * Returns workspace environments.
      * Workspace must contain at least 1 default environment and may contain N environments
      */
-    Map<String, ? extends Environment> getEnvironments();
+    List<? extends Environment> getEnvironments();
 
     /**
      * Returns workspace attributes, if workspace doesn't have any attributes empty map will be returned.

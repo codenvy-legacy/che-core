@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Data object for {@link UsersWorkspace}.
@@ -40,17 +39,17 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return new UsersWorkspaceImplBuilder();
     }
 
-    private String                            id;
-    private String                            name;
-    private String                            owner;
-    private String                            defaultEnvName;
-    private List<CommandImpl>                 commands;
-    private List<ProjectConfigImpl>           projects;
-    private Map<String, String>               attributes;
-    private Map<String, EnvironmentStateImpl> environments;
-    private String                            description;
-    private boolean                           isTemporary;
-    private WorkspaceStatus                   status;
+    private String                     id;
+    private String                     name;
+    private String                     owner;
+    private String                     defaultEnv;
+    private List<CommandImpl>          commands;
+    private List<ProjectConfigImpl>    projects;
+    private Map<String, String>        attributes;
+    private List<EnvironmentStateImpl> environments;
+    private String                     description;
+    private boolean                    isTemporary;
+    private WorkspaceStatus            status;
 
     public UsersWorkspaceImpl(String id,
                               String name,
@@ -58,7 +57,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                               Map<String, String> attributes,
                               List<? extends Command> commands,
                               List<? extends ProjectConfig> projects,
-                              Map<String, ? extends Environment> environments,
+                              List<? extends Environment> environments,
                               String defaultEnvironment,
                               String description) {
         this.id = id;
@@ -66,9 +65,9 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         this.owner = owner;
         this.description = description;
         if (environments != null) {
-            this.environments = environments.values()
-                                            .stream()
-                                            .collect(toMap(Environment::getName, EnvironmentStateImpl::new));
+            this.environments = environments.stream()
+                                            .map(EnvironmentStateImpl::new)
+                                            .collect(toList());
         }
         if (commands != null) {
             this.commands = commands.stream()
@@ -83,7 +82,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         if (attributes != null) {
             this.attributes = new HashMap<>(attributes);
         }
-        setDefaultEnvName(defaultEnvironment);
+        setDefaultEnv(defaultEnvironment);
     }
 
     public UsersWorkspaceImpl(WorkspaceConfig workspaceConfig, String id, String owner) {
@@ -94,7 +93,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
              workspaceConfig.getCommands(),
              workspaceConfig.getProjects(),
              workspaceConfig.getEnvironments(),
-             workspaceConfig.getDefaultEnvName(),
+             workspaceConfig.getDefaultEnv(),
              workspaceConfig.getDescription());
     }
 
@@ -148,19 +147,19 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
-    public String getDefaultEnvName() {
-        return defaultEnvName;
+    public String getDefaultEnv() {
+        return defaultEnv;
     }
 
     /**
      * Sets particular environment configured for this workspace  as default
      * Throws NullPointerException if no Env with incoming name configured
      */
-    public void setDefaultEnvName(String name) {
-        if (environments.get(name) == null) {
+    public void setDefaultEnv(String name) {
+        if (!environments.stream().anyMatch(env -> env.getName().equals(name))) {
             throw new NullPointerException("No Environment named '" + name + "' found");
         }
-        defaultEnvName = name;
+        defaultEnv = name;
     }
 
     @Override
@@ -200,14 +199,14 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
     }
 
     @Override
-    public Map<String, EnvironmentStateImpl> getEnvironments() {
+    public List<EnvironmentStateImpl> getEnvironments() {
         if (environments == null) {
-            environments = new HashMap<>();
+            environments = new ArrayList<>();
         }
         return environments;
     }
 
-    public void setEnvironments(Map<String, EnvironmentStateImpl> environments) {
+    public void setEnvironments(List<EnvironmentStateImpl> environments) {
         this.environments = environments;
     }
 
@@ -219,7 +218,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         return Objects.equals(owner, other.owner) &&
                Objects.equals(id, other.id) &&
                Objects.equals(name, other.name) &&
-               Objects.equals(defaultEnvName, other.defaultEnvName) &&
+               Objects.equals(defaultEnv, other.defaultEnv) &&
                Objects.equals(status, other.status) &&
                isTemporary == other.isTemporary &&
                getCommands().equals(other.getCommands()) &&
@@ -235,7 +234,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         hash = 31 * hash + Objects.hashCode(owner);
         hash = 31 * hash + Objects.hashCode(id);
         hash = 31 * hash + Objects.hashCode(name);
-        hash = 31 * hash + Objects.hashCode(defaultEnvName);
+        hash = 31 * hash + Objects.hashCode(defaultEnv);
         hash = 31 * hash + Objects.hashCode(status);
         hash = 31 * hash + Boolean.hashCode(isTemporary);
         hash = 31 * hash + getCommands().hashCode();
@@ -252,7 +251,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                "id='" + id + '\'' +
                ", name='" + name + '\'' +
                ", owner='" + owner + '\'' +
-               ", defaultEnvName='" + defaultEnvName + '\'' +
+               ", defaultEnv='" + defaultEnv + '\'' +
                ", commands=" + commands +
                ", projects=" + projects +
                ", attributes=" + attributes +
@@ -270,17 +269,17 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
      */
     public static class UsersWorkspaceImplBuilder {
 
-        protected String                             id;
-        protected String                             name;
-        protected String                             owner;
-        protected String                             defaultEnvName;
-        protected List<? extends Command>            commands;
-        protected List<? extends ProjectConfig>      projects;
-        protected Map<String, String>                attributes;
-        protected Map<String, ? extends Environment> environments;
-        protected String                             description;
-        protected boolean                            isTemporary;
-        protected WorkspaceStatus                    status;
+        protected String                        id;
+        protected String                        name;
+        protected String                        owner;
+        protected String                        defaultEnv;
+        protected List<? extends Command>       commands;
+        protected List<? extends ProjectConfig> projects;
+        protected Map<String, String>           attributes;
+        protected List<? extends Environment>   environments;
+        protected String                        description;
+        protected boolean                       isTemporary;
+        protected WorkspaceStatus               status;
 
         UsersWorkspaceImplBuilder() {
         }
@@ -293,7 +292,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
                                                                         commands,
                                                                         projects,
                                                                         environments,
-                                                                        defaultEnvName,
+                                                                        defaultEnv,
                                                                         description);
             workspace.setStatus(status);
             workspace.setTemporary(isTemporary);
@@ -303,7 +302,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
         public UsersWorkspaceImplBuilder fromConfig(WorkspaceConfig workspaceConfig) {
             this.name = workspaceConfig.getName();
             this.description = workspaceConfig.getDescription();
-            this.defaultEnvName = workspaceConfig.getDefaultEnvName();
+            this.defaultEnv = workspaceConfig.getDefaultEnv();
             this.projects = workspaceConfig.getProjects();
             this.commands = workspaceConfig.getCommands();
             this.environments = workspaceConfig.getEnvironments();
@@ -326,8 +325,8 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
             return this;
         }
 
-        public UsersWorkspaceImplBuilder setDefaultEnvName(String defaultEnvName) {
-            this.defaultEnvName = defaultEnvName;
+        public UsersWorkspaceImplBuilder setDefaultEnv(String defaultEnv) {
+            this.defaultEnv = defaultEnv;
             return this;
         }
 
@@ -346,7 +345,7 @@ public class UsersWorkspaceImpl implements UsersWorkspace {
             return this;
         }
 
-        public UsersWorkspaceImplBuilder setEnvironments(Map<String, ? extends Environment> environments) {
+        public UsersWorkspaceImplBuilder setEnvironments(List<? extends Environment> environments) {
             this.environments = environments;
             return this;
         }

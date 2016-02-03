@@ -69,9 +69,11 @@ public class WorkspaceConfigValidatorImpl implements WorkspaceConfigValidator {
         }
 
         //environments
-        requiredNotNull(cfg.getDefaultEnvName(), "Workspace default environment name required");
-        requiredNotNull(cfg.getEnvironments().get(cfg.getDefaultEnvName()), "Workspace default environment configuration required");
-        for (Environment environment : cfg.getEnvironments().values()) {
+        requiredNotNull(cfg.getDefaultEnv(), "Workspace default environment name required");
+        if (!cfg.getEnvironments().stream().anyMatch(env -> env.getName().equals(cfg.getDefaultEnv()))) {
+            throw new BadRequestException("Workspace default environment configuration required");
+        }
+        for (Environment environment : cfg.getEnvironments()) {
             final String envName = environment.getName();
             requiredNotNull(envName, "Environment name should not be null");
 
