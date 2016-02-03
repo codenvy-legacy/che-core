@@ -49,8 +49,8 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 public abstract class OAuthAuthenticator {
     private static final Logger LOG = LoggerFactory.getLogger(OAuthAuthenticator.class);
 
-    private AuthorizationCodeFlow flow;
-    private Map<Pattern, String>  redirectUrisMap;
+    private   AuthorizationCodeFlow flow;
+    protected Map<Pattern, String>  redirectUrisMap;
 
     /**
      * @see {@link #configure(String, String, String[], String, String, MemoryDataStoreFactory, List)}
@@ -147,15 +147,14 @@ public abstract class OAuthAuthenticator {
         return state.toString();
     }
 
-    private String findRedirectUrl(URL requestUrl) {
-//        final String requestHost = requestUrl.getHost();
-//        for (Map.Entry<Pattern, String> e : redirectUrisMap.entrySet()) {
-//            if (e.getKey().matcher(requestHost).matches()) {
-//                return e.getValue();
-//            }
-//        }
-//        return null; // TODO : throw exception instead of return null ???
-        return redirectUrisMap.entrySet().iterator().next().getValue();
+    protected String findRedirectUrl(URL requestUrl) {
+        final String requestHost = requestUrl.getHost();
+        for (Map.Entry<Pattern, String> e : redirectUrisMap.entrySet()) {
+            if (e.getKey().matcher(requestHost).matches()) {
+                return e.getValue();
+            }
+        }
+        return null; // TODO : throw exception instead of return null ???
     }
 
     /**
