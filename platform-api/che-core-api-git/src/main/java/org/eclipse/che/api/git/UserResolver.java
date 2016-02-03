@@ -20,6 +20,6 @@ import org.eclipse.che.api.git.shared.GitUser;
  */
 public interface UserResolver {
 
-    public GitUser getUser();
+    GitUser getUser();
 
 }

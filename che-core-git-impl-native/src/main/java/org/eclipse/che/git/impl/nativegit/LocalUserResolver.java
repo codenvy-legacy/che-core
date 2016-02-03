@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -31,6 +32,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  * @author Max Shaposhnik
  *
  */
+@Singleton
 public class LocalUserResolver implements UserResolver {
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalUserResolver.class);
