@@ -13,6 +13,7 @@ package org.eclipse.che.ide.projectimport.wizard;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.ide.commons.exception.OauthUnauthorizedException;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
@@ -30,6 +31,7 @@ import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscribe
 import org.eclipse.che.ide.api.wizard.Wizard.CompleteCallback;
 import org.eclipse.che.ide.projectimport.ErrorMessageUtils;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
+import org.eclipse.che.ide.ui.dialogs.DialogFactory;
 
 import javax.validation.constraints.NotNull;
 
@@ -42,6 +44,8 @@ public class ProjectImporter extends AbstractImporter {
     private final VfsServiceClient         vfsServiceClient;
     private final CoreLocalizationConstant localizationConstant;
     private final ProjectResolver          projectResolver;
+    private final DialogFactory            dialogFactory;
+
 
     private ProjectConfigDto projectConfig;
     private CompleteCallback callback;
@@ -52,10 +56,12 @@ public class ProjectImporter extends AbstractImporter {
                            CoreLocalizationConstant localizationConstant,
                            ImportProjectNotificationSubscriberFactory subscriberFactory,
                            AppContext appContext,
+                           DialogFactory dialogFactory,
                            ProjectResolver projectResolver) {
         super(appContext, projectService, subscriberFactory);
         this.vfsServiceClient = vfsServiceClient;
         this.localizationConstant = localizationConstant;
+        this.dialogFactory = dialogFactory;
         this.projectResolver = projectResolver;
     }
 
@@ -100,6 +106,9 @@ public class ProjectImporter extends AbstractImporter {
             public void apply(PromiseError exception) throws OperationException {
                 subscriber.onFailure(exception.getMessage());
                 String errorMessage = ErrorMessageUtils.getErrorMessage(exception.getCause());
+                if (exception instanceof OauthUnauthorizedException) {
+                    dialogFactory.createMessageDialog("", ((OauthUnauthorizedException)exception).getAuthenticateUrl(), null).show();
+                }
                 if (errorMessage.equals("Unable get private ssh key")) {
                     callback.onFailure(new Exception(localizationConstant.importProjectMessageUnableGetSshKey()));
                     return;

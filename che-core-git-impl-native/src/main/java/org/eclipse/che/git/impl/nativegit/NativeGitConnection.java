@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl.nativegit;
 
 
+import org.eclipse.che.api.core.OauthUnauthorizedException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;

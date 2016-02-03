@@ -207,4 +207,21 @@ public class ImportProjectWizardPresenter implements Wizard.UpdateDelegate,
         WizardPage<ProjectConfigDto> importerPage = wizard.navigateToNext();
         importerPage.go(mainPage.getImporterPanel());
     }
+
+//    private ConfirmCallback getConfirmCallback() {
+//        return new ConfirmCallback() {
+//            @Override
+//            public void accepted() {
+//            }
+//        };
+//    }
+//
+//    private CancelCallback getCancelCallback() {
+//        return new CancelCallback() {
+//            @Override
+//            public void cancelled() {
+//            }
+//        };
+//    }
+
 }

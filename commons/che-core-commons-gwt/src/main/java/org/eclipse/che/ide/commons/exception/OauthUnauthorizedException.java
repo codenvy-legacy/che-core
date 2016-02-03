@@ -8,9 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.git.impl.nativegit;
-
-import org.eclipse.che.api.core.UnauthorizedException;
+package org.eclipse.che.ide.commons.exception;
 
 /**
  * @author Max Shaposhnik
