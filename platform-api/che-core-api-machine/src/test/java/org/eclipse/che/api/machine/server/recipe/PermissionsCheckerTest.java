@@ -47,7 +47,7 @@ public class PermissionsCheckerTest {
     public void recipeCreatorShouldHaveAccessToRecipeWithAnyPermission() throws ServerException {
         final ManagedRecipe recipe = new RecipeImpl().withCreator("user-id");
 
-        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "write"));
+        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", recipe.getCreator(), "write"));
     }
 
     @Test
@@ -56,9 +56,9 @@ public class PermissionsCheckerTest {
         final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
                                               .withPermissions(new PermissionsImpl(users, null));
 
-        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "read"), "should have read permission");
-        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "write"), "should have write permission");
-        assertFalse(permissionsChecker.hasAccess(recipe, "user-id", "update_acl"), "should not have update_acl permission");
+        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", recipe.getCreator(), "read"), "should have read permission");
+        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", recipe.getCreator(), "write"), "should have write permission");
+        assertFalse(permissionsChecker.hasAccess(recipe, "user-id", recipe.getCreator(), "update_acl"), "should not have update_acl permission");
     }
 
 //    @Test
@@ -95,9 +95,9 @@ public class PermissionsCheckerTest {
         final ManagedRecipe recipe = new RecipeImpl().withCreator("someone")
                                               .withPermissions(new PermissionsImpl(null, asList(group)));
 
-        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", "read"), "should have read permission");
-        assertFalse(permissionsChecker.hasAccess(recipe, "user-id", "write"), "should not have write permission");
-        assertFalse(permissionsChecker.hasAccess(recipe, "user-id", "update_acl"), "should not have update_acl permission");
+        assertTrue(permissionsChecker.hasAccess(recipe, "user-id", recipe.getCreator(), "read"), "should have read permission");
+        assertFalse(permissionsChecker.hasAccess(recipe, "user-id", recipe.getCreator(), "write"), "should not have write permission");
+        assertFalse(permissionsChecker.hasAccess(recipe, "user-id", recipe.getCreator(), "update_acl"), "should not have update_acl permission");
     }
 //
 //    @Test
@@ -119,6 +119,6 @@ public class PermissionsCheckerTest {
     public void shouldReturnFalseIfRecipeDoesNotHavePermissions() throws ServerException {
         final ManagedRecipe recipe = new RecipeImpl().withCreator("user-id");
 
-        assertFalse(permissionsChecker.hasAccess(recipe, "someone", "read"));
+        assertFalse(permissionsChecker.hasAccess(recipe, "someone", recipe.getCreator(), "read"));
     }
 }

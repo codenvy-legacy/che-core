@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * Implementation of file system storage for model objects.
  *
@@ -45,10 +47,13 @@ public class LocalStorage {
     private Gson gson;
 
     public LocalStorage(String rootDirPath, String fileName) throws IOException {
-        this(rootDirPath, fileName, Collections.emptyMap());
+        this(rootDirPath, fileName, emptyMap(), emptyMap());
     }
 
-    public LocalStorage(String rootDirPath, String fileName, Map<Class<?>, Object> typeAdapters) throws IOException {
+    public LocalStorage(String rootDirPath,
+                        String fileName,
+                        Map<Class<?>, Object> typeAdapters,
+                        Map<Class<?>, Object> typeHierarchyAdapters) throws IOException {
         File rootDir = new File(rootDirPath);
         if (!rootDir.exists() && !rootDir.mkdirs()) {
             throw new IOException("Impossible to create root folder for local storage");
@@ -57,6 +62,9 @@ public class LocalStorage {
         GsonBuilder builder = new GsonBuilder();
         for (Map.Entry<Class<?>, Object> adapter : typeAdapters.entrySet()) {
             builder.registerTypeAdapter(adapter.getKey(), adapter.getValue());
+        }
+        for (Map.Entry<Class<?>, Object> adapter : typeHierarchyAdapters.entrySet()) {
+            builder.registerTypeHierarchyAdapter(adapter.getKey(), adapter.getValue());
         }
         gson = builder.setPrettyPrinting().create();
     }
@@ -113,7 +121,7 @@ public class LocalStorage {
     public <K, V> Map<K, V> loadMap(TypeToken<Map<K, V>> mapToken) {
         Map<K, V> result = load(mapToken);
         if (result == null) {
-            return Collections.emptyMap();
+            return emptyMap();
         }
         return result;
     }

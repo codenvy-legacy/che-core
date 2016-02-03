@@ -13,6 +13,7 @@ package org.eclipse.che.api.machine.server.recipe;
 import com.google.common.collect.FluentIterable;
 import com.jayway.restassured.response.Response;
 
+import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.machine.server.dao.RecipeDao;
@@ -150,6 +151,7 @@ public class RecipeServiceTest {
 
     @Test
     public void shouldCreateNewRecipe() throws Exception {
+        when(permissionsChecker.hasPublicAccess(any(PermissionsDescriptor.class))).thenReturn(true);
         final GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read"));
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker")
                                                            .withName("name")
@@ -176,7 +178,9 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldNotBeAbleToCreateNewRecipeWithPublicSearchPermissionForUser() {
+    public void shouldNotBeAbleToCreateNewRecipeWithPublicSearchPermissionForUser() throws ForbiddenException {
+        String errorMessage = "User " + USER_ID + " doesn't have access to use 'public: search' permission";
+        when(permissionsChecker.hasPublicAccess(any(PermissionsDescriptor.class))).thenReturn(false);
         final GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read", "search"));
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker")
                                                            .withName("name")
@@ -192,14 +196,15 @@ public class RecipeServiceTest {
 
         assertEquals(response.getStatusCode(), 403);
         final ServiceError error = unwrapDto(response, ServiceError.class);
-        assertEquals(error.getMessage(), "User " + USER_ID + " doesn't have access to use 'public: search' permission");
+        assertEquals(error.getMessage(), errorMessage);
+        verify(permissionsChecker).hasPublicAccess(any(PermissionsDescriptor.class));
     }
 
     @Test
     public void shouldBeAbleToCreateNewRecipeWithPublicSearchPermissionForSystemAdmin() {
         ROLES.add("system/admin");
-
         final GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read", "search"));
+        when(permissionsChecker.hasPublicAccess(any(PermissionsDescriptor.class))).thenReturn(true);
         final NewRecipe newRecipe = newDto(NewRecipe.class).withType("docker")
                                                            .withName("name")
                                                            .withScript("FROM ubuntu\n")
@@ -227,7 +232,7 @@ public class RecipeServiceTest {
                                                      .withScript("FROM ubuntu\n")
                                                      .withPermissions(new PermissionsImpl(users, null));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(true);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, recipe.getCreator(), "read")).thenReturn(true);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -244,7 +249,7 @@ public class RecipeServiceTest {
                                                      .withId("recipe123")
                                                      .withScript("FROM ubuntu\n");
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(false);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, "recipe123",  "read")).thenReturn(false);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -267,7 +272,7 @@ public class RecipeServiceTest {
                                                      .withTags(asList("java", "mognodb"))
                                                      .withPermissions(new PermissionsImpl(users, null));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(true);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, recipe.getCreator(), "read")).thenReturn(true);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -291,7 +296,7 @@ public class RecipeServiceTest {
                                                      .withId("recipe123")
                                                      .withScript("FROM ubuntu\n");
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(false);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, "recipe123", "read")).thenReturn(false);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -360,7 +365,7 @@ public class RecipeServiceTest {
                                                      .withScript("script1 content")
                                                      .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(true);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, USER_ID, "write")).thenReturn(true);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -379,7 +384,7 @@ public class RecipeServiceTest {
                                                      .withScript("script1 content")
                                                      .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(false);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, USER_ID, "write")).thenReturn(false);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -399,8 +404,9 @@ public class RecipeServiceTest {
                                                      .withScript("script1 content")
                                                      .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(true);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "update_acl")).thenReturn(true);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, recipe.getCreator(), "write")).thenReturn(true);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, recipe.getCreator(), "update_acl")).thenReturn(true);
+        when(permissionsChecker.hasPublicAccess(any(PermissionsDescriptor.class))).thenReturn(true);
 
         //prepare update
         GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read"));
@@ -452,7 +458,7 @@ public class RecipeServiceTest {
                                                      .withScript("script1 content")
                                                      .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(false);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, recipe.getCreator(), "write")).thenReturn(false);
 
         final Response response = given().auth()
                                          .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
@@ -474,8 +480,8 @@ public class RecipeServiceTest {
                                                      .withScript("script1 content")
                                                      .withTags(asList("java"));
         when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "write")).thenReturn(true);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "update_acl")).thenReturn(false);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, recipe.getCreator(), "write")).thenReturn(true);
+        when(permissionsChecker.hasAccess(recipe, USER_ID, recipe.getCreator(), "update_acl")).thenReturn(false);
 
         //prepare update
         GroupDescriptor group = newDto(GroupDescriptor.class).withName("public").withAcl(asList("read"));

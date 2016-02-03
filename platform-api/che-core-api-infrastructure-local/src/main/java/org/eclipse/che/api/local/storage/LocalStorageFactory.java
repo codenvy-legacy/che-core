@@ -53,7 +53,9 @@ public class LocalStorageFactory {
      * @throws IOException
      *         occurs when cannot create root storage directory.
      */
-    public LocalStorage create(String fileName, Map<Class<?>, Object> typeAdapters) throws IOException {
-        return new LocalStorage(pathToStorage, fileName, typeAdapters);
+    public LocalStorage create(String fileName,
+                               Map<Class<?>, Object> typeAdapters,
+                               Map<Class<?>, Object> typeHierarchyAdapters) throws IOException {
+        return new LocalStorage(pathToStorage, fileName, typeAdapters, typeHierarchyAdapters);
     }
 }
