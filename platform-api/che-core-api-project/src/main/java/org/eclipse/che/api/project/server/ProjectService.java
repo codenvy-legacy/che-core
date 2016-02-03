@@ -18,12 +18,14 @@ import io.swagger.annotations.ApiResponses;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import org.apache.commons.fileupload.FileItem;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.core.model.project.type.ProjectType;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.Service;
@@ -32,13 +34,21 @@ import org.eclipse.che.api.core.rest.annotations.GenerateLink;
 import org.eclipse.che.api.project.server.notification.ProjectItemModifiedEvent;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
+import org.eclipse.che.api.project.shared.dto.CopyOptions;
 import org.eclipse.che.api.project.shared.dto.ItemReference;
+import org.eclipse.che.api.project.shared.dto.MoveOptions;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
+import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.vfs.VirtualFile;
+import org.eclipse.che.api.vfs.search.QueryExpression;
+import org.eclipse.che.api.vfs.search.SearchResult;
+import org.eclipse.che.api.vfs.search.SearchResultEntry;
 import org.eclipse.che.api.vfs.search.SearcherProvider;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
+import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +75,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -267,7 +278,7 @@ public class ProjectService extends Service {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Deprecated
-    // use addProject with parent instead
+    // it is deprecated, use addProject with parent instead
     public ProjectConfigDto addModule(@ApiParam(value = "Workspace ID", required = true)
                                          @PathParam("ws-id") String workspace,
                                          @ApiParam(value = "Path to a target directory", required = true)
@@ -470,7 +481,7 @@ public class ProjectService extends Service {
                                InputStream content) throws NotFoundException, ConflictException, ForbiddenException, ServerException {
         //filesBuffer.addToBuffer(parentPath + '/' + fileName);
 
-        final FolderEntry parent = asFolder(workspace, parentPath);
+        final FolderEntry parent = asFolder(parentPath);
         final FileEntry newFile = parent.createFile(fileName, content);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final ItemReference fileReference = DtoConverter.toItemReference(newFile, workspace, uriBuilder.clone());
@@ -484,236 +495,244 @@ public class ProjectService extends Service {
     }
 
 
-//
-//    @ApiOperation(value = "Create a folder",
-//                  notes = "Create a folder is a specified project",
-//                  position = 8)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 201, message = ""),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 409, message = "File already exists"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @POST
-//    @Produces({MediaType.APPLICATION_JSON})
-//    @Path("/folder/{path:.*}")
-//    public Response createFolder(@ApiParam(value = "Workspace ID", required = true)
-//                                 @PathParam("ws-id") String workspace,
-//                                 @ApiParam(value = "Path to a new folder destination", required = true)
-//                                 @PathParam("path") String path) throws ConflictException,
-//                                                                        ForbiddenException,
-//                                                                        ServerException,
-//                                                                        NotFoundException {
-//        filesBuffer.addToBuffer(path);
-//
-//        final FolderEntry newFolder = projectManager.getProjectsRoot(workspace).createFolder(path);
-//        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-//        final ItemReference folderReference = DtoConverter.toItemReference(newFolder, uriBuilder.clone(), projectManager);
-//        final URI location = uriBuilder.clone().path(getClass(), "getChildren").build(workspace, newFolder.getPath().substring(1));
-//
-//        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
-//                                                          workspace, projectPath(newFolder.getPath()), newFolder.getPath(), true));
-//
-//        return Response.created(location).entity(folderReference).build();
-//    }
-//
-//    @ApiOperation(value = "Upload a file",
-//                  notes = "Upload a new file",
-//                  position = 9)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 201, message = ""),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 409, message = "File already exists"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @POST
-//    @Consumes({MediaType.MULTIPART_FORM_DATA})
-//    @Produces({MediaType.TEXT_HTML})
-//    @Path("/uploadfile/{parent:.*}")
-//    public Response uploadFile(@ApiParam(value = "Workspace ID", required = true)
-//                               @PathParam("ws-id") String workspace,
-//                               @ApiParam(value = "Destination path", required = true)
-//                               @PathParam("parent") String parentPath,
-//                               Iterator<FileItem> formData)
-//            throws NotFoundException, ConflictException, ForbiddenException, ServerException {
-//        final FolderEntry parent = asFolder(workspace, parentPath);
-//
-//        return VirtualFileSystemImpl.uploadFile(parent.getVirtualFile(), formData);
-//    }
-//
-//    @ApiOperation(value = "Upload zip folder",
-//                  notes = "Upload folder from local zip",
-//                  response = Response.class,
-//                  position = 10)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = ""),
-//            @ApiResponse(code = 401, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 403, message = "Forbidden operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 409, message = "Resource already exists"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//
-//    @POST
-//    @Consumes({MediaType.MULTIPART_FORM_DATA})
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Path("/upload/zipfolder/{path:.*}")
-//    public Response uploadFolderFromZip(@ApiParam(value = "Workspace ID", required = true)
-//                                        @PathParam("ws-id") String workspace,
-//                                        @ApiParam(value = "Path in the project", required = true)
-//                                        @PathParam("path") String path,
-//                                        Iterator<FileItem> formData)
-//            throws ServerException, ConflictException, ForbiddenException, NotFoundException {
-//
-//        final FolderEntry parent = asFolder(workspace, path);
-//        return VirtualFileSystemImpl.uploadZip(parent.getVirtualFile(), formData);
-//    }
-//
-//    @ApiOperation(value = "Get file content",
-//                  notes = "Get file content by its name",
-//                  position = 11)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "OK"),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @GET
-//    @Path("/file/{path:.*}")
-//    public Response getFile(@ApiParam(value = "Workspace ID", required = true)
-//                            @PathParam("ws-id") String workspace,
-//                            @ApiParam(value = "Path to a file", required = true)
-//                            @PathParam("path") String path)
-//            throws IOException, NotFoundException, ForbiddenException, ServerException {
-//        final FileEntry file = asFile(workspace, path);
-//        return Response.ok().entity(file.getInputStream()).type(file.getMediaType()).build();
-//    }
-//
-//    @ApiOperation(value = "Update file",
-//                  notes = "Update an existing file with new content",
-//                  position = 12)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = ""),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @PUT
-//    @Consumes({MediaType.MEDIA_TYPE_WILDCARD})
-//    @Path("/file/{path:.*}")
-//    public Response updateFile(@ApiParam(value = "Workspace ID", required = true)
-//                               @PathParam("ws-id") String workspace,
-//                               @ApiParam(value = "Full path to a file", required = true)
-//                               @PathParam("path") String path,
-//                               InputStream content) throws NotFoundException, ForbiddenException, ServerException {
-//        final FileEntry file = asFile(workspace, path);
-//        file.updateContent(content);
-//
-//        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.UPDATED,
-//                                                          workspace, projectPath(file.getPath()), file.getPath(), false));
-//        return Response.ok().build();
-//    }
-//
-//
-//    @ApiOperation(value = "Copy resource",
-//                  notes = "Copy resource to a new location which is specified in a query parameter",
-//                  position = 15)
-//    @ApiResponses({@ApiResponse(code = 201, message = ""),
-//                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//                   @ApiResponse(code = 404, message = "Not found"),
-//                   @ApiResponse(code = 409, message = "Resource already exists"),
-//                   @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @POST
-//    @Path("/copy/{path:.*}")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    public Response copy(@ApiParam("Workspace ID") @PathParam("ws-id") String workspace,
-//                         @ApiParam("Path to a resource") @PathParam("path") String path,
-//                         @ApiParam(value = "Path to a new location", required = true) @QueryParam("to") String newParent,
-//                         CopyOptions copyOptions) throws NotFoundException,
-//                                                         ForbiddenException,
-//                                                         ConflictException,
-//                                                         ServerException {
-//        final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-//
-//        filesBuffer.addToBuffer(newParent + '/' + entry.getName(), path);
-//        // used to indicate over write of destination
-//        boolean isOverWrite = false;
-//        // used to hold new name set in request body
-//        String newName = entry.getName();
-//        if (copyOptions != null) {
-//            if (copyOptions.getOverWrite() != null) {
-//                isOverWrite = copyOptions.getOverWrite();
-//            }
-//            if (copyOptions.getName() != null) {
-//                newName = copyOptions.getName();
-//            }
-//        }
-//        final VirtualFileEntry copy = entry.copyTo(newParent, newName, isOverWrite);
-//        final URI location = getServiceContext().getServiceUriBuilder()
-//                                                .path(getClass(), copy.isFile() ? "getFile" : "getChildren")
-//                                                .build(workspace, copy.getPath().substring(1));
-//        if (copy.isFolder()) {
-//            final Project project = projectManager.getProject(copy.getWorkspace(), copy.getPath());
-//            if (project != null) {
-//                final String name = project.getName();
-//                final String projectType = project.getConfig().getType();
-//
-//                logProjectCreatedEvent(name, projectType);
-//            }
-//        }
-//        return Response.created(location).build();
-//    }
-//
-//    @ApiOperation(value = "Move resource",
-//                  notes = "Move resource to a new location which is specified in a query parameter",
-//                  position = 15)
-//    @ApiResponses({@ApiResponse(code = 201, message = ""),
-//                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//                   @ApiResponse(code = 404, message = "Not found"),
-//                   @ApiResponse(code = 409, message = "Resource already exists"),
-//                   @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @POST
-//    @Path("/move/{path:.*}")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    public Response move(@ApiParam("Workspace ID") @PathParam("ws-id") String workspace,
-//                         @ApiParam("Path to a resource to be moved") @PathParam("path") String path,
-//                         @ApiParam("Path to a new location") @QueryParam("to") String newParent,
-//                         MoveOptions moveOptions)
-//            throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-//        final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
-//        filesBuffer.addToBuffer(newParent + '/' + entry.getName(), path);
-//
-//        // used to indicate over write of destination
-//        boolean isOverWrite = false;
-//        // used to hold new name set in request body
-//        String newName = entry.getName();
-//        if (moveOptions != null) {
-//            if (moveOptions.getOverWrite() != null) {
-//                isOverWrite = moveOptions.getOverWrite();
-//            }
-//            if (moveOptions.getName() != null) {
-//                newName = moveOptions.getName();
-//            }
-//        }
-//
-//        entry.moveTo(newParent, newName, isOverWrite);
-//        final URI location = getServiceContext().getServiceUriBuilder()
-//                                                .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
-//                                                .build(workspace, entry.getPath().substring(1));
-//        if (entry.isFolder()) {
-//            final Project project = projectManager.getProject(entry.getWorkspace(), entry.getPath());
-//            if (project != null) {
-//                final String name = project.getName();
-//                final String projectType = project.getConfig().getType();
+
+    @ApiOperation(value = "Create a folder",
+                  notes = "Create a folder is a specified project",
+                  position = 8)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = ""),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 409, message = "File already exists"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Produces({MediaType.APPLICATION_JSON})
+    @Path("/folder/{path:.*}")
+    public Response createFolder(@ApiParam(value = "Workspace ID", required = true)
+                                 @PathParam("ws-id") String workspace,
+                                 @ApiParam(value = "Path to a new folder destination", required = true)
+                                 @PathParam("path") String path) throws ConflictException,
+                                                                        ForbiddenException,
+                                                                        ServerException,
+                                                                        NotFoundException {
+        //filesBuffer.addToBuffer(path);
+
+        final FolderEntry newFolder = projectManager.getProjectsRoot().createFolder(path);
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+        final ItemReference folderReference = DtoConverter.toItemReference(newFolder, workspace, uriBuilder.clone(), projectManager);
+        final URI location = uriBuilder.clone().path(getClass(), "getChildren").build(workspace, newFolder.getPath().toString().substring(1));
+
+        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
+                                                          workspace, projectPath(newFolder.getPath().toString()),
+                                                          newFolder.getPath().toString(), true));
+
+        return Response.created(location).entity(folderReference).build();
+    }
+
+    @ApiOperation(value = "Upload a file",
+                  notes = "Upload a new file",
+                  position = 9)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = ""),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 409, message = "File already exists"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @Produces({MediaType.TEXT_HTML})
+    @Path("/uploadfile/{parent:.*}")
+    public Response uploadFile(@ApiParam(value = "Workspace ID", required = true)
+                               @PathParam("ws-id") String workspace,
+                               @ApiParam(value = "Destination path", required = true)
+                               @PathParam("parent") String parentPath,
+                               Iterator<FileItem> formData)
+            throws NotFoundException, ConflictException, ForbiddenException, ServerException {
+
+        final FolderEntry parent = asFolder(parentPath);
+
+        return uploadFile(parent.getVirtualFile(), formData);
+    }
+
+    @ApiOperation(value = "Upload zip folder",
+                  notes = "Upload folder from local zip",
+                  response = Response.class,
+                  position = 10)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = ""),
+            @ApiResponse(code = 401, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 403, message = "Forbidden operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 409, message = "Resource already exists"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/upload/zipfolder/{path:.*}")
+    public Response uploadFolderFromZip(@ApiParam(value = "Workspace ID", required = true)
+                                        @PathParam("ws-id") String workspace,
+                                        @ApiParam(value = "Path in the project", required = true)
+                                        @PathParam("path") String path,
+                                        Iterator<FileItem> formData)
+            throws ServerException, ConflictException, ForbiddenException, NotFoundException {
+
+        final FolderEntry parent = asFolder(path);
+        return uploadZip(parent.getVirtualFile(), formData);
+    }
+
+    @ApiOperation(value = "Get file content",
+                  notes = "Get file content by its name",
+                  position = 11)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @GET
+    @Path("/file/{path:.*}")
+    public Response getFile(@ApiParam(value = "Workspace ID", required = true)
+                            @PathParam("ws-id") String workspace,
+                            @ApiParam(value = "Path to a file", required = true)
+                            @PathParam("path") String path)
+            throws IOException, NotFoundException, ForbiddenException, ServerException {
+
+        final FileEntry file = asFile(path);
+        // TODO is media type sufficient?
+        return Response.ok().entity(file.getInputStream())/*.type(file.getMediaType())*/.build();
+    }
+
+    @ApiOperation(value = "Update file",
+                  notes = "Update an existing file with new content",
+                  position = 12)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = ""),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @PUT
+    @Consumes({MediaType.MEDIA_TYPE_WILDCARD})
+    @Path("/file/{path:.*}")
+    public Response updateFile(@ApiParam(value = "Workspace ID", required = true)
+                               @PathParam("ws-id") String workspace,
+                               @ApiParam(value = "Full path to a file", required = true)
+                               @PathParam("path") String path,
+                               InputStream content) throws NotFoundException, ForbiddenException, ServerException {
+
+        final FileEntry file = asFile(path);
+        file.updateContent(content);
+
+        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.UPDATED,
+                                                          workspace, projectPath(file.getPath().toString()), file.getPath().toString(), false));
+        return Response.ok().build();
+    }
+
+
+    @ApiOperation(value = "Copy resource",
+                  notes = "Copy resource to a new location which is specified in a query parameter",
+                  position = 15)
+    @ApiResponses({@ApiResponse(code = 201, message = ""),
+                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+                   @ApiResponse(code = 404, message = "Not found"),
+                   @ApiResponse(code = 409, message = "Resource already exists"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Path("/copy/{path:.*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response copy(@ApiParam("Workspace ID") @PathParam("ws-id") String workspace,
+                         @ApiParam("Path to a resource") @PathParam("path") String path,
+                         @ApiParam(value = "Path to a new location", required = true) @QueryParam("to") String newParent,
+                         CopyOptions copyOptions) throws NotFoundException,
+                                                         ForbiddenException,
+                                                         ConflictException,
+                                                         ServerException {
+
+        final VirtualFileEntry entry = getVirtualFileEntry(path);
+
+        //filesBuffer.addToBuffer(newParent + '/' + entry.getName(), path);
+        // used to indicate over write of destination
+        boolean isOverWrite = false;
+        // used to hold new name set in request body
+        String newName = entry.getName();
+        if (copyOptions != null) {
+            if (copyOptions.getOverWrite() != null) {
+                isOverWrite = copyOptions.getOverWrite();
+            }
+            if (copyOptions.getName() != null) {
+                newName = copyOptions.getName();
+            }
+        }
+        final VirtualFileEntry copy = entry.copyTo(newParent, newName, isOverWrite);
+        final URI location = getServiceContext().getServiceUriBuilder()
+                                                .path(getClass(), copy.isFile() ? "getFile" : "getChildren")
+                                                .build(workspace, copy.getPath().toString().substring(1));
+        if (copy.isFolder()) {
+            final ProjectImpl project = projectManager.getProject(copy.getPath().toString());
+            if (project != null) {
+                final String name = project.getName();
+                final String projectType = project.getType().getId();
+
+                logProjectCreatedEvent(name, projectType);
+            }
+        }
+        return Response.created(location).build();
+    }
+
+    @ApiOperation(value = "Move resource",
+                  notes = "Move resource to a new location which is specified in a query parameter",
+                  position = 15)
+    @ApiResponses({@ApiResponse(code = 201, message = ""),
+                   @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+                   @ApiResponse(code = 404, message = "Not found"),
+                   @ApiResponse(code = 409, message = "Resource already exists"),
+                   @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Path("/move/{path:.*}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response move(@ApiParam("Workspace ID") @PathParam("ws-id") String workspace,
+                         @ApiParam("Path to a resource to be moved") @PathParam("path") String path,
+                         @ApiParam("Path to a new location") @QueryParam("to") String newParent,
+                         MoveOptions moveOptions)
+            throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+
+        final VirtualFileEntry entry = getVirtualFileEntry(path);
+        //filesBuffer.addToBuffer(newParent + '/' + entry.getName(), path);
+
+        // used to indicate over write of destination
+        boolean isOverWrite = false;
+        // used to hold new name set in request body
+        String newName = entry.getName();
+        if (moveOptions != null) {
+            if (moveOptions.getOverWrite() != null) {
+                isOverWrite = moveOptions.getOverWrite();
+            }
+            if (moveOptions.getName() != null) {
+                newName = moveOptions.getName();
+            }
+        }
+
+        entry.moveTo(newParent, newName, isOverWrite);
+        final URI location = getServiceContext().getServiceUriBuilder()
+                                                .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
+                                                .build(workspace, entry.getPath().toString().substring(1));
+        if (entry.isFolder()) {
+            final ProjectImpl project = projectManager.getProject(entry.getPath().toString());
+            if (project != null) {
+                final String name = project.getName();
+                final String projectType = project.getType().getId();
 //                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
 //                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
-//
+
 //                logProjectCreatedEvent(name, projectType);
-//            }
-//        }
-//        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.MOVED,
-//                                                          workspace, projectPath(entry.getPath()), entry.getPath(), entry.isFolder(),
-//                                                          path));
-//        return Response.created(location).build();
-//    }
-//
+            }
+        }
+        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.MOVED,
+                                                          workspace, projectPath(entry.getPath().toString()), entry.getPath().toString(), entry.isFolder(),
+                                                          path));
+        return Response.created(location).build();
+    }
+
+// TODO do we need it at all?
 //    @ApiOperation(value = "Rename resource",
 //                  notes = "Rename resources. It can be project, module, folder or file",
 //                  position = 16)
@@ -731,151 +750,157 @@ public class ProjectService extends Service {
 //                           @PathParam("path") String path,
 //                           @ApiParam(value = "New name", required = true)
 //                           @QueryParam("name") String newName,
+//                           // TODO media type removed
 //                           @ApiParam(value = "New media type")
 //                           @QueryParam("mediaType") String newMediaType)
 //            throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-//        final VirtualFileEntry entry = projectManager.rename(workspace, path, newName, newMediaType);
+//
+//        final VirtualFileEntry entry = projectManager.rename(workspace, path, newName);
 //        if (entry == null) {
 //            throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
 //        }
 //
-//        final int startOldName = path.lastIndexOf("/") + 1;
-//        final String pathToFile = path.substring(0, startOldName);
-//        filesBuffer.addToBuffer(pathToFile + newName, path);
-//        filesBuffer.addToBufferRecursive(entry.getVirtualFile());
+////        final int startOldName = path.lastIndexOf("/") + 1;
+////        final String pathToFile = path.substring(0, startOldName);
+////        filesBuffer.addToBuffer(pathToFile + newName, path);
+////        filesBuffer.addToBufferRecursive(entry.getVirtualFile());
 //
 //        final URI location = getServiceContext().getServiceUriBuilder()
 //                                                .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
-//                                                .build(workspace, entry.getPath().substring(1));
+//                                                .build(workspace, entry.getPath().toString().substring(1));
+//
 //        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.RENAMED,
 //                                                          workspace,
-//                                                          projectPath(entry.getPath()),
-//                                                          entry.getPath(),
+//                                                          projectPath(entry.getPath().toString()),
+//                                                          entry.getPath().toString(),
 //                                                          entry.isFolder(),
 //                                                          path));
 //        return Response.created(location).build();
 //    }
-//
 
-//
-//
-//    @ApiOperation(value = "Upload zip project",
-//                  notes = "Upload project from local zip",
-//                  response = ProjectConfigDto.class,
-//                  position = 18)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = ""),
-//            @ApiResponse(code = 401, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 403, message = "Forbidden operation"),
-//            @ApiResponse(code = 409, message = "Resource already exists"),
-//            @ApiResponse(code = 500, message = "Unsupported source type")})
-//
-//    @POST
-//    @Consumes({MediaType.MULTIPART_FORM_DATA})
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Path("/upload/zipproject/{path:.*}")
-//    public ProjectConfigDto uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
-//                                                 @PathParam("ws-id") String workspace,
-//                                                 @ApiParam(value = "Path in the project", required = true)
-//                                                 @PathParam("path") String path,
-//                                                 @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
-//                                                 @QueryParam("force") boolean force,
-//                                                 Iterator<FileItem> formData) throws ServerException,
-//                                                                                     IOException,
-//                                                                                     ConflictException,
-//                                                                                     ForbiddenException,
-//                                                                                     NotFoundException,
-//                                                                                     BadRequestException {
-//        // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
-//        final FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(workspace, path, force);
-//
-//        int stripNumber = 0;
-//        String projectName = "";
-//        String projectDescription = "";
-//        FileItem contentItem = null;
-//
-//        while (formData.hasNext()) {
-//            FileItem item = formData.next();
-//            if (!item.isFormField()) {
-//                if (contentItem == null) {
-//                    contentItem = item;
-//                } else {
-//                    throw new ServerException("More then one upload file is found but only one should be. ");
-//                }
-//            } else {
-//                switch (item.getFieldName()) {
-//                    case ("name"):
-//                        projectName = item.getString().trim();
-//                        break;
-//                    case ("description"):
-//                        projectDescription = item.getString().trim();
-//                        break;
-//                    case ("skipFirstLevel"):
-//                        stripNumber = Boolean.parseBoolean(item.getString().trim()) ? 1 : 0;
-//                        break;
-//                }
-//            }
-//        }
-//
-//        if (contentItem == null) {
-//            throw new ServerException("Cannot find zip file for upload.");
-//        }
-//        try (InputStream zip = contentItem.getInputStream()) {
-//            baseProjectFolder.getVirtualFile().unzip(zip, true, stripNumber);
-//        }
-//
-//        ProjectConfigDto projectConfig = DtoFactory.getInstance()
-//                                                   .createDto(ProjectConfigDto.class)
-//                                                   .withName(projectName)
-//                                                   .withDescription(projectDescription);
-//
-//        List<SourceEstimation> sourceEstimations = projectManager.resolveSources(workspace, path, false);
-//
-//        for (SourceEstimation estimation : sourceEstimations) {
-//            ProjectType projectType = typeRegistry.getProjectType(estimation.getType());
-//
-//            if (projectType.isPersisted()) {
-//                projectConfig.withType(projectType.getId());
-//                projectConfig.withAttributes(estimation.getAttributes());
-//            }
-//        }
-//
-//        //project source already imported going to configure project
-//        return updateProject(workspace, path, projectConfig);
-//    }
-//
-//    @ApiOperation(value = "Import zip",
-//                  notes = "Import resources as zip",
-//                  position = 19)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 201, message = ""),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 409, message = "Resource already exists"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @POST
-//    @Path("/import/{path:.*}")
-//    @Consumes(ExtMediaType.APPLICATION_ZIP)
-//    public Response importZip(@ApiParam(value = "Workspace ID", required = true)
-//                              @PathParam("ws-id") String workspace,
-//                              @ApiParam(value = "Path to a location (where import to?)")
-//                              @PathParam("path") String path,
-//                              InputStream zip,
-//                              @DefaultValue("false") @QueryParam("skipFirstLevel") Boolean skipFirstLevel)
-//            throws NotFoundException, ConflictException, ForbiddenException, ServerException {
-//        final FolderEntry parent = asFolder(workspace, path);
-//        VirtualFileSystemImpl.importZip(parent.getVirtualFile(), zip, true, skipFirstLevel);
-//        final Project project = projectManager.getProject(workspace, path);
-//        if (project != null) {
-//            eventService.publish(new ProjectCreatedEvent(project.getWorkspace(), project.getPath()));
-//            final String projectType = project.getConfig().getType();
-//            logProjectCreatedEvent(path, projectType);
-//        }
-//        return Response.created(getServiceContext().getServiceUriBuilder()
-//                                                   .path(getClass(), "getChildren")
-//                                                   .build(workspace, parent.getPath().substring(1))).build();
-//    }
-//
+
+
+
+    @ApiOperation(value = "Upload zip project",
+                  notes = "Upload project from local zip",
+                  response = ProjectConfigDto.class,
+                  position = 18)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = ""),
+            @ApiResponse(code = 401, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 403, message = "Forbidden operation"),
+            @ApiResponse(code = 409, message = "Resource already exists"),
+            @ApiResponse(code = 500, message = "Unsupported source type")})
+
+    @POST
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/upload/zipproject/{path:.*}")
+    public ProjectConfigDto uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
+                                                 @PathParam("ws-id") String workspace,
+                                                 @ApiParam(value = "Path in the project", required = true)
+                                                 @PathParam("path") String path,
+                                                 @ApiParam(value = "Force rewrite existing project", allowableValues = "true,false")
+                                                 @QueryParam("force") boolean force,
+                                                 Iterator<FileItem> formData) throws ServerException,
+                                                                                     IOException,
+                                                                                     ConflictException,
+                                                                                     ForbiddenException,
+                                                                                     NotFoundException,
+                                                                                     BadRequestException {
+        // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
+        final FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(path, force);
+
+        int stripNumber = 0;
+        String projectName = "";
+        String projectDescription = "";
+        FileItem contentItem = null;
+
+        while (formData.hasNext()) {
+            FileItem item = formData.next();
+            if (!item.isFormField()) {
+                if (contentItem == null) {
+                    contentItem = item;
+                } else {
+                    throw new ServerException("More then one upload file is found but only one should be. ");
+                }
+            } else {
+                switch (item.getFieldName()) {
+                    case ("name"):
+                        projectName = item.getString().trim();
+                        break;
+                    case ("description"):
+                        projectDescription = item.getString().trim();
+                        break;
+                    case ("skipFirstLevel"):
+                        stripNumber = Boolean.parseBoolean(item.getString().trim()) ? 1 : 0;
+                        break;
+                }
+            }
+        }
+
+        if (contentItem == null) {
+            throw new ServerException("Cannot find zip file for upload.");
+        }
+        try (InputStream zip = contentItem.getInputStream()) {
+            baseProjectFolder.getVirtualFile().unzip(zip, true, stripNumber);
+        }
+
+        ProjectConfigDto projectConfig = DtoFactory.getInstance()
+                                                   .createDto(ProjectConfigDto.class)
+                                                   .withName(projectName)
+                                                   .withDescription(projectDescription);
+
+        List<SourceEstimation> sourceEstimations = projectManager.resolveSources(path, false);
+
+        for (SourceEstimation estimation : sourceEstimations) {
+            ProjectType projectType = typeRegistry.getProjectType(estimation.getType());
+
+            if (projectType.isPersisted()) {
+                projectConfig.withType(projectType.getId());
+                projectConfig.withAttributes(estimation.getAttributes());
+            }
+        }
+
+        //project source already imported going to configure project
+        return updateProject(workspace, path, projectConfig);
+    }
+
+
+    @ApiOperation(value = "Import zip",
+                  notes = "Import resources as zip",
+                  position = 19)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = ""),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 409, message = "Resource already exists"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @POST
+    @Path("/import/{path:.*}")
+    @Consumes(ExtMediaType.APPLICATION_ZIP)
+    public Response importZip(@ApiParam(value = "Workspace ID", required = true)
+                              @PathParam("ws-id") String workspace,
+                              @ApiParam(value = "Path to a location (where import to?)")
+                              @PathParam("path") String path,
+                              InputStream zip,
+                              @DefaultValue("false") @QueryParam("skipFirstLevel") Boolean skipFirstLevel)
+            throws NotFoundException, ConflictException, ForbiddenException, ServerException {
+
+        final FolderEntry parent = asFolder(path);
+        importZip(parent.getVirtualFile(), zip, true, skipFirstLevel);
+        final ProjectImpl project = projectManager.getProject(path);
+        if (project != null) {
+            eventService.publish(new ProjectCreatedEvent(workspace, project.getPath()));
+            final String projectType = project.getType().getId();
+            logProjectCreatedEvent(path, projectType);
+        }
+        return Response.created(getServiceContext().getServiceUriBuilder()
+                                                   .path(getClass(), "getChildren")
+                                                   .build(workspace, parent.getPath().toString().substring(1))).build();
+    }
+
+    // TODO what about ContentStream, not a part of new VFS ?
 //    @ApiOperation(value = "Download ZIP",
 //                  notes = "Export resource as zip. It can be an entire project or folder",
 //                  position = 20)
@@ -892,9 +917,12 @@ public class ProjectService extends Service {
 //                                   @ApiParam(value = "Path to resource to be imported")
 //                                   @PathParam("path") String path)
 //            throws NotFoundException, ForbiddenException, ServerException {
-//        final FolderEntry folder = asFolder(workspace, path);
-//        return VirtualFileSystemImpl.exportZip(folder.getVirtualFile());
+//
+//        final FolderEntry folder = asFolder(path);
+//        return exportZip(folder.getVirtualFile());
 //    }
+
+
 //
 //    @POST
 //    @Path("/export/{path:.*}")
@@ -915,7 +943,6 @@ public class ProjectService extends Service {
 //        final FolderEntry folder = asFolder(workspace, path);
 //        return VirtualFileSystemImpl.exportZipMultipart(folder.getVirtualFile(), in);
 //    }
-//
 //    @GET
 //    @Path("/export/file/{path:.*}")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -926,98 +953,105 @@ public class ProjectService extends Service {
 //            throws NotFoundException, ForbiddenException, ServerException {
 //        final FileEntry file = asFile(workspace, path);
 //        ContentStream content = file.getVirtualFile().getContent();
-//        return VirtualFileSystemImpl.downloadFile(content);
+//        return downloadFile(content);
 //    }
-//
-//    @ApiOperation(value = "Get project children items",
-//                  notes = "Request all children items for a project, such as files and folders",
-//                  response = ItemReference.class,
-//                  responseContainer = "List",
-//                  position = 21)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "OK"),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @GET
-//    @Path("/children/{parent:.*}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public List<ItemReference> getChildren(@ApiParam(value = "Workspace ID", required = true)
-//                                           @PathParam("ws-id") String workspace,
-//                                           @ApiParam(value = "Path to a project", required = true)
-//                                           @PathParam("parent") String path)
-//            throws NotFoundException, ForbiddenException, ServerException {
-//        final FolderEntry folder = asFolder(workspace, path);
-//        final List<VirtualFileEntry> children = folder.getChildren();
-//        final ArrayList<ItemReference> result = new ArrayList<>(children.size());
-//        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-//        for (VirtualFileEntry child : children) {
-//            if (child.isFile()) {
-//                result.add(DtoConverter.toItemReference((FileEntry)child, uriBuilder.clone()));
-//            } else {
-//                result.add(DtoConverter.toItemReference((FolderEntry)child, uriBuilder.clone(), projectManager));
-//            }
-//        }
-//
-//        return result;
-//    }
-//
-//    @ApiOperation(value = "Get project tree",
-//                  notes = "Get project tree. Depth is specified in a query parameter",
-//                  response = TreeElement.class,
-//                  position = 22)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "OK"),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @GET
-//    @Path("/tree/{parent:.*}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public TreeElement getTree(@ApiParam(value = "Workspace ID", required = true)
-//                               @PathParam("ws-id") String workspace,
-//                               @ApiParam(value = "Path to resource. Can be project or its folders", required = true)
-//                               @PathParam("parent") String path,
-//                               @ApiParam(value = "Tree depth. This parameter can be dropped. If not specified ?depth=1 is used by default")
-//                               @DefaultValue("1") @QueryParam("depth") int depth,
-//                               @ApiParam(value = "include children files (in addition to children folders). This parameter can be dropped" +
-//                                                 ". If not specified ?includeFiles=false is used by default")
-//                               @DefaultValue("false") @QueryParam("includeFiles") boolean includeFiles)
-//            throws NotFoundException, ForbiddenException, ServerException {
-//        final FolderEntry folder = asFolder(workspace, path);
-//        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-//        final DtoFactory dtoFactory = DtoFactory.getInstance();
-//        return dtoFactory.createDto(TreeElement.class)
-//                         .withNode(DtoConverter.toItemReference(folder, uriBuilder.clone(), projectManager))
-//                         .withChildren(getTree(folder, depth, includeFiles, uriBuilder, dtoFactory));
-//    }
-//
-//    @ApiOperation(value = "Get file or folder",
-//                  response = ItemReference.class,
-//                  position = 28)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "OK"),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @GET
-//    @Path("/item/{path:.*}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ItemReference getItem(@ApiParam(value = "Workspace ID", required = true)
-//                                 @PathParam("ws-id") String workspace,
-//                                 @ApiParam(value = "Path to resource. Can be project or its folders", required = true)
-//                                 @PathParam("path") String path)
-//            throws NotFoundException, ForbiddenException, ServerException, ValueStorageException,
-//                   ProjectTypeConstraintException {
-//
-//        Project project = projectManager.getProject(workspace, projectPath(path));
-//        final VirtualFileEntry entry;
+
+
+
+    @ApiOperation(value = "Get project children items",
+                  notes = "Request all children items for a project, such as files and folders",
+                  response = ItemReference.class,
+                  responseContainer = "List",
+                  position = 21)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @GET
+    @Path("/children/{parent:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ItemReference> getChildren(@ApiParam(value = "Workspace ID", required = true)
+                                           @PathParam("ws-id") String workspace,
+                                           @ApiParam(value = "Path to a project", required = true)
+                                           @PathParam("parent") String path)
+            throws NotFoundException, ForbiddenException, ServerException {
+        final FolderEntry folder = asFolder(path);
+        final List<VirtualFileEntry> children = folder.getChildren();
+        final ArrayList<ItemReference> result = new ArrayList<>(children.size());
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+        for (VirtualFileEntry child : children) {
+            if (child.isFile()) {
+                result.add(DtoConverter.toItemReference((FileEntry)child, workspace, uriBuilder.clone()));
+            } else {
+                result.add(DtoConverter.toItemReference((FolderEntry)child, workspace, uriBuilder.clone(), projectManager));
+            }
+        }
+
+        return result;
+    }
+
+
+    @ApiOperation(value = "Get project tree",
+                  notes = "Get project tree. Depth is specified in a query parameter",
+                  response = TreeElement.class,
+                  position = 22)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @GET
+    @Path("/tree/{parent:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public TreeElement getTree(@ApiParam(value = "Workspace ID", required = true)
+                               @PathParam("ws-id") String workspace,
+                               @ApiParam(value = "Path to resource. Can be project or its folders", required = true)
+                               @PathParam("parent") String path,
+                               @ApiParam(value = "Tree depth. This parameter can be dropped. If not specified ?depth=1 is used by default")
+                               @DefaultValue("1") @QueryParam("depth") int depth,
+                               @ApiParam(value = "include children files (in addition to children folders). This parameter can be dropped" +
+                                                 ". If not specified ?includeFiles=false is used by default")
+                               @DefaultValue("false") @QueryParam("includeFiles") boolean includeFiles)
+            throws NotFoundException, ForbiddenException, ServerException {
+
+        final FolderEntry folder = asFolder(path);
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+        final DtoFactory dtoFactory = DtoFactory.getInstance();
+        return dtoFactory.createDto(TreeElement.class)
+                         .withNode(DtoConverter.toItemReference(folder, workspace, uriBuilder.clone(), projectManager))
+                         .withChildren(getTree(folder, workspace, depth, includeFiles, uriBuilder, dtoFactory));
+    }
+
+
+
+    @ApiOperation(value = "Get file or folder",
+                  response = ItemReference.class,
+                  position = 28)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @GET
+    @Path("/item/{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ItemReference getItem(@ApiParam(value = "Workspace ID", required = true)
+                                 @PathParam("ws-id") String workspace,
+                                 @ApiParam(value = "Path to resource. Can be project or its folders", required = true)
+                                 @PathParam("path") String path)
+            throws NotFoundException, ForbiddenException, ServerException, ValueStorageException,
+                   ProjectTypeConstraintException {
+
+        // TODO reconsider this
+//        ProjectImpl project = projectManager.getProject(projectPath(path));
+        final VirtualFileEntry entry = projectManager.getProjectsRoot().getChild(path);
 //        if (project != null) {
 //            // If there is a project, allow it to intercept getting file meta-data
 //            entry = project.getItem(path);
 //        } else {
 //            // If there is no project, try to retrieve the item directly
-//            FolderEntry wsRoot = projectManager.getProjectsRoot(workspace);
+//            FolderEntry wsRoot = projectManager.getProjectsRoot();
 //            if (wsRoot != null) {
 //                entry = wsRoot.getChild(path);
 //            } else {
@@ -1027,135 +1061,116 @@ public class ProjectService extends Service {
 //        if (entry == null) {
 //            throw new NotFoundException("Project " + path + " was not found");
 //        }
-//
-//        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-//
-//        ItemReference item;
-//        if (entry.isFile()) {
-//            item = DtoConverter.toItemReference((FileEntry)entry, uriBuilder.clone());
-//        } else {
-//            item = DtoConverter.toItemReference((FolderEntry)entry, uriBuilder.clone(), projectManager);
-//        }
-//
-//        return item;
-//    }
-//
-//    private List<TreeElement> getTree(FolderEntry folder, int depth, boolean includeFiles, UriBuilder uriBuilder, DtoFactory dtoFactory)
-//            throws ServerException {
-//        if (depth == 0) {
-//            return null;
-//        }
-//        final List<? extends VirtualFileEntry> children;
-//
-//        if (includeFiles) {
-//            children = folder.getChildFoldersFiles();
-//        } else {
-//            children = folder.getChildFolders();
-//        }
-//
-//        final List<TreeElement> nodes = new ArrayList<>(children.size());
-//        for (VirtualFileEntry child : children) {
-//            if (child.isFolder()) {
-//                nodes.add(dtoFactory.createDto(TreeElement.class)
-//                                    .withNode(DtoConverter.toItemReference((FolderEntry)child, uriBuilder.clone(), projectManager))
-//                                    .withChildren(getTree((FolderEntry)child, depth - 1, includeFiles, uriBuilder, dtoFactory)));
-//            } else { // child.isFile()
-//                nodes.add(dtoFactory.createDto(TreeElement.class)
-//                                    .withNode(DtoConverter.toItemReference((FileEntry)child, uriBuilder.clone())));
-//            }
-//        }
-//        return nodes;
-//    }
-//
-//    @ApiOperation(value = "Search for resources",
-//                  notes = "Search for resources applying a number of search filters as query parameters",
-//                  response = ItemReference.class,
-//                  responseContainer = "List",
-//                  position = 23)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "OK"),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 409, message = "Conflict error"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @GET
-//    @Path("/search/{path:.*}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public List<ItemReference> search(@ApiParam(value = "Workspace ID", required = true)
-//                                      @PathParam("ws-id") String workspace,
-//                                      @ApiParam(value = "Path to resource, i.e. where to search?", required = true)
-//                                      @PathParam("path") String path,
-//                                      @ApiParam(value = "Resource name")
-//                                      @QueryParam("name") String name,
-//                                      @ApiParam(value = "Media type")
-//                                      @QueryParam("mediatype") String mediatype,
-//                                      @ApiParam(value = "Search keywords")
-//                                      @QueryParam("text") String text,
-//                                      @ApiParam(value = "Maximum items to display. If this parameter is dropped, there are no limits")
-//                                      @QueryParam("maxItems") @DefaultValue("-1") int maxItems,
-//                                      @ApiParam(value = "Skip count")
-//                                      @QueryParam("skipCount") int skipCount)
-//            throws NotFoundException, ForbiddenException, ConflictException, ServerException {
-//
-//        // to search from workspace root path should end with "/" i.e /{ws}/search/?<query>
-//        final FolderEntry folder = path.isEmpty() ? projectManager.getProjectsRoot(workspace) : asFolder(workspace, path);
-//
-//        if (searcherProvider != null) {
-//            if (skipCount < 0) {
-//                throw new ConflictException(String.format("Invalid 'skipCount' parameter: %d.", skipCount));
-//            }
-//            final QueryExpression expr = new QueryExpression()
-//                    .setPath(path.startsWith("/") ? path : ('/' + path))
-//                    .setName(name)
-//                    .setText(text);
-//
-//            final String[] result = searcherProvider.getSearcher(folder.getVirtualFile().getMountPoint(), true).search(expr);
-//            if (skipCount > 0) {
-//                if (skipCount > result.length) {
-//                    throw new ConflictException(
-//                            String.format("'skipCount' parameter: %d is greater then total number of items in result: %d.",
-//                                          skipCount, result.length));
-//                }
-//            }
-//            final int length = maxItems > 0 ? Math.min(result.length, maxItems) : result.length;
-//            final List<ItemReference> items = new ArrayList<>(length);
-//            final FolderEntry root = projectManager.getProjectsRoot(workspace);
-//            final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-//            for (int i = skipCount; i < length; i++) {
-//                VirtualFileEntry child = null;
-//                try {
-//                    child = root.getChild(result[i]);
-//                } catch (ForbiddenException ignored) {
-//                    // Ignore item that user can't access
-//                }
-//                if (child != null && child.isFile()) {
-//                    items.add(DtoConverter.toItemReference((FileEntry)child, uriBuilder.clone()));
-//                }
-//            }
-//            return items;
-//        }
-//        return Collections.emptyList();
-//    }
-//
+
+        final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+
+        ItemReference item;
+        if (entry.isFile()) {
+            item = DtoConverter.toItemReference((FileEntry)entry, workspace, uriBuilder.clone());
+        } else {
+            item = DtoConverter.toItemReference((FolderEntry)entry, workspace, uriBuilder.clone(), projectManager);
+        }
+
+        return item;
+    }
 
 
-    private FileEntry asFile(String workspace, String path) throws ForbiddenException, NotFoundException, ServerException {
-        final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
+
+    @ApiOperation(value = "Search for resources",
+                  notes = "Search for resources applying a number of search filters as query parameters",
+                  response = ItemReference.class,
+                  responseContainer = "List",
+                  position = 23)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK"),
+            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
+            @ApiResponse(code = 404, message = "Not found"),
+            @ApiResponse(code = 409, message = "Conflict error"),
+            @ApiResponse(code = 500, message = "Internal Server Error")})
+    @GET
+    @Path("/search/{path:.*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ItemReference> search(@ApiParam(value = "Workspace ID", required = true)
+                                      @PathParam("ws-id") String workspace,
+                                      @ApiParam(value = "Path to resource, i.e. where to search?", required = true)
+                                      @PathParam("path") String path,
+                                      @ApiParam(value = "Resource name")
+                                      @QueryParam("name") String name,
+                                      @ApiParam(value = "Media type")
+                                      @QueryParam("mediatype") String mediatype,
+                                      @ApiParam(value = "Search keywords")
+                                      @QueryParam("text") String text,
+                                      @ApiParam(value = "Maximum items to display. If this parameter is dropped, there are no limits")
+                                      @QueryParam("maxItems") @DefaultValue("-1") int maxItems,
+                                      @ApiParam(value = "Skip count")
+                                      @QueryParam("skipCount") int skipCount)
+            throws NotFoundException, ForbiddenException, ConflictException, ServerException {
+
+        // to search from workspace root path should end with "/" i.e /{ws}/search/?<query>
+        final FolderEntry folder = path.isEmpty() ? projectManager.getProjectsRoot() : asFolder(path);
+
+        SearcherProvider searcherProvider = projectManager.getVfs().getSearcherProvider();
+
+        if (searcherProvider != null) {
+            if (skipCount < 0) {
+                throw new ConflictException(String.format("Invalid 'skipCount' parameter: %d.", skipCount));
+            }
+            final QueryExpression expr = new QueryExpression()
+                    .setPath(path.startsWith("/") ? path : ('/' + path))
+                    .setName(name)
+                    .setText(text);
+
+            //final String[] result = searcherProvider.getSearcher(projectManager.getVfs(), true).search(expr).;
+
+            final SearchResult result = searcherProvider.getSearcher(projectManager.getVfs(), true).search(expr);
+
+            if (skipCount > 0) {
+                if (skipCount > result.getTotalHits()) {
+                    throw new ConflictException(
+                            String.format("'skipCount' parameter: %d is greater then total number of items in result: %d.",
+                                          skipCount, result.getTotalHits()));
+                }
+            }
+            final int length = maxItems > 0 ? Math.min(result.getTotalHits(), maxItems) : result.getTotalHits();
+            final List<ItemReference> items = new ArrayList<>(length);
+            final FolderEntry root = projectManager.getProjectsRoot();
+            final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
+            List <SearchResultEntry> entries = result.getResults();
+            for (int i = skipCount; i < length; i++) {
+                VirtualFileEntry child = null;
+                try {
+                    child = root.getChild(entries.get(i).getFilePath());
+                } catch (ForbiddenException ignored) {
+                    // Ignore item that user can't access
+                }
+                if (child != null && child.isFile()) {
+                    items.add(DtoConverter.toItemReference((FileEntry)child, workspace, uriBuilder.clone()));
+                }
+            }
+            return items;
+        }
+        return Collections.emptyList();
+    }
+
+
+
+    private FileEntry asFile(String path) throws ForbiddenException, NotFoundException, ServerException {
+        final VirtualFileEntry entry = getVirtualFileEntry(path);
         if (!entry.isFile()) {
             throw new ForbiddenException(String.format("Item '%s' isn't a file. ", path));
         }
         return (FileEntry)entry;
     }
 
-    private FolderEntry asFolder(String workspace, String path) throws ForbiddenException, NotFoundException, ServerException {
-        final VirtualFileEntry entry = getVirtualFileEntry(workspace, path);
+    private FolderEntry asFolder(String path) throws ForbiddenException, NotFoundException, ServerException {
+        final VirtualFileEntry entry = getVirtualFileEntry(path);
         if (!entry.isFolder()) {
             throw new ForbiddenException(String.format("Item '%s' isn't a folder. ", path));
         }
         return (FolderEntry)entry;
     }
 
-    private VirtualFileEntry getVirtualFileEntry(String workspace, String path)
+    private VirtualFileEntry getVirtualFileEntry(String path)
             throws NotFoundException, ForbiddenException, ServerException {
         final FolderEntry root = projectManager.getProjectsRoot();
         final VirtualFileEntry entry = root.getChild(path);
@@ -1219,8 +1234,132 @@ public class ProjectService extends Service {
                 LOG.warn(String.format("Project: %s", project.getPath()), e.getMessage());
             }
         });
-
-
     }
+
+
+    private List<TreeElement> getTree(FolderEntry folder, String workspace, int depth, boolean includeFiles, UriBuilder uriBuilder, DtoFactory dtoFactory)
+            throws ServerException, NotFoundException {
+        if (depth == 0) {
+            return null;
+        }
+        final List<? extends VirtualFileEntry> children;
+
+        if (includeFiles) {
+            children = folder.getChildFoldersFiles();
+        } else {
+            children = folder.getChildFolders();
+        }
+
+        final List<TreeElement> nodes = new ArrayList<>(children.size());
+        for (VirtualFileEntry child : children) {
+            if (child.isFolder()) {
+                nodes.add(dtoFactory.createDto(TreeElement.class)
+                                    .withNode(DtoConverter.toItemReference((FolderEntry)child, workspace, uriBuilder.clone(), projectManager))
+                                    .withChildren(getTree((FolderEntry)child, workspace, depth - 1, includeFiles, uriBuilder, dtoFactory)));
+            } else { // child.isFile()
+                nodes.add(dtoFactory.createDto(TreeElement.class)
+                                    .withNode(DtoConverter.toItemReference((FileEntry)child, workspace, uriBuilder.clone())));
+            }
+        }
+        return nodes;
+    }
+
+
+    /* --------------------------------------------------------------------------- */
+    /* TODO check "upload" methods below, they were copied from old VFS as is      */
+    /* --------------------------------------------------------------------------- */
+
+    public static Response uploadFile(VirtualFile parent, Iterator<FileItem> formData)
+            throws ForbiddenException, ConflictException, ServerException {
+        try {
+            FileItem contentItem = null;
+            String name = null;
+            boolean overwrite = false;
+
+            while (formData.hasNext()) {
+                FileItem item = formData.next();
+                if (!item.isFormField()) {
+                    if (contentItem == null) {
+                        contentItem = item;
+                    } else {
+                        throw new ServerException("More then one upload file is found but only one should be. ");
+                    }
+                } else if ("name".equals(item.getFieldName())) {
+                    name = item.getString().trim();
+                } else if ("overwrite".equals(item.getFieldName())) {
+                    overwrite = Boolean.parseBoolean(item.getString().trim());
+                }
+            }
+
+            if (contentItem == null) {
+                throw new ServerException("Cannot find file for upload. ");
+            }
+            if (name == null || name.isEmpty()) {
+                name = contentItem.getName();
+            }
+
+            try {
+                try {
+                    parent.createFile(name, contentItem.getInputStream());
+                } catch (ConflictException e) {
+                    if (!overwrite) {
+                        throw new ConflictException("Unable upload file. Item with the same name exists. ");
+                    }
+                    parent.getChild(org.eclipse.che.api.vfs.Path.of(name)).updateContent(contentItem.getInputStream(), null);
+                }
+            } catch (IOException ioe) {
+                throw new ServerException(ioe.getMessage(), ioe);
+            }
+
+            return Response.ok("", MediaType.TEXT_HTML).build();
+        } catch (ForbiddenException | ConflictException | ServerException e) {
+            HtmlErrorFormatter.sendErrorAsHTML(e);
+            // never thrown
+            throw e;
+        }
+    }
+
+    public static Response uploadZip(VirtualFile parent, Iterator<FileItem> formData)
+            throws ForbiddenException, ConflictException, ServerException {
+        try {
+            FileItem contentItem = null;
+            boolean overwrite = false;
+            boolean skipFirstLevel = false;
+            while (formData.hasNext()) {
+                FileItem item = formData.next();
+                if (!item.isFormField()) {
+                    if (contentItem == null) {
+                        contentItem = item;
+                    } else {
+                        throw new ServerException("More then one upload file is found but only one should be. ");
+                    }
+                } else if ("overwrite".equals(item.getFieldName())) {
+                    overwrite = Boolean.parseBoolean(item.getString().trim());
+                } else if ("skipFirstLevel".equals(item.getFieldName())) {
+                    skipFirstLevel = Boolean.parseBoolean(item.getString().trim());
+                }
+            }
+            if (contentItem == null) {
+                throw new ServerException("Cannot find file for upload. ");
+            }
+            try {
+                importZip(parent, contentItem.getInputStream(), overwrite, skipFirstLevel);
+            } catch (IOException ioe) {
+                throw new ServerException(ioe.getMessage(), ioe);
+            }
+            return Response.ok("", MediaType.TEXT_HTML).build();
+        } catch (ForbiddenException | ConflictException | ServerException e) {
+            HtmlErrorFormatter.sendErrorAsHTML(e);
+            // never thrown
+            throw e;
+        }
+    }
+
+    public static void importZip(VirtualFile parent, InputStream in, boolean overwrite, boolean skipFirstLevel)
+            throws ForbiddenException, ConflictException, ServerException {
+        int stripNum = skipFirstLevel ? 1 : 0;
+        parent.unzip(in, overwrite, stripNum);
+    }
+
 
 }

@@ -105,7 +105,6 @@ public final class NewProjectManager {
         return new FolderEntry(vfs.getRoot());
     }
 
-
     public ProjectTypeRegistry getProjectTypeRegistry() {
         return this.projectTypeRegistry;
     }
@@ -136,9 +135,6 @@ public final class NewProjectManager {
 
         Path root = Path.of(absolutizePath(path));
         List<String> children = new ArrayList<>();
-
-//        if (!root.isAbsolute())
-//            throw new RuntimeException("Absolute path expected: %s" + path);
 
         // TODO better algo?
         for (String key : projects.keySet()) {
