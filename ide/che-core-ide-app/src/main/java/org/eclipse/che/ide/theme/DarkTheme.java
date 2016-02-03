@@ -1036,6 +1036,26 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String matchingSearchBlockBackgroundColor() {
+        return "rgba(85, 85, 85, .6)";
+    }
+
+    @Override
+    public String matchingSearchBlockBorderColor() {
+        return "#4a90e2";
+    }
+
+    @Override
+    public String currentSearchBlockBackgroundColor() {
+        return "#4a90e2";
+    }
+
+    @Override
+    public String currentSearchBlockBorderColor() {
+        return "#4a90e2";
+    }
+
+    @Override
     public String openedFilesDropdownButtonBackground() {
         return "rgba(51,55,59,0.50)";
     }

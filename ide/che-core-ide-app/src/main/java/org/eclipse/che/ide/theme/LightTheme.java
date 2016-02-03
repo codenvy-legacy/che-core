@@ -1013,6 +1013,26 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String matchingSearchBlockBackgroundColor() {
+        return "rgb(169, 183, 198)";
+    }
+
+    @Override
+    public String matchingSearchBlockBorderColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String currentSearchBlockBackgroundColor() {
+        return "rgb(78, 171, 255)";
+    }
+
+    @Override
+    public String currentSearchBlockBorderColor() {
+        return "#1a68af";
+    }
+
+    @Override
     public String openedFilesDropdownButtonBackground() {
         return "#e4e4e4";
     }

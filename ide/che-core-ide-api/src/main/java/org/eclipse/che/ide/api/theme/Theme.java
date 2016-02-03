@@ -1280,6 +1280,26 @@ public interface Theme {
      */
     String scrollbarHoverBackgroundColor();
 
+    /**
+     * @return matching search block background color
+     */
+    String matchingSearchBlockBackgroundColor();
+
+    /**
+     * @return matching search block border color
+     */
+    String matchingSearchBlockBorderColor();
+
+    /**
+     * @return current search block background color
+     */
+    String currentSearchBlockBackgroundColor();
+
+    /**
+     * @return current search block border color
+     */
+    String currentSearchBlockBorderColor();
+
     /********************************************************************************************
      *
      * Dropdown menu with a list of opened files
