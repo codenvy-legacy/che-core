@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-
-import org.eclipse.che.api.git.shared.GitUser;
-
 /**
  * Provides credentials to use with git commands that need it
  *
