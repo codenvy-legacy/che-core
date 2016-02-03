@@ -36,13 +36,11 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STARTING;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
@@ -214,7 +212,7 @@ public class WorkspaceManagerTest {
         assertEquals(res1.getStatus(), STOPPED, "Workspace status wasn't changed from STARTING to STOPPED");
         assertFalse(res1.isTemporary(), "Workspace must be permanent");
         assertNotNull(res1.getEnvironments()
-                          .get(res1.getDefaultEnvName())
+                          .get(0)
                           .getMachineConfigs()
                           .get(0)
                           .getChannels());
@@ -223,7 +221,7 @@ public class WorkspaceManagerTest {
         assertEquals(res2.getStatus(), workspace2Runtime.getStatus(), "Workspace status wasn't changed to the runtime instance status");
         assertFalse(res2.isTemporary(), "Workspace must be permanent");
         assertNotNull(res2.getEnvironments()
-                          .get(res1.getDefaultEnvName())
+                          .get(0)
                           .getMachineConfigs()
                           .get(0)
                           .getChannels());
@@ -242,7 +240,7 @@ public class WorkspaceManagerTest {
         assertEquals(updated.getStatus(), STOPPED);
         assertFalse(updated.isTemporary());
         assertNotNull(updated.getEnvironments()
-                             .get(updated.getDefaultEnvName())
+                             .get(0)
                              .getMachineConfigs()
                              .get(0)
                              .getChannels());
@@ -291,7 +289,7 @@ public class WorkspaceManagerTest {
         final RuntimeWorkspaceImpl result = workspaceManager.getRuntimeWorkspace(runtime.getId());
 
         assertNotNull(result.getEnvironments()
-                            .get(result.getDefaultEnvName())
+                            .get(0)
                             .getMachineConfigs()
                             .get(0)
                             .getChannels());
@@ -316,17 +314,17 @@ public class WorkspaceManagerTest {
         when(registry.get(any())).thenThrow(new NotFoundException(""));
 
         final UsersWorkspace result = workspaceManager.startWorkspaceById(workspace.getId(),
-                                                                          workspace.getDefaultEnvName(),
+                                                                          workspace.getDefaultEnv(),
                                                                           "account");
 
         assertEquals(result.getStatus(), STARTING);
         assertFalse(result.isTemporary());
         assertNotNull(result.getEnvironments()
-                            .get(result.getDefaultEnvName())
+                            .get(0)
                             .getMachineConfigs()
                             .get(0)
                             .getChannels());
-        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
+        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnv(), false, "account");
     }
 
     @Test
@@ -338,17 +336,17 @@ public class WorkspaceManagerTest {
 
         final UsersWorkspace result = workspaceManager.startWorkspaceByName(workspace.getName(),
                                                                             "user123",
-                                                                            workspace.getDefaultEnvName(),
+                                                                            workspace.getDefaultEnv(),
                                                                             "account");
 
         assertEquals(result.getStatus(), STARTING);
         assertFalse(result.isTemporary());
         assertNotNull(result.getEnvironments()
-                            .get(result.getDefaultEnvName())
+                            .get(0)
                             .getMachineConfigs()
                             .get(0)
                             .getChannels());
-        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
+        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnv(), false, "account");
     }
 
     @Test(expectedExceptions = ConflictException.class,
@@ -366,10 +364,10 @@ public class WorkspaceManagerTest {
         final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
         when(registry.start(any(), anyString(), anyBoolean())).thenReturn(createRuntime(workspace));
 
-        workspaceManager.performSyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
+        workspaceManager.performSyncStart(workspace, workspace.getDefaultEnv(), false, "account");
 
-        verify(registry).start(workspace, workspace.getDefaultEnvName(), false);
-        verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnvName(), "account");
+        verify(registry).start(workspace, workspace.getDefaultEnv(), false);
+        verify(workspaceHooks).beforeStart(workspace, workspace.getDefaultEnv(), "account");
     }
 
     @Test(expectedExceptions = ServerException.class,
@@ -378,7 +376,7 @@ public class WorkspaceManagerTest {
         final UsersWorkspaceImpl workspace = workspaceManager.createWorkspace(createConfig(), "user123", "account");
         when(registry.start(any(), anyString(), anyBoolean())).thenThrow(new ServerException("registry exception"));
 
-        workspaceManager.performSyncStart(workspace, workspace.getDefaultEnvName(), false, "account");
+        workspaceManager.performSyncStart(workspace, workspace.getDefaultEnv(), false, "account");
     }
 
     @Test
@@ -392,7 +390,7 @@ public class WorkspaceManagerTest {
         final UsersWorkspaceImpl captured = workspaceCaptor.getValue();
         assertTrue(captured.isTemporary());
         assertNotNull(captured.getEnvironments()
-                              .get(captured.getDefaultEnvName())
+                              .get(0)
                               .getMachineConfigs()
                               .get(0)
                               .getChannels());
@@ -408,17 +406,17 @@ public class WorkspaceManagerTest {
         when(registry.get(any())).thenThrow(new NotFoundException(""));
 
         final UsersWorkspace result = workspaceManager.recoverWorkspace(workspace.getId(),
-                                                                        workspace.getDefaultEnvName(),
+                                                                        workspace.getDefaultEnv(),
                                                                         "account");
 
         assertEquals(result.getStatus(), STARTING);
         assertFalse(result.isTemporary());
         assertNotNull(result.getEnvironments()
-                            .get(result.getDefaultEnvName())
+                            .get(0)
                             .getMachineConfigs()
                             .get(0)
                             .getChannels());
-        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnvName(), true, "account");
+        verify(workspaceManager).performAsyncStart(workspace, workspace.getDefaultEnv(), true, "account");
     }
 
     @Test
@@ -453,7 +451,7 @@ public class WorkspaceManagerTest {
                                                             .withMachineConfigs(new ArrayList<>(singletonList(devMachine)))
                                                             .withRecipe(null);
         return newDto(WorkspaceConfigDto.class).withName("dev-workspace")
-                                               .withEnvironments(new HashMap<>(singletonMap("dev-env", devEnv)))
-                                               .withDefaultEnvName("dev-env");
+                                               .withEnvironments(new ArrayList<>(singletonList(devEnv)))
+                                               .withDefaultEnv("dev-env");
     }
 }

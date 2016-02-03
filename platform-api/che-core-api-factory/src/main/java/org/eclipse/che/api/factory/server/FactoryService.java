@@ -34,7 +34,6 @@ import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.workspace.server.DtoConverter;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
-import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
@@ -71,13 +70,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_DISPOSITION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
@@ -654,12 +651,12 @@ public class FactoryService extends Service {
                                                          .stream()
                                                          .map(DtoConverter::asDto)
                                                          .collect(toList());
-        final Map<String, EnvironmentDto> environments = workspace.getEnvironments()
-                                                                  .values()
-                                                                  .stream()
-                                                                  .collect(toMap(EnvironmentStateImpl::getName, FactoryService::asDto));
+        final List<EnvironmentDto> environments = workspace.getEnvironments()
+                                                           .stream()
+                                                           .map(FactoryService::asDto)
+                                                           .collect(toList());
         return newDto(WorkspaceConfigDto.class).withName(workspace.getName())
-                                               .withDefaultEnvName(workspace.getDefaultEnvName())
+                                               .withDefaultEnv(workspace.getDefaultEnv())
                                                .withCommands(commands)
                                                .withProjects(projects)
                                                .withEnvironments(environments)

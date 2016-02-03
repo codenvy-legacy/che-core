@@ -162,8 +162,8 @@ public class FactoryBuilderTest {
                                                                    .withName("command1")
                                                                    .withType("maven")
                                                                    .withCommandLine("mvn test")))
-                                    .withDefaultEnvName("env1")
-                                    .withEnvironments(singletonMap("test", dto.createDto(EnvironmentDto.class)
+                                    .withDefaultEnv("env1")
+                                    .withEnvironments(singletonList(dto.createDto(EnvironmentDto.class)
                                                                               .withName("test")
                                                                               .withMachineConfigs(singletonList(dto.createDto(
                                                                                       MachineConfigDto.class)

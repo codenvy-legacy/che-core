@@ -63,6 +63,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -611,10 +612,10 @@ public class WorkspaceService extends Service {
         requiredNotNull(newEnvironment, "New environment");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
-        if (workspace.getEnvironments().containsKey(newEnvironment.getName())) {
+        if (workspace.getEnvironments().stream().anyMatch(env -> env.getName().equals(newEnvironment.getName()))) {
             throw new ConflictException("Environment '" + newEnvironment.getName() + "' already exists");
         }
-        workspace.getEnvironments().put(newEnvironment.getName(), new EnvironmentStateImpl(newEnvironment));
+        workspace.getEnvironments().add(new EnvironmentStateImpl(newEnvironment));
         return injectLinks(asDto(workspaceManager.updateWorkspace(id, workspace)));
     }
 
@@ -642,10 +643,10 @@ public class WorkspaceService extends Service {
         requiredNotNull(update, "Environment description");
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
-        if (!workspace.getEnvironments().containsKey(update.getName())) {
+        if (!workspace.getEnvironments().stream().anyMatch(env -> env.getName().equals(update.getName()))) {
             throw new NotFoundException("Workspace " + id + " doesn't contain environment " + update.getName());
         }
-        workspace.getEnvironments().put(update.getName(), new EnvironmentStateImpl(update));
+        workspace.getEnvironments().add(new EnvironmentStateImpl(update));
         return injectLinks(asDto(workspaceManager.updateWorkspace(id, workspace)));
     }
 
@@ -670,9 +671,12 @@ public class WorkspaceService extends Service {
                                                          ForbiddenException {
         final UsersWorkspaceImpl workspace = workspaceManager.getWorkspace(id);
         ensureUserIsWorkspaceOwner(workspace);
-        if (workspace.getEnvironments().containsKey(envName)) {
-            workspace.getEnvironments().remove(envName);
-            workspaceManager.updateWorkspace(id, workspace);
+        Iterator<EnvironmentStateImpl> it = workspace.getEnvironments().iterator();
+        while (it.hasNext()) {
+            if (it.next().getName().equals(envName)) {
+                it.remove();
+                workspaceManager.updateWorkspace(id, workspace);
+            }
         }
     }
 
