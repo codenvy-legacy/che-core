@@ -147,8 +147,8 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
                                                                   new HashMap<>(workspace.getAttributes()),
                                                                   new ArrayList<>(workspace.getCommands()),
                                                                   new ArrayList<>(workspace.getProjects()),
-                                                                  new HashMap<>(workspace.getEnvironments()),
-                                                                  workspace.getDefaultEnvName(),
+                                                                  new ArrayList<>(workspace.getEnvironments()),
+                                                                  workspace.getDefaultEnv(),
                                                                   workspace.getDescription());
         copyWorkspace.setStatus(workspace.getStatus());
         copyWorkspace.setTemporary(workspace.isTemporary());

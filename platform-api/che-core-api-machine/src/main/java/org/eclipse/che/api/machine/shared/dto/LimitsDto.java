@@ -18,5 +18,5 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface LimitsDto extends Limits {
-    LimitsDto withMemory(int memorySizeMB);
+    LimitsDto withRam(int memorySizeMB);
 }

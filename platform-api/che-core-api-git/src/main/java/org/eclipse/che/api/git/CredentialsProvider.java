@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-
-
 /**
  * Provides credentials to use with git commands that need it
  *

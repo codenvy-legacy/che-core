@@ -15,7 +15,7 @@ import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
-import org.eclipse.che.api.git.UserResolver;
+import org.eclipse.che.api.git.GitUserResolver;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import javax.inject.Inject;
@@ -33,10 +33,10 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
 
     private final CredentialsLoader    credentialsLoader;
     private final GitSshScriptProvider gitSshScriptProvider;
-    private final UserResolver         userResolver;
+    private final GitUserResolver      userResolver;
 
     @Inject
-    public NativeGitConnectionFactory(CredentialsLoader credentialsLoader, GitSshScriptProvider gitSshScriptProvider, UserResolver userResolver) {
+    public NativeGitConnectionFactory(CredentialsLoader credentialsLoader, GitSshScriptProvider gitSshScriptProvider, GitUserResolver userResolver) {
         this.credentialsLoader = credentialsLoader;
         this.gitSshScriptProvider = gitSshScriptProvider;
         this.userResolver = userResolver;

@@ -769,7 +769,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getOutputLinkColor() {
-        return "#61b7ef";
+        return "#1266B1";
     }
 
     @Override
@@ -939,7 +939,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getSuccessColor() {
-        return "#31b993";
+        return "#43A700";
     }
 
     @Override

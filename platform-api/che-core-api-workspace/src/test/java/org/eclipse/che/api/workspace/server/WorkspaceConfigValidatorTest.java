@@ -21,10 +21,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.testng.Assert.assertNull;
 import static org.testng.AssertJUnit.assertNotNull;
@@ -165,7 +163,7 @@ public class WorkspaceConfigValidatorTest {
                                                             .withMachineConfigs(new ArrayList<>(singletonList(devMachine)))
                                                             .withRecipe(null);
         return newDto(WorkspaceConfigDto.class).withName(wsName)
-                                               .withEnvironments(new HashMap<>(singletonMap("dev-env", devEnv)))
-                                               .withDefaultEnvName("dev-env");
+                                               .withEnvironments(new ArrayList<>(singletonList(devEnv)))
+                                               .withDefaultEnv("dev-env");
     }
 }

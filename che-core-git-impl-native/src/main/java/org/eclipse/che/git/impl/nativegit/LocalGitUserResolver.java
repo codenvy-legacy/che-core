@@ -11,7 +11,7 @@
 package org.eclipse.che.git.impl.nativegit;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.git.UserResolver;
+import org.eclipse.che.api.git.GitUserResolver;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -29,16 +30,16 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  * Resolves user for git based on environment context.
  *
  * @author Max Shaposhnik
- *
  */
-public class LocalUserResolver implements UserResolver {
+@Singleton
+public class LocalGitUserResolver implements GitUserResolver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LocalUserResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocalGitUserResolver.class);
 
-    private PreferenceDao preferenceDao;
+    private final PreferenceDao preferenceDao;
 
     @Inject
-    public LocalUserResolver(PreferenceDao preferenceDao) {
+    public LocalGitUserResolver(PreferenceDao preferenceDao) {
         this.preferenceDao = preferenceDao;
     }
 

@@ -13,13 +13,12 @@ package org.eclipse.che.api.git;
 import org.eclipse.che.api.git.shared.GitUser;
 
 /**
- * Resolves git user.
+ * Resolves {@link GitUser} for any git related operations.
  *
  * @author Max Shaposhnik
- *
  */
-public interface UserResolver {
+public interface GitUserResolver {
 
-    public GitUser getUser();
+    GitUser getUser();
 
 }

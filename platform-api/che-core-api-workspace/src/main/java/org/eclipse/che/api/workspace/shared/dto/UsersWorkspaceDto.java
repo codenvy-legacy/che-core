@@ -32,9 +32,9 @@ public interface UsersWorkspaceDto extends UsersWorkspace, Hyperlinks {
     UsersWorkspaceDto withName(String name);
 
     @Override
-    String getDefaultEnvName();
+    String getDefaultEnv();
 
-    UsersWorkspaceDto withDefaultEnvName(String defaultEnvironment);
+    UsersWorkspaceDto withDefaultEnv(String defaultEnvironment);
 
     @Override
     String getDescription();
@@ -52,9 +52,9 @@ public interface UsersWorkspaceDto extends UsersWorkspace, Hyperlinks {
     UsersWorkspaceDto withProjects(List<ProjectConfigDto> projects);
 
     @Override
-    Map<String, EnvironmentStateDto> getEnvironments();
+    List<EnvironmentStateDto> getEnvironments();
 
-    UsersWorkspaceDto withEnvironments(Map<String, EnvironmentStateDto> environments);
+    UsersWorkspaceDto withEnvironments(List<EnvironmentStateDto> environments);
 
     @Override
     Map<String, String> getAttributes();
