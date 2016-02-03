@@ -18,9 +18,9 @@ import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.GitUserResolver;
 import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
-import org.eclipse.che.api.git.UserResolver;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.BranchCreateRequest;
@@ -106,7 +106,7 @@ public class NativeGitConnection implements GitConnection {
     private static final Pattern notInGitRepoErrorPattern = Pattern.compile("^fatal: Not a git repository.*(\\n.*)*$", Pattern.MULTILINE);
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
-    private final UserResolver      userResolver;
+    private final GitUserResolver   userResolver;
 
     /**
      * @param repository
@@ -119,7 +119,7 @@ public class NativeGitConnection implements GitConnection {
      *         when some error occurs
      */
     public NativeGitConnection(File repository, GitSshScriptProvider gitSshScriptProvider,
-                               CredentialsLoader credentialsLoader, UserResolver userResolver) throws GitException {
+                               CredentialsLoader credentialsLoader, GitUserResolver userResolver) throws GitException {
         this(new NativeGit(repository, gitSshScriptProvider, credentialsLoader, new GitAskPassScript()), credentialsLoader, userResolver);
     }
 
@@ -131,7 +131,7 @@ public class NativeGitConnection implements GitConnection {
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(NativeGit nativeGit, CredentialsLoader credentialsLoader, UserResolver userResolver)
+    public NativeGitConnection(NativeGit nativeGit, CredentialsLoader credentialsLoader, GitUserResolver userResolver)
             throws GitException {
         this.credentialsLoader = credentialsLoader;
         this.nativeGit = nativeGit;

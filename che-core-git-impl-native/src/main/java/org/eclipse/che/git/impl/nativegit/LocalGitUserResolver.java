@@ -11,7 +11,7 @@
 package org.eclipse.che.git.impl.nativegit;
 
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.git.UserResolver;
+import org.eclipse.che.api.git.GitUserResolver;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -32,14 +32,14 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  * @author Max Shaposhnik
  */
 @Singleton
-public class LocalUserResolver implements UserResolver {
+public class LocalGitUserResolver implements GitUserResolver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LocalUserResolver.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LocalGitUserResolver.class);
 
     private final PreferenceDao preferenceDao;
 
     @Inject
-    public LocalUserResolver(PreferenceDao preferenceDao) {
+    public LocalGitUserResolver(PreferenceDao preferenceDao) {
         this.preferenceDao = preferenceDao;
     }
 

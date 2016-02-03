@@ -12,7 +12,7 @@ package org.eclipse.che.git.impl;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.CredentialsLoader;
-import org.eclipse.che.api.git.UserResolver;
+import org.eclipse.che.api.git.GitUserResolver;
 import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 import org.eclipse.che.git.impl.GitTestUtil;
@@ -28,7 +28,7 @@ public class GitConnectionFactoryProvider {
 
     @DataProvider(name = "GitConnectionFactory")
     public static Object[][] createConnection() throws GitException {
-        UserResolver resolver = mock(UserResolver.class);
+        GitUserResolver resolver = mock(GitUserResolver.class);
         when(resolver.getUser()).thenReturn(GitTestUtil.getTestGitUser());
         return new Object[][]{
                 new Object[]{
