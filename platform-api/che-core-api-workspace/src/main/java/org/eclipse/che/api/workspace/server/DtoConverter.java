@@ -37,7 +37,7 @@ import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.stack.StackComponentDto;
-import org.eclipse.che.api.workspace.shared.dto.stack.StackDtoDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.stack.StackDto;
 import org.eclipse.che.api.workspace.shared.dto.stack.StackSourceDto;
 
 import java.util.List;
@@ -120,9 +120,9 @@ public final class DtoConverter {
     }
 
     /**
-     * Convert {@link StackImpl} to {@link StackDtoDescriptor}
+     * Convert {@link StackImpl} to {@link StackDto}
      */
-    public static StackDtoDescriptor asDto(StackImpl stack) {
+    public static StackDto asDto(StackImpl stack) {
         WorkspaceConfigDto workspaceConfigDto = null;
         if (stack.getWorkspaceConfig() != null) {
             workspaceConfigDto = asDto(stack.getWorkspaceConfig());
@@ -159,7 +159,7 @@ public final class DtoConverter {
                                                                        .withUsers(permissions.getUsers());
         }
 
-        return newDto(StackDtoDescriptor.class).withId(stack.getId())
+        return newDto(StackDto.class).withId(stack.getId())
                                                .withName(stack.getName())
                                                .withDescription(stack.getDescription())
                                                .withCreator(stack.getCreator())

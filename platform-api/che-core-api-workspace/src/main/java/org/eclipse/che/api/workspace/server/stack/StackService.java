@@ -32,7 +32,6 @@ import org.eclipse.che.api.workspace.server.dao.StackDao;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
 import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 import org.eclipse.che.api.workspace.shared.dto.stack.StackDto;
-import org.eclipse.che.api.workspace.shared.dto.stack.StackDtoDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.user.User;
 
@@ -99,7 +98,7 @@ public class StackService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     @ApiOperation(value = "Create a new stack",
                   notes = "This operation can be performed only by authorized user",
-                  response = StackDtoDescriptor.class)
+                  response = StackDto.class)
     @ApiResponses({@ApiResponse(code = 201, message = "The stack successfully created"),
                    @ApiResponse(code = 400, message = "Missed required parameters, parameters are not valid"),
                    @ApiResponse(code = 403, message = "The user does not have access to create a new stack"),
@@ -141,7 +140,7 @@ public class StackService extends Service {
                    @ApiResponse(code = 404, message = "The requested stack was not found"),
                    @ApiResponse(code = 403, message = "The user has not permission get requested stack"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public StackDtoDescriptor getStack(@ApiParam("The stack id") @PathParam("id") String id) throws ApiException {
+    public StackDto getStack(@ApiParam("The stack id") @PathParam("id") String id) throws ApiException {
         final StackImpl stack = stackDao.getById(id);
 
         User user = EnvironmentContext.getCurrent().getUser();
@@ -169,7 +168,7 @@ public class StackService extends Service {
                    @ApiResponse(code = 409, message = "Conflict error occurred during stack update" +
                                                       "(e.g. Stack with such name already exists)"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public StackDtoDescriptor updateStack(@ApiParam(value = "The stack update", required = true) StackDto updateDto) throws ApiException {
+    public StackDto updateStack(@ApiParam(value = "The stack update", required = true) StackDto updateDto) throws ApiException {
         requireNonNull(updateDto, "Stack required");
         requireNonNullAndNonEmpty(updateDto.getId(), "Stack id required");
         if (updateDto.getSource() == null && updateDto.getWorkspaceConfig() == null) {
@@ -234,12 +233,12 @@ public class StackService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     @ApiOperation(value = "Get the list stacks owned by current user",
                   notes = "This operation can be performed only by authorized user",
-                  response = StackDtoDescriptor.class,
+                  response = StackDto.class,
                   responseContainer = "List")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested list stack entity"),
                    @ApiResponse(code = 403, message = "The user does not have access to get stack entity list"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public List<StackDtoDescriptor> getCreatedStacks(@ApiParam("The number of the items to skip")
+    public List<StackDto> getCreatedStacks(@ApiParam("The number of the items to skip")
                                                      @DefaultValue("0")
                                                      @QueryParam("skipCount") Integer skipCount,
                                                      @ApiParam("The limit of the items in the response, default is 30")
@@ -260,12 +259,12 @@ public class StackService extends Service {
     @RolesAllowed({"user", "system/admin", "system/manager"})
     @ApiOperation(value = "Get the list stacks with required tags",
                   notes = "This operation can be performed only by authorized user",
-                  response = StackDtoDescriptor.class,
+                  response = StackDto.class,
                   responseContainer = "List")
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested list stack entity with required tags"),
                    @ApiResponse(code = 403, message = "The user does not have access to get stack entity list with required tags"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public List<StackDtoDescriptor> searchStacks(@ApiParam("List tags for search")
+    public List<StackDto> searchStacks(@ApiParam("List tags for search")
                                                  @QueryParam("tags") List<String> tags,
                                                  @ApiParam("The number of the items to skip")
                                                  @DefaultValue("0")
@@ -375,7 +374,7 @@ public class StackService extends Service {
         stackDao.update(stack);
     }
 
-    private StackDtoDescriptor asStackDto(StackImpl stack) {
+    private StackDto asStackDto(StackImpl stack) {
         if (stack == null) {
             return null;
         }

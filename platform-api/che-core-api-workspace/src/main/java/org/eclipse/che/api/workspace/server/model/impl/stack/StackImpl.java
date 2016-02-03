@@ -12,6 +12,7 @@ package org.eclipse.che.api.workspace.server.model.impl.stack;
 
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.machine.shared.Permissions;
+import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
 import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 import org.eclipse.che.commons.lang.NameGenerator;
 
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -35,11 +37,11 @@ public class StackImpl implements Stack {
     private String                   scope;
     private String                   creator;
     private List<String>             tags;
-    private WorkspaceConfig          workspaceConfig;
-    private StackSource              source;
+    private WorkspaceConfigImpl      workspaceConfig;
+    private StackSourceImpl          source;
     private List<StackComponentImpl> components;
     private StackIcon                icon;
-    private Permissions              permissions;
+    private Permissions          permissions;
 
     public static StackBuilder builder() {
         return new StackBuilder();
@@ -70,20 +72,23 @@ public class StackImpl implements Stack {
                      List<? extends StackComponent> components,
                      StackIcon icon,
                      Permissions permissions) {
-        this.id = id;
-        this.name = name;
+        this.id = requireNonNull(id, "Required non-null stack id");
+        this.name = requireNonNull(name, "Required non-null stack name");
+        this.scope = requireNonNull(scope, "Required non-null scope: 'general' or 'advanced'");
+        this.tags = requireNonNull(tags, "Required non-null stack tags");//todo verify !!!!!
         this.description = description;
-        this.scope = scope;
         this.creator = creator;
-        this.tags = tags;
-        this.workspaceConfig = workspaceConfig;
-        this.source = source;
+        this.workspaceConfig = new WorkspaceConfigImpl(workspaceConfig);
+        this.source = new StackSourceImpl(source);
+        this.icon = icon;
+        this.permissions = permissions;
         this.components = components == null ? emptyList() : components.stream()
                                                                        .map(component -> new StackComponentImpl(component.getName(),
                                                                                                                 component.getVersion()))
                                                                        .collect(toList());
-        this.icon = icon;
-        this.permissions = permissions;
+        if (source == null && workspaceConfig == null) {
+            throw new IllegalArgumentException("Require non-null source: 'workspaceConfig' or 'stackSource'");
+        }
     }
 
     @Override
@@ -145,16 +150,16 @@ public class StackImpl implements Stack {
     }
 
     public void setWorkspaceConfig(WorkspaceConfig workspaceConfig) {
-        this.workspaceConfig = workspaceConfig;
-    }
-
-    public void setSource(StackSource source) {
-        this.source = source;
+        this.workspaceConfig = workspaceConfig != null ? new WorkspaceConfigImpl(workspaceConfig) : null;
     }
 
     @Override
     public StackSource getSource() {
         return source;
+    }
+
+    public void setSource(StackSource source) {
+        this.source = source != null ? new StackSourceImpl(source) : null;
     }
 
     @Override
@@ -199,12 +204,12 @@ public class StackImpl implements Stack {
                Objects.equals(name, other.name) &&
                Objects.equals(description, other.description) &&
                Objects.equals(creator, other.creator) &&
-               Objects.equals(scope, other.getScope()) &&
-               Objects.equals(getTags(), other.getTags()) &&
-               Objects.equals(getWorkspaceConfig(), other.getWorkspaceConfig()) &&
-               Objects.equals(getSource(), other.getSource()) &&
-               Objects.equals(getComponents(), other.getComponents()) &&
-               Objects.equals(getIcon(), other.getIcon()) &&
+               Objects.equals(scope, other.scope) &&
+               getTags().equals(other.getTags()) &&
+               getComponents().equals(other.getComponents()) &&
+               Objects.equals(workspaceConfig, other.workspaceConfig) &&
+               Objects.equals(source, other.source) &&
+               Objects.equals(icon, other.icon) &&
                Objects.equals(permissions, other.permissions);
     }
 
@@ -216,11 +221,11 @@ public class StackImpl implements Stack {
         hash = 31 * hash + Objects.hashCode(description);
         hash = 31 * hash + Objects.hashCode(scope);
         hash = 31 * hash + Objects.hashCode(creator);
-        hash = 31 * hash + Objects.hashCode(getTags());
-        hash = 31 * hash + Objects.hashCode(getWorkspaceConfig());
-        hash = 31 * hash + Objects.hashCode(getSource());
-        hash = 31 * hash + Objects.hashCode(getComponents());
-        hash = 31 * hash + Objects.hashCode(getIcon());
+        hash = 31 * hash + getTags().hashCode();
+        hash = 31 * hash + getComponents().hashCode();
+        hash = 31 * hash + Objects.hashCode(workspaceConfig);
+        hash = 31 * hash + Objects.hashCode(source);
+        hash = 31 * hash + Objects.hashCode(icon);
         hash = 31 * hash + Objects.hashCode(permissions);
         return hash;
     }

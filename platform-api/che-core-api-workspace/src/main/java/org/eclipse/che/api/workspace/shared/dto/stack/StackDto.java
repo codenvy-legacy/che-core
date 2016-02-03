@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.shared.dto.stack;
 
+import org.eclipse.che.api.core.rest.shared.dto.Hyperlinks;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.machine.shared.dto.recipe.PermissionsDescriptor;
 import org.eclipse.che.api.workspace.server.model.impl.stack.Stack;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
@@ -21,7 +23,7 @@ import java.util.List;
  * @author Alexander Andrienko
  */
 @DTO
-public interface StackDto extends Stack {
+public interface StackDto extends Stack, Hyperlinks {
 
     void setId(String id);
 
@@ -73,4 +75,6 @@ public interface StackDto extends Stack {
     void setPermissions(PermissionsDescriptor permissions);
 
     StackDto withPermissions(PermissionsDescriptor permissions);
+
+    StackDto withLinks(List<Link> links);
 }
