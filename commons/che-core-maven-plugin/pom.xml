@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-commons-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.14.0-sap-04</version>
+        <version>3.14.0-sap-05</version>
     </parent>
     <artifactId>che-core-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
