@@ -18,12 +18,12 @@ import java.util.stream.Stream;
 import com.google.common.base.Objects;
 
 import org.eclipse.che.api.core.ConflictException;
+import static com.google.common.collect.ImmutableSet.of;
 
-import static java.util.stream.Collectors.toSet;
 
 public class StackIcon {
 
-    private static final Set<String> validMediaTypes = Stream.of("image/jpeg", "image/png", "image/gif", "image/svg+xml").collect(toSet());
+    private static final Set<String> validMediaTypes = of("image/jpeg", "image/png", "image/gif", "image/svg+xml");
     private static final int         LIMIT_SIZE      = 1024 * 1024;
 
     private final String mediaType;
@@ -40,7 +40,7 @@ public class StackIcon {
         this.data = data;
 
         if (!validMediaTypes.contains(mediaType)) {
-            throw new IOException("Image media type '" + mediaType + "' is unsupported.");
+            throw new IOException("Image media type '" + mediaType + "' is unsupported. Supported mediatypes: " + validMediaTypes);
         }
         this.mediaType = mediaType;
     }

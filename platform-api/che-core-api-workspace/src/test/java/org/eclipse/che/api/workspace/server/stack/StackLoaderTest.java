@@ -50,6 +50,7 @@ import org.eclipse.che.api.workspace.shared.dto.RecipeDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.stack.StackComponentDto;
+import org.eclipse.che.api.workspace.shared.dto.stack.StackDto;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.Listeners;
@@ -121,7 +122,7 @@ public class StackLoaderTest {
 
     @Test
     public void dtoShouldBeSerialized() {
-        StackDtoDescriptor stackDtoDescriptor = newDto(StackDtoDescriptor.class).withName("nameWorkspaceConfig");
+        StackDto stackDtoDescriptor = newDto(StackDto.class).withName("nameWorkspaceConfig");
         StackComponentDto stackComponentDto = newDto(StackComponentDto.class)
                                                         .withName("java")
                                                         .withVersion("1.8");
@@ -175,7 +176,7 @@ public class StackLoaderTest {
 
         RecipeDto recipeDto = newDto(RecipeDto.class).withType("type").withScript("script");
 
-        LimitsDto limitsDto = newDto(LimitsDto.class).withMemory(100);
+        LimitsDto limitsDto = newDto(LimitsDto.class).withRam(100);
 
         MachineSourceDto machineSourceDto = newDto(MachineSourceDto.class).withLocation("location").withType("type");
 
@@ -197,9 +198,9 @@ public class StackLoaderTest {
                                                                                 .withAttributes(attributes)
                                                                                 .withDescription("some workspace")
                                                                                 .withLinks(Collections.singletonList(link))
-                                                                                .withDefaultEnvName("some Default Env name")
+                                                                                .withDefaultEnv("some Default Env name")
                                                                                 .withProjects(Collections.singletonList(projectConfigDto))
-                                                                                .withEnvironments(Collections.singletonMap("test", environmentDto))
+                                                                                .withEnvironments(Collections.singletonList(environmentDto))
                                                                                 .withCommands(Collections.singletonList(commandDto));
 
         stackDtoDescriptor.setWorkspaceConfig(workspaceConfigDto);

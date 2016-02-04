@@ -164,10 +164,9 @@ public class StackServiceTest {
 
         WorkspaceConfigImpl workspaceConfig = WorkspaceConfigImpl.builder()
                                                                  .setName(WORKSPACE_CONFIG_NAME)
-                                                                 .setDefaultEnvName(DEF_ENVIRONMENT_NAME)
+                                                                 .setDefaultEnv(DEF_ENVIRONMENT_NAME)
                                                                  .setCommands(Collections.singletonList(command))
-                                                                 .setEnvironments(Collections.singletonMap(ENVIRONMENT_KEY,
-                                                                                                           environment))
+                                                                 .setEnvironments(Collections.singletonList(environment))
                                                                  .build();
 
         stackSourceDto = newDto(StackSourceDto.class).withType(SOURCE_TYPE).withOrigin(SOURCE_ORIGIN);
@@ -220,7 +219,7 @@ public class StackServiceTest {
 
         verify(stackDao).create(any(StackImpl.class));
 
-        final StackDtoDescriptor stackDtoDescriptor = unwrapDto(response, StackDtoDescriptor.class);
+        final StackDto stackDtoDescriptor = unwrapDto(response, StackDto.class);
 
         assertEquals(stackDtoDescriptor.getId(), stackDto.getId());
         assertEquals(stackDtoDescriptor.getName(), stackDto.getName());
@@ -289,7 +288,7 @@ public class StackServiceTest {
 
         assertEquals(response.getStatusCode(), 200);
 
-        StackDtoDescriptor result = unwrapDto(response, StackDtoDescriptor.class);
+        StackDto result = unwrapDto(response, StackDto.class);
         assertEquals(result.getId(), stackImpl.getId());
         assertEquals(result.getName(), stackImpl.getName());
         assertEquals(result.getDescription(), stackImpl.getDescription());
@@ -400,7 +399,7 @@ public class StackServiceTest {
                                    .put(SECURE_PATH + "/stack");
 
         assertEquals(response.getStatusCode(), 200);
-        StackDtoDescriptor result = unwrapDto(response, StackDtoDescriptor.class);
+        StackDto result = unwrapDto(response, StackDto.class);
 
         assertEquals(result.getId(), updatedStackDto.getId());
         assertEquals(result.getName(), updatedStackDto.getName());
@@ -441,7 +440,7 @@ public class StackServiceTest {
                                    .put(SECURE_PATH + "/stack");
 
         assertEquals(response.getStatusCode(), 200);
-        StackDtoDescriptor result = unwrapDto(response, StackDtoDescriptor.class);
+        StackDto result = unwrapDto(response, StackDto.class);
 
         assertEquals(result.getId(), updatedStackDto.getId());
         assertEquals(result.getName(), updatedStackDto.getName());
@@ -510,8 +509,8 @@ public class StackServiceTest {
                                    .get(SECURE_PATH + "/stack?skipCount=0&maxItems=1");
 
         assertEquals(response.getStatusCode(), 200);
-        StackDtoDescriptor result = DtoFactory.getInstance()
-                                              .createListDtoFromJson(response.body().print(), StackDtoDescriptor.class)
+        StackDto result = DtoFactory.getInstance()
+                                              .createListDtoFromJson(response.body().print(), StackDto.class)
                                               .get(0);
 
         assertEquals(result.getId(), stackImpl.getId());
@@ -541,7 +540,7 @@ public class StackServiceTest {
         verify(stackDao).getByCreator(anyString(), anyInt(), anyInt());
         assertEquals(response.getStatusCode(), 200);
 
-        List<StackDtoDescriptor> result = unwrapListDto(response, StackDtoDescriptor.class);
+        List<StackDto> result = unwrapListDto(response, StackDto.class);
 
         assertEquals(result.get(0).getId(), stackImpl.getId());
         assertEquals(result.get(0).getName(), stackImpl.getName());

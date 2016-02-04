@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- * Codenvy, S.A. - initial API and implementation
+ *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.model.impl.stack;
 
@@ -73,9 +73,9 @@ public class StackImpl implements Stack {
                      StackIcon icon,
                      Permissions permissions) {
         this.id = requireNonNull(id, "Required non-null stack id");
-        this.name = requireNonNull(name, "Required non-null stack name");
+        setName(name);
         this.scope = requireNonNull(scope, "Required non-null scope: 'general' or 'advanced'");
-        this.tags = requireNonNull(tags, "Required non-null stack tags");//todo verify !!!!!
+        this.tags = requireNonNull(tags, "Required non-null stack tags");
         this.description = description;
         this.creator = creator;
         this.workspaceConfig = new WorkspaceConfigImpl(workspaceConfig);
@@ -102,6 +102,7 @@ public class StackImpl implements Stack {
     }
 
     public void setName(String name) {
+        requireNonNull("requre non-null stack name");
         this.name = name;
     }
 
