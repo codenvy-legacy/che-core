@@ -67,20 +67,4 @@ public class CredentialsLoader {
 
         return null;
     }
-
-    /**
-     * @param providerId
-     * @return user by provider id.
-     * @throws GitException
-     */
-    public GitUser getUser(String providerId) throws GitException {
-        CredentialsProvider provider = credentialsProviders.get(providerId);
-        if (provider == null) {
-            throw new GitException("Provider " + providerId + " is not found");
-        }
-        GitUser user = provider.getUser();
-        LOG.debug("Provider {} user {}", providerId, user);
-        return user;
-    }
-
 }
