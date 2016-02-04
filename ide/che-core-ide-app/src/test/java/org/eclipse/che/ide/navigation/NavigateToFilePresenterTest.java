@@ -18,7 +18,7 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.node.Node;
+import org.eclipse.che.ide.api.tree.Node;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;

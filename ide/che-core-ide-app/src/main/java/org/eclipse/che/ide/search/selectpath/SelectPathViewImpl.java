@@ -22,9 +22,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.ide.CoreLocalizationConstant;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.node.Node;
-import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
+import org.eclipse.che.ide.api.data.HasStorablePath;
+import org.eclipse.che.ide.api.tree.Node;
+import org.eclipse.che.ide.api.tree.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.ui.smartTree.KeyboardNavigationHandler;
 import org.eclipse.che.ide.ui.smartTree.NodeUniqueKeyProvider;
 import org.eclipse.che.ide.ui.smartTree.Tree;

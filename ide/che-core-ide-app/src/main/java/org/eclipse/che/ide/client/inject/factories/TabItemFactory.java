@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.client.inject.factories;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import org.eclipse.che.ide.part.widgets.editortab.EditorTab;
 import org.eclipse.che.ide.part.widgets.partbutton.PartButton;
 import org.vectomatic.dom.svg.ui.SVGResource;

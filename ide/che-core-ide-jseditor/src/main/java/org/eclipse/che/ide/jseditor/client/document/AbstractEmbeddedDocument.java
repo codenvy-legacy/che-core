@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.document;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import org.eclipse.che.ide.jseditor.client.text.LinearRange;
 import org.eclipse.che.ide.jseditor.client.text.TextRange;
 

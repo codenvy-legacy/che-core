@@ -77,10 +77,9 @@ import org.eclipse.che.ide.api.parts.WorkBenchView;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
-import org.eclipse.che.ide.api.project.node.settings.SettingsProvider;
-import org.eclipse.che.ide.api.project.node.settings.impl.DummySettingsProvider;
-import org.eclipse.che.ide.api.project.tree.TreeStructureProviderRegistry;
+import org.eclipse.che.ide.api.tree.interceptor.NodeInterceptor;
+import org.eclipse.che.ide.api.tree.settings.SettingsProvider;
+import org.eclipse.che.ide.api.tree.settings.impl.DummySettingsProvider;
 import org.eclipse.che.ide.api.project.type.ProjectTemplateRegistry;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
@@ -155,7 +154,6 @@ import org.eclipse.che.ide.projectimport.wizard.ProjectNotificationSubscriberImp
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
 import org.eclipse.che.ide.projectimport.zip.ZipImportWizardRegistrar;
-import org.eclipse.che.ide.projecttree.TreeStructureProviderRegistryImpl;
 import org.eclipse.che.ide.projecttype.BlankProjectWizardRegistrar;
 import org.eclipse.che.ide.projecttype.ProjectTemplateRegistryImpl;
 import org.eclipse.che.ide.projecttype.ProjectTypeRegistryImpl;
@@ -436,10 +434,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(NodeManager.class);
         bind(ProjectExplorerView.class).to(ProjectExplorerViewImpl.class).in(Singleton.class);
         bind(ProjectExplorerPart.class).to(ProjectExplorerPresenter.class).in(Singleton.class);
-
-        //support old tree
-        bind(TreeStructureProviderRegistry.class).to(TreeStructureProviderRegistryImpl.class).in(Singleton.class);
-        install(new GinFactoryModuleBuilder().build(org.eclipse.che.ide.api.project.tree.generic.NodeFactory.class));
 
         GinMultibinder<NodeIconProvider> themeBinder = GinMultibinder.newSetBinder(binder(), NodeIconProvider.class);
         themeBinder.addBinding().to(FileIconProvider.class);

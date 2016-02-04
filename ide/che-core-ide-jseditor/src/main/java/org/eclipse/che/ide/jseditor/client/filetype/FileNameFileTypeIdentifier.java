@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.jseditor.client.filetype;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 
 import java.util.Collections;
 import java.util.List;

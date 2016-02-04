@@ -17,7 +17,7 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.data.HasStorablePath;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.ui.dialogs.InputCallback;
 import org.eclipse.che.ide.ui.dialogs.input.InputDialog;

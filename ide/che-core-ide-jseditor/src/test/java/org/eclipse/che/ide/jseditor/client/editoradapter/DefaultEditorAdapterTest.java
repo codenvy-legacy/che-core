@@ -18,7 +18,7 @@ import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.PartPresenter;
 import org.eclipse.che.ide.api.parts.PropertyListener;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.texteditor.UndoableEditor;
 import org.eclipse.che.ide.jseditor.client.document.Document;

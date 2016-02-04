@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.debug;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**

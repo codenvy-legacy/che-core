@@ -20,7 +20,7 @@ import org.eclipse.che.ide.Resources;
 import org.eclipse.che.ide.api.action.AbstractPerspectiveAction;
 import org.eclipse.che.ide.api.action.ActionEvent;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.project.node.resource.SupportRename;
+import org.eclipse.che.ide.api.data.SupportRename;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;

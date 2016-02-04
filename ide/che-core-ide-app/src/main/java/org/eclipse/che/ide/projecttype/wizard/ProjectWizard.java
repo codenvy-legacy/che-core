@@ -17,17 +17,19 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.project.shared.Constants;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.data.HasStorablePath;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
-import org.eclipse.che.ide.api.event.project.OpenProjectEvent;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
-import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.api.tree.Node;
 import org.eclipse.che.ide.api.wizard.AbstractWizard;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.projectimport.wizard.ProjectImporter;
@@ -213,22 +215,19 @@ public class ProjectWizard extends AbstractWizard<ProjectConfigDto> {
 
     private void doSaveAsBlank(final CompleteCallback callback) {
         dataObject.setType(Constants.BLANK_ID);
-        final Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
-        projectServiceClient
-                .updateProject(workspaceId, dataObject.getName(), dataObject, new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
-                    @Override
-                    protected void onSuccess(ProjectConfigDto result) {
-                        // just re-open project if it's already opened
-                        ProjectWizard.this.eventBus.fireEvent(new OpenProjectEvent(result));
-                        callback.onCompleted();
-                    }
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        final String message =
-                                ProjectWizard.this.dtoFactory.createDtoFromJson(exception.getMessage(), ServiceError.class).getMessage();
-                        callback.onFailure(new Exception(message));
-                    }
-                });
+        projectServiceClient.updateProject(workspaceId, dataObject.getName(), dataObject).then(new Operation<ProjectConfigDto>() {
+            @Override
+            public void apply(ProjectConfigDto arg) throws OperationException {
+                callback.onCompleted();
+            }
+        }).catchError(new Operation<PromiseError>() {
+            @Override
+            public void apply(PromiseError arg) throws OperationException {
+                final String message =
+                        ProjectWizard.this.dtoFactory.createDtoFromJson(arg.getMessage(), ServiceError.class).getMessage();
+                callback.onFailure(new Exception(message));
+            }
+        });
     }
 }

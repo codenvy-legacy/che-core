@@ -24,7 +24,7 @@ import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
 import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
 import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.api.project.node.HasStorablePath;
+import org.eclipse.che.ide.api.data.HasStorablePath;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;

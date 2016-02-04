@@ -10,8 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.event;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
-import org.eclipse.che.ide.api.project.tree.generic.FileNode;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import com.google.gwt.event.shared.GwtEvent;
 
 /**
@@ -30,7 +29,7 @@ public class FileEvent extends GwtEvent<FileEventHandler> {
      * Creates new {@link FileEvent}.
      *
      * @param file
-     *         {@link FileNode} that represents an affected file
+     *         {@link VirtualFile} that represents an affected file
      * @param fileOperation
      *         file operation
      */
@@ -45,7 +44,7 @@ public class FileEvent extends GwtEvent<FileEventHandler> {
         return TYPE;
     }
 
-    /** @return {@link FileNode} that represents an affected file */
+    /** @return {@link VirtualFile} that represents an affected file */
     public VirtualFile getFile() {
         return file;
     }
@@ -60,7 +59,7 @@ public class FileEvent extends GwtEvent<FileEventHandler> {
         handler.onFileOperation(this);
     }
 
-    public static enum FileOperation {
+    public enum FileOperation {
         OPEN, SAVE, CLOSE
     }
 }

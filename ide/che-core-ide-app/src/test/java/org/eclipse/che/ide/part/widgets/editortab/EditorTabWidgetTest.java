@@ -17,7 +17,7 @@ import com.google.gwtmockito.GwtMockitoTestRunner;
 
 import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
 import org.eclipse.che.ide.part.widgets.editortab.EditorTab.ActionDelegate;
 import org.junit.Before;

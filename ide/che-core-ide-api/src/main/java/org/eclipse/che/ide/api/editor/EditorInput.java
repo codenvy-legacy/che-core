@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.editor;
 
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;

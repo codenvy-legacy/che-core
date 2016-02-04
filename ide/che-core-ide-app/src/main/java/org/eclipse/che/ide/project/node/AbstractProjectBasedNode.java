@@ -11,11 +11,11 @@
 package org.eclipse.che.ide.project.node;
 
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
-import org.eclipse.che.ide.api.project.node.AbstractTreeNode;
-import org.eclipse.che.ide.api.project.node.HasDataObject;
-import org.eclipse.che.ide.api.project.node.HasProjectConfig;
-import org.eclipse.che.ide.api.project.node.settings.HasSettings;
-import org.eclipse.che.ide.api.project.node.settings.NodeSettings;
+import org.eclipse.che.ide.api.tree.AbstractTreeNode;
+import org.eclipse.che.ide.api.data.HasDataObject;
+import org.eclipse.che.ide.api.project.HasProjectConfig;
+import org.eclipse.che.ide.api.tree.settings.HasSettings;
+import org.eclipse.che.ide.api.tree.settings.NodeSettings;
 import org.eclipse.che.ide.ui.smartTree.presentation.HasPresentation;
 import org.eclipse.che.ide.ui.smartTree.presentation.NodePresentation;
 

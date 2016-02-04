@@ -17,7 +17,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.eclipse.che.ide.api.editor.EditorInitException;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.file.VirtualFile;
 import org.eclipse.che.ide.api.texteditor.TextEditorOperations;
 import org.eclipse.che.ide.jseditor.client.JsEditorConstants;
 import org.eclipse.che.ide.jseditor.client.codeassist.CodeAssistProcessor;
