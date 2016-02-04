@@ -14,15 +14,15 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
 import org.eclipse.che.ide.api.editor.EditorOpenedEventHandler;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.project.node.HasProjectConfig;
+import org.eclipse.che.ide.api.project.node.HasProjectConfig.ProjectConfig;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.api.project.tree.VirtualFileImpl;
+import org.eclipse.che.ide.api.project.tree.VirtualFileInfo;
 import org.eclipse.che.ide.debug.Breakpoint;
 import org.eclipse.che.ide.debug.Breakpoint.Type;
 import org.eclipse.che.ide.debug.BreakpointManager;
@@ -56,6 +56,7 @@ import static org.eclipse.che.ide.debug.DebuggerStateEvent.DebuggerState.DISCONN
  * Implementation of {@link BreakpointManager} for jseditor.
  *
  * @author Anatoliy Bazko
+ * @author Valeriy Svydenko
  */
 public class BreakpointManagerImpl implements BreakpointManager, LineChangeAction {
 
@@ -495,19 +496,13 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
         List<BreakpointDto> allDtoBreakpoints = dtoFactory.createListDtoFromJson(data, BreakpointDto.class);
 
         for (final BreakpointDto dto : allDtoBreakpoints) {
-            BreakpointVirtualFile file = new BreakpointVirtualFile(dto.getPath(),
-                                                                   dto.getFileMediaType(),
-                                                                   new HasProjectConfig() {
-                                                                       @Override
-                                                                       public ProjectConfigDto getProjectConfig() {
-                                                                           return dto.getFileProjectConfig();
-                                                                       }
+            VirtualFileInfo virtualFileInfo = VirtualFileInfo.newBuilder()
+                                                             .setPath(dto.getPath())
+                                                             .setMediaType(dto.getFileMediaType())
+                                                             .setProject(new ProjectConfig(dto.getFileProjectConfig()))
+                                                             .build();
 
-                                                                       @Override
-                                                                       public void setProjectConfig(
-                                                                               ProjectConfigDto projectConfig) {
-                                                                       }
-                                                                   });
+            VirtualFile file = new VirtualFileImpl(virtualFileInfo);
 
             if (dto.getType() == Type.CURRENT) {
                 doSetCurrentBreakpoint(file, dto.getLineNumber());
@@ -649,64 +644,4 @@ public class BreakpointManagerImpl implements BreakpointManager, LineChangeActio
         }
     }
 
-    /**
-     * Simplified implementation of the {@link VirtualFile}.
-     * Keeps only necessary information for debugger.
-     */
-    private class BreakpointVirtualFile implements VirtualFile {
-        private final String           path;
-        private final String           mediaType;
-        private final HasProjectConfig projectConfig;
-
-        public BreakpointVirtualFile(String path, String mediaType, HasProjectConfig projectConfig) {
-            this.path = path;
-            this.mediaType = mediaType;
-            this.projectConfig = projectConfig;
-        }
-
-        @Override
-        public String getPath() {
-            return path;
-        }
-
-        @Override
-        public String getName() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getDisplayName() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getMediaType() {
-            return mediaType;
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public HasProjectConfig getProject() {
-            return projectConfig;
-        }
-
-        @Override
-        public String getContentUrl() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Promise<String> getContent() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Promise<Void> updateContent(String content) {
-            throw new UnsupportedOperationException();
-        }
-    }
 }

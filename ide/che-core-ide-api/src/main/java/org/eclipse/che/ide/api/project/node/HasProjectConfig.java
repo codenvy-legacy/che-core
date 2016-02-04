@@ -12,24 +12,29 @@ package org.eclipse.che.ide.api.project.node;
 
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * @author Vlad Zhukovskiy
+ * @author Valeriy Svydenko
  */
 public interface HasProjectConfig {
 
-    HasProjectConfig EMPTY = new HasProjectConfig() {
+    class ProjectConfig implements HasProjectConfig {
+        private ProjectConfigDto projectConfig;
+
+        public ProjectConfig(ProjectConfigDto projectConfig) {
+            this.projectConfig = projectConfig;
+        }
+
         @Override
         public ProjectConfigDto getProjectConfig() {
-            return null;
+            return this.projectConfig;
         }
 
         @Override
-        public void setProjectConfig(@NotNull ProjectConfigDto projectConfig) {
-
+        public void setProjectConfig(ProjectConfigDto projectConfig) {
+            this.projectConfig = projectConfig;
         }
-    };
+    }
 
     ProjectConfigDto getProjectConfig();
 
