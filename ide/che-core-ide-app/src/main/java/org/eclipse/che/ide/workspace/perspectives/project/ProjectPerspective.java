@@ -86,8 +86,8 @@ public class ProjectPerspective extends AbstractPerspective {
         toolPanel.go(view.getToolPanel());
         infoPanel.go(view.getInformationPanel());
 
-        openActivePart(INFORMATION);
-
         container.setWidget(view);
+
+        openActivePart(NAVIGATION);
     }
 }

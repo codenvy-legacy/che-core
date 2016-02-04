@@ -16,7 +16,7 @@ import org.eclipse.che.api.project.gwt.client.ProjectServiceClient;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.Wizard;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
@@ -46,15 +46,15 @@ public class ProjectUpdaterTest {
 
     //constructor mocks
     @Mock
-    private DtoUnmarshallerFactory              dtoUnmarshallerFactory;
+    private DtoUnmarshallerFactory        dtoUnmarshallerFactory;
     @Mock
-    private ProjectServiceClient                projectServiceClient;
+    private ProjectServiceClient          projectServiceClient;
     @Mock
-    private ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
+    private ProjectNotificationSubscriber projectNotificationSubscriber;
     @Mock
-    private EventBus                            eventBus;
+    private EventBus                      eventBus;
     @Mock
-    private AppContext                          appContext;
+    private AppContext                    appContext;
 
     //additional mocks
     @Mock
@@ -77,7 +77,7 @@ public class ProjectUpdaterTest {
 
         updater = new ProjectUpdater(dtoUnmarshallerFactory,
                                      projectServiceClient,
-                                     importProjectNotificationSubscriber,
+                                     projectNotificationSubscriber,
                                      eventBus,
                                      appContext);
     }
@@ -89,11 +89,14 @@ public class ProjectUpdaterTest {
         verify(projectConfig).getName();
         verify(dtoUnmarshallerFactory).newUnmarshaller(ProjectConfigDto.class);
 
-        verify(projectServiceClient).updateProject(eq(WORKSPACE_ID), eq(PROJECT_NAME), eq(projectConfig), asyncRequestCallback.capture());
+        verify(projectServiceClient).updateProject(eq(WORKSPACE_ID),
+                                                   eq('/' + PROJECT_NAME),
+                                                   eq(projectConfig),
+                                                   asyncRequestCallback.capture());
         GwtReflectionUtils.callOnSuccess(asyncRequestCallback.getValue(), projectConfig);
 
         verify(eventBus, times(2)).fireEvent(Matchers.<CreateProjectEvent>anyObject());
-        verify(importProjectNotificationSubscriber).onSuccess();
+        verify(projectNotificationSubscriber).onSuccess();
         verify(completeCallback).onCompleted();
     }
 }

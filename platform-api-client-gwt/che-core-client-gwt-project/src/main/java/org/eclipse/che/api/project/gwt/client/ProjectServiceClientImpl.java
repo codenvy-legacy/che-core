@@ -188,6 +188,15 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
                            .send(callback);
     }
 
+    @Override
+    public Promise<List<SourceEstimation>> resolveSources(String workspaceId, String path) {
+        final String requestUrl = extPath + "/project/" + workspaceId + "/resolve" + normalizePath(path);
+        return asyncRequestFactory.createGetRequest(requestUrl)
+                                  .header(ACCEPT, MimeType.APPLICATION_JSON)
+                                  .loader(loaderFactory.newLoader("Resolving sources..."))
+                                  .send(dtoUnmarshaller.newListUnmarshaller(SourceEstimation.class));
+    }
+
 
     @Override
     public void getModules(String workspaceId, String path, AsyncRequestCallback<List<ProjectConfigDto>> callback) {
@@ -221,6 +230,16 @@ public class ProjectServiceClientImpl implements ProjectServiceClient {
                            .header(ACCEPT, MimeType.APPLICATION_JSON)
                            .loader(loaderFactory.newLoader("Updating project..."))
                            .send(callback);
+    }
+
+    @Override
+    public Promise<ProjectConfigDto> updateProject(String workspaceId, String path, ProjectConfigDto projectConfig) {
+        final String requestUrl = extPath + "/project/" + workspaceId + normalizePath(path);
+        return asyncRequestFactory.createRequest(PUT, requestUrl, projectConfig, false)
+                           .header(CONTENT_TYPE, MimeType.APPLICATION_JSON)
+                           .header(ACCEPT, MimeType.APPLICATION_JSON)
+                           .loader(loaderFactory.newLoader("Updating project..."))
+                           .send(dtoUnmarshaller.newUnmarshaller(ProjectConfigDto.class));
     }
 
     @Override

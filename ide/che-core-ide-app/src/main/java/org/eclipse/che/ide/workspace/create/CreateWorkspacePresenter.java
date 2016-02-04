@@ -34,13 +34,11 @@ import org.eclipse.che.ide.CoreLocalizationConstant;
 import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The class contains business logic which allow to create user workspace if it doesn't exist.
@@ -237,16 +235,16 @@ public class CreateWorkspacePresenter implements CreateWorkspaceView.ActionDeleg
                                                            .withType("recipe")
                                                            .withLocation(view.getRecipeUrl()))
                                      .withDev(true)
-                                     .withLimits(dtoFactory.createDto(LimitsDto.class).withMemory(2048)));
+                                     .withLimits(dtoFactory.createDto(LimitsDto.class).withRam(2048)));
 
-        Map<String, EnvironmentDto> environments = new HashMap<>();
-        environments.put(wsName, dtoFactory.createDto(EnvironmentDto.class)
-                                           .withName(wsName)
-                                           .withMachineConfigs(machineConfigs));
+        List<EnvironmentDto> environments = new ArrayList<>();
+        environments.add(dtoFactory.createDto(EnvironmentDto.class)
+                                   .withName(wsName)
+                                   .withMachineConfigs(machineConfigs));
 
         return dtoFactory.createDto(WorkspaceConfigDto.class)
                          .withName(wsName)
-                         .withDefaultEnvName(wsName)
+                         .withDefaultEnv(wsName)
                          .withEnvironments(environments);
     }
 }

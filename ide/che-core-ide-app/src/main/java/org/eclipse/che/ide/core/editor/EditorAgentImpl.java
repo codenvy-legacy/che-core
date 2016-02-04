@@ -396,6 +396,7 @@ public class EditorAgentImpl implements EditorAgent {
     @NotNull
     @Override
     public Map<String, EditorPartPresenter> getOpenedEditors() {
+        Log.info(getClass(), "size: "  + openedEditors.size());
         return openedEditors;
     }
 

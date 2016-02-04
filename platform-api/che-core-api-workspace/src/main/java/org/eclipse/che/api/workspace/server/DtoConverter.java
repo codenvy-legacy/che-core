@@ -33,10 +33,8 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 // TODO! use global registry for DTO converters
@@ -60,16 +58,16 @@ public final class DtoConverter {
                                                          .stream()
                                                          .map(DtoConverter::asDto)
                                                          .collect(toList());
-        final Map<String, EnvironmentStateDto> environments = workspace.getEnvironments()
-                                                                       .values()
-                                                                       .stream()
-                                                                       .collect(toMap(EnvironmentState::getName, DtoConverter::asDto));
+        final List<EnvironmentStateDto> environments = workspace.getEnvironments()
+                                                                .stream()
+                                                                .map(DtoConverter::asDto)
+                                                                .collect(toList());
 
         return newDto(UsersWorkspaceDto.class).withId(workspace.getId())
                                               .withStatus(workspace.getStatus())
                                               .withName(workspace.getName())
                                               .withOwner(workspace.getOwner())
-                                              .withDefaultEnvName(workspace.getDefaultEnvName())
+                                              .withDefaultEnv(workspace.getDefaultEnv())
                                               .withCommands(commands)
                                               .withProjects(projects)
                                               .withEnvironments(environments)
@@ -89,13 +87,13 @@ public final class DtoConverter {
                                                          .stream()
                                                          .map(DtoConverter::asDto)
                                                          .collect(toList());
-        final Map<String, EnvironmentDto> environments = workspace.getEnvironments()
-                                                                  .values()
-                                                                  .stream()
-                                                                  .collect(toMap(Environment::getName, DtoConverter::asDto));
+        final List<EnvironmentDto> environments = workspace.getEnvironments()
+                                                           .stream()
+                                                           .map(DtoConverter::asDto)
+                                                           .collect(toList());
 
         return newDto(WorkspaceConfigDto.class).withName(workspace.getName())
-                                               .withDefaultEnvName(workspace.getDefaultEnvName())
+                                               .withDefaultEnv(workspace.getDefaultEnv())
                                                .withCommands(commands)
                                                .withProjects(projects)
                                                .withEnvironments(environments)
@@ -179,17 +177,17 @@ public final class DtoConverter {
                                                          .stream()
                                                          .map(DtoConverter::asDto)
                                                          .collect(toList());
-        final Map<String, EnvironmentStateDto> environments = workspace.getEnvironments()
-                                                                       .values()
-                                                                       .stream()
-                                                                       .collect(toMap(EnvironmentState::getName, DtoConverter::asDto));
+        final List<EnvironmentStateDto> environments = workspace.getEnvironments()
+                                                               .stream()
+                                                               .map(DtoConverter::asDto)
+                                                               .collect(toList());
 
         return newDto(RuntimeWorkspaceDto.class).withId(workspace.getId())
                                                 .withName(workspace.getName())
                                                 .withStatus(workspace.getStatus())
                                                 .withOwner(workspace.getOwner())
                                                 .withActiveEnvName(workspace.getActiveEnvName())
-                                                .withDefaultEnvName(workspace.getDefaultEnvName())
+                                                .withDefaultEnv(workspace.getDefaultEnv())
                                                 .withCommands(commands)
                                                 .withProjects(projects)
                                                 .withEnvironments(environments)

@@ -52,10 +52,11 @@ public class RecentFileAction extends AbstractPerspectiveAction {
 
     /**
      * Return an id for the registration in action manager.
+     * ID value forms based on file path to define unique key for this action.
      *
      * @return action id
      */
     public String getId() {
-        return "close-file-" + file.getName();
+        return "recent/" + file.getPath();
     }
 }

@@ -56,4 +56,10 @@ public interface ReconcilingStrategy {
      *         the document partition to be reconciled
      */
     void reconcile(Region partition);
+
+
+    /**
+     * This method should stop interact on changes in editor and clean up all outer reference (like handling events and so on)
+     */
+    void closeReconciler();
 }

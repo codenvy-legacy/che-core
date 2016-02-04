@@ -20,5 +20,6 @@
     <inherits name="com.google.gwt.inject.Inject"/>
     <inherits name="com.google.gwt.user.Debug"/>
     <inherits name="org.eclipse.che.ide.Core"/>
+    <inherits name="org.eclipse.che.ide.ui.CodenvyUI"/>
 
 </module>

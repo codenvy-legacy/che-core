@@ -177,7 +177,10 @@ public class OAuthAuthenticationService {
         OAuthAuthenticator provider = getAuthenticator(oauthProvider);
         final User user = EnvironmentContext.getCurrent().getUser();
         try {
-            final OAuthToken token = provider.getToken(user.getId());
+            OAuthToken token = provider.getToken(user.getId());
+            if (token == null) {
+                token = provider.getToken(user.getName());
+            }
             if (token != null) {
                 return token;
             }

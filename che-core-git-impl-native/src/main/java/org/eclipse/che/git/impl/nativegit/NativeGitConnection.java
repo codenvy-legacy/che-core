@@ -18,6 +18,7 @@ import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.GitUserResolver;
 import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
@@ -105,6 +106,7 @@ public class NativeGitConnection implements GitConnection {
     private static final Pattern notInGitRepoErrorPattern = Pattern.compile("^fatal: Not a git repository.*(\\n.*)*$", Pattern.MULTILINE);
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
+    private final GitUserResolver   userResolver;
 
     /**
      * @param repository
@@ -117,8 +119,8 @@ public class NativeGitConnection implements GitConnection {
      *         when some error occurs
      */
     public NativeGitConnection(File repository, GitSshScriptProvider gitSshScriptProvider,
-                               CredentialsLoader credentialsLoader) throws GitException {
-        this(new NativeGit(repository, gitSshScriptProvider, credentialsLoader, new GitAskPassScript()), credentialsLoader);
+                               CredentialsLoader credentialsLoader, GitUserResolver userResolver) throws GitException {
+        this(new NativeGit(repository, gitSshScriptProvider, credentialsLoader, new GitAskPassScript()), credentialsLoader, userResolver);
     }
 
     /**
@@ -129,10 +131,11 @@ public class NativeGitConnection implements GitConnection {
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(NativeGit nativeGit, CredentialsLoader credentialsLoader)
+    public NativeGitConnection(NativeGit nativeGit, CredentialsLoader credentialsLoader, GitUserResolver userResolver)
             throws GitException {
         this.credentialsLoader = credentialsLoader;
         this.nativeGit = nativeGit;
+        this.userResolver = userResolver;
     }
 
     @Override
@@ -374,7 +377,7 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public LogPage log(LogRequest request) throws GitException {
-        return new LogPage(nativeGit.createLogCommand().execute());
+        return new LogPage(nativeGit.createLogCommand().setFileFilter(request.getFileFilter()).execute());
     }
 
     @Override
@@ -645,14 +648,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     private GitUser getLocalCommitter() throws GitException {
-        String credentialsProvider = "che";
-        try {
-            credentialsProvider = getConfig().get("codenvy.credentialsProvider");
-        } catch (GitException e) {
-            //ignore property not found.
-        }
-
-        return credentialsLoader.getUser(credentialsProvider);
+        return userResolver.getUser();
     }
 
 

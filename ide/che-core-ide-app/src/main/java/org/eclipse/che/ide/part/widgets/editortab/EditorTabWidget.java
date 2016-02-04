@@ -37,7 +37,6 @@ import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
 import org.vectomatic.dom.svg.ui.SVGImage;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -143,7 +142,7 @@ public class EditorTabWidget extends Composite implements EditorTab, ContextMenu
 
     /** {@inheritDoc} */
     @Override
-    public void setTabPosition(@NotNull TabPosition tabPosition, @Min(value = 0) int countWidgets) {
+    public void setTabPosition(@NotNull TabPosition tabPosition) {
         throw new UnsupportedOperationException("This method doesn't allow in this class " + getClass());
     }
 

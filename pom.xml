@@ -16,15 +16,16 @@
     <parent>
         <artifactId>maven-depmgt-pom</artifactId>
         <groupId>org.eclipse.che.depmgt</groupId>
-        <version>4.0.0-beta-11-SNAPSHOT</version>
+        <version>4.0.0-RC1-SNAPSHOT</version>
     </parent>
     <groupId>org.eclipse.che.core</groupId>
     <artifactId>che-core-parent</artifactId>
-    <version>4.0.0-beta-11-SNAPSHOT</version>
+    <version>4.0.0-RC1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Che Core Parent</name>
     <modules>
         <module>commons</module>
+        <module>che-core-api-model</module>
         <module>platform-api</module>
         <module>platform-api-client-gwt</module>
         <module>ide</module>
@@ -38,7 +39,6 @@
         <url>https://github.com/codenvy/che-core</url>
     </scm>
     <properties>
-        <maven.model.version>3.0.5</maven.model.version>
         <specification.version>1.0-beta2</specification.version>
     </properties>
     <repositories>

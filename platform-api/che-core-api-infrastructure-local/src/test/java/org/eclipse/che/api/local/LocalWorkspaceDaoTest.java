@@ -105,9 +105,9 @@ public class LocalWorkspaceDaoTest {
         final EnvironmentImpl env1 = new EnvironmentImpl("my-environment", recipe, asList(machineCfg1, machineCfg2));
         final EnvironmentImpl env2 = new EnvironmentImpl("my-environment-2", recipe, singletonList(machineCfg1));
 
-        final Map<String, EnvironmentImpl> environments = new HashMap<>(4);
-        environments.put(env1.getName(), env1);
-        environments.put(env2.getName(), env2);
+        final List<EnvironmentImpl> environments = new ArrayList<>();
+        environments.add(env1);
+        environments.add(env2);
 
         // projects
         final ProjectConfigImpl project1 = new ProjectConfigImpl();
@@ -150,7 +150,7 @@ public class LocalWorkspaceDaoTest {
                                  .setCommands(commands)
                                  .setProjects(projects)
                                  .setEnvironments(environments)
-                                 .setDefaultEnvName(env1.getName())
+                                 .setDefaultEnv(env1.getName())
                                  .build();
     }
 }

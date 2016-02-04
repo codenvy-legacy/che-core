@@ -26,6 +26,7 @@ import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.api.workspace.gwt.client.WorkspaceServiceClient;
+import org.eclipse.che.api.workspace.shared.dto.EnvironmentStateDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.ide.CoreLocalizationConstant;
@@ -50,12 +51,13 @@ import org.eclipse.che.ide.websocket.events.ConnectionOpenedHandler;
 import org.eclipse.che.ide.websocket.events.MessageHandler;
 import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
 import org.eclipse.che.ide.websocket.rest.Unmarshallable;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.api.workspace.gwt.client.event.StartWorkspaceEvent;
 import org.eclipse.che.ide.workspace.start.StartWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.StopWorkspaceEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
@@ -208,7 +210,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                         @Override
                         public void apply(List<SnapshotDto> snapshots) throws OperationException {
                             if (snapshots.isEmpty()) {
-                                handleWsStart(workspaceServiceClient.startById(workspace.getId(), workspace.getDefaultEnvName()));
+                                handleWsStart(workspaceServiceClient.startById(workspace.getId(), workspace.getDefaultEnv()));
                             } else {
                                 showRecoverWorkspaceConfirmDialog(workspace);
                             }
@@ -235,7 +237,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                                               @Override
                                               public void accepted() {
                                                   handleWsStart(workspaceServiceClient.recoverWorkspace(workspace.getId(),
-                                                                                                        workspace.getDefaultEnvName(),
+                                                                                                        workspace.getDefaultEnv(),
                                                                                                         null));
                                               }
                                           },
@@ -243,7 +245,7 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
                                               @Override
                                               public void cancelled() {
                                                   handleWsStart(workspaceServiceClient.startById(workspace.getId(),
-                                                                                                 workspace.getDefaultEnvName()));
+                                                                                                 workspace.getDefaultEnv()));
                                               }
                                           })
                      .show();
@@ -258,9 +260,15 @@ public abstract class WorkspaceComponent implements Component, ExtServerStateHan
             public void apply(UsersWorkspaceDto workspace) throws OperationException {
                 initialLoadingInfo.setOperationStatus(WORKSPACE_BOOTING.getValue(), SUCCESS);
                 setCurrentWorkspace(workspace);
-                List<MachineStateDto> machineStates = workspace.getEnvironments()
-                                                               .get(workspace.getDefaultEnvName())
-                                                               .getMachineConfigs();
+                EnvironmentStateDto currentEnvironment = null;
+                for (EnvironmentStateDto state : workspace.getEnvironments()) {
+                    if (state.getName().equals(workspace.getDefaultEnv())) {
+                        currentEnvironment = state;
+                        break;
+                    }
+                }
+                List<MachineStateDto> machineStates =
+                        currentEnvironment != null ? currentEnvironment.getMachineConfigs() : new ArrayList<MachineStateDto>();
 
                 for (MachineStateDto machineState : machineStates) {
                     if (machineState.isDev()) {

@@ -11,14 +11,14 @@
 package org.eclipse.che.ide.api.project.wizard;
 
 /**
- * Factory for {@link ImportProjectNotificationSubscriber} component.
+ * Factory for {@link ProjectNotificationSubscriber} component.
  *
  * @author Anton Korneta
  */
 public interface ImportProjectNotificationSubscriberFactory {
 
     /**
-     * Provides instance of {@link ImportProjectNotificationSubscriber}
+     * Provides instance of {@link ProjectNotificationSubscriber}
      */
-    ImportProjectNotificationSubscriber createSubscriber();
+    ProjectNotificationSubscriber createSubscriber();
 }

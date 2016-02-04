@@ -30,5 +30,5 @@ public interface AnalyticsEventLoggerExt extends AnalyticsEventLogger {
      *         value are limited to {@link #MAX_PARAM_NAME_LENGTH} and {@link #MAX_PARAM_VALUE_LENGTH} characters
      *         correspondingly
      */
-    public void logEvent(String event, Map<String, String> additionalParams);
+    void logEvent(String event, Map<String, String> additionalParams);
 }

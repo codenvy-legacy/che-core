@@ -20,7 +20,7 @@ public class LimitsImpl implements Limits {
 
     public LimitsImpl(Limits limits) {
         if(limits != null) {
-            memory = limits.getMemory();
+            memory = limits.getRam();
         } else {
             memory = 0;
         }
@@ -31,7 +31,7 @@ public class LimitsImpl implements Limits {
     }
 
     @Override
-    public int getMemory() {
+    public int getRam() {
         return memory;
     }
 

@@ -16,14 +16,13 @@
     <parent>
         <artifactId>che-core-commons-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>4.0.0-beta-11-SNAPSHOT</version>
+        <version>4.0.0-RC1-SNAPSHOT</version>
     </parent>
     <artifactId>che-core-commons-lang</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Commons :: Java API extension classes</name>
     <properties>
         <findbugs.excludeFilterFile>${project.build.testSourceDirectory}/../resources/findbugs-exclude.xml</findbugs.excludeFilterFile>
-        <findbugs.failonerror>true</findbugs.failonerror>
     </properties>
     <dependencies>
         <dependency>

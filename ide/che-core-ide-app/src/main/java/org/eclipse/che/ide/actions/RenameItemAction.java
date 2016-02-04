@@ -25,6 +25,7 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
+import org.eclipse.che.ide.project.node.ModuleNode;
 import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -114,9 +115,10 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
         final Object possibleNode = selection.getHeadElement();
 
-        boolean enable = !(possibleNode instanceof ProjectNode)
-                         && possibleNode instanceof SupportRename
-                         && ((SupportRename)possibleNode).getRenameProcessor() != null;
+        boolean isModuleNode = possibleNode instanceof ModuleNode;
+        boolean isSupportRename = possibleNode instanceof SupportRename;
+
+        boolean enable = !isModuleNode && isSupportRename && ((SupportRename)possibleNode).getRenameProcessor() != null;
 
         e.getPresentation().setEnabled(enable);
     }
@@ -168,11 +170,11 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
     private String getDialogTitle(ResourceBasedNode<?> node) {
         if (node instanceof FileReferenceNode) {
-            return localization.renameFileDialogTitle();
+            return localization.renameFileDialogTitle(node.getName());
         } else if (node instanceof FolderReferenceNode) {
-            return localization.renameFolderDialogTitle();
+            return localization.renameFolderDialogTitle(node.getName());
         } else if (node instanceof ProjectNode) {
-            return localization.renameProjectDialogTitle();
+            return localization.renameProjectDialogTitle(node.getName());
         }
         return localization.renameNodeDialogTitle();
     }
@@ -190,7 +192,7 @@ public class RenameItemAction extends AbstractPerspectiveAction {
                 return new Violation() {
                     @Override
                     public String getMessage() {
-                        return localization.invalidName();
+                        return "";
                     }
 
                     @Override

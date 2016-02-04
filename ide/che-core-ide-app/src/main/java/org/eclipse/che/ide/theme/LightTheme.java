@@ -769,7 +769,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getOutputLinkColor() {
-        return "#61b7ef";
+        return "#1266B1";
     }
 
     @Override
@@ -939,7 +939,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getSuccessColor() {
-        return "#31b993";
+        return "#43A700";
     }
 
     @Override
@@ -1010,6 +1010,26 @@ public class LightTheme implements Theme {
     @Override
     public String scrollbarHoverBackgroundColor() {
         return "rgba(27, 27, 27, 0.15)";
+    }
+
+    @Override
+    public String matchingSearchBlockBackgroundColor() {
+        return "rgb(169, 183, 198)";
+    }
+
+    @Override
+    public String matchingSearchBlockBorderColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String currentSearchBlockBackgroundColor() {
+        return "rgb(78, 171, 255)";
+    }
+
+    @Override
+    public String currentSearchBlockBorderColor() {
+        return "#1a68af";
     }
 
     @Override

@@ -13,7 +13,6 @@ package org.eclipse.che.api.workspace.server.model.impl;
 import org.eclipse.che.api.core.model.machine.Command;
 import org.eclipse.che.api.core.model.workspace.Environment;
 import org.eclipse.che.api.core.model.machine.Machine;
-import org.eclipse.che.api.core.model.workspace.EnvironmentState;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.RuntimeWorkspace;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
@@ -51,7 +50,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                 Map<String, String> attributes,
                                 List<? extends Command> commands,
                                 List<? extends ProjectConfig> projects,
-                                Map<String, ? extends Environment> environments,
+                                List<? extends Environment> environments,
                                 String defaultEnvironment,
                                 String description,
                                 Machine devMachine,
@@ -81,7 +80,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              usersWorkspace.getCommands(),
              usersWorkspace.getProjects(),
              usersWorkspace.getEnvironments(),
-             usersWorkspace.getDefaultEnvName(),
+             usersWorkspace.getDefaultEnv(),
              usersWorkspace.getDescription(),
              null,
              null,
@@ -98,7 +97,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
              runtimeWorkspace.getCommands(),
              runtimeWorkspace.getProjects(),
              runtimeWorkspace.getEnvironments(),
-             runtimeWorkspace.getDefaultEnvName(),
+             runtimeWorkspace.getDefaultEnv(),
              runtimeWorkspace.getDescription(),
              runtimeWorkspace.getDevMachine(),
              runtimeWorkspace.getMachines(),
@@ -138,12 +137,12 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         this.machines = machines;
     }
 
-    public void setActiveEnvName(String activeEnvName) {
+    public void setActiveEnv(String activeEnvName) {
         this.activeEnvName = activeEnvName;
     }
 
     public EnvironmentStateImpl getActiveEnvironment() {
-        return getEnvironments().get(activeEnvName);
+        return getEnvironments().stream().filter(env -> env.getName().equals(activeEnvName)).findAny().get();
     }
 
     @Override
@@ -183,7 +182,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
                                                                             commands,
                                                                             projects,
                                                                             environments,
-                                                                            defaultEnvName,
+                                                                            defaultEnv,
                                                                             description,
                                                                             devMachine,
                                                                             machines,
@@ -199,7 +198,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
             this.name = workspace.getName();
             this.owner = workspace.getOwner();
             this.description = workspace.getDescription();
-            this.defaultEnvName = workspace.getDefaultEnvName();
+            this.defaultEnv = workspace.getDefaultEnv();
             this.commands = workspace.getCommands();
             this.projects = workspace.getProjects();
             this.environments = workspace.getEnvironments();
@@ -234,8 +233,8 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         }
 
         @Override
-        public RuntimeWorkspaceBuilder setDefaultEnvName(String defaultEnvName) {
-            this.defaultEnvName = defaultEnvName;
+        public RuntimeWorkspaceBuilder setDefaultEnv(String defaultEnv) {
+            this.defaultEnv = defaultEnv;
             return this;
         }
 
@@ -279,7 +278,7 @@ public class RuntimeWorkspaceImpl extends UsersWorkspaceImpl implements RuntimeW
         }
 
         @Override
-        public RuntimeWorkspaceBuilder setEnvironments(Map<String, ? extends Environment> environments) {
+        public RuntimeWorkspaceBuilder setEnvironments(List<? extends Environment> environments) {
             this.environments = environments;
             return this;
         }
