@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import org.eclipse.che.api.core.ApiException;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -36,7 +37,6 @@ import org.eclipse.che.api.user.server.dao.Profile;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
-import org.eclipse.che.api.user.shared.dto.NewUser;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
 import org.eclipse.che.api.user.shared.dto.UserInRoleDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -113,7 +113,7 @@ public class UserService extends Service {
     /**
      * Creates new user and profile.
      * <p/>
-     * When current user is in 'system/admin' role then {@code newUser} parameter
+     * When current user is in 'system/admin' role then {@code userDescriptor} parameter
      * will be used for user creation, otherwise method uses {@code token} and {@link #tokenValidator}.
      *
      * @param token
@@ -149,7 +149,7 @@ public class UserService extends Service {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     @GenerateLink(rel = LINK_REL_CREATE_USER)
-    public Response create(@ApiParam(value = "New user") NewUser newUser,
+    public Response create(@ApiParam(value = "New user") UserDescriptor userDescriptor,
                            @ApiParam(value = "Authentication token") @QueryParam("token") String token,
                            @ApiParam(value = "User type") @QueryParam("temporary") @DefaultValue("false") Boolean isTemporary,
                            @Context SecurityContext context) throws ApiException {
@@ -157,7 +157,7 @@ public class UserService extends Service {
             throw new ForbiddenException("Currently only admins can create accounts. Please contact our Admin Team for further info.");
         }
 
-        final User user = context.isUserInRole("system/admin") ? fromEntity(newUser) : fromToken(token);
+        final User user = context.isUserInRole("system/admin") ? fromEntity(userDescriptor) : fromToken(token);
 
         userDao.create(user.withId(generate("user", ID_LENGTH))
                            .withPassword(firstNonNull(user.getPassword(), generate("", PASSWORD_LENGTH))));
@@ -200,7 +200,7 @@ public class UserService extends Service {
      *
      * @param password
      *         new user password
-     * @throws ForbiddenException
+     * @throws BadRequestException
      *         when given password is {@code null}
      * @throws ServerException
      *         when some error occurred while updating profile
@@ -219,7 +219,7 @@ public class UserService extends Service {
     @Consumes(APPLICATION_FORM_URLENCODED)
     public void updatePassword(@ApiParam(value = "New password", required = true)
                                @FormParam("password")
-                               String password) throws NotFoundException, ServerException, ForbiddenException, ConflictException {
+                               String password) throws NotFoundException, ServerException, BadRequestException, ConflictException {
         checkPassword(password);
 
         final User user = userDao.getById(currentUser().getId());
@@ -417,17 +417,20 @@ public class UserService extends Service {
         return ImmutableMap.of(USER_SELF_CREATION_ALLOWED, Boolean.toString(userSelfCreationAllowed));
     }
 
-    private User fromEntity(NewUser newUser) throws ForbiddenException {
-        if (newUser == null) {
-            throw new ForbiddenException("New user required");
+    private User fromEntity(UserDescriptor userDescriptor) throws BadRequestException {
+        if (userDescriptor == null) {
+            throw new BadRequestException("User Descriptor required");
         }
-        if (isNullOrEmpty(newUser.getName())) {
-            throw new ForbiddenException("User name required");
+        if (isNullOrEmpty(userDescriptor.getName())) {
+            throw new BadRequestException("User name required");
         }
-        final User user = new User().withName(newUser.getName());
-        if (newUser.getPassword() != null) {
-            checkPassword(newUser.getPassword());
-            user.setPassword(newUser.getPassword());
+        if (isNullOrEmpty(userDescriptor.getEmail())) {
+            throw new BadRequestException("User email required");
+        }
+        final User user = new User().withName(userDescriptor.getName());
+        if (userDescriptor.getPassword() != null) {
+            checkPassword(userDescriptor.getPassword());
+            user.setPassword(userDescriptor.getPassword());
         }
         return user;
     }
@@ -439,12 +442,12 @@ public class UserService extends Service {
         return new User().withEmail(tokenValidator.validateToken(token));
     }
 
-    private void checkPassword(String password) throws ForbiddenException {
+    private void checkPassword(String password) throws BadRequestException {
         if (password == null) {
-            throw new ForbiddenException("Password required");
+            throw new BadRequestException("Password required");
         }
         if (password.length() < 8) {
-            throw new ForbiddenException("Password should contain at least 8 characters");
+            throw new BadRequestException("Password should contain at least 8 characters");
         }
         int numOfLetters = 0;
         int numOfDigits = 0;
@@ -457,7 +460,7 @@ public class UserService extends Service {
             }
         }
         if (numOfDigits == 0 || numOfLetters == 0) {
-            throw new ForbiddenException("Password should contain letters and digits");
+            throw new BadRequestException("Password should contain letters and digits");
         }
     }
 
