@@ -144,8 +144,22 @@ public interface ProjectServiceClient {
      *         path of the project to resolve
      * @param callback
      *         the callback to use for the response
+     *
+     * @deprecated instead of this method should use {@link ProjectServiceClient#resolveSources(String, String)}
      */
     void resolveSources(String workspaceId, String path, AsyncRequestCallback<List<SourceEstimation>> callback);
+
+     /**
+      * Gets list of {@link SourceEstimation} for all supposed project types.
+      *
+      * @param workspaceId
+      *         id of current workspace
+      * @param path
+      *         path of the project to resolve
+      * @return a promise that will provide a list of {@code SourceEstimation} for the given {@code workspaceId} and {@code path},
+      *         or rejects with on error
+      */
+    Promise<List<SourceEstimation>> resolveSources(String workspaceId, String path);
 
     /**
      * Get sub-project.
@@ -187,8 +201,24 @@ public interface ProjectServiceClient {
      *         descriptor of the project to update
      * @param callback
      *         the callback to use for the response
+     *
+     * @deprecated instead of this method should use {@link ProjectServiceClient#updateProject(String, String, ProjectConfigDto)}
      */
     void updateProject(String workspaceId, String path, ProjectConfigDto descriptor, AsyncRequestCallback<ProjectConfigDto> callback);
+
+    /**
+     * Update project.
+     *
+     * @param workspaceId
+     *         id of current workspace
+     * @param path
+     *         path to the project to get
+     * @param descriptor
+     *         descriptor of the project to update
+     * @return a promise that will provide updated {@link ProjectConfigDto} for {@code workspaceId}, {@code path}, {@code descriptor}
+     *         or rejects with an error
+     */
+    Promise<ProjectConfigDto> updateProject(String workspaceId, String path, ProjectConfigDto descriptor);
 
     /**
      * Create new file in the specified folder.

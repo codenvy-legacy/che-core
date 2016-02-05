@@ -19,6 +19,12 @@ import org.eclipse.che.api.git.shared.GitUser;
  */
 public interface GitUserResolver {
 
+    /**
+     * Retrieves user for git operations.
+     *
+     * @return credentials of current user to execute git operation
+     *
+     */
     GitUser getUser();
 
 }
