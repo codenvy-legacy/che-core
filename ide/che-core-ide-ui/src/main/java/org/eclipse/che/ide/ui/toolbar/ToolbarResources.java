@@ -24,6 +24,10 @@ public interface ToolbarResources extends ClientBundle {
 
         String iconButtonIcon();
 
+        String iconButtonIconInner();
+
+        String popupButtonIconInner();
+
         String toolbarPanel();
 
         String iconButtonPanelDown();

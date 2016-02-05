@@ -11,14 +11,14 @@
 package org.eclipse.che.ide.api.preferences;
 
 import org.eclipse.che.ide.api.mvp.Presenter;
-import com.google.gwt.resources.client.ImageResource;
-
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
  * Interface of preference page.
  * Describes main methods for all preference pages.
  *
- * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Vlad Zhukovskyi
  */
 public interface PreferencePagePresenter extends Presenter {
     /** Needs for delegate updateControls function into PagePresenter. */
@@ -53,7 +53,7 @@ public interface PreferencePagePresenter extends Presenter {
      *
      * @return
      */
-    ImageResource getIcon();
+    SVGResource getIcon();
 
     /**
      * Returns whether this page is changed or not.

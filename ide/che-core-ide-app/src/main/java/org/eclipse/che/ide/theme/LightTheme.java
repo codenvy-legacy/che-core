@@ -738,16 +738,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String minimizeIconColor() {
-        return "#7b7b7b";
-    }
-
-    @Override
-    public String minimizeIconHoverColor() {
-        return "#333333";
-    }
-
-    @Override
     public String processTreeBackgroundColor() {
         return "white";
     }
@@ -1318,6 +1308,16 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String closeNotificationButtonColor() {
+        return "#7b7b7b";
+    }
+
+    @Override
+    public String closeNotificationHoveredButtonColor() {
+        return "#333333";
+    }
+
+    @Override
     public String projectExplorerReadonlyItemBackground() {
         return "#ffffe4";
     }
@@ -1368,12 +1368,22 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String toolButtonSvgFill() {
-        return "#5D5D5D";
+    public String toolButtonColor() {
+        return "#7b7b7b";
+    }
+
+    @Override
+    public String toolButtonHoverColor() {
+        return "#333333";
     }
 
     @Override
     public String toolButtonBorder() {
+        return "1px solid transparent";
+    }
+
+    @Override
+    public String toolButtonActiveBorder() {
         return "1px solid #8E8E8E";
     }
 

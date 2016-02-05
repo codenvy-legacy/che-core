@@ -509,13 +509,19 @@ a {
     border: 1px solid #000000;
     padding: 1px;
     cursor: pointer;
+    position: relative;
 }
 
-.editorFullScreen svg {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 8;
+.editorFullScreen div {
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    z-index: 9999;
+    font-size: 14px;
+    line-height: 15px;
+    text-align: center;
 }
 
 .editorFullScreen:hover {
@@ -552,11 +558,6 @@ a {
 
 .editorFullScreen:hover span {
     display: block;
-}
-
-.editorFullScreenSvgDown {
-    box-shadow: 0 0 1px 0 socialButtonColor;
-    cursor: pointer;
 }
 
 /******************************************************************************

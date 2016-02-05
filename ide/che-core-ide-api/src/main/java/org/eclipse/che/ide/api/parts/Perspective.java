@@ -25,10 +25,24 @@ import org.eclipse.che.commons.annotation.Nullable;
  */
 public interface Perspective {
 
-    public void restoreEditorPart();
+    /**
+     * Restores editor default state.
+     */
+    void restoreEditorPart();
 
-    public void expandEditorPart();
+    /**
+     * Expands editor to fullscreen.
+     */
+    void expandEditorPart();
 
+    /**
+     * Changes the active part.
+     *
+     * @param part
+     *         part to be activated
+     * @param type
+     *         part type
+     */
     void setActivePart(@NotNull PartPresenter part, @NotNull PartStackType type);
 
     /**

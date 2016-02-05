@@ -10,6 +10,7 @@
  *******************************************************************************/
 .ide-PartStack-Tab {
     display: inline-block;
+    position: relative;
     height: 23px;
     cursor: default;
     color: tabTextColor;
@@ -18,15 +19,17 @@
     font-size: 11px;
     border-left: 1px solid tabsPanelBackground;
     border-right: 1px solid tabsPanelBackground;
+
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
+
     -webkit-transition: color 0.1s ease-in-out,
-    fill 0.1s ease-in-out,
-    stroke 0.1s ease-in-out;
+        fill 0.1s ease-in-out,
+        stroke 0.1s ease-in-out;
     transition: color 0.1s ease-in-out,
-    fill 0.1s ease-in-out,
-    stroke 0.1s ease-in-out;
+        fill 0.1s ease-in-out,
+        stroke 0.1s ease-in-out;
 }
 
 .ide-PartStack-Tab svg {
@@ -135,24 +138,32 @@
     color: mainFontColor;
 }
 
-@sprite .ide-PartStack-Tab-Line-Error {
-    gwt-image: "squiggle";
-    background-position: bottom;
-    background-repeat: repeat-x;
+/*@sprite .ide-PartStack-Tab-Line-Error {*/
+.ide-PartStack-Tab-Line-Error {
+    /*gwt-image: "squiggle";*/
+    /*background-position: bottom;*/
+    /*background-repeat: repeat-x;*/
     margin: 0;
     padding: 0;
     height: auto;
     width: auto;
     overflow: visible;
+
+    text-decoration: underline;
+    color: red;
 }
 
-@sprite .ide-PartStack-Tab-Line-Warning {
-    gwt-image: "squiggleWarning";
-    background-position: bottom;
-    background-repeat: repeat-x;
+/*@sprite .ide-PartStack-Tab-Line-Warning {*/
+.ide-PartStack-Tab-Line-Warning {
+    /*gwt-image: "squiggleWarning";*/
+    /*background-position: bottom;*/
+    /*background-repeat: repeat-x;*/
     margin: 0;
     padding: 0;
     height: auto;
     width: auto;
     overflow: visible;
+
+    text-decoration: underline;
+    color: #FFD31E;
 }
