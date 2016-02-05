@@ -17,6 +17,8 @@
 @eval notificationPopupIconProgressFill org.eclipse.che.ide.api.theme.Style.theme.notificationPopupIconProgressFill();
 @eval notificationPopupIconSvgFill org.eclipse.che.ide.api.theme.Style.theme.notificationPopupIconSvgFill();
 @eval notificationPopupTextColor org.eclipse.che.ide.api.theme.Style.theme.notificationPopupTextColor();
+@eval closeNotificationButtonColor org.eclipse.che.ide.api.theme.Style.theme.closeNotificationButtonColor();
+@eval closeNotificationHoveredButtonColor org.eclipse.che.ide.api.theme.Style.theme.closeNotificationHoveredButtonColor();
 
 .notificationPanel {
     cursor: pointer;
@@ -109,7 +111,7 @@
 }
 
 .notificationCloseButtonWrapper svg g {
-    fill: minimizeIconColor;
+    fill: closeNotificationButtonColor;
 
     -webkit-transition: color 0.1s ease-in-out,
                         fill 0.1s ease-in-out,
@@ -120,7 +122,7 @@
 }
 
 .notificationCloseButtonWrapper svg:hover g {
-    fill: minimizeIconHoverColor;
+    fill: closeNotificationHoveredButtonColor;
 }
 
 .notificationStatusProgress {
@@ -187,7 +189,7 @@
 }
 
 .notificationPopupCloseButtonWrapper > svg > g {
-    fill: minimizeIconColor;
+    fill: closeNotificationButtonColor;
 
     -webkit-transition: color 0.1s ease-in-out,
     fill 0.1s ease-in-out,
@@ -198,7 +200,7 @@
 }
 
 .notificationPopupCloseButtonWrapper > svg:hover > g {
-    fill: #2b6f5c;
+    fill: closeNotificationHoveredButtonColor;
 }
 
 .notificationPopupTitleWrapper {

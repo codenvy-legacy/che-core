@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.toolbar;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -23,7 +20,6 @@ import com.google.gwt.event.dom.client.MouseOverEvent;
 import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -37,6 +33,8 @@ import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.PropertyChangeEvent;
 import org.eclipse.che.ide.api.action.PropertyChangeListener;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
+import org.eclipse.che.ide.ui.Tooltip;
+import org.eclipse.che.ide.ui.menu.PositionController;
 import org.vectomatic.dom.svg.ui.SVGImage;
 
 /**
@@ -52,20 +50,22 @@ public class ActionButton extends Composite implements MouseOverHandler,
 
     private final Presentation       presentation;
     private final PerspectiveManager perspectiveManager;
-    private final Element            tooltip;
-    private final Element            tooltipBody;
-    private final Element            tooltipArrow;
+
     /** Command which will be executed when button was pressed. */
     protected     Action             action;
     private       FlowPanel          panel;
-    private       Element            image;
+
     /** Is enabled. */
     private boolean enabled  = true;
+
     /** Is button selected. */
     private boolean selected = false;
     private ActionManager            actionManager;
     private ActionButtonSynchronizer actionButtonSynchronizer;
     private ToolbarResources         toolbarResources;
+
+    /** Tooltip */
+    private Tooltip                  tooltip;
 
     public ActionButton(Action action,
                         ActionManager actionManager,
@@ -76,9 +76,7 @@ public class ActionButton extends Composite implements MouseOverHandler,
         this.perspectiveManager = perspectiveManager;
         this.toolbarResources = toolbarResources;
         panel = new FlowPanel();
-        tooltip = DOM.createDiv();
-        tooltipBody = DOM.createDiv();
-        tooltipArrow = DOM.createDiv();
+
         initWidget(panel);
         panel.setStyleName(toolbarResources.toolbar().iconButtonPanel());
         this.action = action;
@@ -87,14 +85,9 @@ public class ActionButton extends Composite implements MouseOverHandler,
         renderImage();
         setEnabled(presentation.isEnabled());
         setVisible(presentation.isVisible());
+
         if (presentation.getDescription() != null) {
-            tooltipArrow.addClassName(toolbarResources.toolbar().tooltipArrow());
-            tooltipBody.setInnerText(presentation.getDescription());
-            tooltipBody.addClassName(toolbarResources.toolbar().tooltipBody());
-            tooltip.addClassName(toolbarResources.toolbar().tooltip());
-            tooltip.appendChild(tooltipArrow);
-            tooltip.appendChild(tooltipBody);
-            panel.getElement().appendChild(tooltip);
+            tooltip = Tooltip.create((elemental.dom.Element)panel.getElement(), PositionController.VerticalAlign.BOTTOM, PositionController.HorizontalAlign.MIDDLE, presentation.getDescription());
         }
     }
 
@@ -129,16 +122,27 @@ public class ActionButton extends Composite implements MouseOverHandler,
     /** Redraw icon. */
     private void renderImage() {
         panel.clear();
-        if (presentation.getSVGIcon() != null) {
-            SVGImage image = new SVGImage(presentation.getSVGIcon());
-            image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
-            panel.add(image);
-            this.image = image.getElement();
-        } else if (presentation.getIcon() != null) {
-            Image img = new Image(presentation.getIcon());
+
+        if (presentation.getImageResource() != null) {
+            Image img = new Image(presentation.getImageResource());
             img.setStyleName(toolbarResources.toolbar().iconButtonIcon());
             panel.add(img);
-            this.image = img.getElement();
+
+        } else if (presentation.getSVGResource() != null) {
+            SVGImage image = new SVGImage(presentation.getSVGResource());
+            image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
+            panel.add(image);
+
+        } else if (presentation.getHTMLResource() != null) {
+            FlowPanel icon = new FlowPanel();
+            icon.setStyleName(toolbarResources.toolbar().iconButtonIcon());
+
+            FlowPanel inner = new FlowPanel();
+            inner.setStyleName(toolbarResources.toolbar().iconButtonIconInner());
+            inner.getElement().setInnerHTML(presentation.getHTMLResource());
+            icon.add(inner);
+
+            panel.add(inner);
         }
     }
 
@@ -170,13 +174,6 @@ public class ActionButton extends Composite implements MouseOverHandler,
     /** Mouse Over handler. */
     @Override
     public void onMouseOver(MouseOverEvent event) {
-        tooltip.getStyle().setTop(0, Style.Unit.PX);
-        tooltip.getStyle().setLeft((image.getOffsetWidth() + 2) / 2 - tooltipArrow.getOffsetWidth() / 2, Style.Unit.PX);
-
-        int screenSize = Document.get().getClientWidth();
-        if (image.getAbsoluteLeft() + tooltip.getOffsetWidth() > screenSize) {
-            tooltipBody.getStyle().setRight(image.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
-        }
     }
 
     /** Mouse Out handler. */
@@ -185,6 +182,7 @@ public class ActionButton extends Composite implements MouseOverHandler,
         if (!enabled) {
             return;
         }
+
         if (selected) {
             panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelected());
         } else {
@@ -198,6 +196,7 @@ public class ActionButton extends Composite implements MouseOverHandler,
         if (!enabled) {
             return;
         }
+
         if (selected) {
             panel.setStyleName(toolbarResources.toolbar().iconButtonPanelSelectedDown());
         } else {
@@ -233,8 +232,9 @@ public class ActionButton extends Composite implements MouseOverHandler,
         public void onPropertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if (Presentation.PROP_TEXT.equals(propertyName)) {
-                //TODO
-//                updateToolTipText();
+                if (tooltip != null && e.getNewValue() instanceof String) {
+                    tooltip.setTitle((String)e.getNewValue());
+                }
             } else if (Presentation.PROP_ENABLED.equals(propertyName)) {
                 setEnabled((Boolean)e.getNewValue());
             } else if (Presentation.PROP_ICON.equals(propertyName)) {
@@ -246,4 +246,5 @@ public class ActionButton extends Composite implements MouseOverHandler,
             }
         }
     }
+
 }

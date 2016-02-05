@@ -16,8 +16,9 @@ import com.google.gwt.resources.client.ImageResource;
 
 /** Resources interface for the editor. */
 public interface EditorResources extends ClientBundle {
+
     /** CssResource for the editor. */
-    public interface EditorCss extends CssResource {
+    interface EditorCss extends CssResource {
 
         /** Style added to warnings. */
         String lineWarning();
@@ -32,9 +33,4 @@ public interface EditorResources extends ClientBundle {
     @Source({"Editor.css", "org/eclipse/che/ide/api/ui/style.css"})
     EditorCss editorCss();
 
-    @Source("org/eclipse/che/ide/texteditor/squiggle.gif")
-    ImageResource squiggle();
-
-    @Source("org/eclipse/che/ide/texteditor/squiggle-warning.png")
-    ImageResource squiggleWarning();
 }

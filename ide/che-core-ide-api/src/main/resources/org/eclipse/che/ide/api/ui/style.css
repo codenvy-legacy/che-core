@@ -61,8 +61,6 @@
 @eval consolePanelColor org.eclipse.che.ide.api.theme.Style.theme.consolePanelColor();
 
 @eval tabBorderShadow org.eclipse.che.ide.api.theme.Style.theme.tabBorderShadow();
-@eval minimizeIconColor org.eclipse.che.ide.api.theme.Style.theme.minimizeIconColor();
-@eval minimizeIconHoverColor org.eclipse.che.ide.api.theme.Style.theme.minimizeIconHoverColor();
 
 @eval progressColor org.eclipse.che.ide.api.theme.Style.theme.progressColor();
 
