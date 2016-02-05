@@ -155,6 +155,7 @@ public class StackService extends Service {
     }
 
     @PUT
+    @Path("/{id}")
     @Produces(APPLICATION_JSON)
     @Consumes(APPLICATION_JSON)
     @GenerateLink(rel = LINK_REL_UPDATE_STACK)
@@ -168,14 +169,18 @@ public class StackService extends Service {
                    @ApiResponse(code = 409, message = "Conflict error occurred during stack update" +
                                                       "(e.g. Stack with such name already exists)"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public StackDto updateStack(@ApiParam(value = "The stack update", required = true) StackDto updateDto) throws ApiException {
+    public StackDto updateStack(@ApiParam(value = "The stack update", required = true)
+                                StackDto updateDto,
+                                @ApiParam(value = "The stack id", required = true)
+                                @PathParam("id")
+                                String id) throws ApiException {
+        requireNonNullAndNonEmpty(id, "Stack id required");
         requireNonNull(updateDto, "Stack required");
-        requireNonNullAndNonEmpty(updateDto.getId(), "Stack id required");
         if (updateDto.getSource() == null && updateDto.getWorkspaceConfig() == null) {
             throw new BadRequestException("Stack source required");
         }
 
-        final StackImpl stack = stackDao.getById(updateDto.getId());
+        final StackImpl stack = stackDao.getById(id);
 
         final User user = EnvironmentContext.getCurrent().getUser();
         final String userId = user.getId();
@@ -239,11 +244,13 @@ public class StackService extends Service {
                    @ApiResponse(code = 403, message = "The user does not have access to get stack entity list"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public List<StackDto> getCreatedStacks(@ApiParam("The number of the items to skip")
-                                                     @DefaultValue("0")
-                                                     @QueryParam("skipCount") Integer skipCount,
-                                                     @ApiParam("The limit of the items in the response, default is 30")
-                                                     @DefaultValue("30")
-                                                     @QueryParam("maxItems") Integer maxItems) throws ServerException {
+                                           @DefaultValue("0")
+                                           @QueryParam("skipCount")
+                                           Integer skipCount,
+                                           @ApiParam("The limit of the items in the response, default is 30")
+                                           @DefaultValue("30")
+                                           @QueryParam("maxItems")
+                                           Integer maxItems) throws ServerException {
         String creator = EnvironmentContext.getCurrent().getUser().getId();
         List<StackImpl> stacks = stackDao.getByCreator(creator, skipCount, maxItems);
 
@@ -265,13 +272,16 @@ public class StackService extends Service {
                    @ApiResponse(code = 403, message = "The user does not have access to get stack entity list with required tags"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public List<StackDto> searchStacks(@ApiParam("List tags for search")
-                                                 @QueryParam("tags") List<String> tags,
-                                                 @ApiParam("The number of the items to skip")
-                                                 @DefaultValue("0")
-                                                 @QueryParam("skipCount") Integer skipCount,
-                                                 @ApiParam("The limit of the items in the response, default is 30")
-                                                 @DefaultValue("30")
-                                                 @QueryParam("maxItems") Integer maxItems) throws ServerException {
+                                       @QueryParam("tags")
+                                       List<String> tags,
+                                       @ApiParam(value = "The number of the items to skip")
+                                       @DefaultValue("0")
+                                       @QueryParam("skipCount")
+                                       Integer skipCount,
+                                       @ApiParam("The limit of the items in the response, default is 30")
+                                       @DefaultValue("30")
+                                       @QueryParam("maxItems")
+                                       Integer maxItems) throws ServerException {
         List<StackImpl> stacks = stackDao.searchStacks(tags, skipCount, maxItems);
         return stacks.stream()
                      .map(this::asStackDto)
@@ -317,8 +327,11 @@ public class StackService extends Service {
                    @ApiResponse(code = 403, message = "The user does not have access upload image for stack with required id"),
                    @ApiResponse(code = 404, message = "The stack doesn't exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public Response uploadIcon(@ApiParam("The image for stack") Iterator<FileItem> formData,
-                               @ApiParam("The stack id") @PathParam("id") String stackId)
+    public Response uploadIcon(@ApiParam("The image for stack")
+                               Iterator<FileItem> formData,
+                               @ApiParam("The stack id")
+                               @PathParam("id")
+                               String stackId)
             throws NotFoundException, ServerException, BadRequestException, ForbiddenException {
         requireNonNullAndNonEmpty(stackId, "Stack id required");
         if (formData.hasNext()) {

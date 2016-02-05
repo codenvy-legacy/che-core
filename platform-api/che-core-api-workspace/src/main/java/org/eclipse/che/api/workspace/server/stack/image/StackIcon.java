@@ -13,11 +13,12 @@ package org.eclipse.che.api.workspace.server.stack.image;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import com.google.common.base.Objects;
 
 import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.commons.lang.NameGenerator;
+
 import static com.google.common.collect.ImmutableSet.of;
 
 
@@ -26,8 +27,9 @@ public class StackIcon {
     private static final Set<String> validMediaTypes = of("image/jpeg", "image/png", "image/gif", "image/svg+xml");
     private static final int         LIMIT_SIZE      = 1024 * 1024;
 
-    private final String mediaType;
-    private final byte[] data;
+    private String id;
+    private String mediaType;
+    private byte[] data;
 
     public StackIcon(String mediaType, byte[] data) throws IOException, ConflictException {
         if (data == null || data.length == 0) {
@@ -39,10 +41,15 @@ public class StackIcon {
         }
         this.data = data;
 
-        if (!validMediaTypes.contains(mediaType)) {
+        if (!validMediaTypes.stream().anyMatch(elem -> elem.equals(mediaType))) {
             throw new IOException("Image media type '" + mediaType + "' is unsupported. Supported mediatypes: " + validMediaTypes);
         }
         this.mediaType = mediaType;
+        this.id = NameGenerator.generate("stackIcon", 16);
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getMediaType() {
