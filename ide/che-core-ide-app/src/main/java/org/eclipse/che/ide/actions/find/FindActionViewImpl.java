@@ -85,15 +85,21 @@ public class FindActionViewImpl extends PopupPanel implements FindActionView {
 
                     Presentation presentation = presentationFactory.getPresentation(itemData);
                     itemData.update(new ActionEvent(presentation, actionManager, perspectiveManager.get()));
-                    if (presentation.getIcon() != null) {
-                        Image image = new Image(presentation.getIcon());
+
+                    if (presentation.getImageResource() != null) {
+                        Image image = new Image(presentation.getImageResource());
                         icon.appendChild((Node)image.getElement());
-                    } else if (presentation.getSVGIcon() != null) {
-                        SVGImage image = new SVGImage(presentation.getSVGIcon());
+
+                    } else if (presentation.getSVGResource() != null) {
+                        SVGImage image = new SVGImage(presentation.getSVGResource());
                         image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
                         image.getElement().getStyle().setMargin(0, Style.Unit.PX);
                         icon.appendChild((Node)image.getElement());
+
+                    } else if (presentation.getHTMLResource() != null) {
+                        icon.setInnerHTML(presentation.getHTMLResource());
                     }
+
                     String hotKey = KeyMapUtil.getShortcutText(keyBindingAgent.getKeyBinding(actionManager.getId(itemData)));
                     if (hotKey == null) {
                         hotKey = "&nbsp;";

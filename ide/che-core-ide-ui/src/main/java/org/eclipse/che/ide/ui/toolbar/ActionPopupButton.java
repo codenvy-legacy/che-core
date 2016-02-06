@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ui.toolbar;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
@@ -30,8 +27,9 @@ import org.eclipse.che.ide.api.action.PropertyChangeEvent;
 import org.eclipse.che.ide.api.action.PropertyChangeListener;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
+import org.eclipse.che.ide.ui.Tooltip;
+import org.eclipse.che.ide.ui.menu.PositionController;
 import org.vectomatic.dom.svg.ui.SVGImage;
-import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
  * @author Evgen Vidolob
@@ -42,9 +40,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
     private final ActionGroup                  action;
     private final ActionManager                actionManager;
     private final Provider<PerspectiveManager> managerProvider;
-    private final Element                      tooltip;
-    private final Element                      tooltipBody;
-    private final Element                      tooltipArrow;
     private final Presentation                 presentation;
 
     private ActionButtonSynchronizer           actionButtonSynchronizer;
@@ -54,12 +49,18 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
 
     /** Enabled state. True as default. */
     private boolean enabled = true;
+
     /** Lock Layer uses for locking rest of the screen, which does not covered by Popup Menu. */
     private MenuLockLayer lockLayer;
+
     /** Popup Menu button panel (<div> HTML element). */
     private ButtonPanel   panel;
+
     /** Has instance if Popup Menu is opened. */
     private PopupMenu     popupMenu;
+
+    /** Tooltip */
+    private Tooltip       tooltip;
 
     /** Create Popup Menu Button with specified icons for enabled and disabled states. */
     public ActionPopupButton(final ActionGroup action,
@@ -75,40 +76,56 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         this.managerProvider = managerProvider;
         this.toolbarResources = toolbarResources;
 
-        this.presentation = presentationFactory.getPresentation(action);
+        presentation = presentationFactory.getPresentation(action);
 
         panel = new ButtonPanel();
-        tooltip = DOM.createDiv();
-        tooltipBody = DOM.createDiv();
-        tooltipArrow = DOM.createDiv();
         initWidget(panel);
+
         panel.setStyleName(toolbarResources.toolbar().popupButtonPanel());
-        SVGResource icon = presentationFactory.getPresentation(action).getSVGIcon();
-        if (icon != null) {
-            SVGImage image = new SVGImage(icon);
-            image.getElement().setAttribute("class", toolbarResources.toolbar().popupButtonIcon());
-            panel.add(image);
-        } else if (presentationFactory.getPresentation(action).getIcon() != null) {
-            Image image = new Image(presentationFactory.getPresentation(action).getIcon());
-            image.setStyleName(toolbarResources.toolbar().popupButtonIcon());
-            panel.add(image);
-        }
-        renderIcon();
-        InlineLabel caret = new InlineLabel("");
-        caret.setStyleName(toolbarResources.toolbar().caret());
-        panel.add(caret);
-        final String description = presentationFactory.getPresentation(action).getDescription();
-        if (description != null) {
-            tooltipArrow.addClassName(toolbarResources.toolbar().tooltipArrow());
-            tooltipBody.setInnerText(description);
-            tooltipBody.addClassName(toolbarResources.toolbar().tooltipBody());
-            tooltip.addClassName(toolbarResources.toolbar().tooltip());
-            tooltip.appendChild(tooltipArrow);
-            tooltip.appendChild(tooltipBody);
-            panel.getElement().appendChild(tooltip);
+
+        renderImage();
+
+        setEnabled(presentation.isEnabled());
+        setVisible(presentation.isVisible());
+
+        if (presentation.getDescription() != null) {
+            tooltip = Tooltip.create((elemental.dom.Element) panel.getElement(), PositionController.VerticalAlign.BOTTOM, PositionController.HorizontalAlign.MIDDLE, presentation.getDescription());
         }
 
         this.ensureDebugId("PopupButton/" + action.getTemplatePresentation().getText());
+    }
+
+    /**
+     * Redraw the icon.
+     */
+    private void renderImage() {
+        panel.clear();
+
+        if (presentation.getImageResource() != null) {
+            Image image = new Image(presentationFactory.getPresentation(action).getImageResource());
+            image.setStyleName(toolbarResources.toolbar().popupButtonIcon());
+            panel.add(image);
+
+        } else if (presentation.getSVGResource() != null) {
+            SVGImage image = new SVGImage(presentation.getSVGResource());
+            image.getElement().setAttribute("class", toolbarResources.toolbar().popupButtonIcon());
+            panel.add(image);
+
+        } else if (presentation.getHTMLResource() != null) {
+            FlowPanel icon = new FlowPanel();
+            icon.setStyleName(toolbarResources.toolbar().iconButtonIcon());
+
+            FlowPanel inner = new FlowPanel();
+            inner.setStyleName(toolbarResources.toolbar().popupButtonIconInner());
+            inner.getElement().setInnerHTML(presentation.getHTMLResource());
+            icon.add(inner);
+
+            panel.add(inner);
+        }
+
+        InlineLabel caret = new InlineLabel("");
+        caret.setStyleName(toolbarResources.toolbar().caret());
+        panel.add(caret);
     }
 
     /** {@inheritDoc} */
@@ -163,7 +180,12 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        renderIcon();
+
+        if (enabled) {
+            panel.getElement().removeClassName(toolbarResources.toolbar().disabled());
+        } else {
+            panel.getElement().addClassName(toolbarResources.toolbar().disabled());
+        }
     }
 
     /** {@inheritDoc} */
@@ -191,13 +213,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
 
     /** Mouse Over handler. */
     private void onMouseOver() {
-        tooltip.getStyle().setLeft(panel.getOffsetWidth() / 2 - tooltipArrow.getOffsetWidth() / 2, Style.Unit.PX);
-        tooltip.getStyle().setTop(3, Style.Unit.PX);
-
-        int screenSize = Document.get().getClientWidth();
-        if (panel.getAbsoluteLeft() + tooltip.getOffsetWidth() > screenSize) {
-            tooltipBody.getStyle().setRight(panel.getAbsoluteLeft() + tooltip.getOffsetWidth() - screenSize, Style.Unit.PX);
-        }
     }
 
     /** Opens Popup Menu. */
@@ -218,15 +233,6 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         int top = getAbsoluteTop() + 24;
         popupMenu.getElement().getStyle().setTop(top, com.google.gwt.dom.client.Style.Unit.PX);
         popupMenu.getElement().getStyle().setLeft(left, com.google.gwt.dom.client.Style.Unit.PX);
-    }
-
-    /** Redraw icon. */
-    private void renderIcon() {
-        if (enabled) {
-            panel.getElement().removeClassName(toolbarResources.toolbar().disabled());
-        } else {
-            panel.getElement().addClassName(toolbarResources.toolbar().disabled());
-        }
     }
 
     /** {@inheritDoc} */
@@ -278,27 +284,18 @@ public class ActionPopupButton extends Composite implements CloseMenuHandler, Ac
         public void onPropertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
 
-            if (Presentation.PROP_ENABLED.equals(propertyName)) {
-                setEnabled((Boolean)e.getNewValue());
+            if (Presentation.PROP_TEXT.equals(propertyName)) {
+                if (tooltip != null && e.getNewValue() instanceof String) {
+                    tooltip.setTitle((String)e.getNewValue());
+                }
+            } else if (Presentation.PROP_ENABLED.equals(propertyName)) {
+                setEnabled((Boolean) e.getNewValue());
             } else if (Presentation.PROP_ICON.equals(propertyName)) {
                 renderImage();
             } else if (Presentation.PROP_VISIBLE.equals(propertyName)) {
-                setVisible((Boolean)e.getNewValue());
+                setVisible((Boolean) e.getNewValue());
             } else if (SELECTED_PROPERTY_NAME.equals(propertyName)) {
-                setSelected((Boolean)e.getNewValue());
-            }
-        }
-
-        private void renderImage() {
-            panel.clear();
-            if (presentation.getSVGIcon() != null) {
-                SVGImage image = new SVGImage(presentation.getSVGIcon());
-                image.getElement().setAttribute("class", toolbarResources.toolbar().iconButtonIcon());
-                panel.add(image);
-            } else if (presentation.getIcon() != null) {
-                Image img = new Image(presentation.getIcon());
-                img.setStyleName(toolbarResources.toolbar().iconButtonIcon());
-                panel.add(img);
+                setSelected((Boolean) e.getNewValue());
             }
         }
 

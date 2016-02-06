@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.action;
 
-
-import org.eclipse.che.ide.util.StringUtils;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -37,16 +35,6 @@ public abstract class Action {
     /** Creates a new action with its text, description and icon set to <code>null</code>. */
     public Action() {
         this(null, null, null, null);
-    }
-
-    /**
-     * Creates a new action with <code>icon</code> provided. Its text, description set to <code>null</code>.
-     *
-     * @param icon
-     *         Default icon to appear in toolbars and menus (Note some platform don't have icons in menu).
-     */
-    public Action(ImageResource icon) {
-        this(null, null, icon, null);
     }
 
     /**
@@ -84,11 +72,16 @@ public abstract class Action {
      * @param description
      *         Describes current action, this description will appear on
      *         the status bar when presentation has focus
-     * @param icon
+     * @param imageResource
      *         Action's icon
+     * @param svgResource
+     *         Action's SVG icon
      */
-    public Action(String text, String description, ImageResource icon) {
-        this(text, description, icon, null);
+    public Action(String text, String description, ImageResource imageResource, SVGResource svgResource) {
+        presentation.setText(text);
+        presentation.setDescription(description);
+        presentation.setImageResource(imageResource);
+        presentation.setSVGResource(svgResource);
     }
 
     /**
@@ -100,16 +93,19 @@ public abstract class Action {
      * @param description
      *         Describes current action, this description will appear on
      *         the status bar when presentation has focus
-     * @param icon
+     * @param imageResource
      *         Action's icon
-     * @param svgIcon
+     * @param svgResource
      *         Action's SVG icon
+     * @param htmlResource
+     *         HTML representation of icon
      */
-    public Action(String text, String description, ImageResource icon, SVGResource svgIcon) {
+    public Action(String text, String description, ImageResource imageResource, SVGResource svgResource, String htmlResource) {
         presentation.setText(text);
         presentation.setDescription(description);
-        presentation.setIcon(icon);
-        presentation.setSVGIcon(svgIcon);
+        presentation.setImageResource(imageResource);
+        presentation.setSVGResource(svgResource);
+        presentation.setHTMLResource(htmlResource);
     }
 
     /**

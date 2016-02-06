@@ -16,7 +16,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.resources.client.ClientBundle;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -44,6 +43,7 @@ import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.project.node.interceptor.NodeInterceptor;
 import org.eclipse.che.ide.api.project.node.settings.HasSettings;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
+import org.eclipse.che.ide.ui.FontAwesome;
 import org.eclipse.che.ide.menu.ContextMenu;
 import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.project.node.SyntheticBasedNode;
@@ -68,8 +68,6 @@ import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent;
 import org.eclipse.che.ide.ui.smartTree.event.SelectionChangedEvent.SelectionChangedHandler;
 import org.eclipse.che.ide.ui.smartTree.presentation.DefaultPresentationRenderer;
 import org.eclipse.che.ide.ui.smartTree.compare.NameComparator;
-import org.vectomatic.dom.svg.ui.SVGImage;
-import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
@@ -94,7 +92,6 @@ import static org.eclipse.che.ide.ui.smartTree.event.GoIntoStateEvent.State.DEAC
 public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.ActionDelegate> implements ProjectExplorerView,
                                                                                                      GoIntoStateHandler {
     private final Resources                resources;
-    private final ProjectExplorerResources explorerResources;
     private final AppContext               appContext;
     private final Provider<EditorAgent>    editorAgentProvider;
     private final EventBus                 eventBus;
@@ -116,7 +113,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     @Inject
     public ProjectExplorerViewImpl(final Resources resources,
-                                   final ProjectExplorerResources explorerResources,
                                    final ContextMenu contextMenu,
                                    final CoreLocalizationConstant coreLocalizationConstant,
                                    final Set<NodeInterceptor> nodeInterceptorSet,
@@ -125,7 +121,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                                    final EventBus eventBus) {
         super(resources);
         this.resources = resources;
-        this.explorerResources = explorerResources;
         this.appContext = appContext;
         this.editorAgentProvider = editorAgentProvider;
         this.eventBus = eventBus;
@@ -201,7 +196,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             public void onActivePartChanged(ActivePartChangedEvent event) {
                 if (event.getActivePart() instanceof EditorPartPresenter) {
                     if (scrollFromSourceButton == null) {
-                        scrollFromSourceButton = new ToolButton(new SVGImage(explorerResources.source()));
+                        scrollFromSourceButton = new ToolButton(FontAwesome.DOT_CIRCLE);
                         scrollFromSourceButton.addClickHandler(new ClickHandler() {
                             @Override
                             public void onClick(ClickEvent event) {
@@ -356,7 +351,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
 
     private void showToolbar() {
         if (refreshButton == null) {
-            refreshButton = new ToolButton(new SVGImage(resources.refresh()));
+            refreshButton = new ToolButton(FontAwesome.REFRESH);
             refreshButton.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
@@ -365,16 +360,13 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
             });
             refreshButton.ensureDebugId(REFRESH_BUTTON_ID);
 
-            Tooltip.create((elemental.dom.Element)refreshButton.getElement(),
-                           BOTTOM,
-                           MIDDLE,
-                           "Refresh Project Tree");
+            Tooltip.create((elemental.dom.Element)refreshButton.getElement(), BOTTOM, MIDDLE, "Refresh Project Tree");
             addToolButton(refreshButton);
             refreshButton.setVisible(true);
         }
 
         if (collapseAllButton == null) {
-            collapseAllButton = new ToolButton(new SVGImage(explorerResources.collapse()));
+            collapseAllButton = new ToolButton(FontAwesome.COMPRESS);
             collapseAllButton.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
@@ -387,10 +379,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
                     tree.collapseAll();
                 }
             });
-            Tooltip.create((elemental.dom.Element)collapseAllButton.getElement(),
-                           BOTTOM,
-                           MIDDLE,
-                           "Collapse All");
+            Tooltip.create((elemental.dom.Element)collapseAllButton.getElement(), BOTTOM, MIDDLE, "Collapse All");
             collapseAllButton.ensureDebugId(COLLAPSE_ALL_BUTTON_ID);
             addToolButton(collapseAllButton);
         }
@@ -584,7 +573,7 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     }
 
     private void initGoIntoBackButton() {
-        goBackButton = new ToolButton(new SVGImage(explorerResources.up()));
+        goBackButton = new ToolButton(FontAwesome.ARROW_CIRCLE_O_LEFT);
         goBackButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -626,17 +615,6 @@ public class ProjectExplorerViewImpl extends BaseView<ProjectExplorerView.Action
     @Override
     public void collapseAll() {
         tree.collapseAll();
-    }
-
-    public interface ProjectExplorerResources extends ClientBundle {
-        @Source("source.svg")
-        SVGResource source();
-
-        @Source("upwardArrow.svg")
-        SVGResource up();
-
-        @Source("collapse.svg")
-        SVGResource collapse();
     }
 
     private class ProjectExplorerRenderer extends DefaultPresentationRenderer<Node> {

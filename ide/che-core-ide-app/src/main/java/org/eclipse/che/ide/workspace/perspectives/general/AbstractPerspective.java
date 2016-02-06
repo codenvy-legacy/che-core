@@ -146,7 +146,6 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
     @Override
     public void setActivePart(@NotNull PartPresenter part, @NotNull PartStackType type) {
         PartStack destPartStack = partStacks.get(type);
-
         destPartStack.setActivePart(part);
     }
 
@@ -198,4 +197,5 @@ public abstract class AbstractPerspective implements Presenter, Perspective {
     public PartStack getPartStack(@NotNull PartStackType type) {
         return partStacks.get(type);
     }
+
 }

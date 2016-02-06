@@ -31,15 +31,10 @@ import org.eclipse.che.ide.api.action.CustomComponentAction;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.parts.Perspective;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
-import org.vectomatic.dom.svg.ui.SVGButtonBase;
-import org.vectomatic.dom.svg.ui.SVGToggleButton;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.eclipse.che.ide.ui.FontAwesome;
 
 /**
- * @author Evgen Vidolob
- * @author Dmitry Shnurenko
+ * @author Codenvy crowd
  */
 @Singleton
 public class ExpandEditorAction extends Action implements CustomComponentAction {
@@ -48,64 +43,55 @@ public class ExpandEditorAction extends Action implements CustomComponentAction 
     private final CoreLocalizationConstant constant;
     private final AnalyticsEventLogger     eventLogger;
     private final PerspectiveManager       perspectiveManager;
-    private final List<SVGToggleButton>    toggleButtons;
 
-    private boolean expanded;
+    private FlowPanel                      buttonPanel;
+    private FlowPanel                      button;
+
+    private boolean                        expanded;
 
     @Inject
     public ExpandEditorAction(Resources resources,
                               PerspectiveManager perspectiveManager,
                               CoreLocalizationConstant constant,
                               AnalyticsEventLogger eventLogger) {
-        super(constant.actionExpandEditorTitle(), null, null, resources.fullscreen());
+        super(constant.actionExpandEditorTitle(), null, null, null, FontAwesome.EXPAND);
         this.resources = resources;
         this.perspectiveManager = perspectiveManager;
         this.constant = constant;
         this.eventLogger = eventLogger;
-
         this.expanded = false;
-        this.toggleButtons = new ArrayList<>();
-
-        setExpandEditorEventHandler();
     }
-
-    /**
-     * Using native functions helps us to bind different components of IDE each other.
-     */
-    private native void setExpandEditorEventHandler() /*-{
-        var instance = this;
-        $wnd.IDE.eventHandlers.expandEditor = function () {
-            instance.@org.eclipse.che.ide.actions.ExpandEditorAction::expandEditor()();
-        };
-    }-*/;
-
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log(this);
+        toggleExpand();
     }
 
     @Override
     public Widget createCustomComponent(Presentation presentation) {
+        if (buttonPanel != null) {
+            return buttonPanel;
+        }
+
         final Element tooltip = DOM.createSpan();
         tooltip.setInnerHTML(constant.actionExpandEditorTitle());
 
-        final SVGToggleButton svgToggleButton = new SVGToggleButton(presentation.getSVGIcon(), null);
-        toggleButtons.add(svgToggleButton);
-        svgToggleButton.addFace(SVGButtonBase.SVGFaceName.DOWN, new SVGButtonBase.SVGFace(new SVGButtonBase.SVGFaceChange[]{
-                new SVGButtonBase.SVGStyleChange(new String[]{resources.coreCss().editorFullScreenSvgDown()})}));
-        svgToggleButton.addClickHandler(new ClickHandler() {
+        buttonPanel = new FlowPanel();
+        buttonPanel.addStyleName(resources.coreCss().editorFullScreen());
+
+        button = new FlowPanel();
+        button.getElement().setInnerHTML(FontAwesome.EXPAND);
+        button.addDomHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                expandEditor();
+                toggleExpand();
             }
-        });
+        }, ClickEvent.getType());
 
-        FlowPanel widgetPanel = new FlowPanel();
-        widgetPanel.addStyleName(resources.coreCss().editorFullScreen());
-        widgetPanel.add(svgToggleButton);
-        widgetPanel.getElement().appendChild(tooltip);
-        widgetPanel.addDomHandler(new MouseOverHandler() {
+        buttonPanel.add(button);
+        buttonPanel.getElement().appendChild(tooltip);
+
+        buttonPanel.addDomHandler(new MouseOverHandler() {
             @Override
             public void onMouseOver(MouseOverEvent event) {
                 final Element panel = event.getRelativeElement();
@@ -114,28 +100,31 @@ public class ExpandEditorAction extends Action implements CustomComponentAction 
             }
         }, MouseOverEvent.getType());
 
-        return widgetPanel;
+        return buttonPanel;
     }
 
     /**
-     * Handles the clicking on Expand button and expands or restores the editor.
+     * Expands or restores the editor.
      */
-    public void expandEditor() {
+    public void toggleExpand() {
+        eventLogger.log(this);
+
         Perspective activePerspective = perspectiveManager.getActivePerspective();
+        if (activePerspective != null) {
+            expanded = !expanded;
 
-        if (activePerspective == null) {
-            return;
+            if (expanded) {
+                activePerspective.expandEditorPart();
+                if (button != null) {
+                    button.getElement().setInnerHTML(FontAwesome.COMPRESS);
+                }
+            } else {
+                activePerspective.restoreEditorPart();
+                if (button != null) {
+                    button.getElement().setInnerHTML(FontAwesome.EXPAND);
+                }
+            }
         }
-
-        if (expanded) {
-            activePerspective.restoreEditorPart();
-        } else {
-            activePerspective.expandEditorPart();
-        }
-
-        toggleButtons.get(0).setDown(!expanded);
-
-        expanded = !expanded;
     }
 
 }
