@@ -35,7 +35,7 @@ import java.util.Set;
  *
  * @author gazarenkov
  */
-public class ProjectImpl {
+public class ProjectImpl implements ProjectConfig {
 
     private final List<Problem> problems = new ArrayList<>();
     private final FolderEntry   folder;
@@ -43,8 +43,8 @@ public class ProjectImpl {
     private final ProjectTypes  types;
     private final Map<String, Value> attributes = new HashMap<>();
     private final Set<String>        modules    = new HashSet<>();
-    private final NewProjectManager manager;
-    private       boolean           updated;
+    private final ProjectManager manager;
+    private       boolean        updated;
 
 
     /**
@@ -58,7 +58,7 @@ public class ProjectImpl {
      *         - if this object was updated, i.e. no more synchronized with workspace master
      * @param manager
      */
-    public ProjectImpl(FolderEntry folder, ProjectConfig config, boolean updated, NewProjectManager manager)
+    public ProjectImpl(FolderEntry folder, ProjectConfig config, boolean updated, ProjectManager manager)
             throws NotFoundException, ProjectTypeConstraintException, ServerException, InvalidValueException,
                    ValueStorageException {
 
@@ -131,31 +131,15 @@ public class ProjectImpl {
 
     }
 
-    public NewProjectManager getManager() {
+    public ProjectManager getManager() {
         return this.manager;
     }
 
-    public String getPath() {
-        return manager.absolutizePath(config.getPath());
-    }
-
-    public String getName() {
-        return config.getName();
-    }
-
-    public String getDescription() {
-        return config.getDescription();
-    }
-
-    public SourceStorage getSource() {
-        return config.getSource();
-    }
-
-    public ProjectTypeDef getType() {
+    public ProjectTypeDef getProjectType() {
         return types.getPrimary();
     }
 
-    public Map<String, ProjectTypeDef> getMixins() {
+    public Map<String, ProjectTypeDef> getMixinTypes() {
         return types.getMixins();
     }
 
@@ -163,45 +147,25 @@ public class ProjectImpl {
         return types.getAll();
     }
 
-//    public Map<String, Attribute> getAttributeDefs() {
-//        return types.getAttributeDefs();
-//    }
-
-    public Map<String, Value> getAttributes() {
+    public Map<String, Value> getAttributeEntries() {
         return attributes;
     }
 
-//    public Map<String, Value> getPersistableAttributes() {
-//        return null;
-//    }
-
-
-    public ProjectImpl getParent() {
+    public ProjectImpl getUpperProject() {
         return manager.getProject(Path.of(getPath()).getParent().toString());
     }
 
-    public Set<String> getModules() {
+    public Set<String> getModulePaths() {
         return this.modules;
     }
 
     public void addModule(String modulePath) throws NotFoundException, InvalidValueException {
 
-        if(manager.getProject(modulePath) == null)
-            throw new NotFoundException("Module not found "+modulePath);
-
-        if(modulePath.equals(getPath()))
-            throw new InvalidValueException("Can not add myself as a module " + modulePath);
 
         if(!modules.contains(modulePath))
             this.modules.add(modulePath);
 
     }
-
-    public void deleteModule(String modulePath) {
-        this.modules.remove(modulePath);
-    }
-
-
 
     public boolean isSynced() {
         return !this.updated;
@@ -220,13 +184,6 @@ public class ProjectImpl {
     }
 
     /**
-     * @return project config or null
-     */
-//    public ProjectConfig getConfig() {
-//        return config;
-//    }
-
-    /**
      * @return problems in case if root or config is null (project is not synced)
      */
     public List<Problem> getProblems() {
@@ -236,7 +193,7 @@ public class ProjectImpl {
 
     public Map<String, List <String>> getPersistableAttributes() {
         Map<String, List <String>> attrs = new HashMap<>();
-        for(HashMap.Entry<String, Value> entry : getAttributes().entrySet()) {
+        for(HashMap.Entry<String, Value> entry : getAttributeEntries().entrySet()) {
 
             Attribute def = types.getAttributeDefs().get(entry.getKey());
             // not provided
@@ -248,6 +205,70 @@ public class ProjectImpl {
         return attrs;
     }
 
+    /* ------------------------------------------- */
+    /* Implementation of ProjectConfig interface   */
+    /* ------------------------------------------- */
+
+    @Override
+    public String getPath() {
+        return manager.absolutizePath(config.getPath());
+    }
+
+    @Override
+    public String getName() {
+        return config.getName();
+    }
+
+    @Override
+    public String getDescription() {
+        return config.getDescription();
+    }
+
+    @Override
+    public SourceStorage getSource() {
+        return config.getSource();
+    }
+
+    @Override
+    public String getType() {
+        return types.getPrimary().getId();
+    }
+
+    @Override
+    public List<String> getMixins() {
+        List <String> mixins = new ArrayList<>();
+
+        for(ProjectTypeDef mixin : types.getMixins().values()) {
+            if(mixin.isPersisted())
+                mixins.add(mixin.getId());
+        }
+
+        return mixins;
+    }
+
+    @Override
+    public Map<String, List<String>> getAttributes() {
+
+        return getPersistableAttributes();
+
+    }
+
+    @Override
+    public List<? extends ProjectConfig> getModules() {
+
+        List <ProjectImpl> modules = new ArrayList<>();
+        for(String m : getModulePaths())
+            modules.add(manager.getProject(m));
+
+        return modules;
+    }
+
+//    @Deprecated
+//    public String getContentRoot() {
+//        return null;
+//    }
+
+    /* ----------------------------------- */
 
     public class Problem {
         private Problem(int code, String message) {
@@ -307,10 +328,7 @@ public class ProjectImpl {
             return null;
         }
 
-        @Override
-        public String getContentRoot() {
-            return null;
-        }
+
     }
 
 }

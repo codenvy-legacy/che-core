@@ -54,7 +54,7 @@ public class ProjectManagerReadTest {
 
     private File root;
 
-    private NewProjectManager pm;
+    private ProjectManager pm;
 
     @BeforeClass
     public static void beforeClass() {
@@ -77,14 +77,14 @@ public class ProjectManagerReadTest {
 
         vfs = new LocalVirtualFileSystem(root, null, null, null);
 
-        List <ProjectConfigDto> modules = new ArrayList<>();
+        List<ProjectConfigDto> modules = new ArrayList<>();
         modules.add(DtoFactory.newDto(ProjectConfigDto.class)
                               .withPath("/normal/module")
                               .withName("project1Name")
                               .withType("primary1"));
 
 
-        List <ProjectConfigDto> projects = new ArrayList<>();
+        List<ProjectConfigDto> projects = new ArrayList<>();
         projects.add(DtoFactory.newDto(ProjectConfigDto.class)
                                .withPath("/normal")
                                .withName("project1Name")
@@ -102,7 +102,7 @@ public class ProjectManagerReadTest {
 
         projectHandlerRegistry = new ProjectHandlerRegistry(new HashSet<>());
 
-        pm = new NewProjectManager(vfs, null, projectTypeRegistry, projectHandlerRegistry,
+        pm = new ProjectManager(vfs, null, projectTypeRegistry, projectHandlerRegistry,
                                    null, workspaceHolder);
     }
 
@@ -129,7 +129,7 @@ public class ProjectManagerReadTest {
         assertEquals("/fromFolder", pm.getProject("/fromFolder").getPath());
         assertEquals("fromFolder", pm.getProject("/fromFolder").getName());
         assertEquals(1, pm.getProject("/fromFolder").getProblems().size());
-        assertEquals(BaseProjectType.ID, pm.getProject("/fromFolder").getType().getId());
+        assertEquals(BaseProjectType.ID, pm.getProject("/fromFolder").getProjectType().getId());
         assertEquals(11, pm.getProject("/fromFolder").getProblems().get(0).code);
     }
 
@@ -139,7 +139,7 @@ public class ProjectManagerReadTest {
         assertNotNull(pm.getProject("/fromConfig"));
         assertEquals("/fromConfig", pm.getProject("/fromConfig").getPath());
         assertEquals(1, pm.getProject("/fromConfig").getProblems().size());
-        assertEquals("primary1", pm.getProject("/fromConfig").getType().getId());
+        assertEquals("primary1", pm.getProject("/fromConfig").getProjectType().getId());
         assertEquals(10, pm.getProject("/fromConfig").getProblems().get(0).code);
     }
 
@@ -149,11 +149,11 @@ public class ProjectManagerReadTest {
         String path = "/normal/module";
         assertNotNull(pm.getProject(path));
         assertEquals(0, pm.getProject(path).getProblems().size());
-        assertEquals("primary1", pm.getProject(path).getType().getId());
+        assertEquals("primary1", pm.getProject(path).getProjectType().getId());
 
         ProjectImpl parent = pm.getProject("/normal");
-        assertEquals(1, parent.getModules().size());
-        assertEquals(path, parent.getModules().iterator().next());
+        assertEquals(1, parent.getModulePaths().size());
+        assertEquals(path, parent.getModulePaths().iterator().next());
 
         List<String> projects = pm.getProjects("/normal");
         assertEquals(1, projects.size());
@@ -205,7 +205,7 @@ public class ProjectManagerReadTest {
     @Test
     public void testIfConstantAttrIsAccessible() throws Exception {
 
-        assertEquals("my constant", pm.getProject("/normal").getAttributes().get("const1").getString());
+        assertEquals("my constant", pm.getProject("/normal").getAttributeEntries().get("const1").getString());
 
     }
 

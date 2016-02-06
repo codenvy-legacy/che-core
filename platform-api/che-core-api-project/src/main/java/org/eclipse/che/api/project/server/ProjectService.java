@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiResponses;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.tika.Tika;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
@@ -102,18 +103,18 @@ public class ProjectService extends Service {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectService.class);
 
-    //private final FilesBuffer     filesBuffer = FilesBuffer.get();
     private final ExecutorService executor = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
                                                                           new ThreadFactoryBuilder()
                                                                                   .setNameFormat("ProjectService-IndexingThread-")
-                                                                                  .setDaemon(true).build());
+                                                                                  .setDaemon(true).build()
+                                                                         );
+
+    private static final Tika TIKA = new Tika();
 
     @Inject
-    private NewProjectManager       projectManager;
+    private ProjectManager          projectManager;
     @Inject
     private ProjectImporterRegistry importers;
-//    @Inject
-//    private SearcherProvider        searcherProvider;
     @Inject
     private EventService            eventService;
     @Inject
@@ -177,11 +178,11 @@ public class ProjectService extends Service {
                                                                               ConflictException {
         ProjectImpl project = projectManager.getProject(path);
 
-        if(project == null)
+        if (project == null)
             throw new NotFoundException(String.format("Project '%s' doesn't exist in workspace '%s'.", path, workspace));
 
 
-            return toProjectConfig(project, workspace, getServiceContext().getServiceUriBuilder());
+        return toProjectConfig(project, workspace, getServiceContext().getServiceUriBuilder());
 
     }
 
@@ -223,7 +224,7 @@ public class ProjectService extends Service {
         eventService.publish(new ProjectCreatedEvent(workspace, project.getPath()));
 
         // TODO this throws NPE
-        //logProjectCreatedEvent(configDto.getName(), configDto.getType());
+        //logProjectCreatedEvent(configDto.getName(), configDto.getProjectType());
 
         return configDto;
     }
@@ -253,18 +254,17 @@ public class ProjectService extends Service {
         }
 
         List <ProjectConfig> modules = new ArrayList<>();
-        for(String modulePath : parent.getModules()) {
+        for(String modulePath : parent.getModulePaths()) {
 
             modules.add(DtoConverter.toProjectConfig(projectManager.getProject(modulePath), workspace, getServiceContext().getServiceUriBuilder()));
         }
 
         return modules;
 
-        //return projectManager.getProjectModules(parent).stream().collect(Collectors.toCollection(LinkedList::new));
     }
 
-    @ApiOperation(value = "Create a new module",
-                  notes = "Create a new module in a specified project",
+    @ApiOperation(value = "Add one project as a module to other",
+                  notes = "Add one project as a module to other",
                   response = ProjectConfigDto.class,
                   position = 5)
     @ApiResponses(value = {
@@ -275,40 +275,23 @@ public class ProjectService extends Service {
             @ApiResponse(code = 500, message = "Internal Server Error")})
     @POST
     @Path("/{path:.*}")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Deprecated
-    // it is deprecated, use addProject with parent instead
+    // Implementation changed, we pass path to the module instead of config. Module should exist
     public ProjectConfigDto addModule(@ApiParam(value = "Workspace ID", required = true)
                                          @PathParam("ws-id") String workspace,
                                          @ApiParam(value = "Path to a target directory", required = true)
                                          @PathParam("path") String path,
-                                         ProjectConfigDto moduleConfigDto) throws NotFoundException,
+                                         @QueryParam("module") String modulePath) throws NotFoundException,
                                                                                   ConflictException,
                                                                                   ForbiddenException,
                                                                                   ServerException {
 
+        ProjectImpl project = projectManager.addModule(path, modulePath);
 
-//        filesBuffer.addToBuffer(moduleConfigDto.getName());
-
-        ProjectImpl parent = projectManager.getProject(path);
-        if(parent == null)
-            throw new NotFoundException("Parent project not found "+path);
-
-        ProjectImpl module = projectManager.getProject(moduleConfigDto.getPath());
-        if(module == null)
-            throw new NotFoundException("Module not found "+moduleConfigDto.getPath());
-
-        parent.addModule(module.getPath());
-
-//        eventService.publish(new ProjectCreatedEvent(workspace, module.getPath()));
-//
-//        logProjectCreatedEvent(module.getName(), module.getType());
-
-        return DtoConverter.toProjectConfig(parent, workspace, getServiceContext().getServiceUriBuilder());
+        return DtoConverter.toProjectConfig(project, workspace, getServiceContext().getServiceUriBuilder());
     }
 
-        @ApiOperation(value = "Delete a resource",
+    @ApiOperation(value = "Delete a resource",
                   notes = "Delete resources. If you want to delete a single project, specify project name. If a folder or file needs to " +
                           "be deleted a path to the requested resource needs to be specified",
                   position = 13)
@@ -347,7 +330,6 @@ public class ProjectService extends Service {
                                                                                ForbiddenException,
                                                                                ConflictException,
                                                                                ServerException {
-        //filesBuffer.addToBufferRecursive(getVirtualFileEntry(workspace, pathToParent).getVirtualFile());
 
         projectManager.deleteModule(pathToParent, pathToModule);
     }
@@ -479,7 +461,7 @@ public class ProjectService extends Service {
                                @ApiParam(value = "New file name", required = true)
                                @QueryParam("name") String fileName,
                                InputStream content) throws NotFoundException, ConflictException, ForbiddenException, ServerException {
-        //filesBuffer.addToBuffer(parentPath + '/' + fileName);
+
 
         final FolderEntry parent = asFolder(parentPath);
         final FileEntry newFile = parent.createFile(fileName, content);
@@ -490,7 +472,6 @@ public class ProjectService extends Service {
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
                                                           workspace, projectPath(newFile.getPath().toString()), newFile.getPath().toString(),
                                                           false));
-
         return Response.created(location).entity(fileReference).build();
     }
 
@@ -515,7 +496,6 @@ public class ProjectService extends Service {
                                                                         ForbiddenException,
                                                                         ServerException,
                                                                         NotFoundException {
-        //filesBuffer.addToBuffer(path);
 
         final FolderEntry newFolder = projectManager.getProjectsRoot().createFolder(path);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
@@ -598,8 +578,8 @@ public class ProjectService extends Service {
             throws IOException, NotFoundException, ForbiddenException, ServerException {
 
         final FileEntry file = asFile(path);
-        // TODO is media type sufficient?
-        return Response.ok().entity(file.getInputStream())/*.type(file.getMediaType())*/.build();
+
+        return Response.ok().entity(file.getInputStream()).type(TIKA.detect(file.getName())).build();
     }
 
     @ApiOperation(value = "Update file",
@@ -649,7 +629,6 @@ public class ProjectService extends Service {
 
         final VirtualFileEntry entry = getVirtualFileEntry(path);
 
-        //filesBuffer.addToBuffer(newParent + '/' + entry.getName(), path);
         // used to indicate over write of destination
         boolean isOverWrite = false;
         // used to hold new name set in request body
@@ -662,7 +641,10 @@ public class ProjectService extends Service {
                 newName = copyOptions.getName();
             }
         }
-        final VirtualFileEntry copy = entry.copyTo(newParent, newName, isOverWrite);
+
+        //final VirtualFileEntry copy = entry.copyTo(newParent, newName, isOverWrite);
+        final VirtualFileEntry copy = projectManager.copyTo(path, newParent, newName, isOverWrite);
+
         final URI location = getServiceContext().getServiceUriBuilder()
                                                 .path(getClass(), copy.isFile() ? "getFile" : "getChildren")
                                                 .build(workspace, copy.getPath().toString().substring(1));
@@ -670,7 +652,7 @@ public class ProjectService extends Service {
             final ProjectImpl project = projectManager.getProject(copy.getPath().toString());
             if (project != null) {
                 final String name = project.getName();
-                final String projectType = project.getType().getId();
+                final String projectType = project.getProjectType().getId();
 
                 logProjectCreatedEvent(name, projectType);
             }
@@ -696,7 +678,6 @@ public class ProjectService extends Service {
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
 
         final VirtualFileEntry entry = getVirtualFileEntry(path);
-        //filesBuffer.addToBuffer(newParent + '/' + entry.getName(), path);
 
         // used to indicate over write of destination
         boolean isOverWrite = false;
@@ -711,74 +692,27 @@ public class ProjectService extends Service {
             }
         }
 
-        entry.moveTo(newParent, newName, isOverWrite);
-        final URI location = getServiceContext().getServiceUriBuilder()
-                                                .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
-                                                .build(workspace, entry.getPath().toString().substring(1));
-        if (entry.isFolder()) {
-            final ProjectImpl project = projectManager.getProject(entry.getPath().toString());
-            if (project != null) {
-                final String name = project.getName();
-                final String projectType = project.getType().getId();
-//                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
-//                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
+        final VirtualFileEntry move = projectManager.moveTo(path, newParent, newName, isOverWrite);
 
-//                logProjectCreatedEvent(name, projectType);
-            }
-        }
+        final URI location = getServiceContext().getServiceUriBuilder()
+                                                .path(getClass(), move.isFile() ? "getFile" : "getChildren")
+                                                .build(workspace, move.getPath().toString().substring(1));
+//        if (move.isFolder()) {
+//            final ProjectImpl project = projectManager.getProject(move.getPath().toString());
+//            if (project != null) {
+//                final String name = project.getName();
+//                final String projectType = project.getProjectType().getId();
+////                LOG.info("EVENT#project-destroyed# PROJECT#{}# TYPE#{}# WS#{}# USER#{}#", name, projectType,
+////                         EnvironmentContext.getCurrent().getWorkspaceName(), EnvironmentContext.getCurrent().getUser().getName());
+//
+////                logProjectCreatedEvent(name, projectType);
+//            }
+//        }
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.MOVED,
                                                           workspace, projectPath(entry.getPath().toString()), entry.getPath().toString(), entry.isFolder(),
                                                           path));
         return Response.created(location).build();
     }
-
-// TODO do we need it at all?
-//    @ApiOperation(value = "Rename resource",
-//                  notes = "Rename resources. It can be project, module, folder or file",
-//                  position = 16)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 201, message = ""),
-//            @ApiResponse(code = 403, message = "User not authorized to call this operation"),
-//            @ApiResponse(code = 404, message = "Not found"),
-//            @ApiResponse(code = 409, message = "Resource already exists"),
-//            @ApiResponse(code = 500, message = "Internal Server Error")})
-//    @POST
-//    @Path("/rename/{path:.*}")
-//    public Response rename(@ApiParam(value = "Workspace ID", required = true)
-//                           @PathParam("ws-id") String workspace,
-//                           @ApiParam(value = "Path to resource to be renamed", required = true)
-//                           @PathParam("path") String path,
-//                           @ApiParam(value = "New name", required = true)
-//                           @QueryParam("name") String newName,
-//                           // TODO media type removed
-//                           @ApiParam(value = "New media type")
-//                           @QueryParam("mediaType") String newMediaType)
-//            throws NotFoundException, ConflictException, ForbiddenException, ServerException, IOException {
-//
-//        final VirtualFileEntry entry = projectManager.rename(workspace, path, newName);
-//        if (entry == null) {
-//            throw new NotFoundException(String.format("Path '%s' doesn't exist.", path));
-//        }
-//
-////        final int startOldName = path.lastIndexOf("/") + 1;
-////        final String pathToFile = path.substring(0, startOldName);
-////        filesBuffer.addToBuffer(pathToFile + newName, path);
-////        filesBuffer.addToBufferRecursive(entry.getVirtualFile());
-//
-//        final URI location = getServiceContext().getServiceUriBuilder()
-//                                                .path(getClass(), entry.isFile() ? "getFile" : "getChildren")
-//                                                .build(workspace, entry.getPath().toString().substring(1));
-//
-//        eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.RENAMED,
-//                                                          workspace,
-//                                                          projectPath(entry.getPath().toString()),
-//                                                          entry.getPath().toString(),
-//                                                          entry.isFolder(),
-//                                                          path));
-//        return Response.created(location).build();
-//    }
-
-
 
 
     @ApiOperation(value = "Upload zip project",
@@ -796,7 +730,7 @@ public class ProjectService extends Service {
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/upload/zipproject/{path:.*}")
-    public ProjectConfigDto uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
+    public List<SourceEstimation> uploadProjectFromZip(@ApiParam(value = "Workspace ID", required = true)
                                                  @PathParam("ws-id") String workspace,
                                                  @ApiParam(value = "Path in the project", required = true)
                                                  @PathParam("path") String path,
@@ -822,7 +756,7 @@ public class ProjectService extends Service {
                 if (contentItem == null) {
                     contentItem = item;
                 } else {
-                    throw new ServerException("More then one upload file is found but only one should be. ");
+                    throw new ServerException("More then one upload file is found but only one is expected. ");
                 }
             } else {
                 switch (item.getFieldName()) {
@@ -862,8 +796,10 @@ public class ProjectService extends Service {
             }
         }
 
+        return sourceEstimations;
+
         //project source already imported going to configure project
-        return updateProject(workspace, path, projectConfig);
+        //return updateProject(workspace, path, projectConfig);
     }
 
 
@@ -892,7 +828,7 @@ public class ProjectService extends Service {
         final ProjectImpl project = projectManager.getProject(path);
         if (project != null) {
             eventService.publish(new ProjectCreatedEvent(workspace, project.getPath()));
-            final String projectType = project.getType().getId();
+            final String projectType = project.getProjectType().getId();
             logProjectCreatedEvent(path, projectType);
         }
         return Response.created(getServiceContext().getServiceUriBuilder()
@@ -900,7 +836,7 @@ public class ProjectService extends Service {
                                                    .build(workspace, parent.getPath().toString().substring(1))).build();
     }
 
-    // TODO what about ContentStream, not a part of new VFS ?
+//
 //    @ApiOperation(value = "Download ZIP",
 //                  notes = "Export resource as zip. It can be an entire project or folder",
 //                  position = 20)
@@ -921,7 +857,7 @@ public class ProjectService extends Service {
 //        final FolderEntry folder = asFolder(path);
 //        return exportZip(folder.getVirtualFile());
 //    }
-
+//
 
 //
 //    @POST
@@ -943,6 +879,7 @@ public class ProjectService extends Service {
 //        final FolderEntry folder = asFolder(workspace, path);
 //        return VirtualFileSystemImpl.exportZipMultipart(folder.getVirtualFile(), in);
 //    }
+
 //    @GET
 //    @Path("/export/file/{path:.*}")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1058,9 +995,9 @@ public class ProjectService extends Service {
 //                entry = null;
 //            }
 //        }
-//        if (entry == null) {
-//            throw new NotFoundException("Project " + path + " was not found");
-//        }
+        if (entry == null) {
+            throw new NotFoundException("Project " + path + " was not found");
+        }
 
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
 

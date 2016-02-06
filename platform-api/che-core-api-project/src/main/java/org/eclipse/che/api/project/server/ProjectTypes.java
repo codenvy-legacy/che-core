@@ -29,15 +29,15 @@ import java.util.Map;
  */
 public class ProjectTypes {
 
-    private final ProjectConfig projectConfig;
-    private final NewProjectManager manager;
+    private final ProjectConfig  projectConfig;
+    private final ProjectManager manager;
     private final ProjectTypeDef primary;
-    private final Map<String, ProjectTypeDef> mixins = new HashMap<>();
-    private final Map<String, ProjectTypeDef> all    = new HashMap<>();
-    private final Map<String, Attribute> attributeDefs = new HashMap<>();
+    private final Map<String, ProjectTypeDef> mixins        = new HashMap<>();
+    private final Map<String, ProjectTypeDef> all           = new HashMap<>();
+    private final Map<String, Attribute>      attributeDefs = new HashMap<>();
 
-    public ProjectTypes(ProjectConfig projectConfig, NewProjectManager manager) throws ProjectTypeConstraintException,
-                                                                                                     NotFoundException {
+    public ProjectTypes(ProjectConfig projectConfig, ProjectManager manager) throws ProjectTypeConstraintException,
+                                                                                    NotFoundException {
         this.manager = manager;
         this.projectConfig = projectConfig;
 

@@ -597,6 +597,9 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
 
 
     InputStream zip(LocalVirtualFile folder) throws ForbiddenException, ServerException {
+        if(archiverFactory == null)
+            throw new ServerException("VFS: Could not create zip archiver. Archiver Factory is not properly configured (is null)");
+
         if (folder.isFolder()) {
             return compress(archiverFactory.createArchiver(folder, "zip"));
         } else {
@@ -607,6 +610,9 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
 
     void unzip(LocalVirtualFile parent, InputStream zipped, boolean overwrite, int stripNumber)
             throws ForbiddenException, ConflictException, ServerException {
+        if(archiverFactory == null)
+            throw new ServerException("VFS: Could not create zip archiver. Archiver Factory is not properly configured (is null)");
+
         if (parent.isFolder()) {
             extract(archiverFactory.createArchiver(parent, "zip"), zipped, overwrite, stripNumber);
             addInSearcher(parent);
@@ -617,6 +623,9 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
 
 
     InputStream tar(LocalVirtualFile folder) throws ForbiddenException, ServerException {
+        if(archiverFactory == null)
+            throw new ServerException("VFS: Could not create tar archiver. Archiver Factory is not properly configured (is null)");
+
         if (folder.isFolder()) {
             return compress(archiverFactory.createArchiver(folder, "tar"));
         } else {
@@ -626,6 +635,9 @@ public class LocalVirtualFileSystem implements VirtualFileSystem {
 
     void untar(LocalVirtualFile parent, InputStream tarArchive, boolean overwrite, int stripNumber)
             throws ForbiddenException, ConflictException, ServerException {
+        if(archiverFactory == null)
+            throw new ServerException("VFS: Could not create tar archiver. Archiver Factory is not properly configured (is null)");
+
         if (parent.isFolder()) {
             extract(archiverFactory.createArchiver(parent, "tar"), tarArchive, overwrite, stripNumber);
             addInSearcher(parent);
