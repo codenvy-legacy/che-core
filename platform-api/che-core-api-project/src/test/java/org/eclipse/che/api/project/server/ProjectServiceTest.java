@@ -73,6 +73,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -167,8 +169,8 @@ public class ProjectServiceTest {
         }
         indexDir.mkdir();
 
-        Set<VirtualFileFilter> filters = new HashSet<>();
-        filters.add(VirtualFileFilter.ACCEPT_ALL);
+        Set<PathMatcher> filters = new HashSet<>();
+        filters.add(path -> true);
         FSLuceneSearcherProvider sProvider = new FSLuceneSearcherProvider(indexDir, filters);
 
         vfs = new LocalVirtualFileSystem(root, new ArchiverFactory(), sProvider, null);

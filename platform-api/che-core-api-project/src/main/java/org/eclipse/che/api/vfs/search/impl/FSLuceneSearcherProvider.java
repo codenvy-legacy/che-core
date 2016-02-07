@@ -10,14 +10,18 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.search.impl;
 
-import org.eclipse.che.api.vfs.VirtualFileFilter;
+import org.eclipse.che.api.vfs.VirtualFileFilters;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.PathMatcher;
 import java.util.Set;
+
+import static com.google.common.collect.Iterables.transform;
+import static com.google.common.collect.Sets.newHashSet;
 
 @Singleton
 public class FSLuceneSearcherProvider extends AbstractLuceneSearcherProvider {
@@ -26,13 +30,14 @@ public class FSLuceneSearcherProvider extends AbstractLuceneSearcherProvider {
     /**
      * @param indexRootDirectory
      *         root directory for creation index
-     * @param fileIndexFilters
+     * @param excludePatterns
      *         set filter for files that should not be indexed
      * @see LuceneSearcher
      */
     public FSLuceneSearcherProvider(@Named("vfs.local.fs_index_root_dir") File indexRootDirectory,
-                                    @Named("vfs.index_filter") Set<VirtualFileFilter> fileIndexFilters) throws IOException {
-        super(fileIndexFilters);
+                                    // todo: rename value of @Named annotation to avoid type conflicts
+                                    @Named("vfs.index_filter") Set<PathMatcher> excludePatterns) throws IOException {
+        super(newHashSet(transform(excludePatterns, VirtualFileFilters::wrap)));
         this.indexRootDirectory = indexRootDirectory;
         Files.createDirectories(indexRootDirectory.toPath());
     }

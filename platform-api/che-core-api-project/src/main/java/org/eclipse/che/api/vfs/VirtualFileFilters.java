@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs;
 
+import java.nio.file.PathMatcher;
 import java.util.List;
 
 /**
@@ -92,6 +93,10 @@ public class VirtualFileFilters {
     }
 
     private static final VirtualFileFilter DOT_GIT_FILTER = file -> !(".git".equals(file.getName()));
+
+    public static VirtualFileFilter wrap(PathMatcher pathMatcher) {
+        return file -> pathMatcher.matches(file.toIoFile().toPath());
+    }
 
     private VirtualFileFilters() {
     }
