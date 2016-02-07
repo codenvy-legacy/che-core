@@ -46,12 +46,6 @@ public class ProjectManagerReadTest {
 
     private WorkspaceHolder workspaceHolder;
 
-    private VirtualFileSystem vfs;
-
-    private ProjectTypeRegistry projectTypeRegistry;
-
-    private ProjectHandlerRegistry projectHandlerRegistry;
-
     private File root;
 
     private ProjectManager pm;
@@ -75,7 +69,7 @@ public class ProjectManagerReadTest {
         new File(root, "/normal").mkdir();
         new File(root, "/normal/module").mkdir();
 
-        vfs = new LocalVirtualFileSystem(root, null, null, null);
+        VirtualFileSystem vfs = new LocalVirtualFileSystem(root, null, null, null);
 
         List<ProjectConfigDto> modules = new ArrayList<>();
         modules.add(DtoFactory.newDto(ProjectConfigDto.class)
@@ -97,10 +91,10 @@ public class ProjectManagerReadTest {
                                .withType("primary1"));
 
         workspaceHolder = new TestWorkspaceHolder(projects);
-        projectTypeRegistry = new ProjectTypeRegistry(new HashSet<>());
+        ProjectTypeRegistry projectTypeRegistry = new ProjectTypeRegistry(new HashSet<>());
         projectTypeRegistry.registerProjectType(new PT1());
 
-        projectHandlerRegistry = new ProjectHandlerRegistry(new HashSet<>());
+        ProjectHandlerRegistry projectHandlerRegistry = new ProjectHandlerRegistry(new HashSet<>());
 
         pm = new ProjectManager(vfs, null, projectTypeRegistry, projectHandlerRegistry,
                                    null, workspaceHolder);
@@ -111,6 +105,16 @@ public class ProjectManagerReadTest {
 //        File root = new File(FS_PATH);
 //        FileUtils.deleteDirectory(root);
 //    }
+
+    @Test
+    public void testInitManager() throws Exception {
+
+        //pm.getVfs().getRoot();
+
+
+
+    }
+
 
     @Test
     public void testNormalProject() throws Exception {
@@ -214,7 +218,6 @@ public class ProjectManagerReadTest {
 
         private TestWorkspaceHolder(List <ProjectConfigDto> projects) throws ServerException {
             super(DtoFactory.newDto(UsersWorkspaceDto.class).
-
                     withId("id").withName("name")
                             .withProjects(projects));
         }

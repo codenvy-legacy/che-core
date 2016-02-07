@@ -136,7 +136,7 @@ public class FolderEntry extends VirtualFileEntry {
         return getChildren(FILE_FOLDER_FILTER);
     }
 
-    List<VirtualFileEntry> getChildren(VirtualFileFilter filter) throws ServerException {
+    public List<VirtualFileEntry> getChildren(VirtualFileFilter filter) throws ServerException {
 
         final List<VirtualFile> vfChildren = getVirtualFile().getChildren(filter);
 
@@ -215,12 +215,6 @@ public class FolderEntry extends VirtualFileEntry {
     public FolderEntry createFolder(String name) throws ConflictException, ServerException, ForbiddenException {
         return new FolderEntry(getVirtualFile().createFolder(name), project);
     }
-
-//    /** Tests whether this FolderEntry is a root folder. */
-//    public boolean isRoot() {
-//        return isRoot(getVirtualFile());
-//    }
-
 
     private boolean isRoot(VirtualFile virtualFile) {
         return virtualFile.isRoot();

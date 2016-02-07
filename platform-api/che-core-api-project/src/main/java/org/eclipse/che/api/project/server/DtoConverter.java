@@ -82,13 +82,6 @@ public class DtoConverter {
         }
         definition.withAttributes(typeAttributes).withParents(projectType.getParents());
 
-//        final List<String> parents = projectType.getParents().stream()
-//                                                .map(ProjectTypeDef::getId)
-//                                                .collect(Collectors.toList());
-//        definition.setParents(parents);
-
-        //definition.withParents(projectType.getParents());
-
         return definition;
     }
 
@@ -100,27 +93,23 @@ public class DtoConverter {
                                                       .withCategory(importer.getCategory().getValue());
     }
 
-    public static ItemReference toItemReference(FileEntry file, String workspace, UriBuilder uriBuilder) throws ServerException {
+    public static ItemReference toItemReference(FileEntry file, String workspace, UriBuilder uriBuilder)
+            throws ServerException {
         return newDto(ItemReference.class).withName(file.getName())
                                           .withPath(file.getPath().toString())
                                           .withType("file")
-//                                          .withMediaType(file.getMediaType())
                                           .withAttributes(file.getAttributes())
-                                          //.withCreated(file.getCreated())
                                           .withModified(file.getModified())
                                           .withContentLength(file.getVirtualFile().getLength())
                                           .withLinks(generateFileLinks(file, workspace, uriBuilder));
     }
 
     public static ItemReference toItemReference(FolderEntry folder, String workspace,
-                                                UriBuilder uriBuilder,
-                                                ProjectManager projectManager) throws ServerException, NotFoundException {
+                                                UriBuilder uriBuilder) throws ServerException {
         return newDto(ItemReference.class).withName(folder.getName())
                                           .withPath(folder.getPath().toString())
                                           .withType(folder.isProject() ? "project" : "folder")
-//                                          .withMediaType("text/directory")
                                           .withAttributes(folder.getAttributes())
-//                                          .withCreated(folder.getCreated())
                                           .withModified(folder.getModified())
                                           .withLinks(generateFolderLinks(folder, workspace, uriBuilder));
     }
@@ -176,22 +165,6 @@ public class DtoConverter {
         return projectConfigDto;
     }
 
-//    private static ProjectConfigDto toProjectConfigDto(ProjectConfig moduleConfig) {
-//        List<ProjectConfigDto> modules = moduleConfig.getModulePaths()
-//                                                     .stream()
-//                                                     .map(DtoConverter::toProjectConfigDto)
-//                                                     .collect(Collectors.toList());
-//
-//        return newDto(ProjectConfigDto.class).withName(moduleConfig.getName())
-//                                             .withType(moduleConfig.getProjectType())
-//                                             .withPath(moduleConfig.getPath())
-//                                             .withModules(modules)
-//                                             .withAttributes(moduleConfig.getAttributeEntries())
-//                                             .withDescription(moduleConfig.getDescription())
-//                                             .withContentRoot(moduleConfig.getContentRoot())
-//                                             .withSource(toSourceDto(moduleConfig.getSource()))
-//                                             .withMixins(moduleConfig.getMixinTypes());
-//    }
 
     private static SourceStorageDto toSourceDto(SourceStorage sourceStorage) {
         SourceStorageDto storageDto = newDto(SourceStorageDto.class);
@@ -208,7 +181,6 @@ public class DtoConverter {
     private static List<Link> generateProjectLinks(ProjectImpl project, String workspace, UriBuilder uriBuilder) {
         final List<Link> links = generateFolderLinks(project.getBaseFolder(), workspace, uriBuilder);
         final String relPath = project.getPath().substring(1);
-//        final String workspace = project.getWorkspace();
         links.add(LinksHelper.createLink(PUT,
                                          uriBuilder.clone()
                                                    .path(ProjectService.class, "updateProject")
@@ -223,9 +195,8 @@ public class DtoConverter {
 
     private static List<Link> generateFolderLinks(FolderEntry folder, String workspace,  UriBuilder uriBuilder) {
         final List<Link> links = new LinkedList<>();
-        //final String workspace = folder.getWorkspace();
         final String relPath = folder.getPath().toString().substring(1);
-        //String method, String href, String produces, String rel
+
 //        links.add(LinksHelper.createLink(GET,
 //                                         uriBuilder.clone().path(ProjectService.class, "exportZip").build(workspace, relPath).toString(),
 //                                         ExtMediaType.APPLICATION_ZIP, LINK_REL_EXPORT_ZIP));
@@ -247,11 +218,7 @@ public class DtoConverter {
 
     private static List<Link> generateFileLinks(FileEntry file, String workspace, UriBuilder uriBuilder) throws ServerException {
         final List<Link> links = new LinkedList<>();
-        //final String workspace = file.getWorkspace();
         final String relPath = file.getPath().toString().substring(1);
-
-        //System.out.println(">>>>"+uriBuilder.path(ProjectService.class, "createFile").build(workspace, relPath).toString());
-
 
         links.add(LinksHelper.createLink(GET, uriBuilder.clone().path(ProjectService.class, "getFile").build(workspace, relPath).toString(),
                                          null, null, LINK_REL_GET_CONTENT));

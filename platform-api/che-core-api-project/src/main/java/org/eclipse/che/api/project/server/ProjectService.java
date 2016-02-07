@@ -44,7 +44,7 @@ import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.search.QueryExpression;
 import org.eclipse.che.api.vfs.search.SearchResult;
 import org.eclipse.che.api.vfs.search.SearchResultEntry;
-import org.eclipse.che.api.vfs.search.SearcherProvider;
+import org.eclipse.che.api.vfs.search.Searcher;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
@@ -499,7 +499,7 @@ public class ProjectService extends Service {
 
         final FolderEntry newFolder = projectManager.getProjectsRoot().createFolder(path);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        final ItemReference folderReference = DtoConverter.toItemReference(newFolder, workspace, uriBuilder.clone(), projectManager);
+        final ItemReference folderReference = DtoConverter.toItemReference(newFolder, workspace, uriBuilder.clone());
         final URI location = uriBuilder.clone().path(getClass(), "getChildren").build(workspace, newFolder.getPath().toString().substring(1));
 
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
@@ -921,7 +921,7 @@ public class ProjectService extends Service {
             if (child.isFile()) {
                 result.add(DtoConverter.toItemReference((FileEntry)child, workspace, uriBuilder.clone()));
             } else {
-                result.add(DtoConverter.toItemReference((FolderEntry)child, workspace, uriBuilder.clone(), projectManager));
+                result.add(DtoConverter.toItemReference((FolderEntry)child, workspace, uriBuilder.clone()));
             }
         }
 
@@ -956,7 +956,7 @@ public class ProjectService extends Service {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         return dtoFactory.createDto(TreeElement.class)
-                         .withNode(DtoConverter.toItemReference(folder, workspace, uriBuilder.clone(), projectManager))
+                         .withNode(DtoConverter.toItemReference(folder, workspace, uriBuilder.clone()))
                          .withChildren(getTree(folder, workspace, depth, includeFiles, uriBuilder, dtoFactory));
     }
 
@@ -1005,7 +1005,7 @@ public class ProjectService extends Service {
         if (entry.isFile()) {
             item = DtoConverter.toItemReference((FileEntry)entry, workspace, uriBuilder.clone());
         } else {
-            item = DtoConverter.toItemReference((FolderEntry)entry, workspace, uriBuilder.clone(), projectManager);
+            item = DtoConverter.toItemReference((FolderEntry)entry, workspace, uriBuilder.clone());
         }
 
         return item;
@@ -1044,11 +1044,20 @@ public class ProjectService extends Service {
             throws NotFoundException, ForbiddenException, ConflictException, ServerException {
 
         // to search from workspace root path should end with "/" i.e /{ws}/search/?<query>
-        final FolderEntry folder = path.isEmpty() ? projectManager.getProjectsRoot() : asFolder(path);
+        //final FolderEntry folder = path.isEmpty() ? projectManager.getProjectsRoot() : asFolder(path);
 
-        SearcherProvider searcherProvider = projectManager.getVfs().getSearcherProvider();
+        //SearcherProvider searcherProvider = projectManager.getSearcher();
+                //projectManager.getVfs().getSearcherProvider();
 
-        if (searcherProvider != null) {
+        Searcher searcher;
+        try {
+             searcher = projectManager.getSearcher();
+        } catch (NotFoundException e) {
+            LOG.warn(e.getLocalizedMessage());
+            return Collections.emptyList();
+        }
+
+        //if (searcherProvider != null) {
             if (skipCount < 0) {
                 throw new ConflictException(String.format("Invalid 'skipCount' parameter: %d.", skipCount));
             }
@@ -1057,9 +1066,7 @@ public class ProjectService extends Service {
                     .setName(name)
                     .setText(text);
 
-            //final String[] result = searcherProvider.getSearcher(projectManager.getVfs(), true).search(expr).;
-
-            final SearchResult result = searcherProvider.getSearcher(projectManager.getVfs(), true).search(expr);
+            final SearchResult result = searcher.search(expr);
 
             if (skipCount > 0) {
                 if (skipCount > result.getTotalHits()) {
@@ -1085,8 +1092,8 @@ public class ProjectService extends Service {
                 }
             }
             return items;
-        }
-        return Collections.emptyList();
+        //}
+        //return Collections.emptyList();
     }
 
 
@@ -1163,9 +1170,18 @@ public class ProjectService extends Service {
         final VirtualFile file = project.getBaseFolder().getVirtualFile();
         executor.execute(() -> {
             try {
-                SearcherProvider sp = this.projectManager.getVfs().getSearcherProvider();
-                if(sp != null)
-                    sp.getSearcher(projectManager.getVfs(), true).add(file);
+
+                Searcher searcher;
+                try {
+                    searcher = projectManager.getSearcher();
+                } catch (NotFoundException e) {
+                    LOG.warn(e.getLocalizedMessage());
+                    return;
+                }
+                searcher.add(file);
+                //SearcherProvider sp = this.projectManager.getVfs().getSearcherProvider();
+                //if(sp != null)
+                //    sp.getSearcher(projectManager.getVfs(), true).add(file);
                 //searcherProvider.getSearcher(projectManager.getVfs(), true).add(file);
             } catch (Exception e) {
                 LOG.warn(String.format("Project: %s", project.getPath()), e.getMessage());
@@ -1191,7 +1207,7 @@ public class ProjectService extends Service {
         for (VirtualFileEntry child : children) {
             if (child.isFolder()) {
                 nodes.add(dtoFactory.createDto(TreeElement.class)
-                                    .withNode(DtoConverter.toItemReference((FolderEntry)child, workspace, uriBuilder.clone(), projectManager))
+                                    .withNode(DtoConverter.toItemReference((FolderEntry)child, workspace, uriBuilder.clone()))
                                     .withChildren(getTree((FolderEntry)child, workspace, depth - 1, includeFiles, uriBuilder, dtoFactory)));
             } else { // child.isFile()
                 nodes.add(dtoFactory.createDto(TreeElement.class)

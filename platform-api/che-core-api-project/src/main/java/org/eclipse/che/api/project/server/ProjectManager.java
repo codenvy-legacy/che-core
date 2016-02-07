@@ -34,6 +34,8 @@ import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.api.vfs.VirtualFile;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
+import org.eclipse.che.api.vfs.search.Searcher;
+import org.eclipse.che.api.vfs.search.SearcherProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,9 +111,18 @@ public final class ProjectManager {
         return handlers;
     }
 
-    public VirtualFileSystem getVfs() {
-        return this.vfs;
+    public Searcher getSearcher() throws NotFoundException, ServerException {
+
+        SearcherProvider provider = vfs.getSearcherProvider();
+        if(provider == null)
+            throw new NotFoundException("SearcherProvider is not defined in VFS");
+
+        return provider.getSearcher(vfs);
     }
+
+
+
+
 
 
     /**
@@ -622,13 +633,11 @@ public final class ProjectManager {
         List<? extends ProjectConfig> projectConfigs = workspace.getProjects();
         if(projectConfigs == null)
             projectConfigs = new ArrayList<>();
+
         for (ProjectConfig projectConfig : projectConfigs) {
 
-            String path = absolutizePath(projectConfig.getPath());
-            projects.put(path, new ProjectImpl(folder(path), projectConfig, false, this));
-
+            initProject(projectConfig, false);
             initSubProjectsRecursively(projectConfig);
-
 
         }
 
@@ -653,9 +662,21 @@ public final class ProjectManager {
         for (ProjectConfig pc : parent.getModules()) {
 
             projects.put(absolutizePath(pc.getPath()), new ProjectImpl(folder(absolutizePath(pc.getPath())), pc, false, this));
+
+            //initProject(pc, false);
+
             initSubProjectsRecursively(pc);
         }
 
+    }
+
+
+    private void initProject(ProjectConfig config, boolean updated)
+            throws ServerException, ProjectTypeConstraintException, InvalidValueException,
+                   NotFoundException, ValueStorageException {
+
+        String path = absolutizePath(config.getPath());
+        projects.put(path, new ProjectImpl(folder(path), config, updated, this));
     }
 
     private FolderEntry folder(String path) throws ServerException {

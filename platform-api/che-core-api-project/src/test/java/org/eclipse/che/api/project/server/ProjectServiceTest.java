@@ -273,8 +273,8 @@ public class ProjectServiceTest {
 
         private TestWorkspaceHolder() throws ServerException {
             super(DtoFactory.newDto(UsersWorkspaceDto.class).
-
                     withId("id").withName("name").withProjects(new ArrayList<>()));
+
 
         }
 
@@ -792,7 +792,7 @@ public class ProjectServiceTest {
 
     @Test
     public void testEstimateProject() throws Exception {
-        VirtualFile root = pm.getVfs().getRoot();
+        VirtualFile root = pm.getProjectsRoot().getVirtualFile();
 
                                      //getVirtualFileSystemRegistry().getProvider("my_ws").getMountPoint(false).getRoot();
         root.createFolder("testEstimateProjectGood").createFolder("check");
@@ -849,7 +849,8 @@ public class ProjectServiceTest {
 
     @Test
     public void testResolveSources() throws Exception {
-        VirtualFile root = pm.getVfs().getRoot();
+
+        VirtualFile root = pm.getProjectsRoot().getVirtualFile();
         root.createFolder("testEstimateProjectGood").createFolder("check");
         root.createFolder("testEstimateProjectBad");
 

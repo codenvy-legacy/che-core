@@ -137,6 +137,7 @@ public class WorkspaceHolder {
 
         UsersWorkspaceImpl(UsersWorkspaceDto dto) {
             this.dto = dto;
+            this.projects = dto.getProjects();
         }
 
 
