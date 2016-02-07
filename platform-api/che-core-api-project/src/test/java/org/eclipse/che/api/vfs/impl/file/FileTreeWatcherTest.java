@@ -23,8 +23,10 @@ import java.nio.file.PathMatcher;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.CREATED;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.DELETED;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.MODIFIED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -62,8 +64,8 @@ public class FileTreeWatcherTest {
     public void watchesCreate() throws Exception {
         fileWatcherTestTree.createDirectory("", "watched");
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
@@ -75,19 +77,19 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(5000);
 
-        verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> createdEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(4)).pathCreated(eq(testDirectory), createdEvents.capture(), anyBoolean());
+        verify(notificationHandler, times(4)).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), createdEvents.capture(), anyBoolean());
         assertEquals(newHashSet(created), newHashSet(createdEvents.getAllValues()));
     }
 
     @Test
     public void watchesCreateDirectoryStructure() throws Exception {
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
@@ -96,19 +98,19 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(5000);
 
-        verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> createdEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(4)).pathCreated(eq(testDirectory), createdEvents.capture(), anyBoolean());
+        verify(notificationHandler, times(4)).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), createdEvents.capture(), anyBoolean());
         assertEquals(newHashSet(created), newHashSet(createdEvents.getAllValues()));
     }
 
     @Test
     public void watchesCreateDirectoryAndStartsWatchingNewlyCreatedDirectory() throws Exception {
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
@@ -121,12 +123,12 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(5000);
 
-        verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> createdEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(2)).pathCreated(eq(testDirectory), createdEvents.capture(), anyBoolean());
+        verify(notificationHandler, times(2)).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), createdEvents.capture(), anyBoolean());
         assertEquals(newHashSet(directory, file), newHashSet(createdEvents.getAllValues()));
     }
 
@@ -137,8 +139,8 @@ public class FileTreeWatcherTest {
         String notifiedFile2 = fileWatcherTestTree.createFile("watched");
         Set<String> updated = newHashSet(notifiedFile1, notifiedFile2);
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(1000);
@@ -148,12 +150,12 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(5000);
 
-        verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> updatedEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(2)).pathUpdated(eq(testDirectory), updatedEvents.capture(), anyBoolean());
+        verify(notificationHandler, times(2)).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), updatedEvents.capture(), anyBoolean());
         assertEquals(updated, newHashSet(updatedEvents.getAllValues()));
     }
 
@@ -164,8 +166,8 @@ public class FileTreeWatcherTest {
         String deletedFile1 = fileWatcherTestTree.createFile("watched");
         Set<String> deleted = newHashSet("watched", deletedDir1, deletedFile1);
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
@@ -174,12 +176,12 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(5000);
 
-        verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> deletedEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(3)).pathDeleted(eq(testDirectory), deletedEvents.capture(), anyBoolean());
+        verify(notificationHandler, times(3)).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), deletedEvents.capture(), anyBoolean());
         assertEquals(deleted, newHashSet(deletedEvents.getAllValues()));
     }
 
@@ -187,9 +189,9 @@ public class FileTreeWatcherTest {
     public void doesNotWatchExcludedDirectories() throws Exception {
         fileWatcherTestTree.createDirectory("", "excluded");
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
         PathMatcher excludeMatcher =  FileSystems.getDefault().getPathMatcher("glob:excluded");
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(excludeMatcher), notificationListener);
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(excludeMatcher), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
@@ -203,20 +205,20 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(5000);
 
-        verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> createdEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(2)).pathCreated(eq(testDirectory), createdEvents.capture(), anyBoolean());
+        verify(notificationHandler, times(2)).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), createdEvents.capture(), anyBoolean());
         assertEquals(newHashSet(created), newHashSet(createdEvents.getAllValues()));
     }
 
     @Test
     public void doesNotNotifyAboutIgnoredFiles() throws Exception {
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
         PathMatcher excludeMatcher =  FileSystems.getDefault().getPathMatcher("glob:*.{foo,bar}");
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(excludeMatcher), notificationListener);
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(excludeMatcher), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
@@ -229,43 +231,43 @@ public class FileTreeWatcherTest {
 
         Thread.sleep(5000);
 
-        verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationHandler, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> createdEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(1)).pathCreated(eq(testDirectory), createdEvents.capture(), anyBoolean());
+        verify(notificationHandler, times(1)).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), createdEvents.capture(), anyBoolean());
         assertEquals(newHashSet(created), newHashSet(createdEvents.getAllValues()));
     }
 
     @Test
     public void notifiesNotificationListenerWhenStarted() throws Exception {
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
 
-        verify(notificationListener).started(eq(testDirectory));
+        verify(notificationHandler).started(eq(testDirectory));
     }
 
     @Test
     public void notifiesNotificationListenerWhenErrorOccurs() throws Exception {
         RuntimeException error = new RuntimeException();
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        doThrow(error).when(notificationListener).pathCreated(eq(testDirectory), anyString(), anyBoolean());
+        FileWatcherNotificationHandler notificationHandler = aNotificationHandler();
+        doThrow(error).when(notificationHandler).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), anyString(), anyBoolean());
 
-        fileWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        fileWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationHandler);
         fileWatcher.startup();
 
         Thread.sleep(500);
         fileWatcherTestTree.createFile("");
         Thread.sleep(5000);
 
-        verify(notificationListener).errorOccurred(eq(testDirectory), eq(error));
+        verify(notificationHandler).errorOccurred(eq(testDirectory), eq(error));
     }
 
-    private FileWatcherNotificationListener aNotificationListener() {
-        return mock(FileWatcherNotificationListener.class);
+    private FileWatcherNotificationHandler aNotificationHandler() {
+        return mock(FileWatcherNotificationHandler.class);
     }
 }

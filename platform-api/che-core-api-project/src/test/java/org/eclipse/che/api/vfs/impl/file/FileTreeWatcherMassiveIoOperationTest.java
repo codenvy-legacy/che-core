@@ -23,6 +23,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.CREATED;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.DELETED;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.MODIFIED;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -57,8 +61,8 @@ public class FileTreeWatcherMassiveIoOperationTest {
 
     @Test
     public void watchesTreeCreation() throws Exception {
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationListener = aNotificationListener();
+        fileTreeWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationListener);
         fileTreeWatcher.startup();
         Thread.sleep(500);
 
@@ -67,11 +71,11 @@ public class FileTreeWatcherMassiveIoOperationTest {
         Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> createdEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(allFilesAndDirs.size())).pathCreated(eq(testDirectory), createdEvents.capture(), anyBoolean());
+        verify(notificationListener, times(allFilesAndDirs.size())).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), createdEvents.capture(), anyBoolean());
         assertThatCollectionsContainsSameItemsOrFailWithDiff(createdEvents.getAllValues(), allFilesAndDirs);
     }
 
@@ -80,8 +84,8 @@ public class FileTreeWatcherMassiveIoOperationTest {
         List<String> allFilesAndDirs = fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationListener = aNotificationListener();
+        fileTreeWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationListener);
         fileTreeWatcher.startup();
         Thread.sleep(5000);
 
@@ -90,11 +94,11 @@ public class FileTreeWatcherMassiveIoOperationTest {
         Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathUpdated(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> deletedEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(allFilesAndDirs.size())).pathDeleted(eq(testDirectory), deletedEvents.capture(), anyBoolean());
+        verify(notificationListener, times(allFilesAndDirs.size())).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), deletedEvents.capture(), anyBoolean());
         assertThatCollectionsContainsSameItemsOrFailWithDiff(deletedEvents.getAllValues(), allFilesAndDirs);
     }
 
@@ -103,8 +107,8 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationListener = aNotificationListener();
+        fileTreeWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationListener);
         fileTreeWatcher.startup();
         Thread.sleep(5000);
 
@@ -117,11 +121,11 @@ public class FileTreeWatcherMassiveIoOperationTest {
         Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> updatedEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(updated.size())).pathUpdated(eq(testDirectory), updatedEvents.capture(), anyBoolean());
+        verify(notificationListener, times(updated.size())).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), updatedEvents.capture(), anyBoolean());
         assertThatCollectionsContainsSameItemsOrFailWithDiff(updatedEvents.getAllValues(), updated);
     }
 
@@ -131,8 +135,8 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationListener = aNotificationListener();
+        fileTreeWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationListener);
         fileTreeWatcher.startup();
         Thread.sleep(5000);
 
@@ -146,11 +150,11 @@ public class FileTreeWatcherMassiveIoOperationTest {
         Thread.sleep(5000);
 
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
-        verify(notificationListener, never()).pathCreated(eq(testDirectory), anyString(), anyBoolean());
-        verify(notificationListener, never()).pathDeleted(eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), anyString(), anyBoolean());
+        verify(notificationListener, never()).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), anyString(), anyBoolean());
 
         ArgumentCaptor<String> updatedEvents = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(updated.size())).pathUpdated(eq(testDirectory), updatedEvents.capture(), anyBoolean());
+        verify(notificationListener, times(updated.size())).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), updatedEvents.capture(), anyBoolean());
         assertThatCollectionsContainsSameItemsOrFailWithDiff(updatedEvents.getAllValues(), updated);
     }
 
@@ -159,8 +163,8 @@ public class FileTreeWatcherMassiveIoOperationTest {
         fileWatcherTestTree.createTree("", 7, 5);
         Thread.sleep(100);
 
-        FileWatcherNotificationListener notificationListener = aNotificationListener();
-        fileTreeWatcher = new FileTreeWatcher(testDirectory, newArrayList(), notificationListener);
+        FileWatcherNotificationHandler notificationListener = aNotificationListener();
+        fileTreeWatcher = new FileTreeWatcher(testDirectory, newHashSet(), notificationListener);
         fileTreeWatcher.startup();
         Thread.sleep(5000);
 
@@ -190,20 +194,20 @@ public class FileTreeWatcherMassiveIoOperationTest {
         verify(notificationListener, never()).errorOccurred(eq(testDirectory), any(Throwable.class));
 
         ArgumentCaptor<String> eventsCaptor = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(deleted.size())).pathDeleted(eq(testDirectory), eventsCaptor.capture(), anyBoolean());
+        verify(notificationListener, times(deleted.size())).handleFileWatcherEvent(eq(DELETED), eq(testDirectory), eventsCaptor.capture(), anyBoolean());
         assertThatCollectionsContainsSameItemsOrFailWithDiff(eventsCaptor.getAllValues(), deleted);
 
         eventsCaptor = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(updated.size())).pathUpdated(eq(testDirectory), eventsCaptor.capture(), anyBoolean());
+        verify(notificationListener, times(updated.size())).handleFileWatcherEvent(eq(MODIFIED), eq(testDirectory), eventsCaptor.capture(), anyBoolean());
         assertThatCollectionsContainsSameItemsOrFailWithDiff(eventsCaptor.getAllValues(), updated);
 
         eventsCaptor = ArgumentCaptor.forClass(String.class);
-        verify(notificationListener, times(created.size())).pathCreated(eq(testDirectory), eventsCaptor.capture(), anyBoolean());
+        verify(notificationListener, times(created.size())).handleFileWatcherEvent(eq(CREATED), eq(testDirectory), eventsCaptor.capture(), anyBoolean());
         assertThatCollectionsContainsSameItemsOrFailWithDiff(eventsCaptor.getAllValues(), created);
     }
 
-    private FileWatcherNotificationListener aNotificationListener() {
-        return mock(FileWatcherNotificationListener.class);
+    private FileWatcherNotificationHandler aNotificationListener() {
+        return mock(FileWatcherNotificationHandler.class);
     }
 
     private void assertThatCollectionsContainsSameItemsOrFailWithDiff(Collection<String> actual, Collection<String> expected) {

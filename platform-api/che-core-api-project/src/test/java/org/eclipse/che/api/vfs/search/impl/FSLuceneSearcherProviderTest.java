@@ -11,7 +11,6 @@
 package org.eclipse.che.api.vfs.search.impl;
 
 import org.eclipse.che.api.vfs.VirtualFile;
-import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.search.Searcher;
 import org.eclipse.che.commons.lang.IoUtil;
@@ -21,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.nio.file.PathMatcher;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertNotNull;
@@ -41,7 +41,7 @@ public class FSLuceneSearcherProviderTest {
         indexRootDirectory = new File(targetDir, NameGenerator.generate("index-root", 4));
         assertTrue(indexRootDirectory.mkdir());
 
-        fsLuceneSearcherProvider = new FSLuceneSearcherProvider(indexRootDirectory, newHashSet(mock(VirtualFileFilter.class)));
+        fsLuceneSearcherProvider = new FSLuceneSearcherProvider(indexRootDirectory, newHashSet(mock(PathMatcher.class)));
     }
 
     @After
