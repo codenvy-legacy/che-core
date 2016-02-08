@@ -19,17 +19,18 @@ import com.google.gson.annotations.Expose;
 import org.eclipse.che.commons.annotation.Nullable;
 
 import static com.google.common.collect.ImmutableSet.of;
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Class for storing stack icon data
+ * Class for storing {@link org.eclipse.che.api.workspace.server.model.impl.stack.Stack} icon data
  *
  * @author Alexander Andrienko
  */
 public class StackIcon {
 
-    private static final Set<String> validMediaTypes = of("image/jpeg", "image/png", "image/gif", "image/svg+xml");
-    private static final int         LIMIT_SIZE      = 1024 * 1024;
+    private static final Set<String> VALID_MEDIA_TYPES = of("image/jpeg", "image/png", "image/gif", "image/svg+xml");
+    private static final int         LIMIT_SIZE        = 1024 * 1024;
 
     @Expose
     private String stackId;
@@ -50,8 +51,9 @@ public class StackIcon {
         }
         this.data = data;
 
-        if (!validMediaTypes.stream().anyMatch(elem -> elem.equals(mediaType))) {
-            throw new IllegalArgumentException("Media type '" + mediaType + "' is unsupported. Supported media types: " + validMediaTypes);
+        if (!VALID_MEDIA_TYPES.stream().anyMatch(elem -> elem.equals(mediaType))) {
+            String errorMessage = format("Media type '%s' is unsupported. Supported media types: '%s'", mediaType, VALID_MEDIA_TYPES);
+            throw new IllegalArgumentException(errorMessage);
         }
         this.mediaType = mediaType;
 

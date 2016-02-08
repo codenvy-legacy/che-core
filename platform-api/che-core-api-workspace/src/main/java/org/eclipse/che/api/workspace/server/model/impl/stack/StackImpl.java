@@ -13,13 +13,13 @@ package org.eclipse.che.api.workspace.server.model.impl.stack;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.lang.NameGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -60,15 +60,16 @@ public class StackImpl implements Stack {
 
     public StackImpl(String id,
                      String name,
-                     String description,
+                     @Nullable String description,
                      String scope,
                      String creator,
                      List<String> tags,
-                     WorkspaceConfig workspaceConfig,
-                     StackSource source,
-                     List<? extends StackComponent> components,
-                     Permissions permissions) {
+                     @Nullable WorkspaceConfig workspaceConfig,
+                     @Nullable StackSource source,
+                     @Nullable List<? extends StackComponent> components,
+                     @Nullable Permissions permissions) {
         this.id = requireNonNull(id, "Required non-null stack id");
+        requireNonNull(name);
         setName(name);
         this.scope = requireNonNull(scope, "Required non-null scope: 'general' or 'advanced'");
         this.tags = requireNonNull(tags, "Required non-null stack tags");
@@ -77,7 +78,7 @@ public class StackImpl implements Stack {
         this.workspaceConfig = new WorkspaceConfigImpl(workspaceConfig);
         this.source = new StackSourceImpl(source);
         this.permissions = permissions;
-        this.components = components == null ? emptyList() : components.stream()
+        this.components = components == null ? new ArrayList<>() : components.stream()
                                                                        .map(component -> new StackComponentImpl(component.getName(),
                                                                                                                 component.getVersion()))
                                                                        .collect(toList());
@@ -250,9 +251,6 @@ public class StackImpl implements Stack {
         }
 
         public StackBuilder setId(String id) {
-            if (id == null) {
-                return generateId();
-            }
             this.id = id;
             return this;
         }
