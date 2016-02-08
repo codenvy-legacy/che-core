@@ -21,57 +21,29 @@ import java.util.List;
  * @author Alexander Garagatyi
  */
 @DTO
-public interface MachineDto extends MachineStateDto, Machine {
-    @Override
-    MachineMetadataDto getMetadata();
-
-    MachineDto withMetadata(MachineMetadataDto metadata);
+public interface MachineDto extends Machine {
 
     @Override
+    MachineConfigDto getConfig();
+
+    MachineDto withConfig(MachineConfigDto machineConfig);
+
     MachineDto withId(String id);
 
-    @Override
     MachineDto withWorkspaceId(String workspaceId);
 
-    @Override
+    MachineDto withEnvName(String envName);
+
     MachineDto withOwner(String owner);
 
-    @Override
-    MachineStatus getStatus();
-
-    @Override
     MachineDto withStatus(MachineStatus machineStatus);
 
     @Override
-    ChannelsDto getChannels();
+    MachineRuntimeInfoDto getRuntime();
 
-    @Override
-    MachineDto withChannels(ChannelsDto channels);
+    MachineDto withRuntime(MachineRuntimeInfoDto machineRuntime);
 
-    @Override
-    MachineDto withName(String name);
-
-    @Override
-    MachineSourceDto getSource();
-
-    @Override
-    MachineDto withSource(MachineSourceDto source);
-
-    @Override
-    MachineDto withDev(boolean dev);
-
-    @Override
-    LimitsDto getLimits();
-
-    @Override
-    MachineDto withLimits(LimitsDto limits);
-
-    @Override
-    MachineDto withType(String type);
-
-    @Override
     List<Link> getLinks();
 
-    @Override
     MachineDto withLinks(List<Link> links);
 }

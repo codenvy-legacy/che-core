@@ -11,23 +11,13 @@
 package org.eclipse.che.api.core.model.machine;
 
 /**
- * Defines state of machine.
+ * Runtime information about machine.
  *
  * @author Alexander Garagatyi
  */
-public interface MachineState extends MachineConfig {
+public interface MachineRuntimeInfo {
     /**
-     * Returns unique identifier of this machine
+     * Returns machine specific runtime metadata
      */
-    String getId();
-
-    String getWorkspaceId();
-
-    String getEnvName();
-
-    String getOwner();
-
-    MachineStatus getStatus();
-
-    Channels getChannels();
+    MachineMetadata getMetadata();
 }

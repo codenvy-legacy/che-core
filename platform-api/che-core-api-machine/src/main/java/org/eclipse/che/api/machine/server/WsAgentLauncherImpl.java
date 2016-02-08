@@ -13,12 +13,12 @@ package org.eclipse.che.api.machine.server;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.model.machine.Machine;
 import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
-import org.eclipse.che.api.machine.server.spi.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +77,7 @@ public class WsAgentLauncherImpl implements WsAgentLauncher {
 
     @Override
     public void startWsAgent(String workspaceId) throws NotFoundException, MachineException, InterruptedException {
-        final Instance devMachine = machineManager.getDevMachine(workspaceId);
+        final Machine devMachine = machineManager.getDevMachine(workspaceId);
         try {
             machineManager.exec(devMachine.getId(),
                                 new CommandImpl(WS_AGENT_PROCESS_NAME, wsAgentStartCommandLine, "Arbitrary"),
@@ -104,8 +104,9 @@ public class WsAgentLauncherImpl implements WsAgentLauncher {
         throw new MachineException("Workspace agent is not responding. Workspace " + workspaceId + " will be stopped");
     }
 
-    private HttpJsonRequest createPingRequest(Instance devMachine) {
-        final String wsAgentPingUrl = UriBuilder.fromUri(devMachine.getMetadata()
+    private HttpJsonRequest createPingRequest(Machine devMachine) {
+        final String wsAgentPingUrl = UriBuilder.fromUri(devMachine.getRuntime()
+                                                                   .getMetadata()
                                                                    .getServers()
                                                                    .get(Integer.toString(WS_AGENT_PORT))
                                                                    .getUrl())

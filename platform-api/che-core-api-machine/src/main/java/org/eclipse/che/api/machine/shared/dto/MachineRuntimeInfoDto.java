@@ -10,15 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.api.machine.shared.dto;
 
-import org.eclipse.che.api.core.model.machine.Channels;
+import org.eclipse.che.api.core.model.machine.MachineRuntimeInfo;
 import org.eclipse.che.dto.shared.DTO;
 
 /**
  * @author Alexander Garagatyi
  */
 @DTO
-public interface ChannelsDto extends Channels {
-    ChannelsDto withOutput(String outputChannel);
+public interface MachineRuntimeInfoDto extends MachineRuntimeInfo {
+    @Override
+    MachineMetadataDto getMetadata();
 
-    ChannelsDto withStatus(String statusChannel);
+    MachineRuntimeInfoDto withMetadata(MachineMetadataDto metadata);
 }
