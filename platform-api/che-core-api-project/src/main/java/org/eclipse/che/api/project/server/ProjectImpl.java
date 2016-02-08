@@ -263,11 +263,6 @@ public class ProjectImpl implements ProjectConfig {
         return modules;
     }
 
-//    @Deprecated
-//    public String getContentRoot() {
-//        return null;
-//    }
-
     /* ----------------------------------- */
 
     public class Problem {

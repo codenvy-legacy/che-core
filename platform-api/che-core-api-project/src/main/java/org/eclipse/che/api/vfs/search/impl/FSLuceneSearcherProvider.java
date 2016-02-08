@@ -12,6 +12,7 @@ package org.eclipse.che.api.vfs.search.impl;
 
 import org.eclipse.che.api.vfs.VirtualFileFilters;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
@@ -34,6 +35,7 @@ public class FSLuceneSearcherProvider extends AbstractLuceneSearcherProvider {
      *         set filter for files that should not be indexed
      * @see LuceneSearcher
      */
+    @Inject
     public FSLuceneSearcherProvider(@Named("vfs.local.fs_index_root_dir") File indexRootDirectory,
                                     // todo: rename value of @Named annotation to avoid type conflicts
                                     @Named("vfs.index_filter") Set<PathMatcher> excludePatterns) throws IOException {
