@@ -33,7 +33,7 @@ import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.create.CreateWorkspaceView.HidePopupCallBack;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +47,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -134,7 +133,7 @@ public class CreateWorkspacePresenterTest {
         when(machineSourceDto.withLocation(anyString())).thenReturn(machineSourceDto);
 
         when(dtoFactory.createDto(LimitsDto.class)).thenReturn(limitsDto);
-        when(limitsDto.withMemory(anyInt())).thenReturn(limitsDto);
+        when(limitsDto.withRam(anyInt())).thenReturn(limitsDto);
 
         when(dtoFactory.createDto(MachineConfigDto.class)).thenReturn(machineConfigDto);
         when(machineConfigDto.withName(anyString())).thenReturn(machineConfigDto);
@@ -149,15 +148,15 @@ public class CreateWorkspacePresenterTest {
 
         when(dtoFactory.createDto(WorkspaceConfigDto.class)).thenReturn(workspaceConfigDto);
         when(workspaceConfigDto.withName(anyString())).thenReturn(workspaceConfigDto);
-        when(workspaceConfigDto.withDefaultEnvName(anyString())).thenReturn(workspaceConfigDto);
-        when(workspaceConfigDto.withEnvironments(Matchers.<Map<String, EnvironmentDto>>anyObject())).thenReturn(workspaceConfigDto);
+        when(workspaceConfigDto.withDefaultEnv(anyString())).thenReturn(workspaceConfigDto);
+        when(workspaceConfigDto.withEnvironments(Matchers.<List<EnvironmentDto>>anyObject())).thenReturn(workspaceConfigDto);
         when(workspaceConfigDto.withCommands(Matchers.<List<CommandDto>>anyObject())).thenReturn(workspaceConfigDto);
         when(workspaceConfigDto.withAttributes(Matchers.<Map<String, String>>anyObject())).thenReturn(workspaceConfigDto);
 
         when(dtoFactory.createDto(UsersWorkspaceDto.class)).thenReturn(usersWorkspaceDto);
         when(usersWorkspaceDto.withName(anyString())).thenReturn(usersWorkspaceDto);
-        when(usersWorkspaceDto.withDefaultEnvName(anyString())).thenReturn(usersWorkspaceDto);
-        when(usersWorkspaceDto.withEnvironments(Matchers.<Map<String, EnvironmentStateDto>>anyObject())).thenReturn(usersWorkspaceDto);
+        when(usersWorkspaceDto.withDefaultEnv(anyString())).thenReturn(usersWorkspaceDto);
+        when(usersWorkspaceDto.withEnvironments(Matchers.<List<EnvironmentStateDto>>anyObject())).thenReturn(usersWorkspaceDto);
 
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
 
@@ -354,10 +353,10 @@ public class CreateWorkspacePresenterTest {
     }
 
     private void callApplyCreateWorkspaceMethod() throws Exception {
-        Map<String, EnvironmentStateDto> environments = new HashMap<>();
-        environments.put("name", environmentStateDto);
+        List<EnvironmentStateDto> environments = new ArrayList<>();
+        environments.add(environmentStateDto);
 
-        when(usersWorkspaceDto.getDefaultEnvName()).thenReturn("name");
+        when(usersWorkspaceDto.getDefaultEnv()).thenReturn("name");
         when(usersWorkspaceDto.getEnvironments()).thenReturn(environments);
 
         when(environmentDto.getMachineConfigs()).thenReturn(Arrays.<MachineConfigDto>asList(machineConfigDto));

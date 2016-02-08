@@ -49,6 +49,7 @@ public interface ProjectServiceClient {
      *         id of current workspace
      * @param includeAttributes
      *         the flag which defines include project attributes or not
+     * @return a promise that will provide a list of {@link ProjectConfigDto}s, or rejects with an error
      */
     Promise<List<ProjectConfigDto>> getProjects(String workspaceId, boolean includeAttributes);
 
@@ -88,7 +89,7 @@ public interface ProjectServiceClient {
      *
      * @param path
      *         path to the project
-     * @return promise with project dto
+     * @return a promise that resolves to the {@link ProjectConfigDto}, or rejects with an error
      */
     Promise<ProjectConfigDto> getProject(String workspaceId, String path);
 
@@ -143,9 +144,22 @@ public interface ProjectServiceClient {
      *         path of the project to resolve
      * @param callback
      *         the callback to use for the response
+     *
+     * @deprecated instead of this method should use {@link ProjectServiceClient#resolveSources(String, String)}
      */
     void resolveSources(String workspaceId, String path, AsyncRequestCallback<List<SourceEstimation>> callback);
 
+     /**
+      * Gets list of {@link SourceEstimation} for all supposed project types.
+      *
+      * @param workspaceId
+      *         id of current workspace
+      * @param path
+      *         path of the project to resolve
+      * @return a promise that will provide a list of {@code SourceEstimation} for the given {@code workspaceId} and {@code path},
+      *         or rejects with on error
+      */
+    Promise<List<SourceEstimation>> resolveSources(String workspaceId, String path);
 
     /**
      * Get sub-project.
@@ -187,8 +201,24 @@ public interface ProjectServiceClient {
      *         descriptor of the project to update
      * @param callback
      *         the callback to use for the response
+     *
+     * @deprecated instead of this method should use {@link ProjectServiceClient#updateProject(String, String, ProjectConfigDto)}
      */
     void updateProject(String workspaceId, String path, ProjectConfigDto descriptor, AsyncRequestCallback<ProjectConfigDto> callback);
+
+    /**
+     * Update project.
+     *
+     * @param workspaceId
+     *         id of current workspace
+     * @param path
+     *         path to the project to get
+     * @param descriptor
+     *         descriptor of the project to update
+     * @return a promise that will provide updated {@link ProjectConfigDto} for {@code workspaceId}, {@code path}, {@code descriptor}
+     *         or rejects with an error
+     */
+    Promise<ProjectConfigDto> updateProject(String workspaceId, String path, ProjectConfigDto descriptor);
 
     /**
      * Create new file in the specified folder.
@@ -345,6 +375,7 @@ public interface ProjectServiceClient {
      *         if it's true then rewrites existing project
      * @param sourceStorage
      *         {@link SourceStorageDto}
+     * @return a promise that will resolve when the project has been imported, or rejects with an error
      */
     Promise<Void> importProject(String workspaceId, String path, boolean force, SourceStorageDto sourceStorage);
 
@@ -381,6 +412,7 @@ public interface ProjectServiceClient {
      *         id of current workspace
      * @param expression
      *         search query expression
+     * @return a promise that will provide a list of {@link ItemReference}s, or rejects with an error
      */
     Promise<List<ItemReference>> search(String workspaceId, QueryExpression expression);
 }

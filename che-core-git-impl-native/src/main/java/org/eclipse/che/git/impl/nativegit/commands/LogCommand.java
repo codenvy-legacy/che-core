@@ -26,8 +26,9 @@ import java.util.List;
  */
 public class LogCommand extends GitCommand<List<Revision>> {
 
-    private int    count;
-    private String branch;
+    private int          count;
+    private String       branch;
+    private List<String> fileFilter;
 
     public LogCommand(File place) {
         super(place);
@@ -46,6 +47,7 @@ public class LogCommand extends GitCommand<List<Revision>> {
         if (count > 0) {
             commandLine.add("-" + count);
         }
+        commandLine.add(fileFilter);
         start();
         List<Revision> list = new LinkedList<>();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
@@ -85,6 +87,16 @@ public class LogCommand extends GitCommand<List<Revision>> {
      */
     public LogCommand setBranch(String branch) {
         this.branch = branch;
+        return this;
+    }
+
+    /**
+     * @param fileFilter
+     *         range of files to filter revisions list
+     * @return LogCommand with established fileFilter
+     */
+    public LogCommand setFileFilter(List<String> fileFilter) {
+        this.fileFilter = fileFilter;
         return this;
     }
 }

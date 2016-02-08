@@ -18,7 +18,7 @@ import com.google.gwt.resources.client.CssResource;
  * @author Dmitry Shnurenko
  */
 public interface WorkBenchResources extends ClientBundle {
-    public interface WorkBenchCss extends CssResource {
+    interface WorkBenchCss extends CssResource {
 
         @ClassName("ide-work-bench-tool-panel-bottom")
         String ideWorkBenchToolPanelBottom();

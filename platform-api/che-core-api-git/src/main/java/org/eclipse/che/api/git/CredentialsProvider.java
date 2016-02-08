@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-
-import org.eclipse.che.api.git.shared.GitUser;
-
 /**
  * Provides credentials to use with git commands that need it
  *
@@ -26,12 +23,6 @@ public interface CredentialsProvider {
      * @throws GitException
      */
     UserCredential getUserCredential() throws GitException;
-
-    /**
-     * @return information about current user in this provider
-     * @throws GitException
-     */
-    GitUser getUser() throws GitException;
 
     /**
      * @return Provider id.

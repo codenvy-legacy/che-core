@@ -40,14 +40,12 @@ import org.eclipse.che.ide.api.action.ActionManager;
 import org.eclipse.che.ide.api.action.Presentation;
 import org.eclipse.che.ide.api.action.PromisableAction;
 import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.ConfigureProjectHandler;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent;
 import org.eclipse.che.ide.api.event.ModuleCreatedEvent.ModuleCreatedHandler;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectHandler;
-import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
 import org.eclipse.che.ide.api.event.project.DeleteProjectEvent;
 import org.eclipse.che.ide.api.event.project.DeleteProjectHandler;
 import org.eclipse.che.ide.api.event.project.ProjectUpdatedEvent;
@@ -58,7 +56,6 @@ import org.eclipse.che.ide.api.parts.HasView;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.api.parts.ProjectExplorerPart;
 import org.eclipse.che.ide.api.parts.base.BasePresenter;
-import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.HasStorablePath;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
@@ -82,7 +79,6 @@ import org.eclipse.che.ide.ui.smartTree.event.CollapseNodeEvent;
 import org.eclipse.che.ide.ui.smartTree.event.ExpandNodeEvent;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.loging.Log;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.validation.constraints.NotNull;
@@ -119,14 +115,12 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     private final AppContext                   appContext;
     private final ActionManager                actionManager;
     private final Provider<PerspectiveManager> managerProvider;
-    private final BrowserQueryFieldRenderer    queryFieldViewer;
     private final ProjectWizardPresenter       projectConfigWizard;
     private final CoreLocalizationConstant     locale;
     private final Resources                    resources;
     private final DtoUnmarshallerFactory       dtoUnmarshaller;
     private final ProjectServiceClient         projectService;
     private final NotificationManager          notificationManager;
-    private final CurrentProject               currentProject;
 
     public static final int PART_SIZE = 250;
 
@@ -139,7 +133,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
                                     AppContext appContext,
                                     ActionManager actionManager,
                                     Provider<PerspectiveManager> managerProvider,
-                                    BrowserQueryFieldRenderer queryFieldViewer,
                                     ProjectWizardPresenter projectConfigWizard,
                                     CoreLocalizationConstant locale,
                                     Resources resources,
@@ -155,14 +148,12 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
         this.appContext = appContext;
         this.actionManager = actionManager;
         this.managerProvider = managerProvider;
-        this.queryFieldViewer = queryFieldViewer;
         this.projectConfigWizard = projectConfigWizard;
         this.locale = locale;
         this.resources = resources;
         this.dtoUnmarshaller = dtoUnmarshaller;
         this.projectService = projectService;
         this.notificationManager = notificationManager;
-        this.currentProject = new CurrentProject();
 
         eventBus.addHandler(CreateProjectEvent.TYPE, this);
         eventBus.addHandler(DeleteProjectEvent.TYPE, this);
@@ -184,10 +175,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             public void apply(List<Node> nodes) throws OperationException {
                 view.removeAllNodes();
                 view.addNodes(null, nodes);
-                //actually we don't need to setup current project in application context
-                //because when we apply selection to first node, then tree will fires
-                //selection changed event and app context will be filled in method
-                //updateAppContext(List<Nodes>)
 
                 eventBus.fireEvent(new ProjectExplorerLoadedEvent(nodes));
             }
@@ -203,8 +190,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     @Override
     public void onExtServerStopped(ExtServerStateEvent event) {
         view.removeAllNodes();
-        appContext.setCurrentProject(null);
-        queryFieldViewer.setProjectName("");
         notificationManager.notify(locale.projectExplorerExtensionServerStopped(),
                                    locale.projectExplorerExtensionServerStoppedDescription(), FAIL, false);
     }
@@ -241,7 +226,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
             //TODO move this logic to separate component
             askUserToSetUpProject(projectConfig);
         }
-
     }
 
     private void askUserToSetUpProject(final ProjectConfigDto descriptor) {
@@ -502,49 +486,6 @@ public class ProjectExplorerPresenter extends BasePresenter implements ActionDel
     @Override
     public void onSelectionChanged(List<Node> selection) {
         setSelection(new Selection<>(selection));
-        updateAppContext(selection);
-    }
-
-    private void updateAppContext(List<Node> nodes) {
-        if (nodes.isEmpty()) {
-            appContext.setCurrentProject(null);
-            queryFieldViewer.setProjectName("");
-            return;
-        } else if (nodes.size() > 1) {
-            return;
-        }
-
-        Node selectedNode = nodes.get(0);
-
-        if (selectedNode != null && selectedNode instanceof HasProjectConfig) {
-            ProjectConfigDto selectedProjectConfig = ((HasProjectConfig)selectedNode).getProjectConfig();
-
-            ProjectConfigDto rootProjectConfig = getRootConfig(selectedNode);
-
-            if (rootProjectConfig == null) {
-                Log.error(ProjectExplorerPresenter.class, "Can't set root project config. App context contains not valid project configs.");
-
-                return;
-            }
-
-            currentProject.setRootProject(rootProjectConfig);
-            currentProject.setProjectConfig(selectedProjectConfig);
-
-            appContext.setCurrentProject(currentProject);
-
-            eventBus.fireEvent(new CurrentProjectChangedEvent(selectedProjectConfig));
-
-            queryFieldViewer.setProjectName(rootProjectConfig.getName());
-        }
-    }
-
-    private ProjectConfigDto getRootConfig(Node selectedNode) {
-        Node parent = selectedNode.getParent();
-        if (parent == null && selectedNode instanceof ProjectNode) {
-            return ((ProjectNode)selectedNode).getData();
-        }
-
-        return getRootConfig(parent);
     }
 
     /** {@inheritDoc} */

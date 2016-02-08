@@ -1437,6 +1437,9 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
                     setExpanded(descriptor.getNode(), false);
                 }
                 moveFocus(nodeDescriptor.getRootContainer());
+                if (autoSelect) {
+                    selectionModel.select(parent, true);
+                }
             }
         }
 
@@ -1519,7 +1522,7 @@ public class Tree extends FocusWidget implements HasBeforeExpandNodeHandlers,
                 ((HasAction) nodeDescriptor.getNode()).actionPerformed();
             }
         } else {
-            setExpanded(nodeDescriptor.getNode(), !nodeDescriptor.isExpanded());
+            toggle(nodeDescriptor.getNode());
         }
     }
 

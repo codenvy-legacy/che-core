@@ -15,8 +15,6 @@ import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 
-import org.eclipse.che.ide.workspace.perspectives.general.HideWidgetCallback;
-
 /**
  * Implementation of WorkBenchPartController, used with SplitLayoutPanel as container
  *
@@ -26,18 +24,17 @@ import org.eclipse.che.ide.workspace.perspectives.general.HideWidgetCallback;
 public class WorkBenchPartControllerImpl implements WorkBenchPartController {
     public static final int DURATION = 200;
 
-    private final SplitLayoutPanel   splitLayoutPanel;
-    private final SimplePanel        widget;
-    private final HideWidgetCallback hideWidgetCallback;
+    private final SplitLayoutPanel splitLayoutPanel;
+    private final SimplePanel      widget;
 
     @Inject
-    public WorkBenchPartControllerImpl(HideWidgetCallback hideWidgetCallback,
-                                       @Assisted SplitLayoutPanel splitLayoutPanel,
+    public WorkBenchPartControllerImpl(@Assisted SplitLayoutPanel splitLayoutPanel,
                                        @Assisted SimplePanel widget) {
         this.splitLayoutPanel = splitLayoutPanel;
         this.widget = widget;
-        this.hideWidgetCallback = hideWidgetCallback;
 
+        splitLayoutPanel.setWidgetToggleDisplayAllowed(widget, true);
+        splitLayoutPanel.setWidgetMinSize(widget, 100);
         splitLayoutPanel.setWidgetHidden(widget, true);
         splitLayoutPanel.forceLayout();
     }
@@ -60,11 +57,10 @@ public class WorkBenchPartControllerImpl implements WorkBenchPartController {
     public void setHidden(boolean hidden) {
         if (!hidden) {
             splitLayoutPanel.setWidgetHidden(widget, false);
-        } else {
-            hideWidgetCallback.addWidgetToHide(widget);
         }
+
         splitLayoutPanel.setWidgetSize(widget, hidden ? 0 : getSize());
-        splitLayoutPanel.animate(DURATION, hideWidgetCallback);
+        splitLayoutPanel.animate(DURATION);
     }
 
 }

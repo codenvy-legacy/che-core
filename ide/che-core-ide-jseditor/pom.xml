@@ -16,11 +16,12 @@
     <parent>
         <artifactId>che-core-ide-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>4.0.0-beta-11-SNAPSHOT</version>
+        <version>4.0.0-RC1-SNAPSHOT</version>
     </parent>
     <artifactId>che-core-ide-jseditor</artifactId>
     <name>Che Core :: IDE :: JsEditor</name>
     <properties>
+        <findbugs.failonerror>false</findbugs.failonerror>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <requirejs.upstream.url>http://requirejs.org/docs/release/${requirejs.upstream.version}/comments/</requirejs.upstream.url>
         <requirejs.upstream.version>2.1.15</requirejs.upstream.version>
@@ -41,10 +42,6 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-workspace</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.che.core</groupId>

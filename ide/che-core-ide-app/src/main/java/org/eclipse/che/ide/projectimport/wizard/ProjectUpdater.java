@@ -19,13 +19,12 @@ import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.event.ConfigureProjectEvent;
 import org.eclipse.che.ide.api.event.project.CreateProjectEvent;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.wizard.Wizard.CompleteCallback;
 import org.eclipse.che.ide.projectimport.ErrorMessageUtils;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
-import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 
@@ -37,21 +36,21 @@ import javax.validation.constraints.NotNull;
 @Singleton
 public class ProjectUpdater {
 
-    private final DtoUnmarshallerFactory              dtoUnmarshallerFactory;
-    private final ProjectServiceClient                projectServiceClient;
-    private final ImportProjectNotificationSubscriber importProjectNotificationSubscriber;
-    private final EventBus                            eventBus;
-    private final String                              workspaceId;
+    private final DtoUnmarshallerFactory        dtoUnmarshallerFactory;
+    private final ProjectServiceClient          projectService;
+    private final ProjectNotificationSubscriber projectNotificationSubscriber;
+    private final EventBus                      eventBus;
+    private final String                        workspaceId;
 
     @Inject
     public ProjectUpdater(DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                          ProjectServiceClient projectServiceClient,
-                          ImportProjectNotificationSubscriber importProjectNotificationSubscriber,
+                          ProjectServiceClient projectService,
+                          ProjectNotificationSubscriber projectNotificationSubscriber,
                           EventBus eventBus,
                           AppContext appContext) {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.projectServiceClient = projectServiceClient;
-        this.importProjectNotificationSubscriber = importProjectNotificationSubscriber;
+        this.projectService = projectService;
+        this.projectNotificationSubscriber = projectNotificationSubscriber;
         this.eventBus = eventBus;
         this.workspaceId = appContext.getWorkspaceId();
     }
@@ -70,43 +69,29 @@ public class ProjectUpdater {
     public void updateProject(@NotNull final CompleteCallback callback,
                               @NotNull ProjectConfigDto projectConfig,
                               final boolean isConfigurationRequired) {
-        final String projectName = projectConfig.getName();
+        String projectPath = projectConfig.getPath();
+
         Unmarshallable<ProjectConfigDto> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectConfigDto.class);
-        projectServiceClient.updateProject(workspaceId,
-                                           projectName,
-                                           projectConfig,
-                                           new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
-                                               @Override
-                                               protected void onSuccess(final ProjectConfigDto result) {
-                                                   eventBus.fireEvent(new CreateProjectEvent(result));
-                                                   importProjectNotificationSubscriber.onSuccess();
-                                                   callback.onCompleted();
-                                                   if (!result.getProblems().isEmpty() || isConfigurationRequired) {
-                                                       eventBus.fireEvent(new ConfigureProjectEvent(result));
-                                                   }
-                                               }
+        projectService.updateProject(workspaceId,
+                                     projectPath == null ? '/' + projectConfig.getName() : projectPath,
+                                     projectConfig,
+                                     new AsyncRequestCallback<ProjectConfigDto>(unmarshaller) {
+                                         @Override
+                                         protected void onSuccess(final ProjectConfigDto result) {
+                                             eventBus.fireEvent(new CreateProjectEvent(result));
+                                             projectNotificationSubscriber.onSuccess();
+                                             callback.onCompleted();
+                                             if (!result.getProblems().isEmpty() || isConfigurationRequired) {
+                                                 eventBus.fireEvent(new ConfigureProjectEvent(result));
+                                             }
+                                         }
 
-                                               @Override
-                                               protected void onFailure(Throwable exception) {
-                                                   importProjectNotificationSubscriber.onFailure(exception.getMessage());
-                                                   deleteProject(projectName);
-                                                   String errorMessage = ErrorMessageUtils.getErrorMessage(exception);
-                                                   callback.onFailure(new Exception(errorMessage));
-                                               }
-                                           });
-    }
-
-    private void deleteProject(final String name) {
-        projectServiceClient.delete(workspaceId, name, new AsyncRequestCallback<Void>() {
-            @Override
-            protected void onSuccess(Void result) {
-                Log.info(ImportWizard.class, "Project " + name + " deleted.");
-            }
-
-            @Override
-            protected void onFailure(Throwable exception) {
-                Log.error(ImportWizard.class, exception);
-            }
-        });
+                                         @Override
+                                         protected void onFailure(Throwable exception) {
+                                             projectNotificationSubscriber.onFailure(exception.getMessage());
+                                             String errorMessage = ErrorMessageUtils.getErrorMessage(exception);
+                                             callback.onFailure(new Exception(errorMessage));
+                                         }
+                                     });
     }
 }

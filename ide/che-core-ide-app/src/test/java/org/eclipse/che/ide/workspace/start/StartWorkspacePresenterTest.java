@@ -19,7 +19,7 @@ import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.bootstrap.WorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.ui.loaders.initialization.OperationInfo;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
@@ -124,11 +124,11 @@ public class StartWorkspacePresenterTest {
 
     @Test
     public void workspaceWidgetShouldBeSelected() {
-        when(workspaceDto.getDefaultEnvName()).thenReturn("text");
+        when(workspaceDto.getDefaultEnv()).thenReturn("text");
 
         presenter.onWorkspaceSelected(workspaceDto);
 
-        verify(workspaceDto).getDefaultEnvName();
+        verify(workspaceDto).getDefaultEnv();
         verify(view).setWsName("text");
         verify(view).setEnableStartButton(true);
 
@@ -138,7 +138,7 @@ public class StartWorkspacePresenterTest {
     @Test
     public void workspaceShouldBeStartedWhenRunningWsWasSelected() {
         when(workspaceDto.getStatus()).thenReturn(WorkspaceStatus.RUNNING);
-        when(workspaceDto.getDefaultEnvName()).thenReturn("test");
+        when(workspaceDto.getDefaultEnv()).thenReturn("test");
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
 
         presenter.onWorkspaceSelected(workspaceDto);
@@ -151,7 +151,7 @@ public class StartWorkspacePresenterTest {
     @Test
     public void selectedWorkspaceShouldBeStarted() {
         when(widgetFactory.create(workspaceDto)).thenReturn(widget);
-        when(workspaceDto.getDefaultEnvName()).thenReturn("text");
+        when(workspaceDto.getDefaultEnv()).thenReturn("text");
         when(browserQueryFieldRenderer.getWorkspaceName()).thenReturn("test");
         when(wsComponentProvider.get()).thenReturn(workspaceComponent);
 

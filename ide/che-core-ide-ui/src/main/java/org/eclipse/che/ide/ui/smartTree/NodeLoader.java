@@ -165,7 +165,6 @@ public class NodeLoader implements LoaderHandler.HasLoaderHandlers {
             }
 
             requested.setLoading(true);
-            requested.setLoading(true);
         }
     }
 

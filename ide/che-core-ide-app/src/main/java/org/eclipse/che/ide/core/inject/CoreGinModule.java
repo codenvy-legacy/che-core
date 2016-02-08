@@ -57,6 +57,7 @@ import org.eclipse.che.ide.actions.ActionManagerImpl;
 import org.eclipse.che.ide.actions.find.FindActionView;
 import org.eclipse.che.ide.actions.find.FindActionViewImpl;
 import org.eclipse.che.ide.api.action.ActionManager;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorRegistry;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
@@ -66,7 +67,6 @@ import org.eclipse.che.ide.api.filetypes.FileTypeRegistry;
 import org.eclipse.che.ide.api.icon.IconRegistry;
 import org.eclipse.che.ide.api.keybinding.KeyBindingAgent;
 import org.eclipse.che.ide.api.notification.NotificationManager;
-import org.eclipse.che.ide.api.parts.ConsolePart;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
 import org.eclipse.che.ide.api.parts.PartStack;
 import org.eclipse.che.ide.api.parts.PartStackUIResources;
@@ -86,7 +86,7 @@ import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 import org.eclipse.che.ide.api.project.type.wizard.PreSelectedProjectTypeManager;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
-import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriber;
+import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriberFactory;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistry;
@@ -102,6 +102,7 @@ import org.eclipse.che.ide.bootstrap.StandartComponent;
 import org.eclipse.che.ide.bootstrap.StartUpActionsProcessor;
 import org.eclipse.che.ide.bootstrap.StartupComponent;
 import org.eclipse.che.ide.bootstrap.ZeroClipboardInjector;
+import org.eclipse.che.ide.context.AppContextImpl;
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.core.StandardComponentInitializer;
 import org.eclipse.che.ide.core.editor.EditorAgentImpl;
@@ -112,7 +113,7 @@ import org.eclipse.che.ide.hotkeys.dialog.HotKeysDialogViewImpl;
 import org.eclipse.che.ide.icon.IconRegistryImpl;
 import org.eclipse.che.ide.keybinding.KeyBindingManager;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
-import org.eclipse.che.ide.logger.AnalyticsEventLoggerImpl;
+import org.eclipse.che.ide.logger.DummyAnalyticsLoger;
 import org.eclipse.che.ide.menu.MainMenuView;
 import org.eclipse.che.ide.menu.MainMenuViewImpl;
 import org.eclipse.che.ide.menu.StatusPanelGroupView;
@@ -126,9 +127,6 @@ import org.eclipse.che.ide.part.FocusManager;
 import org.eclipse.che.ide.part.PartStackPresenter;
 import org.eclipse.che.ide.part.PartStackPresenter.PartStackEventHandler;
 import org.eclipse.che.ide.part.PartStackViewImpl;
-import org.eclipse.che.ide.part.console.ConsolePartPresenter;
-import org.eclipse.che.ide.part.console.ConsolePartView;
-import org.eclipse.che.ide.part.console.ConsolePartViewImpl;
 import org.eclipse.che.ide.part.editor.EditorPartStackPresenter;
 import org.eclipse.che.ide.part.editor.EditorPartStackView;
 import org.eclipse.che.ide.part.editor.EditorTabContextMenuFactory;
@@ -153,7 +151,7 @@ import org.eclipse.che.ide.project.node.factory.NodeFactory;
 import org.eclipse.che.ide.project.node.icon.DockerfileIconProvider;
 import org.eclipse.che.ide.project.node.icon.FileIconProvider;
 import org.eclipse.che.ide.project.node.icon.NodeIconProvider;
-import org.eclipse.che.ide.projectimport.wizard.ImportProjectNotificationSubscriberImpl;
+import org.eclipse.che.ide.projectimport.wizard.ProjectNotificationSubscriberImpl;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardFactory;
 import org.eclipse.che.ide.projectimport.wizard.ImportWizardRegistryImpl;
 import org.eclipse.che.ide.projectimport.zip.ZipImportWizardRegistrar;
@@ -164,7 +162,6 @@ import org.eclipse.che.ide.projecttype.ProjectTypeRegistryImpl;
 import org.eclipse.che.ide.projecttype.wizard.PreSelectedProjectTypeManagerImpl;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardFactory;
 import org.eclipse.che.ide.projecttype.wizard.ProjectWizardRegistryImpl;
-import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.rest.RestContext;
 import org.eclipse.che.ide.rest.RestContextProvider;
 import org.eclipse.che.ide.search.factory.FindResultNodeFactory;
@@ -205,6 +202,7 @@ import org.eclipse.che.ide.ui.dropdown.DropDownHeaderWidgetImpl;
 import org.eclipse.che.ide.ui.dropdown.DropDownListFactory;
 import org.eclipse.che.ide.ui.loaders.initialization.LoaderView;
 import org.eclipse.che.ide.ui.loaders.initialization.LoaderViewImpl;
+import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.ui.toolbar.MainToolbar;
 import org.eclipse.che.ide.ui.toolbar.ToolbarPresenter;
 import org.eclipse.che.ide.ui.toolbar.ToolbarView;
@@ -256,6 +254,7 @@ public class CoreGinModule extends AbstractGinModule {
         bind(ExtensionRegistry.class).in(Singleton.class);
         bind(StandardComponentInitializer.class).in(Singleton.class);
         bind(ClipboardButtonBuilder.class).to(ClipboardButtonBuilderImpl.class);
+        bind(AppContext.class).to(AppContextImpl.class);
 
         install(new GinFactoryModuleBuilder().build(LoaderFactory.class));
         install(new GinFactoryModuleBuilder().implement(PartStackView.class, PartStackViewImpl.class).build(PartStackViewFactory.class));
@@ -266,8 +265,8 @@ public class CoreGinModule extends AbstractGinModule {
         bind(ThemeAgent.class).to(ThemeAgentImpl.class).in(Singleton.class);
         bind(FileTypeRegistry.class).to(FileTypeRegistryImpl.class).in(Singleton.class);
 
-        bind(AnalyticsEventLogger.class).to(AnalyticsEventLoggerImpl.class).in(Singleton.class);
-        bind(AnalyticsEventLoggerExt.class).to(AnalyticsEventLoggerImpl.class).in(Singleton.class);
+        bind(AnalyticsEventLogger.class).to(DummyAnalyticsLoger.class).in(Singleton.class);
+        bind(AnalyticsEventLoggerExt.class).to(DummyAnalyticsLoger.class).in(Singleton.class);
 
         configureComponents();
         configureProjectWizard();
@@ -313,7 +312,7 @@ public class CoreGinModule extends AbstractGinModule {
         GinMultibinder.newSetBinder(binder(), ImportWizardRegistrar.class).addBinding().to(ZipImportWizardRegistrar.class);
         bind(ImportWizardRegistry.class).to(ImportWizardRegistryImpl.class).in(Singleton.class);
         install(new GinFactoryModuleBuilder().build(ImportWizardFactory.class));
-        bind(ImportProjectNotificationSubscriber.class).to(ImportProjectNotificationSubscriberImpl.class);
+        bind(ProjectNotificationSubscriber.class).to(ProjectNotificationSubscriberImpl.class);
     }
 
     /** Configure GWT-clients for Codenvy Platform API services */
@@ -346,8 +345,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(IconRegistry.class).to(IconRegistryImpl.class).in(Singleton.class);
         // UI Model
         bind(EditorPartStack.class).to(EditorPartStackPresenter.class).in(Singleton.class);
-        // Parts
-        bind(ConsolePart.class).to(ConsolePartPresenter.class).in(Singleton.class);
         bind(ActionManager.class).to(ActionManagerImpl.class).in(Singleton.class);
 
         GinMultibinder<NodeInterceptor> nodeInterceptors = GinMultibinder.newSetBinder(binder(), NodeInterceptor.class);
@@ -382,7 +379,6 @@ public class CoreGinModule extends AbstractGinModule {
         bind(NotificationManagerView.class).to(NotificationManagerViewImpl.class).in(Singleton.class);
 
         bind(EditorPartStackView.class);
-        bind(ConsolePartView.class).to(ConsolePartViewImpl.class).in(Singleton.class);
 
         bind(MessageDialogFooter.class);
         bind(MessageDialogView.class).to(MessageDialogViewImpl.class);
@@ -399,8 +395,8 @@ public class CoreGinModule extends AbstractGinModule {
                                              .build(DialogFactory.class));
         install(new GinFactoryModuleBuilder().implement(ConsoleButton.class, ConsoleButtonImpl.class)
                                              .build(ConsoleButtonFactory.class));
-        install(new GinFactoryModuleBuilder().implement(ImportProjectNotificationSubscriber.class,
-                                                        ImportProjectNotificationSubscriberImpl.class)
+        install(new GinFactoryModuleBuilder().implement(ProjectNotificationSubscriber.class,
+                                                        ProjectNotificationSubscriberImpl.class)
                                              .build(ImportProjectNotificationSubscriberFactory.class));
 
         install(new GinFactoryModuleBuilder().build(FindResultNodeFactory.class));

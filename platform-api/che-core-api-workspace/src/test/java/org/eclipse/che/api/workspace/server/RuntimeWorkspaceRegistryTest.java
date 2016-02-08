@@ -23,6 +23,7 @@ import org.eclipse.che.api.machine.server.exception.MachineException;
 import org.eclipse.che.api.machine.server.model.impl.LimitsImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineImpl;
 import org.eclipse.che.api.machine.server.model.impl.MachineStateImpl;
+import org.eclipse.che.api.machine.server.recipe.RecipeImpl;
 import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import org.eclipse.che.api.workspace.server.model.impl.RuntimeWorkspaceImpl;
 import org.eclipse.che.api.workspace.server.model.impl.UsersWorkspaceImpl;
@@ -99,23 +100,20 @@ public class RuntimeWorkspaceRegistryTest {
                                             "environment recipe has unsupported type 'non-docker'")
     public void testStartWithNonDockerEnvironmentRecipe() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
-        when(workspaceMock.getEnvironments()
-                          .get(workspaceMock.getDefaultEnvName())
-                          .getRecipe()
-                          .getType()).thenReturn("non-docker");
-
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        EnvironmentStateImpl state = new EnvironmentStateImpl(workspaceMock.getDefaultEnv(), new RecipeImpl().withType("non-docker"), null);
+        when(workspaceMock.getEnvironments()).thenReturn(singletonList(state));
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
     }
 
     @Test(expectedExceptions = BadRequestException.class,
           expectedExceptionsMessageRegExp = "Couldn't start workspace '.*' from environment '.*', environment doesn't contain dev-machine")
     public void testStartWithEnvironmentWhichDoesNotContainDevMachine() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
-        when(workspaceMock.getEnvironments()
-                          .get(workspaceMock.getDefaultEnvName())
-                          .getMachineConfigs()).thenReturn(emptyList());
+        EnvironmentStateImpl state = new EnvironmentStateImpl(workspaceMock.getDefaultEnv(), new RecipeImpl().withType("docker"), null);
+        state.setMachineConfigs(emptyList());
+        when(workspaceMock.getEnvironments()).thenReturn(singletonList(state));
 
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
     }
 
     @Test
@@ -134,7 +132,7 @@ public class RuntimeWorkspaceRegistryTest {
             return machineMock((MachineConfig)invocationOnMock.getArguments()[0]);
         });
 
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
     }
 
     @Test
@@ -145,7 +143,7 @@ public class RuntimeWorkspaceRegistryTest {
         when(machineManagerMock.createMachineSync(any(), any(), any())).thenThrow(new MachineException("Creation error"));
 
         try {
-            registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+            registry.start(workspaceMock, workspaceMock.getDefaultEnv());
         } catch (MachineException ex) {
             assertFalse(registry.hasRuntime(workspaceMock.getId()));
         }
@@ -155,7 +153,7 @@ public class RuntimeWorkspaceRegistryTest {
     public void workspaceShouldContainAllMachinesAndBeInRunningStatusAfterSuccessfulStart() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
 
-        final RuntimeWorkspaceImpl runningWorkspace = registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        final RuntimeWorkspaceImpl runningWorkspace = registry.start(workspaceMock, workspaceMock.getDefaultEnv());
 
         assertEquals(runningWorkspace.getStatus(), WorkspaceStatus.RUNNING);
         assertNotNull(runningWorkspace.getDevMachine());
@@ -167,8 +165,8 @@ public class RuntimeWorkspaceRegistryTest {
     public void shouldNotStartWorkspaceIfItIsAlreadyRunning() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
 
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
     }
 
     @Test(expectedExceptions = ConflictException.class,
@@ -183,7 +181,7 @@ public class RuntimeWorkspaceRegistryTest {
             return machineMock((MachineConfig)invocationOnMock.getArguments()[0]);
         });
 
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
     }
 
     @Test
@@ -193,7 +191,7 @@ public class RuntimeWorkspaceRegistryTest {
         doReturn(false).when(registry).addRunningMachine(any());
 
         try {
-            registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+            registry.start(workspaceMock, workspaceMock.getDefaultEnv());
         } catch (ServerException ex) {
             assertEquals(ex.getMessage(), "Workspace 'workspace123' had been stopped before its dev-machine was started");
         }
@@ -214,12 +212,12 @@ public class RuntimeWorkspaceRegistryTest {
         }).when(machineManagerMock).createMachineSync(any(), anyString(), anyString());
 
         try {
-            registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+            registry.start(workspaceMock, workspaceMock.getDefaultEnv());
         } catch (ServerException ex) {
             assertEquals(ex.getMessage(), "Workspace '" + WORKSPACE_ID + "' had been stopped before all its machines were started");
         }
         verify(machineManagerMock, times(workspaceMock.getEnvironments()
-                                                      .get(workspaceMock.getDefaultEnvName())
+                                                      .get(0)
                                                       .getMachineConfigs().size())).destroy(any(), anyBoolean());
     }
 
@@ -236,7 +234,7 @@ public class RuntimeWorkspaceRegistryTest {
         }).when(machineManagerMock).createMachineSync(any(), anyString(), anyString());
 
         try {
-            registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+            registry.start(workspaceMock, workspaceMock.getDefaultEnv());
         } catch (ServerException ex) {
             assertEquals(ex.getMessage(), "Workspace '" + WORKSPACE_ID + "' had been stopped before all its machines were started");
         }
@@ -247,7 +245,7 @@ public class RuntimeWorkspaceRegistryTest {
     public void shouldStopRunningWorkspace() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
 
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
         registry.stop(workspaceMock.getId());
 
         assertFalse(registry.hasRuntime(workspaceMock.getId()));
@@ -256,7 +254,7 @@ public class RuntimeWorkspaceRegistryTest {
     @Test
     public void testGetWorkspaceWithNullWorkspaceId() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
-        final RuntimeWorkspaceImpl running = registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        final RuntimeWorkspaceImpl running = registry.start(workspaceMock, workspaceMock.getDefaultEnv());
 
         assertEquals(registry.get(workspaceMock.getId()), running);
     }
@@ -269,7 +267,7 @@ public class RuntimeWorkspaceRegistryTest {
     @Test
     public void testGetWorkspacesByOwner() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
-        final RuntimeWorkspaceImpl runtimeWorkspace = registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        final RuntimeWorkspaceImpl runtimeWorkspace = registry.start(workspaceMock, workspaceMock.getDefaultEnv());
 
         assertEquals(registry.getByOwner(workspaceMock.getOwner()), singletonList(runtimeWorkspace));
     }
@@ -282,7 +280,7 @@ public class RuntimeWorkspaceRegistryTest {
     @Test
     public void testRegistryStop() throws Exception {
         final UsersWorkspaceImpl workspaceMock = workspaceMock();
-        registry.start(workspaceMock, workspaceMock.getDefaultEnvName());
+        registry.start(workspaceMock, workspaceMock.getDefaultEnv());
 
         registry.stopRegistry();
 
@@ -317,7 +315,7 @@ public class RuntimeWorkspaceRegistryTest {
 
         // prepare workspace
         final RuntimeWorkspaceImpl workspace = mock(RuntimeWorkspaceImpl.class, RETURNS_MOCKS);
-        when(workspace.getEnvironments()).thenReturn(Collections.singletonMap("", envState));
+        when(workspace.getEnvironments()).thenReturn(Collections.singletonList(envState));
         when(workspace.getDevMachine()).thenReturn(mock(MachineImpl.class, RETURNS_MOCKS));
         when(workspace.getId()).thenReturn(WORKSPACE_ID);
 

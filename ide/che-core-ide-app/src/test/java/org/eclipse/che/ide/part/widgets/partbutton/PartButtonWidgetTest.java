@@ -29,7 +29,6 @@ import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.BELOW;
 import static org.eclipse.che.ide.api.parts.PartStackView.TabPosition.LEFT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Dmitry Shnurenko
@@ -63,7 +62,7 @@ public class PartButtonWidgetTest {
 
     @Test
     public void constructorShouldBeVerified() {
-        verify(partButton.buttonName).setText(SOME_TEXT);
+        verify(partButton.tabName).setText(SOME_TEXT);
     }
 
     @Test
@@ -84,7 +83,7 @@ public class PartButtonWidgetTest {
 
     @Test
     public void partShouldBeSelectedInBelowPosition() {
-        partButton.setTabPosition(BELOW, 1);
+        partButton.setTabPosition(BELOW);
 
         partButton.select();
 
@@ -93,7 +92,7 @@ public class PartButtonWidgetTest {
 
     @Test
     public void partShouldNotBeSelectedInNotBelowPosition() {
-        partButton.setTabPosition(LEFT, 1);
+        partButton.setTabPosition(LEFT);
 
         partButton.unSelect();
 
@@ -102,7 +101,7 @@ public class PartButtonWidgetTest {
 
     @Test
     public void partShouldNotBeSelectedInBelowPosition() {
-        partButton.setTabPosition(BELOW, 1);
+        partButton.setTabPosition(BELOW);
 
         partButton.unSelect();
 
@@ -111,14 +110,14 @@ public class PartButtonWidgetTest {
 
     @Test
     public void tabPositionShouldBeSetWhenPositionIsLeft() {
-        partButton.setTabPosition(LEFT, 1);
+        partButton.setTabPosition(LEFT);
 
         verify(resources.partStackCss()).leftTabs();
     }
 
     @Test
     public void tabPositionShouldBeSetWhenPositionIsNotLeft() {
-        partButton.setTabPosition(BELOW, 1);
+        partButton.setTabPosition(BELOW);
 
         verify(resources.partStackCss()).bottomTabs();
     }

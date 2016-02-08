@@ -127,26 +127,6 @@ public class AnalyticsEventLoggerTest {
     }
 
     @Test
-    public void shouldAction() {
-        doNothing().when(eventLogger).send(anyString(), anyMap());
-
-        ArgumentCaptor<String> eventParam = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Map> paramsParam = ArgumentCaptor.forClass(Map.class);
-
-        eventLogger.log("Autocompleting");
-
-        verify(eventLogger).send(eventParam.capture(), paramsParam.capture());
-
-        String event = eventParam.getValue();
-        assertEquals(event, "ide-usage");
-
-        Map<String, String> params = paramsParam.getValue();
-        assertEquals(params.size(), 2);
-        assertEquals(params.get(AnalyticsEventLoggerImpl.WS_PARAM), "workspaceId");
-        assertEquals(params.get(AnalyticsEventLoggerImpl.SOURCE_PARAM), "Autocompleting");
-    }
-
-    @Test
     public void shouldLogParams() {
         doNothing().when(eventLogger).send(anyString(), anyMap());
 

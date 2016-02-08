@@ -16,7 +16,7 @@ import com.google.inject.Provider;
 
 import org.eclipse.che.ide.core.Component;
 import org.eclipse.che.ide.util.loging.Log;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 
 /**
  * Checks startup params and calls appropriate {@link FactoryWorkspaceComponent} or {@link DefaultWorkspaceComponent}

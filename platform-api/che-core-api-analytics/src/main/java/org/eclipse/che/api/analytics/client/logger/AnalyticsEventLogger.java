@@ -50,25 +50,5 @@ public interface AnalyticsEventLogger {
      */
     void log(Object action);
 
-    /**
-     * Logs a client-side IDE event without. Method is deprecated and isn't used anymore.
-     * Please uses {@link #log(Object, String, java.util.Map)}
-     */
-    @Deprecated
-    void log(Class<?> actionClass, String actionName, Map<String, String> additionalParams);
 
-    /**
-     * Logs a client-side IDE event without. Method is deprecated and isn't used anymore.
-     * Please uses {@link #log(Object, String)}
-     */
-    @Deprecated
-    void log(Class<?> actionClass, String actionName);
-
-
-    /**
-     * Logs a client-side IDE event without. Method is deprecated and isn't used anymore.
-     * Please uses {@link #log(Object)}}
-     */
-    @Deprecated
-    void log(String action);
 }

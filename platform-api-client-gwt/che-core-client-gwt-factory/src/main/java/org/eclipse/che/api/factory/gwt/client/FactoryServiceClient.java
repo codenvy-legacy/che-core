@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.api.factory.gwt.client;
 
-import org.eclipse.che.api.factory.server.FactoryService;
 import org.eclipse.che.api.factory.shared.dto.Factory;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.commons.annotation.Nullable;
@@ -18,15 +17,15 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.util.Pair;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
 /**
- * Client for IDE3 Factory service.
+ * Client for Factory service.
  *
  * @author Vladyslav Zhukovskii
  */
 public interface FactoryServiceClient {
+
     /**
      * Get valid JSON factory object based on input factory ID
      *
@@ -36,44 +35,59 @@ public interface FactoryServiceClient {
      *         indicates whether or not factory should be validated by accept validator
      * @param callback
      *         callback which return valid JSON object of factory or exception if occurred
-     *
      */
     void getFactory(@NotNull String factoryId, boolean validate, @NotNull AsyncRequestCallback<Factory> callback);
-    
+
     /**
-     * @param factoryId Factory's id
-     * @param type snippent's type (markdown, html, etc)
-     * @param callback callback which returns snippet of the factory or exception if occurred
+     * @param factoryId
+     *         Factory's id
+     * @param type
+     *         snippet's type (markdown, html, etc)
+     * @param callback
+     *         callback which returns snippet of the factory or exception if occurred
      */
     void getFactorySnippet(@NotNull String factoryId, @NotNull String type, @NotNull AsyncRequestCallback<String> callback);
 
-
     /**
      * Retrieves factory object prototype for given project with it's attributes. It's not the stored factory object.
-     * @param workspaceId workspace id
-     * @param path project path
-     * @param callback callback which returns snippet of the factory or exception if occurred
+     *
+     * @param workspaceId
+     *         workspace id
+     * @param path
+     *         project path
+     * @param callback
+     *         callback which returns snippet of the factory or exception if occurred
      */
     void getFactoryJson(@NotNull String workspaceId, @NotNull String path, @NotNull AsyncRequestCallback<Factory> callback);
 
     /**
      * Save factory to storage.
      *
-     * @see FactoryService#getFactoryJson(String, String)
+     * @param workspaceId
+     *         workspace id
+     * @param path
+     *         project path
+     * @return a promise that resolves to the {@link Factory}, or rejects with an error
      */
     Promise<Factory> getFactoryJson(@NotNull String workspaceId, @Nullable String path);
 
     /**
      * Save factory to storage.
      *
-     * @see FactoryService#saveFactory(Factory)
+     * @param factory
+     *         factory to save
+     * @return a promise that resolves to the {@link Factory}, or rejects with an error
      */
     Promise<Factory> saveFactory(@NotNull Factory factory);
 
     /**
      * Save factory to storage.
      *
-     * @see FactoryService#getFactoryByAttribute(Integer, Integer, UriInfo)
+     * @param skipCount
+     *         the number of the items to skip
+     * @param maxItems
+     *         the limit of the items in the response, default is 30
+     * @return a promise that will provide a list of {@link Factory}s, or rejects with an error
      */
     Promise<List<Factory>> findFactory(Integer skipCount, Integer maxItems, List<Pair<String, String>> params);
 }

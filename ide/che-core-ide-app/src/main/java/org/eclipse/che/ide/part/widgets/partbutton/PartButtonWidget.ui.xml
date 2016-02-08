@@ -15,23 +15,17 @@
 
     <ui:style>
         .icon {
-            float: left;
-            margin-left: 5px;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         .label {
-            margin-top: 3px;
-            float: left;
+            display: inline-block;
         }
     </ui:style>
 
-    <g:DockLayoutPanel>
-        <g:west size="25">
-            <g:SimplePanel ui:field="icon" addStyleNames="{style.icon}"/>
-        </g:west>
-        <g:center>
-            <g:Label ui:field="buttonName" styleName="{style.label}"/>
-        </g:center>
-    </g:DockLayoutPanel>
-
+    <g:FlowPanel>
+        <g:FlowPanel ui:field="iconPanel" addStyleNames="{style.icon}"/>
+        <g:Label ui:field="tabName" styleName="{style.label}"/>
+    </g:FlowPanel>
 </ui:UiBinder>

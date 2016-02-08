@@ -13,7 +13,6 @@ package org.eclipse.che.api.git.gwt.client;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
@@ -51,6 +50,7 @@ import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.machine.gwt.client.ExtServerStateController;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.MimeType;
@@ -58,6 +58,7 @@ import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
 import org.eclipse.che.ide.ui.loaders.request.LoaderFactory;
 import org.eclipse.che.ide.websocket.Message;
@@ -116,6 +117,7 @@ public class GitServiceClientImpl implements GitServiceClient{
     private final AsyncRequestLoader       loader;
     private final ExtServerStateController extServerStateController;
     private final DtoFactory               dtoFactory;
+    private final DtoUnmarshallerFactory   dtoUnmarshallerFactory;
     private final AsyncRequestFactory      asyncRequestFactory;
     private final String                   extPath;
 
@@ -125,12 +127,13 @@ public class GitServiceClientImpl implements GitServiceClient{
                                    ExtServerStateController extServerStateController,
                                    DtoFactory dtoFactory,
                                    AsyncRequestFactory asyncRequestFactory,
-                                   EventBus eventBus) {
+                                   DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.extPath = extPath;
         this.loader = loaderFactory.newLoader();
         this.extServerStateController = extServerStateController;
         this.dtoFactory = dtoFactory;
         this.asyncRequestFactory = asyncRequestFactory;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     /** {@inheritDoc} */
@@ -303,6 +306,19 @@ public class GitServiceClientImpl implements GitServiceClient{
 
     /** {@inheritDoc} */
     @Override
+    public Promise<List<Remote>> remoteList(String workspaceId, ProjectConfigDto project, @Nullable String remoteName, boolean verbose) {
+        RemoteListRequest remoteListRequest = dtoFactory.createDto(RemoteListRequest.class).withVerbose(verbose);
+        if (remoteName != null) {
+            remoteListRequest.setRemote(remoteName);
+        }
+        String url = extPath + "/git/" + workspaceId + REMOTE_LIST + "?projectPath=" + project.getPath();
+        return asyncRequestFactory.createPostRequest(url, remoteListRequest)
+                                  .loader(loader)
+                                  .send(dtoUnmarshallerFactory.newListUnmarshaller(Remote.class));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void branchList(String workspaceId, 
                            ProjectConfigDto project,
                            @Nullable String remoteMode,
@@ -400,8 +416,8 @@ public class GitServiceClientImpl implements GitServiceClient{
 
     /** {@inheritDoc} */
     @Override
-    public void log(String workspaceId, ProjectConfigDto project, boolean isTextFormat, @NotNull AsyncRequestCallback<LogResponse> callback) {
-        LogRequest logRequest = dtoFactory.createDto(LogRequest.class);
+    public void log(String workspaceId, ProjectConfigDto project, List<String> fileFilter, boolean isTextFormat, @NotNull AsyncRequestCallback<LogResponse> callback) {
+        LogRequest logRequest = dtoFactory.createDto(LogRequest.class).withFileFilter(fileFilter);
         String url = extPath + "/git/" + workspaceId + LOG + "?projectPath=" + project.getPath();
         if (isTextFormat) {
             asyncRequestFactory.createPostRequest(url, logRequest).send(callback);

@@ -12,11 +12,14 @@ package org.eclipse.che.git.impl;
 
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.che.api.git.CredentialsLoader;
+import org.eclipse.che.api.git.GitUserResolver;
 import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
+import org.eclipse.che.git.impl.GitTestUtil;
 import org.testng.annotations.DataProvider;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Sergii Kabashniuk
@@ -25,11 +28,14 @@ public class GitConnectionFactoryProvider {
 
     @DataProvider(name = "GitConnectionFactory")
     public static Object[][] createConnection() throws GitException {
+        GitUserResolver resolver = mock(GitUserResolver.class);
+        when(resolver.getUser()).thenReturn(GitTestUtil.getTestGitUser());
         return new Object[][]{
                 new Object[]{
                         new NativeGitConnectionFactory(
                                 mock(CredentialsLoader.class),
-                                new GitSshScriptProvider(host -> new byte[0]))
+                                new GitSshScriptProvider(host -> new byte[0]),
+                                resolver)
                 }
         };
     }

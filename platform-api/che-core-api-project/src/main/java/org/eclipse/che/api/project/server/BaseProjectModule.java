@@ -13,7 +13,11 @@ package org.eclipse.che.api.project.server;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 
+import org.eclipse.che.api.project.server.handlers.CreateBaseProjectTypeHandler;
 import org.eclipse.che.api.project.server.handlers.ProjectHandler;
+
+import static com.google.inject.multibindings.Multibinder.newSetBinder;
+import static org.eclipse.che.inject.Matchers.names;
 
 /**
  * Deploys project API components.
@@ -26,6 +30,10 @@ public class BaseProjectModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), ProjectImporter.class).addBinding().to(ZipProjectImporter.class);
         Multibinder.newSetBinder(binder(), ValueProviderFactory.class); /* empty binding */
         Multibinder.newSetBinder(binder(), ProjectHandler.class); /* empty binding */
+
+        Multibinder<ProjectHandler> projectHandlerMultibinder = newSetBinder(binder(), ProjectHandler.class);
+        projectHandlerMultibinder.addBinding().to(CreateBaseProjectTypeHandler.class);
+
         bind(ProjectService.class);
         bind(ProjectTypeService.class);
         bind(ProjectImportersService.class);

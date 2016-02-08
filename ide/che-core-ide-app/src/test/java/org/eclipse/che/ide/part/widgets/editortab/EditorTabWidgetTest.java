@@ -86,7 +86,7 @@ public class EditorTabWidgetTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void exceptionShouldBeThrownWhenTrySetTabPosition() {
-        tab.setTabPosition(BELOW, 1);
+        tab.setTabPosition(BELOW);
     }
 
     @Test

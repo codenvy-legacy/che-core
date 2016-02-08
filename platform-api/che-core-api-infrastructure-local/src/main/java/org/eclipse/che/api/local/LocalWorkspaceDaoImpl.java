@@ -28,7 +28,9 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +86,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
                                                workspace.getOwner()));
         }
         workspace.setStatus(null);
-        workspaces.put(workspace.getId(), workspace);
+        workspaces.put(workspace.getId(), doClone(workspace));
         return workspace;
     }
 
@@ -95,7 +97,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
             throw new NotFoundException("Workspace with id " + workspace.getId() + " was not found");
         }
         workspace.setStatus(null);
-        workspaces.put(workspace.getId(), workspace);
+        workspaces.put(workspace.getId(), doClone(workspace));
         return workspace;
     }
 
@@ -110,7 +112,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
         if (workspace == null) {
             throw new NotFoundException("Workspace with id " + id + " was not found");
         }
-        return workspace;
+        return doClone(workspace);
     }
 
     @Override
@@ -119,7 +121,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
         if (!wsOpt.isPresent()) {
             throw new NotFoundException(format("Workspace with name %s and owner %s was not found", name, owner));
         }
-        return wsOpt.get();
+        return doClone(wsOpt.get());
     }
 
     @Override
@@ -127,6 +129,7 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
         return workspaces.values()
                          .stream()
                          .filter(ws -> ws.getOwner().equals(owner))
+                         .map(this::doClone)
                          .collect(toList());
     }
 
@@ -135,5 +138,20 @@ public class LocalWorkspaceDaoImpl implements WorkspaceDao {
                          .stream()
                          .filter(ws -> ws.getName().equals(name) && ws.getOwner().equals(owner))
                          .findFirst();
+    }
+
+    private UsersWorkspaceImpl doClone(UsersWorkspaceImpl workspace) {
+        UsersWorkspaceImpl copyWorkspace = new UsersWorkspaceImpl(workspace.getId(),
+                                                                  workspace.getName(),
+                                                                  workspace.getOwner(),
+                                                                  new HashMap<>(workspace.getAttributes()),
+                                                                  new ArrayList<>(workspace.getCommands()),
+                                                                  new ArrayList<>(workspace.getProjects()),
+                                                                  new ArrayList<>(workspace.getEnvironments()),
+                                                                  workspace.getDefaultEnv(),
+                                                                  workspace.getDescription());
+        copyWorkspace.setStatus(workspace.getStatus());
+        copyWorkspace.setTemporary(workspace.isTemporary());
+        return copyWorkspace;
     }
 }

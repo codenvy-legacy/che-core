@@ -23,7 +23,9 @@ import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,6 +40,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
  *
  * @author gazarenkov
  */
+@Singleton
 public class WorkspaceHolder {
 
     private String apiEndpoint;
@@ -46,7 +49,7 @@ public class WorkspaceHolder {
 
     private HttpJsonRequestFactory httpJsonRequestFactory;
 
-
+    @Inject
     public WorkspaceHolder(@Named("api.endpoint") String apiEndpoint)
             throws ServerException {
 
@@ -57,7 +60,7 @@ public class WorkspaceHolder {
         // for Docker container name of this property is defined in
         // org.eclipse.che.plugin.docker.machine.DockerInstanceMetadata.CHE_WORKSPACE_ID
         // it resides on Workspace Master side so not accessible from agent code
-        String workspaceId = System.getProperty("CHE_WORKSPACE_ID");
+        String workspaceId = System.getenv("CHE_WORKSPACE_ID");
 
         if (workspaceId == null)
             throw new ServerException("Workspace ID is not defined for Workspace Agent");
@@ -157,7 +160,7 @@ public class WorkspaceHolder {
         }
 
         @Override
-        public Map<String, ? extends EnvironmentState> getEnvironments() {
+        public List<? extends EnvironmentState> getEnvironments() {
             return dto.getEnvironments();
         }
 
@@ -177,8 +180,8 @@ public class WorkspaceHolder {
         }
 
         @Override
-        public String getDefaultEnvName() {
-            return dto.getDefaultEnvName();
+        public String getDefaultEnv() {
+            return dto.getDefaultEnv();
         }
 
         @Override

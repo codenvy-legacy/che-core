@@ -27,8 +27,8 @@ public interface WorkspaceConfigValidator {
      * Validation rules:
      * <ul>
      * <li>{@link WorkspaceConfig#getName()} must not be empty or null</li>
-     * <li>{@link WorkspaceConfig#getDefaultEnvName()} must not be empty or null</li>
-     * <li>{@link WorkspaceConfig#getEnvironments()} must contain {@link WorkspaceConfig#getDefaultEnvName() default environment}
+     * <li>{@link WorkspaceConfig#getDefaultEnv()} must not be empty or null</li>
+     * <li>{@link WorkspaceConfig#getEnvironments()} must contain {@link WorkspaceConfig#getDefaultEnv() default environment}
      * which is declared in the same configuration</li>
      * <li>{@link Environment#getName()} must not be null</li>
      * <li>{@link Environment#getMachineConfigs()} must contain at least 1 machine(which is dev),
@@ -46,8 +46,8 @@ public interface WorkspaceConfigValidator {
      * Validation rules:
      * <ul>
      * <li>{@link WorkspaceConfig#getName()} does not check</li>
-     * <li>{@link WorkspaceConfig#getDefaultEnvName()} must not be empty or null</li>
-     * <li>{@link WorkspaceConfig#getEnvironments()} must contain {@link WorkspaceConfig#getDefaultEnvName() default environment}
+     * <li>{@link WorkspaceConfig#getDefaultEnv()} must not be empty or null</li>
+     * <li>{@link WorkspaceConfig#getEnvironments()} must contain {@link WorkspaceConfig#getDefaultEnv() default environment}
      * which is declared in the same configuration</li>
      * <li>{@link Environment#getName()} must not be null</li>
      * <li>{@link Environment#getMachineConfigs()} must contain at least 1 machine(which is dev),

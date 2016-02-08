@@ -57,11 +57,15 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
     @UiField
     SimplePanel toolPanel;
     @UiField
-    FlowPanel   rightPanel;
+    FlowPanel   rightPanelContainer;
     @UiField
-    FlowPanel   leftPanel;
+    FlowPanel   leftPanelContainer;
     @UiField
-    FlowPanel   bottomPanel;
+    FlowPanel   bottomPanelContainer;
+
+    private FlowPanel rightPanel;
+    private FlowPanel leftPanel;
+    private FlowPanel bottomPanel;
 
     @UiField(provided = true)
     final WorkBenchResources resources;
@@ -71,6 +75,18 @@ public class PerspectiveViewImpl extends LayoutPanel implements WorkBenchView<Wo
         this.resources = resources;
         resources.workBenchCss().ensureInjected();
         add(UI_BINDER.createAndBindUi(this));
+
+        rightPanel = new FlowPanel();
+        rightPanelContainer.add(rightPanel);
+        rightPanel.addStyleName(resources.workBenchCss().ideWorkBenchToolPanelRight());
+
+        leftPanel = new FlowPanel();
+        leftPanelContainer.add(leftPanel);
+        leftPanel.addStyleName(resources.workBenchCss().ideWorkBenchToolPanelLeft());
+
+        bottomPanel = new FlowPanel();
+        bottomPanelContainer.add(bottomPanel);
+        bottomPanel.addStyleName(resources.workBenchCss().ideWorkBenchToolPanelBottom());
     }
 
     /** {@inheritDoc} */

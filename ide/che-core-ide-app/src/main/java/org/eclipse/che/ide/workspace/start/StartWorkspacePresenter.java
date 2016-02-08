@@ -18,7 +18,7 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.bootstrap.DefaultWorkspaceComponent;
 import org.eclipse.che.ide.core.Component;
-import org.eclipse.che.ide.workspace.BrowserQueryFieldRenderer;
+import org.eclipse.che.ide.context.BrowserQueryFieldRenderer;
 import org.eclipse.che.ide.workspace.WorkspaceWidgetFactory;
 import org.eclipse.che.ide.workspace.create.CreateWorkspacePresenter;
 import org.eclipse.che.ide.workspace.start.workspacewidget.WorkspaceWidget;
@@ -105,7 +105,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     public void onWorkspaceSelected(UsersWorkspaceDto workspace) {
         selectedWorkspace = workspace;
 
-        String wsName = workspace.getDefaultEnvName();
+        String wsName = workspace.getDefaultEnv();
 
         view.setWsName(wsName);
 
