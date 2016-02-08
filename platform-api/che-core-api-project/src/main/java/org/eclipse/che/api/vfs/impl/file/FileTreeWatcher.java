@@ -15,6 +15,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
@@ -51,30 +53,35 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.CREATED;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.DELETED;
+import static org.eclipse.che.api.vfs.impl.file.FileWatcherEventType.MODIFIED;
 
+@Singleton
 public class FileTreeWatcher {
     private static final Logger LOG = LoggerFactory.getLogger(FileTreeWatcher.class);
 
     private static final long EVENT_PROCESS_TIMEOUT_SEC = 2;
 
-    private final File                            watchRoot;
-    private final Path                            watchRootPath;
-    private final Map<Path, WatchedDirectory>     watchedDirectories;
-    private final List<PathMatcher>               excludePatterns;
-    private final FileWatcherNotificationListener fileWatcherNotificationListener;
-    private final ExecutorService                 executor;
-    private final AtomicBoolean                   running;
-    private       WatchService                    watchService;
-    private       WatchEvent.Modifier[]           watchEventModifiers;
+    private final File                           watchRoot;
+    private final Path                           watchRootPath;
+    private final Map<Path, WatchedDirectory>    watchedDirectories;
+    private final List<PathMatcher>              excludePatterns;
+    private final FileWatcherNotificationHandler fileWatcherNotificationHandler;
+    private final ExecutorService                executor;
+    private final AtomicBoolean                  running;
+    private       WatchService                   watchService;
+    private       WatchEvent.Modifier[]          watchEventModifiers;
 
+    @Inject
     public FileTreeWatcher(File watchRoot,
-                           List<PathMatcher> excludePatterns,
-                           FileWatcherNotificationListener fileWatcherNotificationListener) {
+                           Set<PathMatcher> excludePatterns,
+                           FileWatcherNotificationHandler fileWatcherNotificationHandler) {
         watchEventModifiers = new WatchEvent.Modifier[0];
         this.watchRoot = toCanonicalFile(watchRoot);
         this.watchRootPath = this.watchRoot.toPath();
         this.excludePatterns = newArrayList(excludePatterns);
-        this.fileWatcherNotificationListener = fileWatcherNotificationListener;
+        this.fileWatcherNotificationHandler = fileWatcherNotificationHandler;
 
         ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true).setNameFormat("FileTreeWatcher-%d").build();
         executor = Executors.newSingleThreadExecutor(threadFactory);
@@ -98,7 +105,7 @@ public class FileTreeWatcher {
         running.set(true);
         walkTreeAndSetupWatches(watchRootPath);
         executor.execute(new WatchEventTask());
-        fileWatcherNotificationListener.started(watchRoot);
+        fileWatcherNotificationHandler.started(watchRoot);
     }
 
     private boolean isPollingWatchService(WatchService watchService) {
@@ -185,14 +192,14 @@ public class FileTreeWatcher {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 if (!dir.equals(root)) {
-                    fireWatchEvent(EventType.CREATED, dir, true);
+                    fireWatchEvent(CREATED, dir, true);
                 }
                 return CONTINUE;
             }
 
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                fireWatchEvent(EventType.CREATED, file, false);
+                fireWatchEvent(CREATED, file, false);
                 return CONTINUE;
             }
         });
@@ -247,7 +254,7 @@ public class FileTreeWatcher {
                     running.set(false);
                 } catch (Throwable e) {
                     running.set(false);
-                    fileWatcherNotificationListener.errorOccurred(watchRoot, e);
+                    fileWatcherNotificationHandler.errorOccurred(watchRoot, e);
                 }
             }
         }
@@ -267,7 +274,7 @@ public class FileTreeWatcher {
                                 boolean directory = Files.isDirectory(fsItem);
                                 directoryItem = new DirectoryItem(fsItem.getFileName(), directory, getLastModifiedInMillis(fsItem));
                                 watchedDirectory.addItem(directoryItem);
-                                fireWatchEvent(EventType.CREATED, fsItem, directoryItem.isDirectory());
+                                fireWatchEvent(CREATED, fsItem, directoryItem.isDirectory());
                                 if (directory) {
                                     walkTreeAndFireCreatedEvents(fsItem);
                                     setupDirectoryWatcher(fsItem);
@@ -282,7 +289,7 @@ public class FileTreeWatcher {
                                 continue;
                             }
                             if (lastModified != directoryItem.getLastModified() && Files.isRegularFile(fsItem)) {
-                                fireWatchEvent(EventType.MODIFIED, fsItem, false);
+                                fireWatchEvent(MODIFIED, fsItem, false);
                             }
                             directoryItem.touch(lastModified);
                             directoryItem.updateHitCounter(hitCounter);
@@ -294,28 +301,22 @@ public class FileTreeWatcher {
                     DirectoryItem directoryItem = iterator.next();
                     if (hitCounter != directoryItem.getHitCount()) {
                         iterator.remove();
-                        fireWatchEvent(EventType.DELETED, eventDirectoryPath.resolve(directoryItem.getName()), directoryItem.isDirectory());
+                        fireWatchEvent(DELETED, eventDirectoryPath.resolve(directoryItem.getName()), directoryItem.isDirectory());
                     }
                 }
             } else {
                 for (DirectoryItem directoryItem : watchedDirectory.getItems()) {
-                    fireWatchEvent(EventType.DELETED, eventDirectoryPath.resolve(directoryItem.getName()), directoryItem.isDirectory());
+                    fireWatchEvent(DELETED, eventDirectoryPath.resolve(directoryItem.getName()), directoryItem.isDirectory());
                 }
                 watchedDirectories.remove(eventDirectoryPath);
             }
         }
     }
 
-    private void fireWatchEvent(EventType eventType, Path eventPath, boolean isDirectory) {
+    private void fireWatchEvent(FileWatcherEventType eventType, Path eventPath, boolean isDirectory) {
         Path relativePath = watchRootPath.relativize(eventPath);
         if (shouldNotify(relativePath)) {
-            if (eventType == EventType.MODIFIED) {
-                fileWatcherNotificationListener.pathUpdated(watchRoot, relativePath.toString(), isDirectory);
-            } else if (eventType == EventType.DELETED) {
-                fileWatcherNotificationListener.pathDeleted(watchRoot, relativePath.toString(), isDirectory);
-            } else if (eventType == EventType.CREATED) {
-                fileWatcherNotificationListener.pathCreated(watchRoot, relativePath.toString(), isDirectory);
-            }
+            fileWatcherNotificationHandler.handleFileWatcherEvent(eventType, watchRoot, relativePath.toString(), isDirectory);
         }
     }
 
@@ -351,8 +352,6 @@ public class FileTreeWatcher {
             return Objects.hashCode(path);
         }
     }
-
-    enum EventType {CREATED, DELETED, MODIFIED}
 
     static class WatchedDirectory {
         final Path                path;

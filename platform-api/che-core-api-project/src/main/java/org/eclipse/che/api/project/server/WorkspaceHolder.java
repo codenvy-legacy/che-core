@@ -12,7 +12,11 @@ package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.machine.Command;
+import org.eclipse.che.api.core.model.workspace.EnvironmentState;
+import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.api.core.rest.DefaultHttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -22,6 +26,10 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import javax.inject.Named;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
@@ -34,7 +42,7 @@ public class WorkspaceHolder {
 
     private String apiEndpoint;
 
-    private final UsersWorkspace workspace;
+    private final UsersWorkspaceImpl workspace;
 
     private HttpJsonRequestFactory httpJsonRequestFactory;
 
@@ -54,14 +62,13 @@ public class WorkspaceHolder {
         if (workspaceId == null)
             throw new ServerException("Workspace ID is not defined for Workspace Agent");
 
-        this.workspace = getWorkspaceDto(workspaceId);
-        //this.workspace = new UsersWorkspaceImpl(dto, dto.getId(), dto.getOwner());
+        this.workspace = new UsersWorkspaceImpl(workspaceDto(workspaceId));
 
     }
 
-    protected WorkspaceHolder(UsersWorkspace workspace) {
+    protected WorkspaceHolder(UsersWorkspaceDto workspace) throws ServerException {
 
-        this.workspace = workspace;
+        this.workspace = new UsersWorkspaceImpl(workspace);
     }
 
     /**
@@ -72,11 +79,42 @@ public class WorkspaceHolder {
     }
 
     /**
+     * updates projects on ws master side
+     * @param projects
+     * @throws ServerException
+     */
+    public void updateProjects(Collection<ProjectImpl> projects) throws ServerException {
+
+
+        workspace.setProjects(new ArrayList<>(projects));
+
+        final String href = UriBuilder.fromUri(apiEndpoint)
+                                      .path(WorkspaceService.class).path(WorkspaceService.class, "update")
+                                      .build(workspace.getId()).toString();
+        final Link link = newDto(Link.class).withMethod("PUT").withHref(href);
+
+        try {
+            httpJsonRequestFactory.fromLink(link)
+                                  .setBody(workspace)
+                                  .request();
+        } catch (IOException | ApiException e) {
+            throw new ServerException(e.getMessage());
+        }
+
+        // sync local projects
+        for (ProjectImpl project : projects) {
+            if(!project.isSynced())
+                project.setSync();
+        }
+
+    }
+
+    /**
      * @param wsId
      * @return
      * @throws ServerException
      */
-    private UsersWorkspaceDto getWorkspaceDto(String wsId) throws ServerException {
+    private UsersWorkspaceDto workspaceDto(String wsId) throws ServerException {
 
         final String href = UriBuilder.fromUri(apiEndpoint)
                                       .path(WorkspaceService.class).path(WorkspaceService.class, "getById")
@@ -89,6 +127,81 @@ public class WorkspaceHolder {
             throw new ServerException(e);
         }
     }
+
+
+    private static class UsersWorkspaceImpl implements UsersWorkspace {
+
+        private final UsersWorkspaceDto dto;
+
+        private List<? extends ProjectConfig> projects;
+
+        UsersWorkspaceImpl(UsersWorkspaceDto dto) {
+            this.dto = dto;
+            this.projects = dto.getProjects();
+        }
+
+
+        @Override
+        public String getId() {
+            return dto.getId();
+        }
+
+        @Override
+        public String getOwner() {
+            return dto.getOwner();
+        }
+
+        @Override
+        public boolean isTemporary() {
+            return dto.isTemporary();
+        }
+
+        @Override
+        public Map<String, ? extends EnvironmentState> getEnvironments() {
+            return dto.getEnvironments();
+        }
+
+        @Override
+        public WorkspaceStatus getStatus() {
+            return dto.getStatus();
+        }
+
+        @Override
+        public String getName() {
+            return dto.getName();
+        }
+
+        @Override
+        public String getDescription() {
+            return dto.getDescription();
+        }
+
+        @Override
+        public String getDefaultEnvName() {
+            return dto.getDefaultEnvName();
+        }
+
+        @Override
+        public List<? extends Command> getCommands() {
+            return dto.getCommands();
+        }
+
+        @Override
+        public List<? extends ProjectConfig> getProjects() {
+            return this.projects;
+        }
+
+        @Override
+        public Map<String, String> getAttributes() {
+            return dto.getAttributes();
+        }
+
+        public void setProjects(List<ProjectImpl> projects) {
+            this.projects = projects;
+        }
+    }
+
+
 
 
 }

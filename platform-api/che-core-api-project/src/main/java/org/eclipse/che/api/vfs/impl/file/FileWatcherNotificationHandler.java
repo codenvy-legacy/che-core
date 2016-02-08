@@ -8,32 +8,18 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.workspace;
+package org.eclipse.che.api.vfs.impl.file;
 
-import org.eclipse.che.api.core.model.project.SourceStorage;
+import java.io.File;
 
-import java.util.List;
-import java.util.Map;
+public interface FileWatcherNotificationHandler {
+    void handleFileWatcherEvent(FileWatcherEventType eventType, File watchRoot, String subPath, boolean isDir);
 
-/**
- * @author gazarenkov
- * @author Dmitry Shnurenko
- */
-public interface ProjectConfig {
-    String getName();
+    void started(File watchRoot);
 
-    String getPath();
+    void errorOccurred(File watchRoot, Throwable cause);
 
-    String getDescription();
+    boolean addNotificationListener(FileWatcherNotificationListener fileWatcherNotificationListener);
 
-    String getType();
-
-    List<String> getMixins();
-
-    Map<String, List<String>> getAttributes();
-
-    List<? extends ProjectConfig> getModules();
-
-    SourceStorage getSource();
-
+    boolean removeNotificationListener(FileWatcherNotificationListener fileWatcherNotificationListener);
 }

@@ -10,16 +10,38 @@
  *******************************************************************************/
 package org.eclipse.che.api.vfs.impl.file;
 
-import java.io.File;
+import org.eclipse.che.api.vfs.VirtualFile;
+import org.eclipse.che.api.vfs.VirtualFileFilter;
 
-public interface FileWatcherNotificationListener {
-    void pathCreated(File watchRoot, String subPath, boolean isDir);
+import java.util.Collections;
+import java.util.List;
 
-    void pathDeleted(File watchRoot, String subPath, boolean isDir);
+import static com.google.common.collect.Lists.newArrayList;
 
-    void pathUpdated(File watchRoot, String subPath, boolean isDir);
+public abstract class FileWatcherNotificationListener {
+    private final List<VirtualFileFilter> eventsFilters;
 
-    void started(File watchRoot);
+    public FileWatcherNotificationListener(VirtualFileFilter eventsFilter) {
+        this.eventsFilters = newArrayList(eventsFilter);
+    }
 
-    void errorOccurred(File watchRoot, Throwable cause);
+    public FileWatcherNotificationListener(VirtualFileFilter eventsFilter, VirtualFileFilter... eventsFilters) {
+        this.eventsFilters = newArrayList(eventsFilter);
+        Collections.addAll(this.eventsFilters, eventsFilters);
+    }
+
+    public FileWatcherNotificationListener(List<VirtualFileFilter> eventsFilters) {
+        this.eventsFilters = eventsFilters;
+    }
+
+    public boolean shouldBeNotifiedFor(VirtualFile virtualFile) {
+        for (VirtualFileFilter filter : eventsFilters) {
+            if (!filter.accept(virtualFile)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public abstract void onFileWatcherEvent(VirtualFile virtualFile, FileWatcherEventType eventType);
 }

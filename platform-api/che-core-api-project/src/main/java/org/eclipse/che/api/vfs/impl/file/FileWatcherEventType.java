@@ -8,32 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.workspace;
-
-import org.eclipse.che.api.core.model.project.SourceStorage;
-
-import java.util.List;
-import java.util.Map;
+package org.eclipse.che.api.vfs.impl.file;
 
 /**
- * @author gazarenkov
- * @author Dmitry Shnurenko
+ * @author andrew00x
  */
-public interface ProjectConfig {
-    String getName();
-
-    String getPath();
-
-    String getDescription();
-
-    String getType();
-
-    List<String> getMixins();
-
-    Map<String, List<String>> getAttributes();
-
-    List<? extends ProjectConfig> getModules();
-
-    SourceStorage getSource();
-
+enum FileWatcherEventType {
+    CREATED, DELETED, MODIFIED
 }
