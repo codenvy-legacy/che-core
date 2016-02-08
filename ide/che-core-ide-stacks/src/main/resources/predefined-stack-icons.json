@@ -1,0 +1,22 @@
+[
+  {
+    "stackId": "java-default",
+    "name": "type-java.svg",
+    "mediaType": "image/svg+xml"
+  },
+  {
+    "stackId": "node-default",
+    "name": "type-node.svg",
+    "mediaType": "image/svg+xml"
+  },
+  {
+    "stackId": "php-default",
+    "name": "type-php.svg",
+    "mediaType": "image/svg+xml"
+  },
+  {
+    "stackId": "aspnet-default",
+    "name": "type-aspnet.svg",
+    "mediaType": "image/svg+xml"
+  }
+]
