@@ -81,24 +81,24 @@ public class StackLoaderTest {
 
     private StackLoader stackLoader;
 
-    @Test
-    public void predefinedStackWithValidJsonShouldBeLoaded() throws ServerException, NotFoundException, ConflictException {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
-
-        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
-
-        stackLoader.start();
-        verify(stackDao, times(2)).update(any());
-    }
-
-    @Test
-    public void predefinedStackWithValidJsonShouldBeLoaded2() throws ServerException, NotFoundException, ConflictException {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
-        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
-
-        stackLoader.start();
-        verify(stackDao, times(2)).update(any());
-    }
+//    @Test
+//    public void predefinedStackWithValidJsonShouldBeLoaded() throws ServerException, NotFoundException, ConflictException {
+//        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
+//
+//        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
+//
+//        stackLoader.start();
+//        verify(stackDao, times(2)).update(any());
+//    }
+//
+//    @Test
+//    public void predefinedStackWithValidJsonShouldBeLoaded2() throws ServerException, NotFoundException, ConflictException {
+//        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
+//        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
+//
+//        stackLoader.start();
+//        verify(stackDao, times(2)).update(any());
+//    }
 
     @Test
     public void dtoShouldBeSerialized() {

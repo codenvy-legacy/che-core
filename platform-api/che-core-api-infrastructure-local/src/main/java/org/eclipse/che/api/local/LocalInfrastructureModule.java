@@ -26,9 +26,7 @@ import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
 import org.eclipse.che.api.workspace.server.dao.StackDao;
-import org.eclipse.che.api.workspace.server.dao.StackIconDao;
 import org.eclipse.che.api.workspace.server.spi.WorkspaceDao;
-import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 
 import javax.inject.Named;
 import java.util.HashSet;
@@ -49,7 +47,6 @@ public class LocalInfrastructureModule extends AbstractModule {
         bind(TokenValidator.class).to(DummyTokenValidator.class);
         bind(RecipeDao.class).to(LocalRecipeDaoImpl.class);
         bind(StackDao.class).to(LocalStackDaoImpl.class);
-        bind(StackIconDao.class).to(LocalStackIconDaoImpl.class);
         bind(LocalStorageFactory.class);
         bind(PermissionManager.class).annotatedWith(Names.named("service.workspace.permission_manager"))
                                      .to(LocalWorkspacePermissionManager.class);

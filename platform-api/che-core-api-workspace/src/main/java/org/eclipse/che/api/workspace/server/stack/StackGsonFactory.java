@@ -65,6 +65,7 @@ public class StackGsonFactory {
                                 .registerTypeAdapter(StackSource.class, new StackSourceAdapter())
                                 .registerTypeAdapter(Permissions.class, new PermissionsAdapter())
                                 .registerTypeAdapter(Group.class, new GroupAdapter())
+                                .excludeFieldsWithoutExposeAnnotation()
                                 .setPrettyPrinting()
                                 .create();
     }

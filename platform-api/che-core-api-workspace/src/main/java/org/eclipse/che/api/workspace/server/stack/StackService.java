@@ -30,7 +30,6 @@ import org.eclipse.che.api.core.util.LinksHelper;
 import org.eclipse.che.api.machine.server.recipe.PermissionsChecker;
 import org.eclipse.che.api.workspace.server.DtoConverter;
 import org.eclipse.che.api.workspace.server.dao.StackDao;
-import org.eclipse.che.api.workspace.server.dao.StackIconDao;
 import org.eclipse.che.api.workspace.server.model.impl.stack.StackImpl;
 import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 import org.eclipse.che.api.workspace.shared.dto.stack.StackDto;
@@ -84,14 +83,12 @@ import static org.eclipse.che.api.workspace.server.DtoConverter.asDto;
 public class StackService extends Service {
 
     private final StackDao           stackDao;
-    private final StackIconDao       stackIconDao;
     private final PermissionsChecker permissionChecker;
 
     @Inject
-    public StackService(StackDao stackDao, StackIconDao stackIconDao, PermissionsChecker permissionChecker) {
+    public StackService(StackDao stackDao, PermissionsChecker permissionChecker) {
         this.stackDao = stackDao;
         this.permissionChecker = permissionChecker;
-        this.stackIconDao = stackIconDao;
     }
 
     @POST
@@ -138,7 +135,7 @@ public class StackService extends Service {
         stackDao.create(newStack);
 
         return Response.status(CREATED)
-                       .entity(injectLinks(asDto(newStack)))
+                       .entity(asStackDto(newStack))
                        .build();
     }
 
@@ -164,7 +161,7 @@ public class StackService extends Service {
             throw new ForbiddenException(format("User %s doesn't have access to stack %s", user.getId(), id));
         }
 
-        return injectLinks(asDto(stack));
+        return asStackDto(stack);
     }
 
     @PUT
@@ -219,7 +216,7 @@ public class StackService extends Service {
         stackForUpdate.setCreator(userId);
         stackDao.update(stackForUpdate);
 
-        return injectLinks(asDto(stackForUpdate));
+        return asStackDto(stackForUpdate);
     }
 
     @DELETE
@@ -269,8 +266,7 @@ public class StackService extends Service {
         List<StackImpl> stacks = stackDao.getByCreator(creator, skipCount, maxItems);
 
         return stacks.stream()
-                     .map(DtoConverter::asDto)
-                     .map(this::injectLinks)
+                     .map(this::asStackDto)
                      .collect(Collectors.toList());
     }
 
@@ -299,8 +295,7 @@ public class StackService extends Service {
                                        Integer maxItems) throws ServerException {
         List<StackImpl> stacks = stackDao.searchStacks(tags, skipCount, maxItems);
         return stacks.stream()
-                     .map(DtoConverter::asDto)
-                     .map(this::injectLinks)
+                     .map(this::asStackDto)
                      .collect(Collectors.toList());
     }
 
@@ -315,11 +310,19 @@ public class StackService extends Service {
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested image entity"),
                    @ApiResponse(code = 403, message = "The user does not have access to get image entity"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public Response getIcon(@ApiParam("The stack id") @PathParam("id") String stackId) throws NotFoundException, ServerException {
-        StackIcon image = stackIconDao.getIcon(stackId);
+    public Response getIcon(@ApiParam("The stack id") @PathParam("id") String stackId)
+            throws NotFoundException, ServerException, BadRequestException {
+        requireNonNullAndNonEmpty(stackId, "Stack id required");
+        StackImpl stack = stackDao.getById(stackId);
+
+        if (stack == null) {
+            throw new NotFoundException("Stack with id '" + stackId + "' was not found.");
+        }
+
+        StackIcon image = stack.getStackIcon();
 
         if (image == null) {
-            throw new NotFoundException("Image for stack " + stackId + " was not found.");
+            throw new NotFoundException("Image for stack with id '" + stackId + "' was not found.");
         }
         return Response.ok(image.getData(), image.getMediaType()).build();
     }
@@ -357,7 +360,8 @@ public class StackService extends Service {
                 throw new ForbiddenException(format("User %s doesn't have access to stack %s", stack.getId(), stack.getId()));
             }
 
-            stackIconDao.save(stackIcon);
+            stack.setStackIcon(stackIcon);
+            stackDao.update(stack);
         } else {
             throw new BadRequestException("File was not attached");
         }
@@ -389,10 +393,11 @@ public class StackService extends Service {
             throw new ForbiddenException(format("User %s doesn't have access to stack %s", stack.getId(), stackId));
         }
 
-        stackIconDao.remove(stackId);
+        stack.setStackIcon(null);
+        stackDao.update(stack);
     }
 
-    private StackDto injectLinks(StackDto stack) {
+    private StackDto asStackDto(StackImpl stack) {
         final UriBuilder builder = getServiceContext().getServiceUriBuilder();
 
         List<Link> links = new ArrayList<>();
@@ -412,7 +417,7 @@ public class StackService extends Service {
         links.add(removeLink);
         links.add(getLink);
 
-        StackIcon stackIcon = stackIconDao.getIcon(stack.getId());
+        StackIcon stackIcon = stack.getStackIcon();
         if (stackIcon != null) {
             Link deleteIcon = LinksHelper.createLink("DELETE",
                                                      builder.clone()
@@ -431,7 +436,7 @@ public class StackService extends Service {
             links.add(deleteIcon);
             links.add(getIconLink);
         }
-        return stack.withLinks(links);
+        return asDto(stack).withLinks(links);
     }
 
     private void requireNonNull(Object object, String message) throws BadRequestException {

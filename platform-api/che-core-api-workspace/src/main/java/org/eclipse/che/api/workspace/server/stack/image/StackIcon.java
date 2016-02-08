@@ -41,6 +41,10 @@ public class StackIcon {
     @Expose(serialize = false, deserialize = false)
     private byte[] data;
 
+    public StackIcon(StackIcon stackIcon, byte[] data) {
+        this(stackIcon.getStackId(), stackIcon.getName(), stackIcon.getMediaType(), data);
+    }
+
     public StackIcon(String stackId, String name, String mediaType, @Nullable byte[] data) {
         requireNonNull(stackId);
         requireNonNull(name);
@@ -75,10 +79,6 @@ public class StackIcon {
 
     public byte[] getData() {
         return data;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
     }
 
     @Override

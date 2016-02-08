@@ -75,6 +75,11 @@
         }
       ],
       "users": {}
+    },
+    "stackIcon": {
+      "stackId": "java-default",
+      "name": "type-java.svg",
+      "mediaType": "image/svg+xml"
     }
   },
   {
@@ -168,6 +173,11 @@
         }
       ],
       "users": {}
+    },
+    "stackIcon": {
+      "stackId": "node-default",
+      "name": "type-node.svg",
+      "mediaType": "image/svg+xml"
     }
   },
   {
@@ -254,6 +264,11 @@
         }
       ],
       "users": {}
+    },
+    "stackIcon": {
+      "stackId": "php-default",
+      "name": "type-php.svg",
+      "mediaType": "image/svg+xml"
     }
   },
   {
@@ -336,6 +351,11 @@
         }
       ],
       "users": {}
+    },
+    "stackIcon": {
+      "stackId": "aspnet-default",
+      "name": "type-aspnet.svg",
+      "mediaType": "image/svg+xml"
     }
   },
   {
