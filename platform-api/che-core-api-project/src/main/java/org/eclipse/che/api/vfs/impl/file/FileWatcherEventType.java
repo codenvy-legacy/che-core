@@ -13,6 +13,6 @@ package org.eclipse.che.api.vfs.impl.file;
 /**
  * @author andrew00x
  */
-enum FileWatcherEventType {
+public enum FileWatcherEventType {
     CREATED, DELETED, MODIFIED
 }

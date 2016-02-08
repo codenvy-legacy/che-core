@@ -52,7 +52,7 @@ public class DefaultFileWatcherNotificationHandlerTest {
 
         notificationListener = mock(FileWatcherNotificationListener.class);
 
-        notificationHandler = new DefaultFileWatcherNotificationHandler(virtualFileSystemProvider);
+        notificationHandler = new DefaultFileWatcherNotificationHandler(virtualFileSystem);
         notificationHandler.addNotificationListener(notificationListener);
 
         virtualFilePath = Path.of("/a/b/c");
