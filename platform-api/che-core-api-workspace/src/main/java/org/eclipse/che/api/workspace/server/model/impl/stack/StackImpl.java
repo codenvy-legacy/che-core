@@ -13,7 +13,6 @@ package org.eclipse.che.api.workspace.server.model.impl.stack;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.machine.shared.Permissions;
 import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
-import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 import org.eclipse.che.commons.lang.NameGenerator;
 
 import java.util.ArrayList;
@@ -40,15 +39,14 @@ public class StackImpl implements Stack {
     private WorkspaceConfigImpl      workspaceConfig;
     private StackSourceImpl          source;
     private List<StackComponentImpl> components;
-    private StackIcon                icon;
-    private Permissions          permissions;
+    private Permissions              permissions;
 
     public static StackBuilder builder() {
         return new StackBuilder();
     }
 
-    public StackImpl(Stack stack, StackIcon stackIcon) {
-        this(stack.getId(),
+    public StackImpl(Stack stack) {
+        this                       (stack.getId(),
              stack.getName(),
              stack.getDescription(),
              stack.getScope(),
@@ -57,7 +55,6 @@ public class StackImpl implements Stack {
              stack.getWorkspaceConfig(),
              stack.getSource(),
              stack.getComponents(),
-             stackIcon,
              stack.getPermissions());
     }
 
@@ -70,7 +67,6 @@ public class StackImpl implements Stack {
                      WorkspaceConfig workspaceConfig,
                      StackSource source,
                      List<? extends StackComponent> components,
-                     StackIcon icon,
                      Permissions permissions) {
         this.id = requireNonNull(id, "Required non-null stack id");
         setName(name);
@@ -80,7 +76,6 @@ public class StackImpl implements Stack {
         this.creator = creator;
         this.workspaceConfig = new WorkspaceConfigImpl(workspaceConfig);
         this.source = new StackSourceImpl(source);
-        this.icon = icon;
         this.permissions = permissions;
         this.components = components == null ? emptyList() : components.stream()
                                                                        .map(component -> new StackComponentImpl(component.getName(),
@@ -175,14 +170,6 @@ public class StackImpl implements Stack {
         this.components = components;
     }
 
-    public StackIcon getIcon() {
-        return icon;
-    }
-
-    public void setIcon(StackIcon icon) {
-        this.icon = icon;
-    }
-
     public void setPermissions(Permissions permissions) {
         this.permissions = permissions;
     }
@@ -210,7 +197,6 @@ public class StackImpl implements Stack {
                getComponents().equals(other.getComponents()) &&
                Objects.equals(workspaceConfig, other.workspaceConfig) &&
                Objects.equals(source, other.source) &&
-               Objects.equals(icon, other.icon) &&
                Objects.equals(permissions, other.permissions);
     }
 
@@ -226,7 +212,6 @@ public class StackImpl implements Stack {
         hash = 31 * hash + getComponents().hashCode();
         hash = 31 * hash + Objects.hashCode(workspaceConfig);
         hash = 31 * hash + Objects.hashCode(source);
-        hash = 31 * hash + Objects.hashCode(icon);
         hash = 31 * hash + Objects.hashCode(permissions);
         return hash;
     }
@@ -242,24 +227,22 @@ public class StackImpl implements Stack {
                ", workspaceConfig=" + workspaceConfig +
                ", stackSource=" + source +
                ", components=" + components +
-               ", iconContent=" + icon +
                ", permission=" + permissions +
                "}";
     }
 
     public static class StackBuilder {
 
-        private String               id;
-        private String               name;
-        private String               description;
-        private String               scope;
-        private String               creator;
-        private List<String>         tags;
-        private WorkspaceConfig      workspaceConfig;
-        private StackSource          source;
-        private List<StackComponent> components;
-        private StackIcon            icon;
-        private Permissions          permissions;
+        private String                         id;
+        private String                         name;
+        private String                         description;
+        private String                         scope;
+        private String                         creator;
+        private List<String>                   tags;
+        private WorkspaceConfig                workspaceConfig;
+        private StackSource                    source;
+        private List<? extends StackComponent> components;
+        private Permissions                    permissions;
 
         public StackBuilder generateId() {
             id = NameGenerator.generate("stack", 16);
@@ -309,13 +292,8 @@ public class StackImpl implements Stack {
             return this;
         }
 
-        public StackBuilder setComponents(List<StackComponent> components) {
+        public StackBuilder setComponents(List<? extends StackComponent> components) {
             this.components = (components == null) ? new ArrayList<>() : components;
-            return this;
-        }
-
-        public StackBuilder setIcon(StackIcon icon) {
-            this.icon = icon;
             return this;
         }
 
@@ -325,17 +303,7 @@ public class StackImpl implements Stack {
         }
 
         public StackImpl build() {
-            return new StackImpl(id,
-                                 name,
-                                 description,
-                                 scope,
-                                 creator,
-                                 tags,
-                                 workspaceConfig,
-                                 source,
-                                 components,
-                                 icon,
-                                 permissions);
+            return new StackImpl(id, name, description, scope, creator, tags, workspaceConfig, source, components, permissions);
         }
     }
 }

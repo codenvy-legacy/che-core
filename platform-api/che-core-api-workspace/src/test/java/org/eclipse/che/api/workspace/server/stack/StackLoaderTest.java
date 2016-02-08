@@ -26,6 +26,7 @@ import org.eclipse.che.api.core.model.workspace.EnvironmentState;
 import org.eclipse.che.api.core.model.workspace.ProjectConfig;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.api.machine.server.recipe.adapters.RecipeTypeAdapter;
 import org.eclipse.che.api.machine.shared.dto.CommandDto;
 import org.eclipse.che.api.machine.shared.dto.LimitsDto;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
@@ -39,7 +40,6 @@ import org.eclipse.che.api.workspace.server.stack.adapters.EnvironmentStateAdapt
 import org.eclipse.che.api.workspace.server.stack.adapters.LimitsAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.MachineSourceAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.ProjectConfigAdapter;
-import org.eclipse.che.api.workspace.server.stack.adapters.RecipeAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.StackComponentAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.StackSourceAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.WorkspaceConfigAdapter;
@@ -65,7 +65,6 @@ import java.util.Map;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
@@ -85,7 +84,8 @@ public class StackLoaderTest {
     @Test
     public void predefinedStackWithValidJsonShouldBeLoaded() throws ServerException, NotFoundException, ConflictException {
         URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
-        stackLoader = new StackLoader(Collections.singleton(url.getPath()), stackDao);
+
+        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
 
         stackLoader.start();
         verify(stackDao, times(2)).update(any());
@@ -93,31 +93,11 @@ public class StackLoaderTest {
 
     @Test
     public void predefinedStackWithValidJsonShouldBeLoaded2() throws ServerException, NotFoundException, ConflictException {
-        String resource = "stacks.json";
-        stackLoader = new StackLoader(Collections.singleton(resource), stackDao);
+        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
+        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
 
         stackLoader.start();
         verify(stackDao, times(2)).update(any());
-    }
-
-    @Test(expectedExceptions = ServerException.class, expectedExceptionsMessageRegExp = "Failed to get stacks from specified path.*")
-    public void shouldThrowExceptionWhenLoadPredefinedStacksFromInvalidJson() throws ServerException {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("invalid-json.json");
-        stackLoader = new StackLoader(Collections.singleton(url.getPath()), stackDao);
-
-        stackLoader.start();
-    }
-
-    @Test(expectedExceptions = ServerException.class, expectedExceptionsMessageRegExp = "Failed to store stack.*")
-    public void shouldThrowExceptionWhenImpossibleToStoreRecipes() throws Exception {
-        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
-        if (url != null) {
-            stackLoader = new StackLoader(Collections.singleton(url.getPath()), stackDao);
-        }
-        doThrow(NotFoundException.class).when(stackDao).update(any());
-        doThrow(ConflictException.class).when(stackDao).create(any());
-
-        stackLoader.start();
     }
 
     @Test
@@ -209,7 +189,7 @@ public class StackLoaderTest {
                                      .registerTypeAdapter(ProjectConfig.class, new ProjectConfigAdapter())
                                      .registerTypeAdapter(EnvironmentState.class, new EnvironmentStateAdapter())
                                      .registerTypeAdapter(Command.class, new CommandAdapter())
-                                     .registerTypeAdapter(Recipe.class, new RecipeAdapter())
+                                     .registerTypeAdapter(Recipe.class, new RecipeTypeAdapter())
                                      .registerTypeAdapter(Limits.class, new LimitsAdapter())
                                      .registerTypeAdapter(MachineSource.class, new MachineSourceAdapter())
                                      .registerTypeAdapter(MachineConfig.class, new MachineSourceAdapter())

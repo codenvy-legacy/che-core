@@ -10,46 +10,61 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.stack.image;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 
 import com.google.common.base.Objects;
+import com.google.gson.annotations.Expose;
 
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.commons.lang.NameGenerator;
+import org.eclipse.che.commons.annotation.Nullable;
 
 import static com.google.common.collect.ImmutableSet.of;
+import static java.util.Objects.requireNonNull;
 
-
+/**
+ * Class for storing stack icon data
+ *
+ * @author Alexander Andrienko
+ */
 public class StackIcon {
 
     private static final Set<String> validMediaTypes = of("image/jpeg", "image/png", "image/gif", "image/svg+xml");
     private static final int         LIMIT_SIZE      = 1024 * 1024;
 
-    private String id;
+    @Expose
+    private String stackId;
+    @Expose
+    private String name;
+    @Expose
     private String mediaType;
+    @Expose(serialize = false, deserialize = false)
     private byte[] data;
 
-    public StackIcon(String mediaType, byte[] data) throws IOException, ConflictException {
-        if (data == null || data.length == 0) {
-            throw new IllegalStateException("Image content must not be empty");
-        }
+    public StackIcon(String stackId, String name, String mediaType, @Nullable byte[] data) {
+        requireNonNull(stackId);
+        requireNonNull(name);
+        requireNonNull(mediaType);
 
         if (data.length > LIMIT_SIZE) {
-            throw new ConflictException("Maximum upload size exceeded 1 Mb limit");
+            throw new IllegalArgumentException("Maximum upload size exceeded 1 Mb limit");
         }
         this.data = data;
 
         if (!validMediaTypes.stream().anyMatch(elem -> elem.equals(mediaType))) {
-            throw new IOException("Image media type '" + mediaType + "' is unsupported. Supported mediatypes: " + validMediaTypes);
+            throw new IllegalArgumentException("Media type '" + mediaType + "' is unsupported. Supported media types: " + validMediaTypes);
         }
         this.mediaType = mediaType;
-        this.id = NameGenerator.generate("stackIcon", 16);
+
+        this.name = name;
+        this.stackId = stackId;
     }
 
-    public String getId() {
-        return id;
+    public String getStackId() {
+        return stackId;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getMediaType() {
@@ -57,7 +72,11 @@ public class StackIcon {
     }
 
     public byte[] getData() {
-        return data == null ? new byte[0] : data;
+        return data;
+    }
+
+    public void setData(byte[] data) {
+        this.data = data;
     }
 
     @Override
@@ -69,13 +88,17 @@ public class StackIcon {
             return false;
         }
         StackIcon another = (StackIcon)obj;
-        return Objects.equal(mediaType, another.mediaType)
+        return Objects.equal(stackId, another.stackId)
+               && Objects.equal(name, another.name)
+               && Objects.equal(mediaType, another.mediaType)
                && Arrays.equals(getData(), another.getData());
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
+        hash = 31 * hash + Objects.hashCode(stackId);
+        hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(mediaType);
         hash = 31 * hash + Arrays.hashCode(getData());
         return hash;

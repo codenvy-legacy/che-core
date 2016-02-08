@@ -11,6 +11,8 @@
 package org.eclipse.che.api.local.storage;
 
 
+import com.google.gson.Gson;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -55,5 +57,10 @@ public class LocalStorageFactory {
      */
     public LocalStorage create(String fileName, Map<Class<?>, Object> typeAdapters) throws IOException {
         return new LocalStorage(pathToStorage, fileName, typeAdapters);
+    }
+
+    //todo
+    public LocalStorage create(String fileName, Gson gson) throws IOException {
+        return new LocalStorage(pathToStorage, fileName, gson);
     }
 }

@@ -132,4 +132,6 @@ public interface StackDao {
      *         when {@code skipCount} or {@code maxItems} is negative
      */
     List<StackImpl> searchStacks(@Nullable List<String> tags, int skipCount, int maxItems) throws ServerException;
+
+
 }

@@ -27,7 +27,7 @@ import java.lang.reflect.Type;
  *
  * @author Anton Korneta
  */
-public class PermissionsSerializer implements JsonDeserializer<Permissions>, JsonSerializer<Permissions> {
+public class PermissionsAdapter implements JsonDeserializer<Permissions>, JsonSerializer<Permissions> {
 
     @Override
     public Permissions deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {

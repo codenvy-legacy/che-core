@@ -48,17 +48,28 @@ public class LocalStorage {
         this(rootDirPath, fileName, Collections.emptyMap());
     }
 
+    public LocalStorage(String rootDirPath, String fileName, Gson gson) throws IOException {
+        setUpStoredFile(rootDirPath, fileName);
+
+        this.gson = gson;
+    }
+
     public LocalStorage(String rootDirPath, String fileName, Map<Class<?>, Object> typeAdapters) throws IOException {
-        File rootDir = new File(rootDirPath);
-        if (!rootDir.exists() && !rootDir.mkdirs()) {
-            throw new IOException("Impossible to create root folder for local storage");
-        }
-        storedFile = new File(rootDir, fileName);
+        setUpStoredFile(rootDirPath, fileName);
+
         GsonBuilder builder = new GsonBuilder();
         for (Map.Entry<Class<?>, Object> adapter : typeAdapters.entrySet()) {
             builder.registerTypeAdapter(adapter.getKey(), adapter.getValue());
         }
         gson = builder.setPrettyPrinting().create();
+    }
+
+    private void setUpStoredFile(String rootDirPath, String fileName) throws IOException {
+        File rootDir = new File(rootDirPath);
+        if (!rootDir.exists() && !rootDir.mkdirs()) {
+            throw new IOException("Impossible to create root folder for local storage");
+        }
+        storedFile = new File(rootDir, fileName);
     }
 
     public void store(Object storedObj) throws IOException {
