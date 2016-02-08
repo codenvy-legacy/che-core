@@ -10,13 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.preferences;
 
-import com.google.gwt.resources.client.ImageResource;
+import org.vectomatic.dom.svg.ui.SVGResource;
 
 /**
  * Abstract base implementation for all preference page implementations.
  * It's simpler to get started using Preferences.
  *
- * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Vlad Zhukovskyi
  */
 public abstract class AbstractPreferencePagePresenter implements PreferencePagePresenter {
 
@@ -28,7 +29,7 @@ public abstract class AbstractPreferencePagePresenter implements PreferencePageP
 
     private String category;
 
-    private ImageResource icon;
+    private SVGResource icon;
 
     /**
      * Create preference page.
@@ -37,7 +38,7 @@ public abstract class AbstractPreferencePagePresenter implements PreferencePageP
      * @param category
      * @param icon
      */
-    public AbstractPreferencePagePresenter(String title, String category, ImageResource icon) {
+    public AbstractPreferencePagePresenter(String title, String category, SVGResource icon) {
         this.title = title;
         this.category = category;
         this.icon = icon;
@@ -49,7 +50,7 @@ public abstract class AbstractPreferencePagePresenter implements PreferencePageP
      * @param title
      * @param icon
      */
-    public AbstractPreferencePagePresenter(String title, ImageResource icon) {
+    public AbstractPreferencePagePresenter(String title, SVGResource icon) {
         this(title, DEFAULT_CATEGORY, icon);
     }
 
@@ -77,7 +78,7 @@ public abstract class AbstractPreferencePagePresenter implements PreferencePageP
 
     /** {@inheritDoc} */
     @Override
-    public ImageResource getIcon() {
+    public SVGResource getIcon() {
         return icon;
     }
 

@@ -36,9 +36,19 @@ public abstract class AbstractPerspectiveAction extends Action {
     public AbstractPerspectiveAction(@Nullable List<String> perspectives,
                                      @NotNull String text,
                                      @NotNull String description,
-                                     @Nullable ImageResource resource,
-                                     @Nullable SVGResource icon) {
-        super(text, description, resource, icon);
+                                     @Nullable ImageResource imageResource,
+                                     @Nullable SVGResource svgResource) {
+        super(text, description, imageResource, svgResource);
+        this.perspectives = perspectives;
+    }
+
+    public AbstractPerspectiveAction(@Nullable List<String> perspectives,
+                                     @NotNull String text,
+                                     @NotNull String description,
+                                     @Nullable ImageResource imageResource,
+                                     @Nullable SVGResource svgResource,
+                                     @Nullable String htmlResource) {
+        super(text, description, imageResource, svgResource, htmlResource);
         this.perspectives = perspectives;
     }
 

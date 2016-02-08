@@ -33,7 +33,7 @@ import org.vectomatic.dom.svg.ui.SVGResource;
 /**
  * Interface for resources, e.g., css, images, text files, etc.
  *
- * @author Artem Zatsarynnyi
+ * @author Codenvy crowd
  */
 public interface Resources extends Tree.Resources,
                                    PartStackUIResources,
@@ -74,9 +74,6 @@ public interface Resources extends Tree.Resources,
 
     @Source("actions/about.svg")
     SVGResource about();
-
-    @Source("actions/help.svg")
-    SVGResource help();
 
     @Source("actions/find.svg")
     SVGResource find();
@@ -141,9 +138,6 @@ public interface Resources extends Tree.Resources,
     @Source("actions/zip-folder.svg")
     SVGResource downloadZip();
 
-    @Source("actions/resize-icon.svg")
-    SVGResource fullscreen();
-
     @Source("actions/refresh.svg")
     SVGResource refresh();
 
@@ -207,8 +201,6 @@ public interface Resources extends Tree.Resources,
         String line();
 
         String editorFullScreen();
-
-        String editorFullScreenSvgDown();
 
         String createWsTagsPopup();
 

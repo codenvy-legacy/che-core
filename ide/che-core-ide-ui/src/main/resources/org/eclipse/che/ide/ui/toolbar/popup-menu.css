@@ -77,16 +77,20 @@
 .popupMenuIconField,
 .popupMenuIconFieldDisabled {
     width: 26px;
+    height: 20px;
     text-align: center;
     vertical-align: middle;
 }
 
-.popupMenuIconField svg,
-.popupMenuIconFieldDisabled svg {
+.popupMenuIconField > *,
+.popupMenuIconFieldDisabled > * {
     width: menuIconSize;
     height: menuIconSize;
-    fill: toolbarIconColor;
+    font-size: menuIconSize;
+    line-height: menuIconSize;
     margin-top: 2px;
+    display: inline-block;
+    color: toolbarIconColor;
 }
 
 .popupMenuIconField path,
@@ -99,8 +103,8 @@
     width: 10px;
 }
 
-.popupMenuSubMenuField svg,
-.popupMenuSubMenuFieldDisabled svg {
+.popupMenuSubMenuField > *,
+.popupMenuSubMenuFieldDisabled > * {
     fill: toolbarIconColor;
     width: 7px;
     height: 7px;

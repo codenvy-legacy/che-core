@@ -103,12 +103,6 @@
     fill: greenIconColor;
 }
 
-.toolbarPanel svg.iconButtonIcon {
-    width: 18px;
-    height: 18px;
-    margin: auto;
-}
-
 .toolbarPanel > div > div {
     display: inherit;
     height: inherit;
@@ -206,10 +200,45 @@ svg.iconButtonIcon {
     width: toolbarIconSize;
     height: toolbarIconSize;
     fill: toolbarIconColor;
+    margin-top: 1px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .iconButtonIcon path {
     fill: toolbarIconColor;
+}
+
+.iconButtonIconInner,
+.popupButtonIconInner {
+    width: toolbarIconSize;
+    height: toolbarIconSize;
+    font-size: toolbarIconSize;
+    line-height: toolbarIconSize;
+    margin-right: auto;
+    color: toolbarIconColor;
+}
+
+.iconButtonIconInner {
+    margin-top: 1px;
+    margin-left: auto;
+}
+
+.popupButtonIconInner {
+    margin-top: 2px;
+    margin-left: 3px;
+}
+
+.iconButtonIconInner:HOVER,
+.popupButtonIconInner:HOVER {
+    color: toolbarHoverIconColor;
+}
+
+.disabled {
+}
+
+.disabled .iconButtonIconInner {
+    opacity: 0.6;
 }
 
 .disabled svg {
@@ -227,6 +256,7 @@ svg.iconButtonIcon {
     height: 22px;
     width: 30px;
     border: 1px solid transparent;
+    position: relative;
 }
 
 .popupButtonPanel {
@@ -270,6 +300,6 @@ svg.popupButtonIcon {
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
     content: "";
-    position: relative;
+    position: absolute;
     top: 50%;
 }

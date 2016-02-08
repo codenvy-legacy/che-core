@@ -22,7 +22,7 @@ public interface AutoCompleteResources extends SimpleList.Resources, Popup.Resou
     @Source({"AutocompleteComponent.css", "org/eclipse/che/ide/api/ui/style.css"})
     Css autocompleteComponentCss();
 
-    public interface Css extends CssResource {
+    interface Css extends CssResource {
 
         String proposalIcon();
 
