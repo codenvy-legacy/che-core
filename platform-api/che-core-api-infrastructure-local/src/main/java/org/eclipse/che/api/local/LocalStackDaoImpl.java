@@ -53,7 +53,6 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Implementation local storage for {@link Stack}
@@ -81,16 +80,16 @@ public class LocalStackDaoImpl implements StackDao {
         this.stacks = new HashMap<>();
         this.lock = new ReentrantReadWriteLock();
         iconFolderPath = Paths.get(localStorage, iconFolderName);
-        initFileStorage();
+        createIconFolder();
     }
 
-    private void initFileStorage() {
+    private void createIconFolder() {
         try {
             if (!Files.exists(iconFolderPath)) {
                 Files.createDirectories(iconFolderPath);
             }
         } catch (IOException e) {
-            LOG.error("Failed create icon files storage folder by path " + iconFolderPath, e);
+            LOG.error("Failed to create icon files storage folder by path " + iconFolderPath, e);
         }
     }
 
@@ -106,6 +105,9 @@ public class LocalStackDaoImpl implements StackDao {
     @PreDestroy
     public void stop() throws IOException {
         stackStorage.store(stacks);
+        deleteFolderRecursive(iconFolderPath);//todo we can use FileUtils.deleteDirectory from apache lib
+        createIconFolder();
+        stacks.values().forEach(this::saveIcon);
     }
 
     @Override
@@ -142,7 +144,6 @@ public class LocalStackDaoImpl implements StackDao {
         requireNonNull(id, "Stack id required");
         lock.writeLock().lock();
         try {
-            StackImpl stack = stacks.get(id);
             stacks.remove(id);
         } finally {
             lock.writeLock().unlock();
@@ -194,31 +195,20 @@ public class LocalStackDaoImpl implements StackDao {
         }
     }
 
-    private void saveIcon(StackImpl stack) throws ServerException {
-        StackIcon stackIcon = stack.getStackIcon();
+    private void saveIcon(StackImpl stack) {
         try {
+            StackIcon stackIcon = stack.getStackIcon();
             if (stackIcon != null && stackIcon.getData() != null) {
                 Path iconDirectory = iconFolderPath.resolve(stack.getId());
-                if (Files.exists(iconDirectory)) {
+                if (Files.exists(iconDirectory)) {//todo do we need this?
                     deleteFolderRecursive(iconDirectory);
                 }
                 Files.createDirectories(iconDirectory);
                 Path iconPath = iconDirectory.resolve(stackIcon.getName());
                 Files.write(iconPath, stackIcon.getData(), CREATE, TRUNCATE_EXISTING);
             }
-        } catch (IOException e) {
-            throw new ServerException(format("Failed to save icon for stack with id '%s'", stack.getId()), e);
-        }
-    }
-
-    private void removeIcon(StackImpl stack) throws ServerException {
-        if (stack != null && stack.getStackIcon() != null) {
-            Path iconDirectory = iconFolderPath.resolve(stack.getId());
-            try {
-                deleteFolderRecursive(iconDirectory);
-            } catch (IOException e) {
-                throw new ServerException(format("Failed to remove stack icon for stack with id '%s'", stack.getId()), e);
-            }
+        } catch (IOException ex) {
+            LOG.error(format("Failed to save icon for stack with id '%s'", stack.getId()), ex);
         }
     }
 

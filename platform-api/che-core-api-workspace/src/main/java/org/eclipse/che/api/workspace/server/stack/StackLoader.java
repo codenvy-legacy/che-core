@@ -90,7 +90,7 @@ public class StackLoader {
         }
     }
 
-    public static void setIcon(StackImpl stack, Path stackIconFolderPath) {
+    public synchronized static void setIcon(StackImpl stack, Path stackIconFolderPath) {
         StackIcon stackIcon = stack.getStackIcon();
         if (stackIcon == null || stackIcon.getData() != null) {
             return;

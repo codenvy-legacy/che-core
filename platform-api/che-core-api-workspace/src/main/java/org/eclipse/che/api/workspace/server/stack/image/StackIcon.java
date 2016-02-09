@@ -35,13 +35,12 @@ public class StackIcon {
     private String mediaType;
     private byte[] data;
 
-    public StackIcon(StackIcon stackIcon, byte[] data) {
-        this(stackIcon.getName(), stackIcon.getMediaType(), data);
-    }
-
     public StackIcon(String name, String mediaType, @Nullable byte[] data) {
-        requireNonNull(name);
-        requireNonNull(mediaType);
+        if (data.length == 0) {
+            throw new IllegalArgumentException("Incorrect icon data or icon was not attached");
+        }
+        requireNonNull(name, "Icon name required");
+        requireNonNull(mediaType, "Icon media type required");
 
         if (data.length > LIMIT_SIZE) {
             throw new IllegalArgumentException("Maximum upload size exceeded 1 Mb limit");
