@@ -16,6 +16,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.actions.ActionManagerImpl;
 import org.eclipse.che.ide.api.action.Action;
 import org.eclipse.che.ide.api.action.ActionEvent;
@@ -30,8 +31,6 @@ import org.eclipse.che.ide.api.parts.PerspectiveManager;
 import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
 import org.eclipse.che.ide.util.StringUtils;
 import org.eclipse.che.ide.util.UnicodeUtils;
-
-import org.eclipse.che.commons.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -172,14 +171,8 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
 
             Presentation presentation = action.getTemplatePresentation();
             String text = presentation.getText();
-            String description = presentation.getDescription();
-            if (text != null && regExp.test(text) ||
-                description != null && !description.equals(text) && regExp.test(description)) {
+            if (text != null && regExp.test(text)) {
                 actions.put(action, groupName);
-            } else {
-                if (groupName != null && text != null && regExp.test(groupName + " " + text)) {
-                    actions.put(action, groupName);
-                }
             }
         }
 
@@ -219,10 +212,6 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
         boolean allowToLower = true;
         if (containsOnlyUppercaseLetters(pattern)) {
             allowToLower = false;
-        }
-
-        if (allowToLower) {
-            buffer.append(".*");
         }
 
         boolean firstIdentifierLetter = true;
@@ -275,7 +264,6 @@ public class FindActionPresenter implements Presenter, FindActionView.ActionDele
             }
         }
 
-        buffer.append("*");
         return buffer.toString();
     }
 

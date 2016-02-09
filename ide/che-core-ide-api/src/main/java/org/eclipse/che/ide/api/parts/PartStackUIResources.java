@@ -60,14 +60,6 @@ public interface PartStackUIResources extends ClientBundle {
     @Source({"partstack.css", "org/eclipse/che/ide/api/ui/style.css"})
     PartStackCss partStackCss();
 
-    ImageResource close();
-
-    @Source("squiggle.gif")
-    ImageResource squiggle();
-
-    @Source("squiggle-warning.png")
-    ImageResource squiggleWarning();
-
     @Source("collapse-expand-icon.svg")
     SVGResource collapseExpandIcon();
 

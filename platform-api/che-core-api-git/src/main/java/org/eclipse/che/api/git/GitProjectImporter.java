@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.che.api.git.shared.BranchListRequest.LIST_ALL;
+
 /**
  * @author Vladyslav Zhukovskii
  */
@@ -107,6 +109,7 @@ public class GitProjectImporter implements ProjectImporter {
             // For factory: github pull request feature
             String remoteOriginFetch = null;
             String branch = null;
+            String startPoint = null;
             // For factory or probably for our projects templates:
             // If git repository contains more than one project need clone all repository but after cloning keep just
             // sub-project that is specified in parameter "keepDirectory".
@@ -121,6 +124,7 @@ public class GitProjectImporter implements ProjectImporter {
             if (parameters != null) {
                 commitId = parameters.get("commitId");
                 branch = parameters.get("branch");
+                startPoint = parameters.get("startPoint");
                 remoteOriginFetch = parameters.get("remoteOriginFetch");
                 keepDirectory = parameters.get("keepDirectory");
                 if (parameters.containsKey("keepVcs")) {
@@ -132,11 +136,14 @@ public class GitProjectImporter implements ProjectImporter {
             final String localPath = localPathResolver.resolve((VirtualFileImpl)baseFolder.getVirtualFile());
             final DtoFactory dtoFactory = DtoFactory.getInstance();
             final String location = storage.getLocation();
+            // it's needed for extract repository name from repository url e.g https://github.com/codenvy/che-core.git
+            // lastIndexOf('/') + 1 for not to capture slash and length - 4 for trim .git
+            final String repositoryName = location.substring(location.lastIndexOf('/') + 1, location.length() - 4);
             if (keepDirectory != null) {
                 final File temp = Files.createTempDirectory(null).toFile();
                 try {
                     git = gitConnectionFactory.getConnection(temp, consumerFactory);
-                    sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory, dtoFactory);
+                    sparsecheckout(git, location, branch == null ? "master" : branch, startPoint, repositoryName, keepDirectory, dtoFactory);
                     // Copy content of directory to the project folder.
                     final File projectDir = new File(localPath);
                     IoUtil.copy(temp, projectDir, IoUtil.ANY_FILTER);
@@ -153,10 +160,10 @@ public class GitProjectImporter implements ProjectImporter {
                         git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
                         fetch(git, "origin", dtoFactory);
                         if (branch != null) {
-                            checkoutBranch(git, branch, dtoFactory);
+                            checkoutBranch(git, branch, startPoint, repositoryName, dtoFactory);
                         }
                     } else if (branch != null) {
-                        checkoutBranch(git, branch, dtoFactory);
+                        checkoutBranch(git, branch, startPoint, repositoryName, dtoFactory);
                     }
                 } else {
                     initRepository(git, dtoFactory);
@@ -168,14 +175,14 @@ public class GitProjectImporter implements ProjectImporter {
                         git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
                         fetch(git, "origin", dtoFactory);
                         if (branch != null) {
-                            checkoutBranch(git, branch, dtoFactory);
+                            checkoutBranch(git, branch, startPoint, repositoryName, dtoFactory);
                         }
                     } else {
                         fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
 
                         List<Branch> branchList = git.branchList(dtoFactory.createDto(BranchListRequest.class).withListMode("r"));
                         if (!branchList.isEmpty()) {
-                            checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+                            checkoutBranch(git, branch == null ? "master" : branch, startPoint, repositoryName, dtoFactory);
                         }
                     }
                 }
@@ -257,19 +264,50 @@ public class GitProjectImporter implements ProjectImporter {
         }
     }
 
-    private void checkoutBranch(GitConnection git, String branch, DtoFactory dtoFactory) throws GitException {
-        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName(branch);
-        try {
-            git.checkout(request);
-        } catch (GitException e) {
-            LOG.warn("Git exception on branch checkout", e);
-            throw new GitException(
-                    String.format("Unable to checkout remote branch %s. Make sure it exists and can be accessed.",
-                                  branch), e);
+    private void checkoutBranch(GitConnection git,
+                                String branchName,
+                                String startPoint,
+                                String repositoryName,
+                                DtoFactory dtoFactory) throws GitException {
+        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withName(branchName);
+        final boolean branchExist = git.branchList(dtoFactory.createDto(BranchListRequest.class).withListMode(LIST_ALL))
+                                       .stream()
+                                       .anyMatch(branch -> branch.getName().equals(branchName));
+        if (startPoint != null) {
+            if (branchExist) {
+                git.checkout(request);
+            } else {
+                checkoutAndRethrow(git,
+                                   request.withCreateNew(true).withStartPoint(startPoint),
+                                   String.format("Cannot find remote branch %s and start point %s in repo %s",
+                                                 branchName,
+                                                 startPoint,
+                                                 repositoryName));
+            }
+        } else {
+            checkoutAndRethrow(git,
+                               request,
+                               String.format("Cannot find remote branch %s in repo %s and start point undefined",
+                                             branchName,
+                                             repositoryName));
         }
     }
 
-    private void sparsecheckout(GitConnection git, String url, String branch, String directory, DtoFactory dtoFactory)
+    private void checkoutAndRethrow(GitConnection git, CheckoutRequest request, String errorMessage) throws GitException {
+        try {
+            git.checkout(request);
+        } catch (GitException ex) {
+            throw new GitException(errorMessage, ex);
+        }
+    }
+
+    private void sparsecheckout(GitConnection git,
+                                String url,
+                                String branch,
+                                String startPoint,
+                                String directory,
+                                String repositoryName,
+                                DtoFactory dtoFactory)
             throws GitException, UnauthorizedException {
         /*
         Does following sequence of Git commands:
@@ -290,7 +328,7 @@ public class GitProjectImporter implements ProjectImporter {
             throw new GitException(e);
         }
         fetchBranch(git, "origin", branch, dtoFactory);
-        checkoutBranch(git, branch, dtoFactory);
+        checkoutBranch(git, branch, startPoint, repositoryName, dtoFactory);
     }
 
     private void cleanGit(File project) {

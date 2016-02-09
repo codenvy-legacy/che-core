@@ -762,16 +762,6 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String minimizeIconColor() {
-        return "#5D5D5D";
-    }
-
-    @Override
-    public String minimizeIconHoverColor() {
-        return "#D8D8D8";
-    }
-
-    @Override
     public String processTreeBackgroundColor() {
         return "#21252b";
     }
@@ -1033,6 +1023,26 @@ public class DarkTheme implements Theme {
     @Override
     public String scrollbarHoverBackgroundColor() {
         return "rgba(215, 215, 215, 0.3)";
+    }
+
+    @Override
+    public String matchingSearchBlockBackgroundColor() {
+        return "rgba(85, 85, 85, .6)";
+    }
+
+    @Override
+    public String matchingSearchBlockBorderColor() {
+        return "#4a90e2";
+    }
+
+    @Override
+    public String currentSearchBlockBackgroundColor() {
+        return "#4a90e2";
+    }
+
+    @Override
+    public String currentSearchBlockBorderColor() {
+        return "#4a90e2";
     }
 
     @Override
@@ -1321,6 +1331,16 @@ public class DarkTheme implements Theme {
     }
 
     @Override
+    public String closeNotificationButtonColor() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String closeNotificationHoveredButtonColor() {
+        return "#D8D8D8";
+    }
+
+    @Override
     public String projectExplorerReadonlyItemBackground() {
         return "#3b372f";
     }
@@ -1371,12 +1391,22 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public String toolButtonSvgFill() {
-        return "#dbdbdb";
+    public String toolButtonColor() {
+        return "#5D5D5D";
+    }
+
+    @Override
+    public String toolButtonHoverColor() {
+        return "#D8D8D8";
     }
 
     @Override
     public String toolButtonBorder() {
+        return "1px solid transparent";
+    }
+
+    @Override
+    public String toolButtonActiveBorder() {
         return "1px solid #24272c";
     }
 

@@ -26,7 +26,6 @@ import org.eclipse.che.ide.actions.CutAction;
 import org.eclipse.che.ide.actions.DeleteItemAction;
 import org.eclipse.che.ide.actions.DownloadAsZipAction;
 import org.eclipse.che.ide.actions.DownloadItemAction;
-import org.eclipse.che.ide.actions.ExpandAllAction;
 import org.eclipse.che.ide.actions.ExpandEditorAction;
 import org.eclipse.che.ide.actions.ExpandNodeAction;
 import org.eclipse.che.ide.actions.FindReplaceAction;
@@ -161,9 +160,6 @@ public class StandardComponentInitializer {
 
     @Inject
     private CollapseAllAction collapseAllAction;
-
-    @Inject
-    private ExpandAllAction expandAllAction;
 
     @Inject
     private FoldersAlwaysOnTopAction foldersAlwaysOnTopAction;
@@ -391,7 +387,7 @@ public class StandardComponentInitializer {
 
         DefaultActionGroup newGroup = new DefaultActionGroup("New", true, actionManager);
         newGroup.getTemplatePresentation().setDescription("Create...");
-        newGroup.getTemplatePresentation().setSVGIcon(resources.newResource());
+        newGroup.getTemplatePresentation().setSVGResource(resources.newResource());
         actionManager.registerAction(GROUP_FILE_NEW, newGroup);
         projectGroup.add(newGroup);
 
@@ -406,7 +402,7 @@ public class StandardComponentInitializer {
         newGroup.addSeparator();
 
         actionManager.registerAction("newXmlFile", newXmlFileAction);
-        newXmlFileAction.getTemplatePresentation().setSVGIcon(xmlFile.getSVGImage());
+        newXmlFileAction.getTemplatePresentation().setSVGResource(xmlFile.getSVGImage());
         newGroup.addAction(newXmlFileAction);
 
         actionManager.registerAction("createModuleAction", createModuleAction);
@@ -536,7 +532,6 @@ public class StandardComponentInitializer {
         actionManager.registerAction("openSelectedFile", openSelectedFileAction);
 
         actionManager.registerAction("collapseAll", collapseAllAction);
-        actionManager.registerAction("expandAll", expandAllAction);
 
         actionManager.registerAction("findReplace", findReplaceAction);
         actionManager.registerAction("openFile", openFileAction);

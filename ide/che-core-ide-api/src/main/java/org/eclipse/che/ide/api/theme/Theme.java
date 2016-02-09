@@ -987,16 +987,6 @@ public interface Theme {
     String getDelimeterColor();
 
     /**
-     * @return the color of part minimize button
-     */
-    String minimizeIconColor();
-
-    /**
-     * @return the hovering color of part minimize button
-     */
-    String minimizeIconHoverColor();
-
-    /**
      * Background color for processes panel.
      *
      * @return color
@@ -1280,6 +1270,26 @@ public interface Theme {
      */
     String scrollbarHoverBackgroundColor();
 
+    /**
+     * @return matching search block background color
+     */
+    String matchingSearchBlockBackgroundColor();
+
+    /**
+     * @return matching search block border color
+     */
+    String matchingSearchBlockBorderColor();
+
+    /**
+     * @return current search block background color
+     */
+    String currentSearchBlockBackgroundColor();
+
+    /**
+     * @return current search block border color
+     */
+    String currentSearchBlockBorderColor();
+
     /********************************************************************************************
      *
      * Dropdown menu with a list of opened files
@@ -1407,6 +1417,8 @@ public interface Theme {
     String notificationPopupIconProgressFill();
     String notificationPopupIconSvgFill();
     String notificationPopupTextColor();
+    String closeNotificationButtonColor();
+    String closeNotificationHoveredButtonColor();
 
     String projectExplorerReadonlyItemBackground();
     String projectExplorerTestItemBackground();
@@ -1422,10 +1434,18 @@ public interface Theme {
 
     String outputBoxShadow();
 
-    String toolButtonSvgFill();
+    /********************************************************************************************
+     *
+     * Tool button (part header button)
+     *
+     ********************************************************************************************/
+    String toolButtonColor();
+    String toolButtonHoverColor();
     String toolButtonBorder();
+    String toolButtonActiveBorder();
     String toolButtonHoverBackgroundColor();
     String toolButtonActiveBackgroundColor();
     String toolButtonHoverBoxShadow();
     String toolButtonActiveBoxShadow();
+
 }

@@ -105,7 +105,7 @@ public class StartWorkspacePresenter implements StartWorkspaceView.ActionDelegat
     public void onWorkspaceSelected(UsersWorkspaceDto workspace) {
         selectedWorkspace = workspace;
 
-        String wsName = workspace.getDefaultEnvName();
+        String wsName = workspace.getDefaultEnv();
 
         view.setWsName(wsName);
 

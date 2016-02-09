@@ -14,6 +14,10 @@
  * Panels where tab-buttons created
  *
  *******************************************************************************/
+
+@eval toolButtonColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonColor();
+@eval toolButtonHoverColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonHoverColor();
+
 .ide-work-bench-tool-panel-left,
 .ide-work-bench-tool-panel-right,
 .ide-work-bench-tool-panel-bottom {
@@ -57,7 +61,7 @@ svg[name="workBenchIconMinimize"] {
 
 svg[name="workBenchIconMinimize"],
 svg[name="workBenchIconMinimize"] g {
-    fill: minimizeIconColor;
+    fill: toolButtonColor;
 
     -webkit-transition: color 0.1s ease-in-out,
                 fill 0.1s ease-in-out,
@@ -69,7 +73,7 @@ svg[name="workBenchIconMinimize"] g {
 
 svg[name="workBenchIconMinimize"]:HOVER,
 svg[name="workBenchIconMinimize"]:HOVER g {
-    fill: minimizeIconHoverColor;
+    fill: toolButtonHoverColor;
 }
 
 .ide-work-bench-split-panel-left svg[name="workBenchIconMinimize"] {

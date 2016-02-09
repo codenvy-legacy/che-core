@@ -738,16 +738,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String minimizeIconColor() {
-        return "#7b7b7b";
-    }
-
-    @Override
-    public String minimizeIconHoverColor() {
-        return "#333333";
-    }
-
-    @Override
     public String processTreeBackgroundColor() {
         return "white";
     }
@@ -769,7 +759,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getOutputLinkColor() {
-        return "#61b7ef";
+        return "#1266B1";
     }
 
     @Override
@@ -939,7 +929,7 @@ public class LightTheme implements Theme {
 
     @Override
     public String getSuccessColor() {
-        return "#31b993";
+        return "#43A700";
     }
 
     @Override
@@ -1010,6 +1000,26 @@ public class LightTheme implements Theme {
     @Override
     public String scrollbarHoverBackgroundColor() {
         return "rgba(27, 27, 27, 0.15)";
+    }
+
+    @Override
+    public String matchingSearchBlockBackgroundColor() {
+        return "rgb(169, 183, 198)";
+    }
+
+    @Override
+    public String matchingSearchBlockBorderColor() {
+        return "#555555";
+    }
+
+    @Override
+    public String currentSearchBlockBackgroundColor() {
+        return "rgb(78, 171, 255)";
+    }
+
+    @Override
+    public String currentSearchBlockBorderColor() {
+        return "#1a68af";
     }
 
     @Override
@@ -1298,6 +1308,16 @@ public class LightTheme implements Theme {
     }
 
     @Override
+    public String closeNotificationButtonColor() {
+        return "#7b7b7b";
+    }
+
+    @Override
+    public String closeNotificationHoveredButtonColor() {
+        return "#333333";
+    }
+
+    @Override
     public String projectExplorerReadonlyItemBackground() {
         return "#ffffe4";
     }
@@ -1348,12 +1368,22 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public String toolButtonSvgFill() {
-        return "#5D5D5D";
+    public String toolButtonColor() {
+        return "#7b7b7b";
+    }
+
+    @Override
+    public String toolButtonHoverColor() {
+        return "#333333";
     }
 
     @Override
     public String toolButtonBorder() {
+        return "1px solid transparent";
+    }
+
+    @Override
+    public String toolButtonActiveBorder() {
         return "1px solid #8E8E8E";
     }
 

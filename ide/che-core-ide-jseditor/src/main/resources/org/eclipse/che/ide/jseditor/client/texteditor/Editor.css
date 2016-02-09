@@ -10,26 +10,32 @@
  *******************************************************************************/
 @external .annotation, .breakpoints;
 
-@sprite .lineWarning {
-    gwt-image: "squiggleWarning";
-    background-position: bottom;
-    background-repeat: repeat-x;
+/*@sprite .lineWarning {*/
+.lineWarning {
+    /*gwt-image: "squiggleWarning";*/
+    /*background-position: bottom;*/
+    /*background-repeat: repeat-x;*/
     margin: 0;
     padding: 0;
     height: auto;
     width: auto;
     overflow: visible;
+    text-decoration: underline;
+    color: #FFD31E;
 }
 
-@sprite .lineError {
-    gwt-image: "squiggle";
-    background-position: bottom;
-    background-repeat: repeat-x;
+/*@sprite .lineError {*/
+.lineError {
+    /*gwt-image: "squiggle";*/
+    /*background-position: bottom;*/
+    /*background-repeat: repeat-x;*/
     margin: 0;
     padding: 0;
     height: auto;
     width: auto;
     overflow: visible;
+    text-decoration: underline;
+    color: red;
 }
 
 .debugLine {

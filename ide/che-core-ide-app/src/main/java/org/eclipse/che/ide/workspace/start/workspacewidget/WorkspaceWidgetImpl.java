@@ -48,7 +48,7 @@ public class WorkspaceWidgetImpl extends Composite implements WorkspaceWidget, C
 
         initWidget(UI_BINDER.createAndBindUi(this));
 
-        name.setText(workspace.getDefaultEnvName());
+        name.setText(workspace.getDefaultEnv());
         status.setText(workspace.getStatus().toString());
 
         addDomHandler(this, ClickEvent.getType());

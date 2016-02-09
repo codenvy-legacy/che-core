@@ -108,9 +108,7 @@ public class OAuthAuthenticationService {
                     "Provided userId " + userId + " is not related to current user " + EnvironmentContext.getCurrent().getUser().getId());
         }
 
-        final String authUrl = oauth.getAuthenticateUrl(getRequestUrl(uriInfo),
-                                                        userId,
-                                                        scopes == null ? Collections.<String>emptyList() : scopes);
+        final String authUrl = oauth.getAuthenticateUrl(getRequestUrl(uriInfo), scopes == null ? Collections.<String>emptyList() : scopes);
         return Response.temporaryRedirect(URI.create(authUrl)).build();
     }
 
@@ -177,7 +175,10 @@ public class OAuthAuthenticationService {
         OAuthAuthenticator provider = getAuthenticator(oauthProvider);
         final User user = EnvironmentContext.getCurrent().getUser();
         try {
-            final OAuthToken token = provider.getToken(user.getId());
+            OAuthToken token = provider.getToken(user.getId());
+            if (token == null) {
+                token = provider.getToken(user.getName());
+            }
             if (token != null) {
                 return token;
             }

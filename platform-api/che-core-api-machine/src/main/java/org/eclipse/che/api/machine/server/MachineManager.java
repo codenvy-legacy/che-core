@@ -308,7 +308,7 @@ public class MachineManager {
         final String machineId = generateMachineId();
         final String creator = EnvironmentContext.getCurrent().getUser().getId();
 
-        if (machineConfig.getLimits().getMemory() == 0) {
+        if (machineConfig.getLimits().getRam() == 0) {
             MachineConfigImpl machineConfigWithLimits = new MachineConfigImpl(machineConfig);
             machineConfigWithLimits.setLimits(new LimitsImpl(defaultMachineMemorySizeMB));
             machineConfig = machineConfigWithLimits;
@@ -958,7 +958,7 @@ public class MachineManager {
                     if (event.getType() == OOM) {
                         message = message +
                                   "The processes in this machine need more RAM. This machine started with " +
-                                  machine.getLimits().getMemory() +
+                                  machine.getLimits().getRam() +
                                   "MB. Create a new machine configuration that allocates additional RAM or increase " +
                                   "the workspace RAM limit in the user dashboard.";
                     }

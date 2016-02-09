@@ -66,7 +66,7 @@ public final class DtoConverter {
      * Converts {@link Limits} to {@link LimitsDto}.
      */
     public static LimitsDto asDto(Limits limits) {
-        return newDto(LimitsDto.class).withMemory(limits.getMemory());
+        return newDto(LimitsDto.class).withRam(limits.getRam());
     }
 
     /**

@@ -96,6 +96,7 @@ import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.api.theme.Theme;
 import org.eclipse.che.ide.api.theme.ThemeAgent;
 import org.eclipse.che.ide.bootstrap.DefaultIconsComponent;
+import org.eclipse.che.ide.bootstrap.FontAwesomeInjector;
 import org.eclipse.che.ide.bootstrap.PreferencesComponent;
 import org.eclipse.che.ide.bootstrap.ProfileComponent;
 import org.eclipse.che.ide.bootstrap.ProjectTemplatesComponent;
@@ -291,6 +292,7 @@ public class CoreGinModule extends AbstractGinModule {
     private void configureComponents() {
         GinMapBinder<String, Component> componentsBinder = GinMapBinder.newMapBinder(binder(), String.class, Component.class);
         componentsBinder.addBinding("Default Icons").to(DefaultIconsComponent.class);
+        componentsBinder.addBinding("Font Awesome Icons").to(FontAwesomeInjector.class);
         componentsBinder.addBinding("ZeroClipboard").to(ZeroClipboardInjector.class);
         componentsBinder.addBinding("Preferences").to(PreferencesComponent.class);
         componentsBinder.addBinding("Profile").to(ProfileComponent.class);

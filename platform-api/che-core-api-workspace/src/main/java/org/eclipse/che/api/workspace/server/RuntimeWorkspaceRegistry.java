@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -377,12 +378,14 @@ public class RuntimeWorkspaceRegistry {
         if (envName == null) {
             throw new BadRequestException(format("Couldn't start workspace '%s', environment name is null", workspace.getName()));
         }
-        final EnvironmentState environment = workspace.getEnvironments().get(envName);
-        if (environment == null) {
+        final Optional<? extends EnvironmentState> environmentOptional =
+                workspace.getEnvironments().stream().filter(env -> env.getName().equals(envName)).findFirst();
+        if (!environmentOptional.isPresent()) {
             throw new BadRequestException(format("Couldn't start workspace '%s', workspace doesn't have environment '%s'",
                                                  workspace.getName(),
                                                  envName));
         }
+        EnvironmentState environment = environmentOptional.get();
         if (environment.getRecipe() != null && !"docker".equals(environment.getRecipe().getType())) {
             throw new BadRequestException(format("Couldn't start workspace '%s' from environment '%s', " +
                                                  "environment recipe has unsupported type '%s'",

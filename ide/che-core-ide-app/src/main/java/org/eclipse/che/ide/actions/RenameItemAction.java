@@ -25,6 +25,7 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.project.node.FileReferenceNode;
 import org.eclipse.che.ide.project.node.FolderReferenceNode;
+import org.eclipse.che.ide.project.node.ModuleNode;
 import org.eclipse.che.ide.project.node.ProjectNode;
 import org.eclipse.che.ide.project.node.ResourceBasedNode;
 import org.eclipse.che.ide.ui.dialogs.CancelCallback;
@@ -114,8 +115,10 @@ public class RenameItemAction extends AbstractPerspectiveAction {
 
         final Object possibleNode = selection.getHeadElement();
 
-        boolean enable = (possibleNode instanceof ProjectNode)
-                         && ((SupportRename)possibleNode).getRenameProcessor() != null;
+        boolean isModuleNode = possibleNode instanceof ModuleNode;
+        boolean isSupportRename = possibleNode instanceof SupportRename;
+
+        boolean enable = !isModuleNode && isSupportRename && ((SupportRename)possibleNode).getRenameProcessor() != null;
 
         e.getPresentation().setEnabled(enable);
     }

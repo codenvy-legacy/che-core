@@ -32,8 +32,6 @@ import static java.nio.file.Files.exists;
 import static java.nio.file.Files.write;
 import static org.eclipse.che.api.core.util.LineConsumerFactory.NULL;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Sergii Kabashniuk
@@ -67,7 +65,6 @@ public class GitTestUtil {
 
     public static GitConnection getTestUserConnection(GitConnectionFactory connectionFactory, File repository) throws GitException {
         EnvironmentContext.getCurrent().setUser(new UserImpl("codenvy", "codenvy", null, Arrays.asList("workspace/developer"), false));
-        when(connectionFactory.getCredentialsLoader().getUser(anyString())).thenReturn(getTestGitUser());
         return connectionFactory.getConnection(repository, NULL);
     }
 

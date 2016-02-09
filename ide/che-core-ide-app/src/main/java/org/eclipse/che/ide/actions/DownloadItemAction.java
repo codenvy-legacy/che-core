@@ -47,7 +47,7 @@ public class DownloadItemAction extends Action {
                               AnalyticsEventLogger eventLogger,
                               DownloadContainer downloadContainer,
                               ProjectExplorerPresenter projectExplorer) {
-        super(locale.downloadItemName(), locale.downloadItemDescription(), null);
+        super(locale.downloadItemName(), locale.downloadItemDescription());
         this.eventLogger = eventLogger;
         this.downloadContainer = downloadContainer;
         this.projectExplorer = projectExplorer;
