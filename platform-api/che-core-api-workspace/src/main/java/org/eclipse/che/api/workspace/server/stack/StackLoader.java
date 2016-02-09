@@ -27,13 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
@@ -49,7 +46,6 @@ import static java.lang.String.format;
 public class StackLoader {
     private static final Logger LOG = LoggerFactory.getLogger(StackLoader.class);
 
-    private final Map<String, byte[]> loadedIconData;
     private final Path                stackJsonPath;
     private final Path                stackIconFolderPath;
     private final StackDao            stackDao;
@@ -64,7 +60,6 @@ public class StackLoader {
         this.stackIconFolderPath = Paths.get(stackIconFolder);
         this.stackDao = stackDao;
         this.gson = stackGsonFactory.getGson();
-        this.loadedIconData = new HashMap<>();
     }
 
     /**
@@ -72,35 +67,19 @@ public class StackLoader {
      */
     @PostConstruct
     public void start() {
-        loadIconData(stackIconFolderPath);
-
         if (Files.exists(stackJsonPath) && Files.isRegularFile(stackJsonPath)) {
             try (BufferedReader reader = Files.newBufferedReader(stackJsonPath)) {
                 List<StackImpl> stacks = gson.fromJson(reader, new TypeToken<List<StackImpl>>() {}.getType());
                 stacks.forEach(this::loadStack);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOG.error("Failed to store stacks ", e);
             }
         }
     }
 
-    private void loadIconData(Path folderPath) {
-        try {
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(folderPath);
-            for (Path innerFile : directoryStream) {
-                if (Files.isRegularFile(innerFile) && Files.isReadable(innerFile)) {
-                    byte[] data = Files.readAllBytes(innerFile);
-                    loadedIconData.put(innerFile.getFileName().toString(), data);
-                }
-            }
-        } catch (IOException e) {
-            LOG.error("Failed to load stack icons data ", e);
-        }
-    }
-
     private void loadStack(StackImpl stack) {
         try {
-            setIcon(stack);
+            setIcon(stack, stackIconFolderPath);
             stackDao.update(stack);
         } catch (NotFoundException | ServerException e) {
             try {
@@ -111,17 +90,23 @@ public class StackLoader {
         }
     }
 
-    private void setIcon(StackImpl stack) {
+    public static void setIcon(StackImpl stack, Path stackIconFolderPath) {
         StackIcon stackIcon = stack.getStackIcon();
-        if (stackIcon == null) {
+        if (stackIcon == null || stackIcon.getData() != null) {
             return;
         }
-        byte[] data = loadedIconData.get(stack.getName());
-        if (data != null) {
-            stackIcon = new StackIcon(stack.getId(), stackIcon.getName(), stackIcon.getMediaType(), data);
-            stack.setStackIcon(stackIcon);
-        } else {
+        try {
+            Path stackIconPath = stackIconFolderPath.resolve(stack.getId()).resolve(stackIcon.getName());
+            if (Files.exists(stackIconPath) && Files.isRegularFile(stackIconPath)) {
+                byte[] data = Files.readAllBytes(stackIconPath);
+                stackIcon = new StackIcon(stackIcon.getName(), stackIcon.getMediaType(), data);
+                stack.setStackIcon(stackIcon);
+            } else {
+                throw new IOException("Stack icon is not a file or doesn't exist by path: " + stackIconPath);
+            }
+        } catch (IOException e) {
             stack.setStackIcon(null);
+            LOG.error(format("Failed to load stack icon data for the stack with id '%s'", stack.getId()), e);
         }
     }
 }

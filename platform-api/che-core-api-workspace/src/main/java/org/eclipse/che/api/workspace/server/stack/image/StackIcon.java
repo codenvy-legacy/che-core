@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Set;
 
 import com.google.common.base.Objects;
-import com.google.gson.annotations.Expose;
 
 import org.eclipse.che.commons.annotation.Nullable;
 
@@ -32,21 +31,15 @@ public class StackIcon {
     private static final Set<String> VALID_MEDIA_TYPES = of("image/jpeg", "image/png", "image/gif", "image/svg+xml");
     private static final int         LIMIT_SIZE        = 1024 * 1024;
 
-    @Expose
-    private String stackId;
-    @Expose
     private String name;
-    @Expose
     private String mediaType;
-    @Expose(serialize = false, deserialize = false)
     private byte[] data;
 
     public StackIcon(StackIcon stackIcon, byte[] data) {
-        this(stackIcon.getStackId(), stackIcon.getName(), stackIcon.getMediaType(), data);
+        this(stackIcon.getName(), stackIcon.getMediaType(), data);
     }
 
-    public StackIcon(String stackId, String name, String mediaType, @Nullable byte[] data) {
-        requireNonNull(stackId);
+    public StackIcon(String name, String mediaType, @Nullable byte[] data) {
         requireNonNull(name);
         requireNonNull(mediaType);
 
@@ -62,11 +55,6 @@ public class StackIcon {
         this.mediaType = mediaType;
 
         this.name = name;
-        this.stackId = stackId;
-    }
-
-    public String getStackId() {
-        return stackId;
     }
 
     public String getName() {
@@ -90,8 +78,7 @@ public class StackIcon {
             return false;
         }
         StackIcon another = (StackIcon)obj;
-        return Objects.equal(stackId, another.stackId)
-               && Objects.equal(name, another.name)
+        return Objects.equal(name, another.name)
                && Objects.equal(mediaType, another.mediaType)
                && Arrays.equals(getData(), another.getData());
     }
@@ -99,7 +86,6 @@ public class StackIcon {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 31 * hash + Objects.hashCode(stackId);
         hash = 31 * hash + Objects.hashCode(name);
         hash = 31 * hash + Objects.hashCode(mediaType);
         hash = 31 * hash + Arrays.hashCode(getData());

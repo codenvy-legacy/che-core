@@ -65,6 +65,7 @@ import java.util.Map;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
@@ -81,24 +82,16 @@ public class StackLoaderTest {
 
     private StackLoader stackLoader;
 
-//    @Test
-//    public void predefinedStackWithValidJsonShouldBeLoaded() throws ServerException, NotFoundException, ConflictException {
-//        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
-//
-//        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
-//
-//        stackLoader.start();
-//        verify(stackDao, times(2)).update(any());
-//    }
-//
-//    @Test
-//    public void predefinedStackWithValidJsonShouldBeLoaded2() throws ServerException, NotFoundException, ConflictException {
-//        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
-//        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), stackDao);
-//
-//        stackLoader.start();
-//        verify(stackDao, times(2)).update(any());
-//    }
+    @Test
+    public void predefinedStackWithValidJsonShouldBeLoaded() throws ServerException, NotFoundException, ConflictException {
+        URL url = Thread.currentThread().getContextClassLoader().getResource("stacks.json");
+        URL urlFolder = Thread.currentThread().getContextClassLoader().getResource("stack_img");
+
+        stackLoader = new StackLoader(new StackGsonFactory(), url.getPath(), urlFolder.getPath(), stackDao);
+
+        stackLoader.start();
+        verify(stackDao, times(2)).update(any());
+    }
 
     @Test
     public void dtoShouldBeSerialized() {

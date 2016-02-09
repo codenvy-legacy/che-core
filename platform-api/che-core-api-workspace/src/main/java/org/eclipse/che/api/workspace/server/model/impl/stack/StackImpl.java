@@ -22,10 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Server implementation of {@link Stack}
@@ -34,27 +31,16 @@ import com.google.gson.annotations.Expose;
  */
 public class StackImpl implements Stack {
 
-    @Expose
     private String                   id;
-    @Expose
     private String                   name;
-    @Expose
     private String                   description;
-    @Expose
     private String                   scope;
-    @Expose
     private String                   creator;
-    @Expose
     private List<String>             tags;
-    @Expose
     private WorkspaceConfigImpl      workspaceConfig;
-    @Expose
     private StackSourceImpl          source;
-    @Expose
     private List<StackComponentImpl> components;
-    @Expose
     private Permissions              permissions;
-    @Expose
     private StackIcon                stackIcon;
 
     public static StackBuilder builder() {

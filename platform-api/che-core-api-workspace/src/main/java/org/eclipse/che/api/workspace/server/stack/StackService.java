@@ -349,7 +349,7 @@ public class StackService extends Service {
         requireNonNullAndNonEmpty(stackId, "Stack id required");
         if (formData.hasNext()) {
             FileItem fileItem = formData.next();
-            StackIcon stackIcon = new StackIcon(stackId, fileItem.getName(), fileItem.getContentType(), fileItem.get());
+            StackIcon stackIcon = new StackIcon(fileItem.getName(), fileItem.getContentType(), fileItem.get());
 
             StackImpl stack = stackDao.getById(stackId);
 
@@ -360,10 +360,9 @@ public class StackService extends Service {
                 throw new ForbiddenException(format("User %s doesn't have access to stack %s", stack.getId(), stack.getId()));
             }
 
-            stack.setStackIcon(stackIcon);
-            stackDao.update(stack);
-        } else {
-            throw new BadRequestException("File was not attached");
+            StackImpl update = new StackImpl(stack);
+            update.setStackIcon(stackIcon);
+            stackDao.update(update);
         }
         return Response.ok().build();
     }
@@ -393,8 +392,9 @@ public class StackService extends Service {
             throw new ForbiddenException(format("User %s doesn't have access to stack %s", stack.getId(), stackId));
         }
 
-        stack.setStackIcon(null);
-        stackDao.update(stack);
+        StackImpl update = new StackImpl(stack);
+        update.setStackIcon(null);
+        stackDao.update(update);
     }
 
     private StackDto asStackDto(StackImpl stack) {

@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.workspace.server.stack;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.inject.Inject;
@@ -38,6 +40,7 @@ import org.eclipse.che.api.workspace.server.stack.adapters.ProjectConfigAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.StackComponentAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.StackSourceAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.WorkspaceConfigAdapter;
+import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 
 /**
  * Gson factory for local {@link org.eclipse.che.api.workspace.server.model.impl.stack.Stack} storage.
@@ -65,7 +68,17 @@ public class StackGsonFactory {
                                 .registerTypeAdapter(StackSource.class, new StackSourceAdapter())
                                 .registerTypeAdapter(Permissions.class, new PermissionsAdapter())
                                 .registerTypeAdapter(Group.class, new GroupAdapter())
-                                .excludeFieldsWithoutExposeAnnotation()
+                                .setExclusionStrategies(new ExclusionStrategy() {
+                                    @Override
+                                    public boolean shouldSkipField(FieldAttributes field) {
+                                        return StackIcon.class.equals(field.getDeclaringClass()) && "data".equals(field.getName());
+                                    }
+
+                                    @Override
+                                    public boolean shouldSkipClass(Class<?> clazz) {
+                                        return false;
+                                    }
+                                })
                                 .setPrettyPrinting()
                                 .create();
     }

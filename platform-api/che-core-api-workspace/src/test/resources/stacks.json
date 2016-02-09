@@ -75,6 +75,10 @@
                 }
             ],
             "users": {}
+        },
+        "stackIcon" : {
+            "name": "type-java.svg",
+            "mediaType": "image/svg+xml"
         }
     },
     {
