@@ -13,7 +13,6 @@ package org.eclipse.che.api.vfs.impl.file;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.api.vfs.VirtualFile;
-import org.eclipse.che.api.vfs.VirtualFileSystemProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +23,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DefaultFileWatcherNotificationHandler implements FileWatcherNotificationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultFileWatcherNotificationHandler.class);
 
-    private final VirtualFileSystemProvider             virtualFileSystemProvider;
+    private final LocalVirtualFileSystem             virtualFileSystem;
     private final List<FileWatcherNotificationListener> fileWatcherNotificationListeners;
 
-    public DefaultFileWatcherNotificationHandler(VirtualFileSystemProvider virtualFileSystemProvider) {
-        this.virtualFileSystemProvider = virtualFileSystemProvider;
+    public DefaultFileWatcherNotificationHandler(LocalVirtualFileSystem virtualFileSystem) {
+        this.virtualFileSystem = virtualFileSystem;
         fileWatcherNotificationListeners = new CopyOnWriteArrayList<>();
     }
 
@@ -46,7 +45,7 @@ public class DefaultFileWatcherNotificationHandler implements FileWatcherNotific
     }
 
     public void started(File watchRoot) {
-        LOG.info("Stat watching file events on {}", watchRoot);
+        LOG.debug("Start watching file events on {}", watchRoot);
     }
 
     public void errorOccurred(File watchRoot, Throwable cause) {
@@ -65,7 +64,7 @@ public class DefaultFileWatcherNotificationHandler implements FileWatcherNotific
 
     private VirtualFile convertToVirtualFile(File root, String subPath, boolean isDir) {
         try {
-            LocalVirtualFileSystem virtualFileSystem = (LocalVirtualFileSystem)virtualFileSystemProvider.getVirtualFileSystem(true);
+            //LocalVirtualFileSystem virtualFileSystem = (LocalVirtualFileSystem)virtualFileSystemProvider.getVirtualFileSystem(true);
             Path vfsPath = Path.of(subPath);
             VirtualFile virtualFile = virtualFileSystem.getRoot().getChild(vfsPath);
             if (virtualFile == null) {

@@ -35,7 +35,6 @@ import org.eclipse.che.api.project.shared.dto.TreeElement;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.vfs.ArchiverFactory;
 import org.eclipse.che.api.vfs.VirtualFile;
-import org.eclipse.che.api.vfs.VirtualFileFilter;
 import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.impl.file.LocalVirtualFileSystem;
 import org.eclipse.che.api.vfs.search.Searcher;
@@ -73,7 +72,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,7 +142,7 @@ public class ProjectServiceTest {
     @Mock
     private HttpJsonResponse       httpJsonResponse;
 
-    private VirtualFileSystem vfs;
+    private LocalVirtualFileSystem vfs;
 
     private ProjectImporterRegistry importerRegistry;
 
@@ -484,6 +482,53 @@ public class ProjectServiceTest {
 
     @Test
     public void testCreateProject() throws Exception {
+
+
+//        DefaultFileWatcherNotificationHandler watchHandler =
+//                new DefaultFileWatcherNotificationHandler((LocalVirtualFileSystem) vfs);
+
+
+//        FileWatcherNotificationListener l2 = new FileWatcherNotificationListener(new VirtualFileFilter() {
+//            @Override
+//            public boolean accept(VirtualFile file) {
+//                if(file.getName().equals("test.txt"))
+//                    return true;
+//                return false;
+//            }
+//        }) {
+//            @Override
+//            public void onFileWatcherEvent(VirtualFile virtualFile, FileWatcherEventType eventType) {
+//                System.out.println("IN ADDITIONAL " + eventType + " " + virtualFile.getPath().toString() + " " + virtualFile.isFile());
+//            }
+//        };
+//
+//
+//        PathMatcher exc = new PathMatcher() {
+//            @Override
+//            public boolean matches(Path path) {
+//
+//                if(path.getFileName().toString().equals("new_project"))
+//                    return true;
+//
+//                return false;
+//            }
+//        };
+//
+//        pm.addWatchExcludeMatcher(exc);
+//        //pm.addWatchListener(l1);
+//        pm.addWatchListener(l2);
+
+//        FileTreeWatcher watcher = new FileTreeWatcher(vfs.getRoot().toIoFile(), new HashSet<>(), watchHandler);
+//        // GLOBALLY EXCLUDED
+//        watcher.addExcludeMatcher(exc);
+//
+//
+//
+//        watcher.startup();
+
+
+
+
         phRegistry.register(new CreateProjectHandler() {
             @Override
             public void onCreateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes, Map<String, String> options)
@@ -563,6 +608,8 @@ public class ProjectServiceTest {
         assertNotNull(project.getBaseFolder().getChild("a"));
         assertNotNull(project.getBaseFolder().getChild("b"));
         assertNotNull(project.getBaseFolder().getChild("test.txt"));
+
+
     }
 
     @Test

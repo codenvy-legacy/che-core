@@ -17,14 +17,12 @@ import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
 import org.eclipse.che.api.project.server.type.BaseProjectType;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
-import org.eclipse.che.api.vfs.VirtualFileSystem;
 import org.eclipse.che.api.vfs.impl.file.LocalVirtualFileSystem;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -50,26 +48,33 @@ public class ProjectManagerReadTest {
 
     private ProjectManager pm;
 
-    @BeforeClass
-    public static void beforeClass() {
-
-        File root = new File(FS_PATH);
-        if (root.exists()) {
-            IoUtil.deleteRecursive(root);
-        }
-        root.mkdir();
-    }
+//    @BeforeClass
+//    public static void beforeClass() {
+//
+//        File root = new File(FS_PATH);
+//        if (root.exists()) {
+//            IoUtil.deleteRecursive(root);
+//        }
+//        root.mkdir();
+//    }
 
     @Before
     public void setUp() throws Exception {
 
         root = new File(FS_PATH);
 
+        if (root.exists()) {
+            IoUtil.deleteRecursive(root);
+        }
+        root.mkdir();
+
+        LocalVirtualFileSystem vfs = new LocalVirtualFileSystem(root, null, null, null);
+
+
         new File(root, "/fromFolder").mkdir();
         new File(root, "/normal").mkdir();
         new File(root, "/normal/module").mkdir();
 
-        VirtualFileSystem vfs = new LocalVirtualFileSystem(root, null, null, null);
 
         List<ProjectConfigDto> modules = new ArrayList<>();
         modules.add(DtoFactory.newDto(ProjectConfigDto.class)
@@ -109,7 +114,7 @@ public class ProjectManagerReadTest {
     @Test
     public void testInitManager() throws Exception {
 
-        //pm.getVfs().getRoot();
+        //pm.getSearcher().addIndexFilter()
 
 
 

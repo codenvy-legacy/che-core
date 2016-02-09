@@ -33,7 +33,12 @@ import org.eclipse.che.api.project.server.type.Variable;
 import org.eclipse.che.api.project.shared.dto.SourceEstimation;
 import org.eclipse.che.api.vfs.Path;
 import org.eclipse.che.api.vfs.VirtualFile;
-import org.eclipse.che.api.vfs.VirtualFileSystem;
+import org.eclipse.che.api.vfs.VirtualFileFilter;
+import org.eclipse.che.api.vfs.impl.file.DefaultFileWatcherNotificationHandler;
+import org.eclipse.che.api.vfs.impl.file.FileTreeWatcher;
+import org.eclipse.che.api.vfs.impl.file.FileWatcherEventType;
+import org.eclipse.che.api.vfs.impl.file.FileWatcherNotificationListener;
+import org.eclipse.che.api.vfs.impl.file.LocalVirtualFileSystem;
 import org.eclipse.che.api.vfs.search.Searcher;
 import org.eclipse.che.api.vfs.search.SearcherProvider;
 import org.slf4j.Logger;
@@ -42,9 +47,11 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -59,7 +66,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 public final class ProjectManager {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectManager.class);
 
-    private final VirtualFileSystem vfs;
+    private final LocalVirtualFileSystem vfs;
 
     private final EventService           eventService;
     private final ProjectTypeRegistry    projectTypeRegistry;
@@ -70,10 +77,14 @@ public final class ProjectManager {
 
     private final ProjectImporterRegistry importers;
 
+    private final FileTreeWatcher fileWatcher;
+    private final DefaultFileWatcherNotificationHandler fileWatchNotifier;
+
+
 
     @Inject
     @SuppressWarnings("unchecked")
-    public ProjectManager(VirtualFileSystem vfs,
+    public ProjectManager(LocalVirtualFileSystem vfs,
                           EventService eventService,
                           ProjectTypeRegistry projectTypeRegistry,
                           ProjectHandlerRegistry handlers,
@@ -81,7 +92,7 @@ public final class ProjectManager {
                           WorkspaceHolder workspaceHolder
                          )
             throws ServerException, NotFoundException, ProjectTypeConstraintException, InvalidValueException,
-                   ValueStorageException {
+                   ValueStorageException, IOException, InterruptedException {
 
         this.vfs = vfs;
         this.eventService = eventService;
@@ -93,8 +104,14 @@ public final class ProjectManager {
 
         this.projects = new HashMap<>();
 
-        initProjects();
 
+        this.fileWatchNotifier = new DefaultFileWatcherNotificationHandler(vfs);
+        this.fileWatcher = new FileTreeWatcher(vfs.getRoot().toIoFile(), new HashSet<>(), fileWatchNotifier);
+
+
+        initWatcher();
+
+        initProjects();
 
     }
 
@@ -114,15 +131,27 @@ public final class ProjectManager {
     public Searcher getSearcher() throws NotFoundException, ServerException {
 
         SearcherProvider provider = vfs.getSearcherProvider();
-        if(provider == null)
+        if (provider == null)
             throw new NotFoundException("SearcherProvider is not defined in VFS");
 
         return provider.getSearcher(vfs);
     }
 
+    public void addWatchListener(FileWatcherNotificationListener listener) {
+        this.fileWatchNotifier.addNotificationListener(listener);
+    }
 
+    public void removeWatchListener(FileWatcherNotificationListener listener) {
+        this.fileWatchNotifier.removeNotificationListener(listener);
+    }
 
+    public void addWatchExcludeMatcher(PathMatcher matcher) {
+        this.fileWatcher.addExcludeMatcher(matcher);
+    }
 
+    public void removeWatchExcludeMatcher(PathMatcher matcher) {
+        this.fileWatcher.removeExcludeMatcher(matcher);
+    }
 
 
     /**
@@ -677,6 +706,17 @@ public final class ProjectManager {
 
         String path = absolutizePath(config.getPath());
         projects.put(path, new ProjectImpl(folder(path), config, updated, this));
+    }
+
+    private void initWatcher() throws IOException {
+        FileWatcherNotificationListener defaultListener = new FileWatcherNotificationListener(VirtualFileFilter.ACCEPT_ALL) {
+            @Override
+            public void onFileWatcherEvent(VirtualFile virtualFile, FileWatcherEventType eventType) {
+                LOG.debug("FS event detected: " + eventType + " " + virtualFile.getPath().toString() + " " + virtualFile.isFile());
+            }
+        };
+        fileWatchNotifier.addNotificationListener(defaultListener);
+        fileWatcher.startup();
     }
 
     private FolderEntry folder(String path) throws ServerException {

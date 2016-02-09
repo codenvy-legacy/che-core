@@ -155,6 +155,14 @@ public class FileTreeWatcher {
         }
     }
 
+    public void addExcludeMatcher(PathMatcher exclude) {
+        this.excludePatterns.add(exclude);
+    }
+
+    public void removeExcludeMatcher(PathMatcher exclude) {
+        this.excludePatterns.remove(exclude);
+    }
+
     private void walkTreeAndSetupWatches(Path root) throws IOException {
         Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
             @Override

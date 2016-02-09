@@ -39,6 +39,7 @@ public class ProjectConfigImpl implements ProjectConfig {
     private Map<String, List<String>> attributes;
     private List<ProjectConfig>       modules;
     private SourceStorageImpl         storage;
+    //private String                    contentRoot;
 
     public ProjectConfigImpl() {
     }
@@ -60,6 +61,8 @@ public class ProjectConfigImpl implements ProjectConfig {
         if (sourceStorage != null) {
             storage = new SourceStorageImpl(sourceStorage.getType(), sourceStorage.getLocation(), sourceStorage.getParameters());
         }
+
+//        contentRoot = projectConfig.getContentRoot();
     }
 
     @Override
@@ -139,6 +142,15 @@ public class ProjectConfigImpl implements ProjectConfig {
         return storage;
     }
 
+//    @Override
+//    public String getContentRoot() {
+//        return contentRoot;
+//    }
+//
+//    public void setContentRoot(String contentRoot) {
+//        this.contentRoot = contentRoot;
+//    }
+
     public void setSource(SourceStorageImpl sourceStorage) {
         this.storage = sourceStorage;
     }
@@ -156,6 +168,7 @@ public class ProjectConfigImpl implements ProjectConfig {
                && getAttributes().equals(other.getAttributes())
                && getModules().equals(other.getModules())
                && Objects.equals(storage, other.getSource());
+               //&& Objects.equals(contentRoot, other.getContentRoot());
     }
 
     @Override
@@ -169,6 +182,7 @@ public class ProjectConfigImpl implements ProjectConfig {
         hash = hash * 31 + getAttributes().hashCode();
         hash = hash * 31 + getModules().hashCode();
         hash = hash * 31 + Objects.hashCode(storage);
+        //hash = hash * 31 + Objects.hashCode(contentRoot);
         return hash;
     }
 
@@ -183,6 +197,7 @@ public class ProjectConfigImpl implements ProjectConfig {
                ", attributes=" + attributes +
                ", modules=" + modules +
                ", storage=" + storage +
+//               ", contentRoot='" + contentRoot + '\'' +
                '}';
     }
 }
