@@ -58,8 +58,7 @@ public class StackComponentImpl implements StackComponent {
             return false;
         }
         StackComponentImpl another = (StackComponentImpl)obj;
-        return Objects.equals(name, another.name) &&
-               Objects.equals(version, another.version);
+        return Objects.equals(name, another.name) && Objects.equals(version, another.version);
     }
 
     @Override
