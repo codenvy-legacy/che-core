@@ -50,7 +50,6 @@ public class UsersWorkspaceImpl extends WorkspaceConfigImpl implements UsersWork
                               String description) {
         super(name, description, defaultEnvironment, commands, projects, environments, attributes);
         this.id = id;
-        this.name = name;
         this.owner = owner;
     }
 
