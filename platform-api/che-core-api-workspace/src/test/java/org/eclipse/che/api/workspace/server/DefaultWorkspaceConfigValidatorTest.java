@@ -14,7 +14,6 @@ import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.model.workspace.WorkspaceConfig;
 import org.eclipse.che.api.machine.shared.dto.MachineConfigDto;
 import org.eclipse.che.api.machine.shared.dto.MachineSourceDto;
-import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigValidatorImpl;
 import org.eclipse.che.api.workspace.shared.dto.EnvironmentDto;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.testng.annotations.BeforeClass;
@@ -28,18 +27,17 @@ import static org.testng.Assert.assertNull;
 import static org.testng.AssertJUnit.assertNotNull;
 
 /**
- * Tests for {@link org.eclipse.che.api.workspace.server.WorkspaceConfigValidator} and {@link WorkspaceConfigValidatorImpl}
+ * Tests for {@link WorkspaceConfigValidator} and {@link DefaultWorkspaceConfigValidator}
  *
  * @author Alexander Reshetnyak
  */
-
-public class WorkspaceConfigValidatorTest {
+public class DefaultWorkspaceConfigValidatorTest {
 
     private WorkspaceConfigValidator wsValidator;
 
     @BeforeClass
     public void prepare() throws Exception {
-        wsValidator = new WorkspaceConfigValidatorImpl();
+        wsValidator = new DefaultWorkspaceConfigValidator();
     }
 
     @Test
@@ -84,72 +82,6 @@ public class WorkspaceConfigValidatorTest {
             exResult = e;
         }
         assertNotNull(exResult);
-    }
-
-    @Test
-    public void shouldNotBeValidationHaveNotDevMachineInConfigButWsNameNullWsNameNotCheck() throws Exception {
-        Exception exResult = null;
-        try {
-            wsValidator.validateWithoutWorkspaceName(createConfig(null, false));
-        } catch (BadRequestException e) {
-            exResult = e;
-        }
-        assertNotNull(exResult);
-    }
-
-    @Test
-    public void shouldBeValidationHaveDevMachineInConfigButWsNameNullWsNameNotCheck() throws Exception {
-        Exception exResult = null;
-        try {
-            wsValidator.validateWithoutWorkspaceName(createConfig(null, true));
-        } catch (BadRequestException e) {
-            exResult = e;
-        }
-        assertNull(exResult);
-    }
-
-    @Test
-    public void shouldNotBeValidationWsNameNull() throws Exception {
-        Exception exResult = null;
-        try {
-            wsValidator.validateWorkspaceName(null);
-        } catch (BadRequestException e) {
-            exResult = e;
-        }
-        assertNotNull(exResult);
-    }
-
-    @Test
-    public void shouldNotBeValidationWsNameShort() throws Exception {
-        Exception exResult = null;
-        try {
-            wsValidator.validateWorkspaceName("ws");
-        } catch (BadRequestException e) {
-            exResult = e;
-        }
-        assertNotNull(exResult);
-    }
-
-    @Test
-    public void shouldNotBeValidationWsNameLong() throws Exception {
-        Exception exResult = null;
-        try {
-            wsValidator.validateWorkspaceName("ws01234567890123456789");
-        } catch (BadRequestException e) {
-            exResult = e;
-        }
-        assertNotNull(exResult);
-    }
-
-    @Test
-    public void shouldBeValidationWsNameValid() throws Exception {
-        Exception exResult = null;
-        try {
-            wsValidator.validateWorkspaceName("dev-workspace1");
-        } catch (BadRequestException e) {
-            exResult = e;
-        }
-        assertNull(exResult);
     }
 
 
