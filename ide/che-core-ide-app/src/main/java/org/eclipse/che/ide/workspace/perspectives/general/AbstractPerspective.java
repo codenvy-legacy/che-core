@@ -110,7 +110,9 @@ public abstract class AbstractPerspective implements Presenter, Perspective, Act
     public void storeState() {
         activePartBeforeChangePerspective = activePart;
 
-        activePartBeforeChangePerspective.storeState();
+        if (activePartBeforeChangePerspective != null) {
+            activePartBeforeChangePerspective.storeState();
+        }
     }
 
     @Override
