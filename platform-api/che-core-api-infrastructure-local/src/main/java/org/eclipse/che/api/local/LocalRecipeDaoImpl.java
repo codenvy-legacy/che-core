@@ -56,8 +56,7 @@ public class LocalRecipeDaoImpl implements RecipeDao {
 
     @Inject
     public LocalRecipeDaoImpl(LocalStorageFactory storageFactory) throws IOException {
-        Map<Class<?>, Object> adapters = ImmutableMap.of                                (Permissions.class, new PermissionsAdapter(),
-                                                         Group.class, new GroupAdapter());
+        Map<Class<?>, Object> adapters = ImmutableMap.of(Permissions.class, new PermissionsAdapter(), Group.class, new GroupAdapter());
         this.recipeStorage = storageFactory.create("recipes.json", adapters);
         this.recipes = new HashMap<>();
         lock = new ReentrantReadWriteLock();
