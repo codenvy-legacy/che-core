@@ -8,24 +8,24 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.util;
+package org.eclipse.che.ide.api.app;
 
 import java.util.Map;
 
 /**
  * Class that contain action id and parsed params form initial URL
+ *
  * @author Vitalii Parfonov
  */
 public class StartUpAction {
 
-    private String actionId;
+    private String              actionId;
     private Map<String, String> parameters;
 
     public StartUpAction(String actionId, Map<String, String> parameters) {
         this.actionId = actionId;
         this.parameters = parameters;
     }
-
 
     public String getActionId() {
         return actionId;
@@ -34,6 +34,4 @@ public class StartUpAction {
     public Map<String, String> getParameters() {
         return parameters;
     }
-
-
 }

@@ -21,16 +21,18 @@ import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.app.CurrentUser;
+import org.eclipse.che.ide.api.app.StartUpAction;
 import org.eclipse.che.ide.api.event.SelectionChangedEvent;
 import org.eclipse.che.ide.api.event.SelectionChangedHandler;
 import org.eclipse.che.ide.api.event.project.CurrentProjectChangedEvent;
 import org.eclipse.che.ide.api.event.project.ProjectUpdatedEvent;
 import org.eclipse.che.ide.api.event.project.ProjectUpdatedEvent.ProjectUpdatedHandler;
+import org.eclipse.che.ide.api.project.ProjectImpl;
 import org.eclipse.che.ide.api.project.node.HasProjectConfig;
 import org.eclipse.che.ide.api.project.node.Node;
 import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.project.WorkspaceProjects;
 import org.eclipse.che.ide.project.node.ProjectNode;
-import org.eclipse.che.ide.util.StartUpAction;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -45,12 +47,14 @@ import java.util.List;
 @Singleton
 public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtServerStateHandler, ProjectUpdatedHandler {
 
+    private final WorkspaceProjects         projectFactory;
     private final EventBus                  eventBus;
     private final BrowserQueryFieldRenderer browserQueryFieldRenderer;
     private final List<String>              projectsInImport;
 
     private UsersWorkspaceDto   workspace;
     private CurrentProject      currentProject;
+    private ProjectImpl         activeProject;
     private CurrentUser         currentUser;
     private Factory             factory;
     private String              devMachineId;
@@ -63,7 +67,8 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
     private List<StartUpAction> startAppActions;
 
     @Inject
-    public AppContextImpl(EventBus eventBus, BrowserQueryFieldRenderer browserQueryFieldRenderer) {
+    public AppContextImpl(WorkspaceProjects projectFactory, EventBus eventBus, BrowserQueryFieldRenderer browserQueryFieldRenderer) {
+        this.projectFactory = projectFactory;
         this.eventBus = eventBus;
         this.browserQueryFieldRenderer = browserQueryFieldRenderer;
 
@@ -84,11 +89,6 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
         }
 
         return getRootConfig(parent);
-    }
-
-    @Override
-    public List<StartUpAction> getStartAppActions() {
-        return startAppActions;
     }
 
     @Override
@@ -115,6 +115,24 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
         return currentProject;
     }
 
+    /**
+     * TODO experimental
+     *
+     * @return
+     */
+    public ProjectImpl getActiveProject() {
+        return activeProject;
+    }
+
+    /**
+     * * TODO experimental
+     * * @param configDto
+     */
+    public void setActiveProject(String projectName) {
+        //this.activeProject = projectFactory.createProject(configDto);
+        this.activeProject = projectFactory.getProject(projectName);
+    }
+
     @Override
     public CurrentUser getCurrentUser() {
         return currentUser;
@@ -138,6 +156,11 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
     @Override
     public void removeProjectFromImporting(String pathToProject) {
         projectsInImport.remove(pathToProject);
+    }
+
+    @Override
+    public List<StartUpAction> getStartAppActions() {
+        return startAppActions;
     }
 
     @Override
@@ -201,6 +224,10 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
             final HasProjectConfig hasProjectConfig = (HasProjectConfig)headElement;
             final ProjectConfigDto module = (hasProjectConfig).getProjectConfig();
             currentProject.setProjectConfig(module);
+
+            // TODO experimental
+            setActiveProject(module.getName());
+
             eventBus.fireEvent(new CurrentProjectChangedEvent(module));
         }
 
@@ -216,6 +243,7 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
 
     @Override
     public void onExtServerStarted(ExtServerStateEvent event) {
+        projectFactory.init(workspace.getProjects());
     }
 
     @Override
@@ -231,6 +259,10 @@ public class AppContextImpl implements AppContext, SelectionChangedHandler, ExtS
 
         if (updatedProjectDescriptorPath.equals(currentProject.getProjectConfig().getPath())) {
             currentProject.setProjectConfig(updatedProjectDescriptor);
+
+            // TODO experimental
+            setActiveProject(updatedProjectDescriptor.getName());
+
             eventBus.fireEvent(new CurrentProjectChangedEvent(updatedProjectDescriptor));
         }
 

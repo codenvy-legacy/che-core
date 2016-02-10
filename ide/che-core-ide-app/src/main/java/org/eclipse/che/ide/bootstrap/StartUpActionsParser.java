@@ -8,10 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.util;
+package org.eclipse.che.ide.bootstrap;
 
 import com.google.gwt.user.client.Window;
 
+import org.eclipse.che.ide.api.app.StartUpAction;
 import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.ArrayList;
@@ -22,12 +23,12 @@ import java.util.Map;
 /**
  * Utility class that parse IDE URL and get start up parameters form it according specific rules.
  * URL for parsing comes from {@link Window.Location}.
- *
+ * <p/>
  * For example:
  * after parsing URL like it http://localhost:8080/ide/dev6?action=createProject:projectName=test;projectType=maven
  * we will get list with one action {@link StartUpAction} with ID 'createProject' and two parameters
- *   'projectName' :: 'test'
- *   'projectType' :: 'maven'
+ * 'projectName' :: 'test'
+ * 'projectType' :: 'maven'
  *
  * @author Vitalii Parfonov
  */
@@ -57,8 +58,7 @@ public class StartUpActionsParser {
         } else {
             return new StartUpAction(action, null);
         }
-}
-
+    }
 
     protected static Map<String, String> parseActionParameters(String actionParam) {
         Log.info(StartUpActionsParser.class, " parametersMap " + actionParam);

@@ -29,13 +29,17 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.model.workspace.UsersWorkspace;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerStateEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerReadyEvent;
+import org.eclipse.che.api.machine.gwt.client.events.ExtServerReadyHandler;
 import org.eclipse.che.ide.api.ProductInfoDataProvider;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.component.Component;
+import org.eclipse.che.ide.api.component.WorkspaceAgentComponent;
 import org.eclipse.che.ide.api.event.WindowActionEvent;
-import org.eclipse.che.ide.core.Component;
+import org.eclipse.che.ide.bootstrap.StartUpActionsParser;
 import org.eclipse.che.ide.logger.AnalyticsEventLoggerExt;
 import org.eclipse.che.ide.statepersistance.AppStateManager;
-import org.eclipse.che.ide.util.StartUpActionsParser;
 import org.eclipse.che.ide.util.loging.Log;
 import org.eclipse.che.ide.workspace.WorkspacePresenter;
 
@@ -77,30 +81,42 @@ public class BootstrapController {
         this.appStateManagerProvider = appStateManagerProvider;
         this.appContext = appContext;
 
+        appContext.setStartUpActions(StartUpActionsParser.getStartUpActions());
         dtoRegistrar.registerDtoProviders();
     }
 
     @Inject
-    void startComponents(final Map<String, Provider<Component>> components) {
-        processStartupActionUrl();
+    private void startComponents(Map<String, Provider<Component>> components) {
         startComponents(components.values().iterator());
+    }
+
+    @Inject
+    private void startWsAgentComponents(EventBus eventBus, final Map<String, Provider<WorkspaceAgentComponent>> components) {
+        eventBus.addHandler(ExtServerReadyEvent.TYPE, new ExtServerReadyHandler() {
+            @Override
+            public void onExtServerReady(ExtServerReadyEvent event) {
+                startWsAgentComponents(components.values().iterator());
+            }
+        });
     }
 
     private void startComponents(final Iterator<Provider<Component>> componentProviderIterator) {
         if (componentProviderIterator.hasNext()) {
             Provider<Component> componentProvider = componentProviderIterator.next();
 
-            componentProvider.get().start(new Callback<Component, Exception>() {
+            final Component component = componentProvider.get();
+            Log.info(component.getClass(), "starting...");
+            component.start(new Callback<Component, Exception>() {
                 @Override
                 public void onSuccess(Component result) {
-                    Log.info(getClass(), result.getClass());
+                    Log.info(result.getClass(), "started");
                     startComponents(componentProviderIterator);
-                    Log.info(getClass(), "components started");
                 }
 
                 @Override
                 public void onFailure(Exception reason) {
-                    componentStartFail(reason);
+                    Log.error(component.getClass(), reason);
+                    initializationFailed(reason.getMessage());
                 }
             });
         } else {
@@ -108,9 +124,28 @@ public class BootstrapController {
         }
     }
 
-    private void componentStartFail(Exception reason) {
-        Log.error(BootstrapController.class, reason);
-        initializationFailed(reason.getMessage());
+    private void startWsAgentComponents(final Iterator<Provider<WorkspaceAgentComponent>> componentProviderIterator) {
+        if (componentProviderIterator.hasNext()) {
+            Provider<WorkspaceAgentComponent> componentProvider = componentProviderIterator.next();
+
+            final WorkspaceAgentComponent component = componentProvider.get();
+            Log.info(component.getClass(), "starting...");
+            component.start(new Callback<WorkspaceAgentComponent, Exception>() {
+                @Override
+                public void onSuccess(WorkspaceAgentComponent result) {
+                    Log.info(result.getClass(), "started");
+                    startWsAgentComponents(componentProviderIterator);
+                }
+
+                @Override
+                public void onFailure(Exception reason) {
+                    Log.error(component.getClass(), reason);
+                    initializationFailed(reason.getMessage());
+                }
+            });
+        } else {
+            eventBus.fireEvent(ExtServerStateEvent.createExtServerStartedEvent());
+        }
     }
 
     /** Start extensions */
@@ -222,11 +257,6 @@ public class BootstrapController {
         }
     }
 
-
-    private void processStartupActionUrl(){
-        appContext.setStartUpActions(StartUpActionsParser.getStartUpActions());
-    }
-
     /**
      * Handles any of initialization errors.
      * Tries to call predefined IDE.eventHandlers.ideInitializationFailed function.
@@ -241,5 +271,4 @@ public class BootstrapController {
             console.log(e.message);
         }
     }-*/;
-
 }

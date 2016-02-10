@@ -20,8 +20,9 @@ import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.PromiseError;
 import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.component.WorkspaceAgentComponent;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
-import org.eclipse.che.ide.core.Component;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ import java.util.List;
  * @author Artem Zatsarynnyi
  */
 @Singleton
-public class ProjectTypeComponent implements Component {
+public class ProjectTypeComponent implements WorkspaceAgentComponent {
 
     private final ProjectTypeServiceClient projectTypeService;
     private final ProjectTypeRegistry      projectTypeRegistry;
@@ -46,11 +47,13 @@ public class ProjectTypeComponent implements Component {
     }
 
     @Override
-    public void start(final Callback<Component, Exception> callback) {
+    public void start(final Callback<WorkspaceAgentComponent, Exception> callback) {
         projectTypeService.getProjectTypes(appContext.getWorkspace().getId()).then(new Operation<List<ProjectTypeDto>>() {
             @Override
             public void apply(List<ProjectTypeDto> arg) throws OperationException {
-                projectTypeRegistry.registerAll(arg);
+                for (ProjectTypeDto projectTypeDto : arg) {
+                    projectTypeRegistry.register(new ProjectTypeImpl(projectTypeDto));
+                }
                 callback.onSuccess(ProjectTypeComponent.this);
             }
         }).catchError(new Operation<PromiseError>() {

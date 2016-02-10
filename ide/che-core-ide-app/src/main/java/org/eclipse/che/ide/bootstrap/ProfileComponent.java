@@ -13,7 +13,7 @@ package org.eclipse.che.ide.bootstrap;
 import org.eclipse.che.api.user.gwt.client.UserProfileServiceClient;
 import org.eclipse.che.api.user.shared.dto.ProfileDescriptor;
 import org.eclipse.che.ide.api.app.CurrentUser;
-import org.eclipse.che.ide.core.Component;
+import org.eclipse.che.ide.api.component.Component;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.util.loging.Log;

@@ -15,7 +15,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.LinkElement;
 import com.google.inject.Singleton;
-import org.eclipse.che.ide.core.Component;
+
+import org.eclipse.che.ide.api.component.Component;
 
 /**
  * Font awesome style injector component.

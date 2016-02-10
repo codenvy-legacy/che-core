@@ -8,27 +8,25 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.project.shared.dto;
+package org.eclipse.che.api.machine.gwt.client.events;
 
-
-import org.eclipse.che.api.core.model.project.type.Value;
-import org.eclipse.che.dto.shared.DTO;
-
-import java.util.List;
+import com.google.gwt.event.shared.GwtEvent;
 
 /**
- * Data transfer object (DTO) for Value
- *
- * @author gazarenkov
+ * @author Artem Zatsarynnyi
  */
-@DTO
-public interface ValueDto extends Value {
+public class ExtServerReadyEvent extends GwtEvent<ExtServerReadyHandler> {
+
+    /** Type class used to register this event. */
+    public static Type<ExtServerReadyHandler> TYPE = new Type<>();
 
     @Override
-    String getString();
+    public Type<ExtServerReadyHandler> getAssociatedType() {
+        return TYPE;
+    }
 
     @Override
-    List<String> getList();
-
-    ValueDto withList(List<String> list);
+    protected void dispatch(ExtServerReadyHandler handler) {
+        handler.onExtServerReady(this);
+    }
 }

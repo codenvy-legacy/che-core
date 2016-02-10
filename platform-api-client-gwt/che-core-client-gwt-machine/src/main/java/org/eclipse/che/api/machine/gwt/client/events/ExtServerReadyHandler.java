@@ -8,30 +8,16 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.project;
+package org.eclipse.che.api.machine.gwt.client.events;
 
-import java.util.Map;
+import com.google.gwt.event.shared.EventHandler;
 
 /**
- * Descriptor of  project sources' remote storage
- * For instance Git repository location
+ * A handler for handling {@link ExtServerReadyEvent}.
  *
- * @author gazarenkov
+ * @author Artem Zatsarynnyi
  */
-public interface SourceStorage {
+public interface ExtServerReadyHandler extends EventHandler {
 
-    /**
-     * @return Type of storage, for example "git"
-     */
-    String getType();
-
-    /**
-     * @return Location, for example git repository URL
-     */
-    String getLocation();
-
-    /**
-     * @return optional parameters
-     */
-    Map<String, String> getParameters();
+    void onExtServerReady(ExtServerReadyEvent event);
 }

@@ -16,10 +16,10 @@ import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.shared.dto.ItemReference;
 import org.eclipse.che.api.project.shared.dto.ProjectTemplateDescriptor;
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.SourceStorageDto;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardMode;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
 import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistry;
@@ -61,7 +61,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     private final ProjectWizardFactory               projectWizardFactory;
     private final ProjectWizardRegistry              wizardRegistry;
     private final Provider<CategoriesPagePresenter>  categoriesPageProvider;
-    private final Map<ProjectTypeDto, ProjectWizard> wizardsCache;
+    private final Map<ProjectTypeImpl, ProjectWizard> wizardsCache;
     private       CategoriesPagePresenter            categoriesPage;
     private       ProjectWizard                      wizard;
     private       ProjectWizard                      importWizard;
@@ -186,7 +186,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     @Override
-    public void onProjectTypeSelected(ProjectTypeDto projectType) {
+    public void onProjectTypeSelected(ProjectTypeImpl projectType) {
         final ProjectConfigDto prevData = wizard.getDataObject();
         wizard = getWizardForProjectType(projectType, prevData);
         wizard.navigateToFirst();
@@ -202,7 +202,6 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
 
         // set dataObject's values from projectType
         newProject.setType(projectType.getId());
-//        newProject.setRecipe(projectType.getDefaultRecipe());
     }
 
     @Override
@@ -222,7 +221,7 @@ public class ProjectWizardPresenter implements Wizard.UpdateDelegate,
     }
 
     /** Creates or returns project wizard for the specified projectType with the given dataObject. */
-    private ProjectWizard getWizardForProjectType(@NotNull ProjectTypeDto projectType, @NotNull ProjectConfigDto configDto) {
+    private ProjectWizard getWizardForProjectType(@NotNull ProjectTypeImpl projectType, @NotNull ProjectConfigDto configDto) {
         if (wizardsCache.containsKey(projectType)) {
             return wizardsCache.get(projectType);
         }

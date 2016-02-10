@@ -31,14 +31,13 @@ import org.eclipse.che.vfs.impl.fs.LocalPathResolver;
 import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 
 import javax.inject.Singleton;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.eclipse.che.api.git.GitProjectType.VCS_PROVIDER_NAME;
 import static org.eclipse.che.api.git.GitProjectType.GIT_CURRENT_BRANCH_NAME;
 import static org.eclipse.che.api.git.GitProjectType.GIT_REPOSITORY_REMOTES;
+import static org.eclipse.che.api.git.GitProjectType.VCS_PROVIDER_NAME;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
@@ -54,7 +53,6 @@ public class GitValueProviderFactory implements ValueProviderFactory {
     @Inject
     private LocalPathResolver         localPathResolver;
 
-
     @Override
     public ValueProvider newInstance(final FolderEntry folder) {
         return new ValueProvider() {
@@ -64,8 +62,9 @@ public class GitValueProviderFactory implements ValueProviderFactory {
                              gitConnectionFactory.getConnection(resolveLocalPathByPath(folder.getPath(), folder.getWorkspace()))) {
                     //check whether the folder belongs to git repository
                     if (!gitConnection.isInsideWorkTree()) {
-                        return Collections.EMPTY_LIST;
+                        throw new ValueStorageException("Not a Git repository");
                     }
+
                     switch (attributeName) {
                         case VCS_PROVIDER_NAME:
                             return Collections.singletonList("git");
@@ -75,7 +74,7 @@ public class GitValueProviderFactory implements ValueProviderFactory {
                             return gitConnection.remoteList(newDto(RemoteListRequest.class)).stream().map(Remote::getUrl)
                                                 .collect(Collectors.toList());
                         default:
-                            return Collections.EMPTY_LIST;
+                            return Collections.emptyList();
                     }
                 } catch (ApiException e) {
                     throw new ValueStorageException(e.getMessage());

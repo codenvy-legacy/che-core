@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.ide.projecttype;
 
-import org.eclipse.che.api.project.shared.dto.ProjectTypeDto;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.project.type.ProjectTypeImpl;
 import org.eclipse.che.ide.api.project.type.ProjectTypeRegistry;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Vitaly Parfonov
@@ -24,40 +24,30 @@ import java.util.List;
  */
 public class ProjectTypeRegistryImpl implements ProjectTypeRegistry {
 
-    private final List<ProjectTypeDto> types;
+    private final Set<ProjectTypeImpl> types;
 
     public ProjectTypeRegistryImpl() {
-        this.types = new ArrayList<>();
+        this.types = new HashSet<>();
     }
 
     @Nullable
     @Override
-    public ProjectTypeDto getProjectType(@NotNull String id) {
-        if (types.isEmpty()) {
-            return null;
-        }
-
-        for (ProjectTypeDto type : types) {
+    public ProjectTypeImpl getProjectType(@NotNull String id) {
+        for (ProjectTypeImpl type : types) {
             if (id.equals(type.getId())) {
                 return type;
             }
         }
-
         return null;
     }
 
     @Override
-    public List<ProjectTypeDto> getProjectTypes() {
+    public Set<ProjectTypeImpl> getProjectTypes() {
         return types;
     }
 
     @Override
-    public void register(ProjectTypeDto projectType) {
+    public void register(ProjectTypeImpl projectType) {
         types.add(projectType);
-    }
-
-    @Override
-    public void registerAll(List<ProjectTypeDto> projectTypesList) {
-        types.addAll(projectTypesList);
     }
 }
