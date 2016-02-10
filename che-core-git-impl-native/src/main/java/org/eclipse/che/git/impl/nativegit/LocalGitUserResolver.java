@@ -46,7 +46,7 @@ public class LocalGitUserResolver implements GitUserResolver {
     @Override
     public GitUser getUser() {
         final User user = EnvironmentContext.getCurrent().getUser();
-        GitUser gitUser = newDto(GitUser.class).withName("Anonymous").withEmail("anonymous@noemail.com");
+        GitUser gitUser = newDto(GitUser.class);
         if (!user.isTemporary()) {
             String name = null;
             String email = null;
@@ -64,6 +64,8 @@ public class LocalGitUserResolver implements GitUserResolver {
             if (!isNullOrEmpty(email)) {
                 gitUser.setEmail(email);
             }
+        } else {
+            gitUser = gitUser.withName("Anonymous").withEmail("anonymous@noemail.com");
         }
         return gitUser;
     }

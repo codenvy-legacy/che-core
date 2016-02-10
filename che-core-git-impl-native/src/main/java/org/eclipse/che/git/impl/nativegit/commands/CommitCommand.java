@@ -51,6 +51,12 @@ public class CommitCommand extends GitCommand<Void> {
         if (message == null) {
             throw new GitException("Message wasn't set.");
         }
+        if (committer == null) {
+            throw new GitException("Committer can't be null");
+        }
+        if (committer.getName() == null || committer.getEmail() == null) {
+            throw new GitException("Git user name and (or) email wasn't set.");
+        }
         reset();
         commandLine.add("commit");
         if (amend) {
@@ -75,12 +81,8 @@ public class CommitCommand extends GitCommand<Void> {
             commandLine.add("-m", message);
         }
 
-        if (committer != null) {
-            setCommandEnvironment("GIT_COMMITTER_NAME", committer.getName());
-            setCommandEnvironment("GIT_COMMITTER_EMAIL", committer.getEmail());
-        } else {
-            throw new GitException("Committer can't be null");
-        }
+        setCommandEnvironment("GIT_COMMITTER_NAME", committer.getName());
+        setCommandEnvironment("GIT_COMMITTER_EMAIL", committer.getEmail());
 
         String name;
         String email;

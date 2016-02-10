@@ -192,7 +192,7 @@ public class GitService {
     public Revision commit(CommitRequest request) throws ApiException {
         try (GitConnection gitConnection = getGitConnection()) {
             Revision revision = gitConnection.commit(request);
-            if (revision.isFake()) {
+            if (revision.isFake() &! "Git user name and (or) email wasn't set.".equals(revision.getMessage())) {
                 Status status = status(StatusFormat.LONG);
 
                 try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {

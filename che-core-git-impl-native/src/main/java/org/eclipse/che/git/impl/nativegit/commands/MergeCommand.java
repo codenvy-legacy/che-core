@@ -43,6 +43,12 @@ public class MergeCommand extends GitCommand<MergeResult> {
         if (commit == null) {
             throw new GitException("Commit wasn't set.");
         }
+        if (committer == null) {
+            throw new GitException("Committer can't be null");
+        }
+        if (committer.getName() == null || committer.getEmail() == null) {
+            throw new GitException("Git user name and (or) email wasn't set.");
+        }
         reset();
         commandLine.add("merge", commit);
         //result of merging
@@ -53,12 +59,8 @@ public class MergeCommand extends GitCommand<MergeResult> {
         mergedCommits.add(new LogCommand(getRepository()).setBranch(commit).setCount(1).execute().get(0).getId());
         mergeResult.setMergedCommits(mergedCommits);
 
-        if (committer != null) {
-            setCommandEnvironment("GIT_COMMITTER_NAME", committer.getName());
-            setCommandEnvironment("GIT_COMMITTER_EMAIL", committer.getEmail());
-        } else {
-            throw new GitException("Committer can't be null");
-        }
+        setCommandEnvironment("GIT_COMMITTER_NAME", committer.getName());
+        setCommandEnvironment("GIT_COMMITTER_EMAIL", committer.getEmail());
 
         try {
             start();

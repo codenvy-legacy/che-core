@@ -42,6 +42,12 @@ public class TagCreateCommand extends GitCommand<Tag> {
         if (name == null) {
             throw new GitException("Name wasn't set.");
         }
+        if (committer == null) {
+            throw new GitException("Committer can't be null");
+        }
+        if (committer.getName() == null || committer.getEmail() == null) {
+            throw new GitException("Git user name and (or) email wasn't set.");
+        }
         reset();
         commandLine.add("tag", name);
         if (commit != null) {
@@ -54,12 +60,8 @@ public class TagCreateCommand extends GitCommand<Tag> {
             commandLine.add("--force");
         }
 
-        if (committer != null) {
-            setCommandEnvironment("GIT_COMMITTER_NAME", committer.getName());
-            setCommandEnvironment("GIT_COMMITTER_EMAIL", committer.getEmail());
-        } else {
-            throw new GitException("Committer can't be null");
-        }
+        setCommandEnvironment("GIT_COMMITTER_NAME", committer.getName());
+        setCommandEnvironment("GIT_COMMITTER_EMAIL", committer.getEmail());
 
         start();
         return DtoFactory.getInstance().createDto(Tag.class).withName(name);
