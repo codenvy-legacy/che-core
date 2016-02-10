@@ -12,17 +12,17 @@ package org.eclipse.che.api.workspace.server.model.impl.stack;
 
 /**
  * Defines the interface that describes the stack component. It is a part of the {@link Stack}.
- * 
+ *
  * @author Alexander Andrienko
  */
 public interface StackComponent {
-    
+
     /**
      * Returns the name of the component.
      * The name is unique per stack. (e.g. "jdk").
      */
     String getName();
-    
+
     /**
      * Returns the version of the component. (e.g. "1.8")
      */

@@ -23,7 +23,7 @@ import org.eclipse.che.api.machine.server.model.impl.MachineConfigImpl;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize MachineConfig objects
+ * Type adapter for {@link MachineConfig} objects
  *
  * @author Alexander Andrienko
  */

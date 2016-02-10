@@ -293,24 +293,6 @@ public class RecipeServiceTest {
     }
 
     @Test
-    public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveReadAccessToRecipe() throws Exception {
-        final ManagedRecipe recipe = new RecipeImpl().withCreator("someone2")
-                                                     .withId("recipe123")
-                                                     .withScript("FROM ubuntu\n");
-        when(recipeDao.getById(recipe.getId())).thenReturn(recipe);
-        when(permissionsChecker.hasAccess(recipe, USER_ID, "read")).thenReturn(false);
-
-        final Response response = given().auth()
-                                         .basic(ADMIN_USER_NAME, ADMIN_USER_PASSWORD)
-                                         .when()
-                                         .get(SECURE_PATH + "/recipe/" + recipe.getId());
-
-        assertEquals(response.getStatusCode(), 403);
-        final String expMessage = format("User %s doesn't have access to recipe %s", USER_ID, recipe.getId());
-        assertEquals(unwrapDto(response, ServiceError.class).getMessage(), expMessage);
-    }
-
-    @Test
     public void shouldBeAbleToGetCreatedRecipes() throws Exception {
         final ManagedRecipe recipe1 = new RecipeImpl().withId("id1")
                                                       .withCreator(USER_ID)
@@ -456,7 +438,7 @@ public class RecipeServiceTest {
     @Test
     public void shouldThrowForbiddenExceptionWhenUserDoesNotHaveAccessToUpdateRecipe() throws Exception {
         final ManagedRecipe recipe = new RecipeImpl().withId("id")
-                                                     .withCreator("outsider_user")
+                                                     .withCreator("some_foreign_user")
                                                      .withType("docker")
                                                      .withScript("script1 content")
                                                      .withTags(asList("java"));

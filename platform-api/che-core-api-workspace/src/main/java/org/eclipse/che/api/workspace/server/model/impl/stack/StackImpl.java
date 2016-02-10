@@ -84,9 +84,10 @@ public class StackImpl implements Stack {
         this.permissions = permissions;
         this.stackIcon = stackIcon;
         this.components = components == null ? new ArrayList<>() : components.stream()
-                                                                       .map(component -> new StackComponentImpl(component.getName(),
-                                                                                                                component.getVersion()))
-                                                                       .collect(toList());
+                                                                             .map(component -> new StackComponentImpl(component.getName(),
+                                                                                                                      component
+                                                                                                                              .getVersion()))
+                                                                             .collect(toList());
 
         if (source == null && workspaceConfig == null) {
             throw new IllegalArgumentException("Require non-null source: 'workspaceConfig' or 'stackSource'");
@@ -189,11 +190,11 @@ public class StackImpl implements Stack {
     public Permissions getPermissions() {
         return permissions;
     }
-    
+
     public StackIcon getStackIcon() {
         return stackIcon;
     }
-    
+
     public void setStackIcon(StackIcon stackIcon) {
         this.stackIcon = stackIcon;
     }
@@ -321,7 +322,7 @@ public class StackImpl implements Stack {
             this.permissions = permissions;
             return this;
         }
-        
+
         public StackBuilder setStackIcon(StackIcon stackIcon) {
             this.stackIcon = stackIcon;
             return this;

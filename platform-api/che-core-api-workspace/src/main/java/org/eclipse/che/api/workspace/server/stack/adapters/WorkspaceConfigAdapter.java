@@ -24,7 +24,7 @@ import org.eclipse.che.api.workspace.server.model.impl.WorkspaceConfigImpl;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize WorkspaceConfig objects
+ * Type adapter for {@link WorkspaceConfig} objects
  *
  * @author Alexander Andrienko
  */

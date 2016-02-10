@@ -13,29 +13,32 @@ package org.eclipse.che.api.workspace.server.stack.adapters;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-import org.eclipse.che.api.workspace.server.model.impl.stack.StackComponent;
-import org.eclipse.che.api.workspace.server.model.impl.stack.StackComponentImpl;
+import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
 
 import java.lang.reflect.Type;
 
 /**
- * Type adapter for {@link StackComponent} objects
+ * Type adapter for {@link StackIcon} objects.
  *
  * @author Alexander Andrienko
  */
-public class StackComponentAdapter implements JsonSerializer<StackComponent>, JsonDeserializer<StackComponent> {
+public class StackIconAdapter implements JsonSerializer, JsonDeserializer {
 
     @Override
-    public StackComponent deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        return context.deserialize(json, StackComponentImpl.class);
+    public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        JsonObject stackIconObj = json.getAsJsonObject();
+        return new StackIcon(stackIconObj.get("name") == null ? null : stackIconObj.get("name").getAsString(),
+                             stackIconObj.get("mediaType") == null ? null : stackIconObj.get("mediaType").getAsString(),
+                             null);
     }
 
     @Override
-    public JsonElement serialize(StackComponent src, Type typeOfSrc, JsonSerializationContext context) {
-        return context.serialize(src, StackComponentImpl.class);
+    public JsonElement serialize(Object src, Type typeOfSrc, JsonSerializationContext context) {
+        return context.serialize(src, StackIcon.class);
     }
 }

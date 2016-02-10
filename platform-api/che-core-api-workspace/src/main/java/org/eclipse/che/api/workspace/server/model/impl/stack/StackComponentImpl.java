@@ -71,6 +71,9 @@ public class StackComponentImpl implements StackComponent {
 
     @Override
     public String toString() {
-        return "name='" + name + "', version='" + version + "'";
+        return "StackComponentImpl{" +
+               "name='" + name + '\'' +
+               ", version='" + version + '\'' +
+               '}';
     }
 }

@@ -23,7 +23,7 @@ import org.eclipse.che.api.workspace.server.model.impl.stack.StackSourceImpl;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize StackSource objects
+ * Type adapter for {@link StackSource} objects
  *
  * @author Alexander Andrienko
  */

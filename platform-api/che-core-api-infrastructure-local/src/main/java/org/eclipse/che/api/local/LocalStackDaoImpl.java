@@ -97,7 +97,7 @@ public class LocalStackDaoImpl implements StackDao {
     public void start() {
         Map<String, StackImpl> stackMap = stackStorage.loadMap(new TypeToken<Map<String, StackImpl>>() {});
         for (StackImpl stack : stackMap.values()) {
-            StackLoader.setIcon(stack, iconFolderPath);
+            StackLoader.setIconData(stack, iconFolderPath);
         }
         stacks.putAll(stackMap);
     }

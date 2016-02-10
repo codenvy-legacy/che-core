@@ -38,6 +38,7 @@ import org.eclipse.che.api.workspace.server.stack.adapters.LimitsAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.MachineSourceAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.ProjectConfigAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.StackComponentAdapter;
+import org.eclipse.che.api.workspace.server.stack.adapters.StackIconAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.StackSourceAdapter;
 import org.eclipse.che.api.workspace.server.stack.adapters.WorkspaceConfigAdapter;
 import org.eclipse.che.api.workspace.server.stack.image.StackIcon;
@@ -68,17 +69,18 @@ public class StackGsonFactory {
                                 .registerTypeAdapter(StackSource.class, new StackSourceAdapter())
                                 .registerTypeAdapter(Permissions.class, new PermissionsAdapter())
                                 .registerTypeAdapter(Group.class, new GroupAdapter())
-                                .setExclusionStrategies(new ExclusionStrategy() {
-                                    @Override
-                                    public boolean shouldSkipField(FieldAttributes field) {
-                                        return StackIcon.class.equals(field.getDeclaringClass()) && "data".equals(field.getName());
-                                    }
-
-                                    @Override
-                                    public boolean shouldSkipClass(Class<?> clazz) {
-                                        return false;
-                                    }
-                                })
+                                .registerTypeAdapter(StackIcon.class, new StackIconAdapter())
+//                                .setExclusionStrategies(new ExclusionStrategy() {
+//                                    @Override
+//                                    public boolean shouldSkipField(FieldAttributes field) {
+//                                        return StackIcon.class.equals(field.getDeclaringClass()) && "data".equals(field.getName());
+//                                    }
+//
+//                                    @Override
+//                                    public boolean shouldSkipClass(Class<?> clazz) {
+//                                        return false;
+//                                    }
+//                                })
                                 .setPrettyPrinting()
                                 .create();
     }

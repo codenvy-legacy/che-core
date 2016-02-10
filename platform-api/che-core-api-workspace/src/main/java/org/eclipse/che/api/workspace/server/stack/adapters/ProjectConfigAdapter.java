@@ -23,7 +23,7 @@ import org.eclipse.che.api.workspace.server.model.impl.ProjectConfigImpl;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize ProjectConfig objects
+ * Type adapter for {@link ProjectConfig} objects
  *
  * @author Alexander Andrienko
  */

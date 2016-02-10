@@ -23,7 +23,7 @@ import org.eclipse.che.api.workspace.server.model.impl.EnvironmentStateImpl;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize EnvironmentState objects
+ * Type adapter for {@link EnvironmentState} objects
  *
  * @author Alexander Andrienko
  */

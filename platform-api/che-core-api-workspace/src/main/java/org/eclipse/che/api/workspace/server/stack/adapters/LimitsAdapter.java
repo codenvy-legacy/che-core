@@ -22,7 +22,7 @@ import org.eclipse.che.api.core.model.machine.Limits;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize Limits objects
+ * Type adapter for {@link Limits} objects
  *
  * @author Alexander Andrienko
  */

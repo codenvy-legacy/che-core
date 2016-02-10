@@ -47,6 +47,7 @@ import org.everrest.core.impl.uri.UriBuilderImpl;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -229,6 +230,12 @@ public class StackServiceTest {
         uriField.set(service, uriInfo);
     }
 
+    @AfterMethod
+    public void cleanUp() {
+        ROLES.remove("system/admin");
+        ROLES.remove("system/manager");
+    }
+
     /** Create */
 
     @Test
@@ -304,8 +311,6 @@ public class StackServiceTest {
         stackDto.setPermissions(permissionsDescriptor);
 
         stackShouldBeCreated();
-
-        ROLES.remove("system/admin");
     }
 
     @Test
@@ -315,8 +320,6 @@ public class StackServiceTest {
         stackDto.setPermissions(permissionsDescriptor);
 
         stackShouldBeCreated();
-
-        ROLES.remove("system/manager");
     }
 
     private void stackShouldBeCreated() throws ConflictException, ServerException {
@@ -440,7 +443,6 @@ public class StackServiceTest {
         when(checker.hasAccess(any(StackImpl.class), eq("not this admin"), eq("read"))).thenReturn(true);
 
         sendRequestAndGetForeignStackById();
-        ROLES.remove("system/admin");
     }
 
     @Test
@@ -450,7 +452,6 @@ public class StackServiceTest {
         when(checker.hasAccess(any(StackImpl.class), eq("not this admin"), eq("read"))).thenReturn(false);
 
         sendRequestAndGetForeignStackById();
-        ROLES.remove("system/admin");
     }
 
     @Test
@@ -461,7 +462,6 @@ public class StackServiceTest {
         when(stackDao.getById(anyString())).thenReturn(foreignStack);
 
         sendRequestAndGetForeignStackById();
-        ROLES.remove("system/manager");
     }
 
     @Test
@@ -471,7 +471,6 @@ public class StackServiceTest {
         when(checker.hasAccess(any(StackImpl.class), eq("not this manager"), eq("read"))).thenReturn(false);
 
         sendRequestAndGetForeignStackById();
-        ROLES.remove("system/manager");
     }
 
     private void sendRequestAndGetForeignStackById() throws NotFoundException, ServerException {

@@ -22,7 +22,7 @@ import org.eclipse.che.api.core.model.machine.MachineSource;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize MachineSource objects
+ * Type adapter for {@link MachineSource} objects
  *
  * @author Alexander Andrienko
  */

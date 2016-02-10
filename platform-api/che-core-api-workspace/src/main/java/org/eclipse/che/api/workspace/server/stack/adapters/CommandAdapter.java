@@ -23,7 +23,7 @@ import org.eclipse.che.api.machine.server.model.impl.CommandImpl;
 import java.lang.reflect.Type;
 
 /**
- * Custom implementation of deserialize Command objects
+ * Type adapter for {@link Command} objects
  *
  * @author Alexander Andrienko
  */

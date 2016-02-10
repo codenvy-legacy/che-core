@@ -18,7 +18,7 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface StackComponentDto extends StackComponent {
-    
+
     void setName(String name);
 
     StackComponentDto withName(String name);

@@ -46,10 +46,10 @@ import static java.lang.String.format;
 public class StackLoader {
     private static final Logger LOG = LoggerFactory.getLogger(StackLoader.class);
 
-    private final Path                stackJsonPath;
-    private final Path                stackIconFolderPath;
-    private final StackDao            stackDao;
-    private final Gson                gson;
+    private final Path     stackJsonPath;
+    private final Path     stackIconFolderPath;
+    private final StackDao stackDao;
+    private final Gson     gson;
 
     @Inject
     public StackLoader(StackGsonFactory stackGsonFactory,
@@ -63,7 +63,7 @@ public class StackLoader {
     }
 
     /**
-     * Load predefined stacks with their icons to the {@link StackDao}
+     * Load predefined stacks with their icons to the {@link StackDao}.
      */
     @PostConstruct
     public void start() {
@@ -79,7 +79,7 @@ public class StackLoader {
 
     private void loadStack(StackImpl stack) {
         try {
-            setIcon(stack, stackIconFolderPath);
+            setIconData(stack, stackIconFolderPath);
             stackDao.update(stack);
         } catch (NotFoundException | ServerException e) {
             try {
@@ -90,9 +90,21 @@ public class StackLoader {
         }
     }
 
-    public synchronized static void setIcon(StackImpl stack, Path stackIconFolderPath) {
+    /**
+     * Set binary data to the not null {@code stack} icon. If {@code stack} icon is null then do nothing.
+     * Icon data stores in the local storage by path:
+     * {@code stackIconFolderPath}/stackId/IconName.
+     * @see StackImpl
+     * @see StackIcon
+     *
+     * @param stack
+     *         stack to update stack icon data
+     * @param stackIconFolderPath
+     *         path to the folder with stack icons
+     */
+    public synchronized static void setIconData(StackImpl stack, Path stackIconFolderPath) {
         StackIcon stackIcon = stack.getStackIcon();
-        if (stackIcon == null || stackIcon.getData() != null) {
+        if (stackIcon == null) {
             return;
         }
         try {

@@ -36,24 +36,24 @@ public class StackIcon {
     private byte[] data;
 
     public StackIcon(String name, String mediaType, @Nullable byte[] data) {
-        if (data.length == 0) {
-            throw new IllegalArgumentException("Incorrect icon data or icon was not attached");
-        }
-        requireNonNull(name, "Icon name required");
-        requireNonNull(mediaType, "Icon media type required");
-
-        if (data.length > LIMIT_SIZE) {
-            throw new IllegalArgumentException("Maximum upload size exceeded 1 Mb limit");
+        if (data != null) {
+            if (data.length == 0) {
+                throw new IllegalArgumentException("Incorrect icon data or icon was not attached");
+            }
+            if (data.length > LIMIT_SIZE) {
+                throw new IllegalArgumentException("Maximum upload size exceeded 1 Mb limit");
+            }
         }
         this.data = data;
 
+        requireNonNull(mediaType, "Icon media type required");
         if (!VALID_MEDIA_TYPES.stream().anyMatch(elem -> elem.equals(mediaType))) {
             String errorMessage = format("Media type '%s' is unsupported. Supported media types: '%s'", mediaType, VALID_MEDIA_TYPES);
             throw new IllegalArgumentException(errorMessage);
         }
         this.mediaType = mediaType;
 
-        this.name = name;
+        this.name = requireNonNull(name, "Icon name required");
     }
 
     public String getName() {
