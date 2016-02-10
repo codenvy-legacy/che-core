@@ -77,9 +77,9 @@ public class StackIcon {
             return false;
         }
         StackIcon another = (StackIcon)obj;
-        return Objects.equal(name, another.name)
-               && Objects.equal(mediaType, another.mediaType)
-               && Arrays.equals(getData(), another.getData());
+        return Objects.equal(name, another.name) &&
+               Objects.equal(mediaType, another.mediaType) &&
+               Arrays.equals(getData(), another.getData());
     }
 
     @Override

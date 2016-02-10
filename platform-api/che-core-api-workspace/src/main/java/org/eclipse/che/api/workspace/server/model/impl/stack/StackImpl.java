@@ -73,19 +73,21 @@ public class StackImpl implements Stack {
                      @Nullable Permissions permissions,
                      @Nullable StackIcon stackIcon) {
         this.id = requireNonNull(id, "Required non-null stack id");
-        setName(requireNonNull(name));
-        this.scope = requireNonNull(scope, "Required non-null scope: 'general' or 'advanced'");
-        this.tags = requireNonNull(tags, "Required non-null stack tags");
-        this.creator = requireNonNull(creator);
+        this.creator = requireNonNull(creator, "Required non-null stack creator");
+        setName(name);
+        setScope(scope);
+        setTags(tags);
+        setWorkspaceConfig(workspaceConfig);
+        setSource(source);
+
         this.description = description;
-        this.workspaceConfig = new WorkspaceConfigImpl(workspaceConfig);
-        this.source = new StackSourceImpl(source);
         this.permissions = permissions;
         this.stackIcon = stackIcon;
         this.components = components == null ? new ArrayList<>() : components.stream()
                                                                        .map(component -> new StackComponentImpl(component.getName(),
                                                                                                                 component.getVersion()))
                                                                        .collect(toList());
+
         if (source == null && workspaceConfig == null) {
             throw new IllegalArgumentException("Require non-null source: 'workspaceConfig' or 'stackSource'");
         }
@@ -102,7 +104,7 @@ public class StackImpl implements Stack {
     }
 
     public void setName(String name) {
-        requireNonNull("requre non-null stack name");
+        requireNonNull("require non-null stack name");
         this.name = name;
     }
 
@@ -121,16 +123,16 @@ public class StackImpl implements Stack {
     }
 
     public void setScope(String scope) {
+        requireNonNull(scope, "Required non-null scope value: 'general' or 'advanced'");
+        if (!scope.equals("general") && !scope.equals("advanced")) {
+            throw new IllegalArgumentException("Stack scope must be 'general' or 'advanced'");
+        }
         this.scope = scope;
     }
 
     @Override
     public String getCreator() {
         return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
     }
 
     @Override
@@ -142,6 +144,10 @@ public class StackImpl implements Stack {
     }
 
     public void setTags(List<String> tags) {
+        requireNonNull(tags, "Required non-null stack tags");
+        if (tags.isEmpty()) {
+            throw new IllegalArgumentException("List tags must be non empty");
+        }
         this.tags = tags;
     }
 

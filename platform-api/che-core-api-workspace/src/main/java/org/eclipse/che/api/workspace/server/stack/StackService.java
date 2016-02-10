@@ -104,18 +104,18 @@ public class StackService extends Service {
                    @ApiResponse(code = 409, message = "Conflict error occurred during the stack creation" +
                                                       "(e.g. The stack with such name already exists)"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public Response createStack(@ApiParam("The new stack") StackDto stackDto) throws ApiException {
+    public Response createStack(@ApiParam("The new stack") final StackDto stackDto) throws ApiException {
         requireNonNull(stackDto, "Stack required");
         requireNonNullAndNonEmpty(stackDto.getName(), "Stack name required");
         if (stackDto.getSource() == null && stackDto.getWorkspaceConfig() == null) {
-            throw new BadRequestException("Stack source required");
+            throw new BadRequestException("Stack source required. You must specify stack source: 'workspaceConfig' or 'stackSource'");
         }
 
         String userId = EnvironmentContext.getCurrent().getUser().getId();
         if (stackDto.getPermissions() != null &&
             !isSystemUser() &&
             permissionChecker.hasPublicSearchPermission(stackDto.getPermissions())) {
-            throw new ForbiddenException(format("User %s doesn't have access to use 'public: search' permission", userId));
+            throw new ForbiddenException(format("User '%s' doesn't have access to use 'public: search' permission", userId));
         }
 
         StackImpl newStack = StackImpl.builder()
@@ -149,15 +149,14 @@ public class StackService extends Service {
                    @ApiResponse(code = 404, message = "The requested stack was not found"),
                    @ApiResponse(code = 403, message = "The user has not permission get requested stack"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public StackDto getStack(@ApiParam("The stack id") @PathParam("id") String id) throws ApiException {
+    public StackDto getStack(@ApiParam("The stack id") @PathParam("id") final String id) throws ApiException {
         final StackImpl stack = stackDao.getById(id);
 
-        User user = EnvironmentContext.getCurrent().getUser();
-        if (!user.getId().equals(stack.getCreator()) &&
-            !user.isMemberOf("system/admin") &&
-            !user.isMemberOf("system/manager") &&
-            !permissionChecker.hasAccess(stack, user.getId(), "read")) {
-            throw new ForbiddenException(format("User %s doesn't have access to stack %s", user.getId(), id));
+        final String userId = EnvironmentContext.getCurrent().getUser().getId();
+        if (!userId.equals(stack.getCreator()) &&
+            !isSystemUser() &&
+            !permissionChecker.hasAccess(stack, userId, "read")) {
+            throw new ForbiddenException(format("User '%s' doesn't have access to stack '%s'", userId, id));
         }
 
         return asStackDto(stack);
@@ -179,42 +178,52 @@ public class StackService extends Service {
                                                       "(e.g. Stack with such name already exists)"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public StackDto updateStack(@ApiParam(value = "The stack update", required = true)
-                                StackDto updateDto,
+                                final StackDto updateDto,
                                 @ApiParam(value = "The stack id", required = true)
                                 @PathParam("id")
-                                String id) throws ApiException {
+                                final String id) throws ApiException {
         requireNonNullAndNonEmpty(id, "Stack id required");
         requireNonNull(updateDto, "Stack required");
         if (updateDto.getSource() == null && updateDto.getWorkspaceConfig() == null) {
-            throw new BadRequestException("Stack source required");
+            throw new BadRequestException("Stack source required. You must specify stack source: 'workspaceConfig' or 'stackSource'");
         }
 
         final StackImpl stack = stackDao.getById(id);
 
         final User user = EnvironmentContext.getCurrent().getUser();
         final String userId = user.getId();
-        if (!user.getId().equals(stack.getCreator()) &&
+        if (!userId.equals(stack.getCreator()) &&
             !user.isMemberOf("system/admin") &&
-            !permissionChecker.hasAccess(stack, user.getId(), "write")) {
-            throw new ForbiddenException(format("User %s doesn't have access to update stack %s", userId, stack.getId()));
+            !permissionChecker.hasAccess(stack, userId, "write")) {
+            throw new ForbiddenException(format("User '%s' doesn't have access to update stack '%s'", userId, id));
         }
         if (updateDto.getPermissions() != null) {
             //ensure that user has access to update stack permissions
-            if (!user.getId().equals(stack.getCreator()) &&
+            if (!userId.equals(stack.getCreator()) &&
                 !user.isMemberOf("system/admin") &&
                 !permissionChecker.hasAccess(stack, userId, "update_acl")) {
-                throw new ForbiddenException(format("User %s doesn't have access to update stack %s permissions", userId, stack.getId()));
+                throw new ForbiddenException(format("User '%s' doesn't have access to update stack '%s' permissions", userId, id));
             }
             if (!isSystemUser() && !permissionChecker.hasPublicSearchPermission(updateDto.getPermissions())) {
-                throw new ForbiddenException(format("User %s doesn't have access to use 'public: search' permission", userId));
+                throw new ForbiddenException(format("User '%s' doesn't have access to use 'public: search' permission", userId));
             }
         }
 
-        StackImpl stackForUpdate = new StackImpl(updateDto);
-        /* user can not edit field creator */
-        stackForUpdate.setCreator(userId);
-        stackDao.update(stackForUpdate);
+        StackImpl stackForUpdate = StackImpl.builder()
+                                            .setId(id)
+                                            .setName(updateDto.getName())
+                                            .setDescription(updateDto.getDescription())
+                                            .setScope(updateDto.getScope())
+                                            //user can't edit creator
+                                            .setCreator(stack.getCreator())
+                                            .setTags(updateDto.getTags())
+                                            .setWorkspaceConfig(updateDto.getWorkspaceConfig())
+                                            .setSource(updateDto.getSource())
+                                            .setComponents(updateDto.getComponents())
+                                            .setPermissions(updateDto.getPermissions())
+                                            .build();
 
+        stackDao.update(stackForUpdate);
         return asStackDto(stackForUpdate);
     }
 
@@ -228,15 +237,15 @@ public class StackService extends Service {
                    @ApiResponse(code = 403, message = "The user does not have access to remove the stack"),
                    @ApiResponse(code = 404, message = "The stack doesn't exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public void removeStack(@ApiParam("The stack id") @PathParam("id") String id) throws ApiException {
+    public void removeStack(@ApiParam("The stack id") @PathParam("id") final String id) throws ApiException {
         final StackImpl stack = stackDao.getById(id);
 
-        User user = EnvironmentContext.getCurrent().getUser();
+        final User user = EnvironmentContext.getCurrent().getUser();
 
         if (!user.getId().equals(stack.getCreator()) &&
             !user.isMemberOf("system/admin")
             && !permissionChecker.hasAccess(stack, user.getId(), "write")) {
-            throw new ForbiddenException(format("User %s doesn't have access to stack %s", user.getId(), id));
+            throw new ForbiddenException(format("User '%s' doesn't have access to stack with id '%s'", user.getId(), id));
         }
 
         stackDao.remove(id);
@@ -256,11 +265,11 @@ public class StackService extends Service {
     public List<StackDto> getCreatedStacks(@ApiParam("The number of the items to skip")
                                            @DefaultValue("0")
                                            @QueryParam("skipCount")
-                                           Integer skipCount,
+                                           final Integer skipCount,
                                            @ApiParam("The limit of the items in the response, default is 30")
                                            @DefaultValue("30")
                                            @QueryParam("maxItems")
-                                           Integer maxItems) throws ServerException {
+                                           final Integer maxItems) throws ServerException {
         String creator = EnvironmentContext.getCurrent().getUser().getId();
         List<StackImpl> stacks = stackDao.getByCreator(creator, skipCount, maxItems);
 
@@ -283,15 +292,15 @@ public class StackService extends Service {
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public List<StackDto> searchStacks(@ApiParam("List tags for search")
                                        @QueryParam("tags")
-                                       List<String> tags,
+                                       final List<String> tags,
                                        @ApiParam(value = "The number of the items to skip")
                                        @DefaultValue("0")
                                        @QueryParam("skipCount")
-                                       Integer skipCount,
+                                       final Integer skipCount,
                                        @ApiParam("The limit of the items in the response, default is 30")
                                        @DefaultValue("30")
                                        @QueryParam("maxItems")
-                                       Integer maxItems) throws ServerException {
+                                       final Integer maxItems) throws ServerException {
         List<StackImpl> stacks = stackDao.searchStacks(tags, skipCount, maxItems);
         return stacks.stream()
                      .map(this::asStackDto)
@@ -309,19 +318,19 @@ public class StackService extends Service {
     @ApiResponses({@ApiResponse(code = 200, message = "The response contains requested image entity"),
                    @ApiResponse(code = 403, message = "The user does not have access to get image entity"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public Response getIcon(@ApiParam("The stack id") @PathParam("id") String stackId)
+    public Response getIcon(@ApiParam("The stack id") @PathParam("id") final String id)
             throws NotFoundException, ServerException, BadRequestException {
-        requireNonNullAndNonEmpty(stackId, "Stack id required");
-        StackImpl stack = stackDao.getById(stackId);
+        requireNonNullAndNonEmpty(id, "Stack id required");
+        StackImpl stack = stackDao.getById(id);
 
         if (stack == null) {
-            throw new NotFoundException("Stack with id '" + stackId + "' was not found.");
+            throw new NotFoundException("Stack with id '" + id + "' was not found.");
         }
 
         StackIcon image = stack.getStackIcon();
 
         if (image == null) {
-            throw new NotFoundException("Image for stack with id '" + stackId + "' was not found.");
+            throw new NotFoundException("Image for stack with id '" + id + "' was not found.");
         }
         return Response.ok(image.getData(), image.getMediaType()).build();
     }
@@ -340,28 +349,27 @@ public class StackService extends Service {
                    @ApiResponse(code = 404, message = "The stack doesn't exist"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
     public Response uploadIcon(@ApiParam("The image for stack")
-                               Iterator<FileItem> formData,
+                               final Iterator<FileItem> formData,
                                @ApiParam("The stack id")
                                @PathParam("id")
-                               String stackId)
+                               final String id)
             throws NotFoundException, ServerException, BadRequestException, ForbiddenException {
-        requireNonNullAndNonEmpty(stackId, "Stack id required");
+        requireNonNullAndNonEmpty(id, "Stack id required");
         if (formData.hasNext()) {
             FileItem fileItem = formData.next();
             StackIcon stackIcon = new StackIcon(fileItem.getName(), fileItem.getContentType(), fileItem.get());
 
-            StackImpl stack = stackDao.getById(stackId);
+            StackImpl stack = stackDao.getById(id);
 
             User user = EnvironmentContext.getCurrent().getUser();
             if (!user.getId().equals(stack.getCreator()) &&
                 !user.isMemberOf("system/admin") &&
                 !permissionChecker.hasAccess(stack, user.getId(), "write")) {
-                throw new ForbiddenException(format("User %s doesn't have access to stack %s", stack.getId(), stack.getId()));
+                throw new ForbiddenException(format("User '%s' doesn't have access to stack with id '%s'", user.getId(), id));
             }
 
-            StackImpl update = new StackImpl(stack);
-            update.setStackIcon(stackIcon);
-            stackDao.update(update);
+            stack.setStackIcon(stackIcon);
+            stackDao.update(stack);
         }
         return Response.ok().build();
     }
@@ -379,21 +387,20 @@ public class StackService extends Service {
                    @ApiResponse(code = 409, message = "Conflict error occurred during stack update" +
                                                       "(e.g. Stack with such name already exists)"),
                    @ApiResponse(code = 500, message = "Internal server error occurred")})
-    public void removeIcon(@ApiParam("The stack Id") @PathParam("id") String stackId)
+    public void removeIcon(@ApiParam("The stack Id") @PathParam("id") final String id)
             throws NotFoundException, ServerException, ConflictException, ForbiddenException, BadRequestException {
-        requireNonNullAndNonEmpty(stackId, "Stack id required");
-        StackImpl stack = stackDao.getById(stackId);
+        requireNonNullAndNonEmpty(id, "Stack id required");
+        StackImpl stack = stackDao.getById(id);
 
         User user = EnvironmentContext.getCurrent().getUser();
         if (!user.getId().equals(stack.getCreator()) &&
             !user.isMemberOf("system/admin") &&
             !permissionChecker.hasAccess(stack, user.getId(), "write")) {
-            throw new ForbiddenException(format("User %s doesn't have access to stack %s", stack.getId(), stackId));
+            throw new ForbiddenException(format("User '%s' doesn't have access to stack with id '%s'", user.getId(), id));
         }
 
-        StackImpl update = new StackImpl(stack);
-        update.setStackIcon(null);
-        stackDao.update(update);
+        stack.setStackIcon(null);
+        stackDao.update(stack);
     }
 
     private StackDto asStackDto(StackImpl stack) {
