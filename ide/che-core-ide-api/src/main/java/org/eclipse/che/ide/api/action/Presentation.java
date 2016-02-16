@@ -51,16 +51,23 @@ public final class Presentation {
     private ListenerManager<PropertyChangeListener> myChangeSupport;
     private String                                  text;
     private String                                  myDescription;
-    private ImageResource                           myIcon;
-    private SVGResource                             mySVGIcon;
 
-    private boolean myVisible;
-    private boolean myEnabled;
+    /**
+     * Presentation Icon
+     *
+     * Can be set using ImageResource, SVG Resource or directly HTML code.
+     */
+    private ImageResource                           imageResource;
+    private SVGResource                             svgResource;
+    private String                                  htmlResource;
+
+    private boolean visible;
+    private boolean enabled;
 
     public Presentation() {
         myChangeSupport = ListenerManager.create();
-        myVisible = true;
-        myEnabled = true;
+        visible = true;
+        enabled = true;
     }
 
     public Presentation(final String text) {
@@ -96,34 +103,82 @@ public final class Presentation {
         firePropertyChange(PROP_DESCRIPTION, oldDescription, myDescription);
     }
 
-    public ImageResource getIcon() {
-        return myIcon;
+    /**
+     * Returns icon image resource.
+     *
+     * @return image resource
+     */
+    public ImageResource getImageResource() {
+        return imageResource;
     }
 
-    public SVGResource getSVGIcon() {
-        return mySVGIcon;
+    /**
+     * Returns SVG image resource.
+     *
+     * @return svg image resource
+     */
+    public SVGResource getSVGResource() {
+        return svgResource;
     }
 
-    public void setIcon(ImageResource icon) {
-        ImageResource oldIcon = myIcon;
-        myIcon = icon;
-        firePropertyChange(PROP_ICON, oldIcon, myIcon);
+    /**
+     * Returns icon HTML resource.
+     *
+     * @return html resource
+     */
+    public String getHTMLResource() {
+        return htmlResource;
     }
 
-    public void setSVGIcon(SVGResource icon) {
-        SVGResource oldIcon = mySVGIcon;
-        mySVGIcon = icon;
-        firePropertyChange(PROP_ICON, oldIcon, mySVGIcon);
+    /**
+     * Sets icon image resource.
+     *
+     * @param imageResource image resource
+     */
+    public void setImageResource(ImageResource imageResource) {
+        ImageResource oldImaheResource = imageResource;
+        this.imageResource = imageResource;
+        firePropertyChange(PROP_ICON, oldImaheResource, imageResource);
+    }
+
+    /**
+     * Sets icon SVG resource.
+     *
+     * @param svgResource icon SVG resource
+     */
+    public void setSVGResource(SVGResource svgResource) {
+        SVGResource oldSVGResource = svgResource;
+        this.svgResource = svgResource;
+        firePropertyChange(PROP_ICON, oldSVGResource, svgResource);
+    }
+
+    /**
+     * Sets icon HTML resource.
+     *
+     * @param htmlResource html resource
+     */
+    public void setHTMLResource(String htmlResource) {
+        String oldHTMLRersource = htmlResource;
+        this.htmlResource = htmlResource;
+        firePropertyChange(PROP_ICON, oldHTMLRersource, htmlResource);
     }
 
     public boolean isVisible() {
-        return myVisible;
+        return visible;
     }
 
     public void setVisible(boolean visible) {
-        boolean oldVisible = myVisible;
-        myVisible = visible;
-        firePropertyChange(PROP_VISIBLE, oldVisible ? Boolean.TRUE : Boolean.FALSE, myVisible ? Boolean.TRUE : Boolean.FALSE);
+        if (this.visible == visible) {
+            return;
+        }
+
+        this.visible = visible;
+
+        if (visible) {
+            firePropertyChange(PROP_VISIBLE, Boolean.FALSE, Boolean.TRUE);
+        } else {
+            firePropertyChange(PROP_VISIBLE, Boolean.TRUE, Boolean.FALSE);
+        }
     }
 
     /**
@@ -132,7 +187,7 @@ public final class Presentation {
      * @return <code>true</code> if action is enabled, <code>false</code> otherwise
      */
     public boolean isEnabled() {
-        return myEnabled;
+        return enabled;
     }
 
     /**
@@ -144,9 +199,17 @@ public final class Presentation {
      *         <code>true</code> if you want to enable action, <code>false</code> otherwise
      */
     public void setEnabled(boolean enabled) {
-        boolean oldEnabled = myEnabled;
-        myEnabled = enabled;
-        firePropertyChange(PROP_ENABLED, oldEnabled ? Boolean.TRUE : Boolean.FALSE, myEnabled ? Boolean.TRUE : Boolean.FALSE);
+        if (this.enabled == enabled) {
+            return;
+        }
+
+        this.enabled = enabled;
+
+        if (enabled) {
+            firePropertyChange(PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
+        } else {
+            firePropertyChange(PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
+        }
     }
 
     public final void setEnabledAndVisible(boolean enabled) {
@@ -167,10 +230,11 @@ public final class Presentation {
     public Presentation clone() {
         Presentation presentation = new Presentation(getText());
         presentation.myDescription = myDescription;
-        presentation.myEnabled = myEnabled;
-        presentation.myIcon = myIcon;
-        presentation.mySVGIcon = mySVGIcon;
-        presentation.myVisible = myVisible;
+        presentation.enabled = enabled;
+        presentation.visible = visible;
+        presentation.imageResource = imageResource;
+        presentation.svgResource = svgResource;
+        presentation.htmlResource = htmlResource;
         return presentation;
     }
 

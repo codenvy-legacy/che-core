@@ -241,42 +241,40 @@ public class PopupMenu extends Composite {
             } else {
                 Presentation presentation = presentationFactory.getPresentation(menuItem);
 
-                if (presentation.getSVGIcon() != null) {
-                    SVGImage image = new SVGImage(presentation.getSVGIcon());
+                if (presentation.getImageResource() != null) {
+                    Image image = new Image(presentation.getImageResource());
                     table.setWidget(i, 0, image);
-                } else {
-                    Image image = null;
-                    if (presentation.getIcon() != null) {
-                        image = new Image(presentation.getIcon());
-                    }
+
+                } else if (presentation.getSVGResource() != null) {
+                    SVGImage image = new SVGImage(presentation.getSVGResource());
                     table.setWidget(i, 0, image);
+
+                } else if (presentation.getHTMLResource() != null) {
+                    table.setHTML(i, 0, presentation.getHTMLResource());
                 }
-                table.getCellFormatter().setStyleName(i, 0,
-                                                      presentation.isEnabled() ? POPUP_RESOURCES.popup().popupMenuIconField()
+
+                table.getCellFormatter().setStyleName(i, 0, presentation.isEnabled() ? POPUP_RESOURCES.popup().popupMenuIconField()
                                                                                : POPUP_RESOURCES.popup().popupMenuIconFieldDisabled());
 
                 int work = 1;
-
                 if (hasCheckedItems && menuItem instanceof ToggleAction) {
                     ToggleAction toggleAction = (ToggleAction)menuItem;
                     ActionEvent e = new ActionEvent(presentationFactory.getPresentation(toggleAction),
                                                     actionManager,
                                                     managerProvider.get());
-                    if (toggleAction.isSelected(e)) {
-                        table.setHTML(i, work, AbstractImagePrototype.create(POPUP_RESOURCES.check()).getHTML());
-                    }
-                    table.getCellFormatter().setStyleName(i, work,
-                                                          presentation.isEnabled() ? POPUP_RESOURCES.popup().popupMenuCheckField()
-                                                                                   : POPUP_RESOURCES.popup()
-                                                                                                    .popupMenuCheckFieldDisabled());
-                    work++;
 
+                    if (toggleAction.isSelected(e)) {
+                        // Temporary solution
+                        table.setHTML(i, work, "<i class=\"fa fa-check\"></i>");
+                    }
+
+                    table.getCellFormatter().setStyleName(i, work, presentation.isEnabled() ? POPUP_RESOURCES.popup().popupMenuCheckField()
+                                                                                   : POPUP_RESOURCES.popup().popupMenuCheckFieldDisabled());
+                    work++;
                 }
 
-                table.setHTML(i, work, "<nobr id=\"" + idPrefix + presentation.getText() + "\">" + presentation.getText()
-                                       + "</nobr>");
-                table.getCellFormatter().setStyleName(i, work,
-                                                      presentation.isEnabled() ? POPUP_RESOURCES.popup().popupMenuTitleField()
+                table.setHTML(i, work, "<nobr id=\"" + idPrefix + presentation.getText() + "\">" + presentation.getText() + "</nobr>");
+                table.getCellFormatter().setStyleName(i, work, presentation.isEnabled() ? POPUP_RESOURCES.popup().popupMenuTitleField()
                                                                                : POPUP_RESOURCES.popup().popupMenuTitleFieldDisabled());
 
                 work++;
@@ -509,9 +507,6 @@ public class PopupMenu extends Composite {
 
         @Source({"popup-menu.css", "org/eclipse/che/ide/api/ui/style.css"})
         Css popup();
-
-        @Source("check.gif")
-        ImageResource check();
 
         @Source("org/eclipse/che/ide/menu/submenu.svg")
         SVGResource subMenu();

@@ -15,8 +15,11 @@
              xmlns:g="urn:import:com.google.gwt.user.client.ui">
 
     <ui:style>
-        @eval toolButtonSvgFill org.eclipse.che.ide.api.theme.Style.theme.toolButtonSvgFill();
+
+        @eval toolButtonColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonColor();
+        @eval toolButtonHoverColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonHoverColor();
         @eval toolButtonBorder org.eclipse.che.ide.api.theme.Style.theme.toolButtonBorder();
+        @eval toolButtonActiveBorder org.eclipse.che.ide.api.theme.Style.theme.toolButtonActiveBorder();
         @eval toolButtonHoverBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonHoverBackgroundColor();
         @eval toolButtonActiveBackgroundColor org.eclipse.che.ide.api.theme.Style.theme.toolButtonActiveBackgroundColor();
         @eval toolButtonHoverBoxShadow org.eclipse.che.ide.api.theme.Style.theme.toolButtonHoverBoxShadow();
@@ -27,42 +30,57 @@
             height: 22px;
         }
 
-        .button svg {
+        .button * {
+            transition: all 0.1s ease-in-out;
+        }
+
+        .button > svg,
+        .button > div {
             display: block;
             position: absolute;
+            width: 8px;
+            height: 8px;
             top: 0;
             bottom: 0;
             left: 0;
             right: 0;
             margin: auto;
-            width: 45%;
-            height: 45%;
             padding: 3px;
-            fill: toolButtonSvgFill;
-
-            -webkit-transition: background-color 0.2s ease-in-out,
-                                box-shadow 0.2s ease-in-out,
-                                fill-opacity 0.2s ease-in-out;
-            transition: background-color 0.2s ease-in-out,
-                        box-shadow 0.2s ease-in-out,
-                        fill-opacity 0.2s ease-in-out;
-        }
-
-        .button:hover svg {
+            box-sizing: content-box;
             border: toolButtonBorder;
             border-radius: 3px;
+            fill: toolButtonColor;
+            font-size: 8px;
+            line-height: 8px;
+            text-align: center;
+            color: toolButtonColor;
+        }
+
+        .button:hover > svg,
+        .button:hover > div {
+            border: toolButtonActiveBorder;
             background-color: toolButtonHoverBackgroundColor;
             box-shadow: toolButtonHoverBoxShadow;
+            fill: toolButtonHoverColor;
+            color: toolButtonHoverColor;
         }
 
-        .button:active svg {
-            border: toolButtonBorder;
-            border-radius: 3px;
+        .button:active > svg,
+        .button:active > div {
+            border: toolButtonActiveBorder;
             background-color: toolButtonActiveBackgroundColor;
             box-shadow: toolButtonActiveBoxShadow;
-            fill-opacity: 0.8;
+            fill: toolButtonHoverColor;
+            color: toolButtonHoverColor;
         }
+
+        .button:active > svg > *,
+        .button:active > div > * {
+            opacity: 0.8;
+        }
+
     </ui:style>
 
     <g:FlowPanel ui:field="iconPanel" stylePrimaryName="{style.button}"/>
+
 </ui:UiBinder>

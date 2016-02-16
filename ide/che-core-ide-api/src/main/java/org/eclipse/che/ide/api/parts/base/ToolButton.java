@@ -26,8 +26,7 @@ import org.vectomatic.dom.svg.ui.SVGImage;
 /**
  * Button which can be added to the tool bar.
  *
- * @author Vitaliy Gulyy
- * @author Vlad Zhukovskyi
+ * @author Codenvy crowd
  */
 public class ToolButton extends Composite implements HasClickHandlers {
 
@@ -41,18 +40,29 @@ public class ToolButton extends Composite implements HasClickHandlers {
     @UiField
     FlowPanel iconPanel;
 
+    /**
+     * Creates new button based on SVG image.
+     *
+     * @param image
+     *         SVG image
+     */
     public ToolButton(SVGImage image) {
-        this(null, image);
+        initWidget(uiBinder.createAndBindUi(this));
+        iconPanel.add(image);
     }
 
-    public ToolButton(String id, SVGImage image) {
+    /**
+     * Creates new button containing new Image created from HTML.
+     *
+     * @param htmlImageResource
+     *         HTML content for new image
+     */
+    public ToolButton(String htmlImageResource) {
         initWidget(uiBinder.createAndBindUi(this));
 
+        FlowPanel image = new FlowPanel();
+        image.getElement().setInnerHTML(htmlImageResource);
         iconPanel.add(image);
-
-        if (id != null) {
-            getElement().setId(id);
-        }
     }
 
     @Override
