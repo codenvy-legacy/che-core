@@ -8,29 +8,21 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.project.type;
+package org.eclipse.che.api.project.server.type;
 
-import java.util.List;
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 
 /**
- * Attribute value
  * @author gazarenkov
  */
-public interface Value {
+public class ProjectTypeConstraintException extends ConflictException {
 
-    /**
-     * @return value as String. If attribute has multiple values it returns first one.
-     */
-    String getString();
+    public ProjectTypeConstraintException(String message) {
+        super(message);
+    }
 
-    /**
-     * @return value as list of strings
-     */
-    List<String> getList();
-
-    /**
-     * @return whether the value is not initialized
-     */
-    boolean isEmpty();
-
+    public ProjectTypeConstraintException(ServiceError serviceError) {
+        super(serviceError);
+    }
 }

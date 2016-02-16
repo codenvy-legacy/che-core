@@ -8,29 +8,12 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.project.type;
-
-import java.util.List;
+package org.eclipse.che.api.project.server.type;
 
 /**
- * Attribute value
  * @author gazarenkov
  */
-public interface Value {
+public interface ProjectTypeResolver {
 
-    /**
-     * @return value as String. If attribute has multiple values it returns first one.
-     */
-    String getString();
-
-    /**
-     * @return value as list of strings
-     */
-    List<String> getList();
-
-    /**
-     * @return whether the value is not initialized
-     */
-    boolean isEmpty();
-
+    boolean resolve();
 }

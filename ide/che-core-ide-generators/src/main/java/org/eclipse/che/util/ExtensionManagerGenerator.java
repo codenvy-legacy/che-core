@@ -144,7 +144,7 @@ public class ExtensionManagerGenerator {
             String fullFqn = extension.getKey();
             String variableName = extension.getValue().toLowerCase();
 
-            String putStatement = String.format("this.extensions.put(\"%s\",%s);%n", fullFqn, variableName);
+            String putStatement = String.format("this.extensions.putProject(\"%s\",%s);%n", fullFqn, variableName);
             builder.append(GeneratorUtils.TAB2 + putStatement);
         }
 

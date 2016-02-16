@@ -166,14 +166,14 @@ public class ExtensionRegistryGenerator extends Generator {
                 Extension annotation = extension.getAnnotation(Extension.class);
             
             /*
-               extensions.put("ide.ext.demo", new ExtensionDescription("ide.ext.demo", "1.0.0", "Demo extension", deps,
+               extensions.putProject("ide.ext.demo", new ExtensionDescription("ide.ext.demo", "1.0.0", "Demo extension", deps,
                demoExtProvider));
             */
 
                 // the class's fqn
                 String extensionId = extension.getQualifiedSourceName();
 
-                sw.println("extensions.put(\"%s\", new ExtensionDescription(\"%s\",\"%s\",\"%s\",\"%s\",deps));",
+                sw.println("extensions.putProject(\"%s\", new ExtensionDescription(\"%s\",\"%s\",\"%s\",\"%s\",deps));",
                            escape(extensionId), escape(extensionId), escape(annotation.version()),
                            escape(annotation.title()), escape(annotation.description()));
                 sw.outdent();

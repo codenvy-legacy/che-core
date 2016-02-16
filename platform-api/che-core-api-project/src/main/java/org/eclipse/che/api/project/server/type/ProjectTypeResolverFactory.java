@@ -8,29 +8,16 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.core.model.project.type;
+package org.eclipse.che.api.project.server.type;
 
-import java.util.List;
+import org.eclipse.che.api.project.server.FolderEntry;
 
 /**
- * Attribute value
  * @author gazarenkov
  */
-public interface Value {
+public interface ProjectTypeResolverFactory {
 
-    /**
-     * @return value as String. If attribute has multiple values it returns first one.
-     */
-    String getString();
+    ProjectTypeResolver newInstance(FolderEntry projectFolder);
 
-    /**
-     * @return value as list of strings
-     */
-    List<String> getList();
-
-    /**
-     * @return whether the value is not initialized
-     */
-    boolean isEmpty();
 
 }

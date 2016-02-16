@@ -172,7 +172,7 @@ public class DtoFactoryVisitorRegistryGenerator {
             String fullFqn = entries.getKey();
             String variableName = entries.getValue().toLowerCase();
 
-            String putStatement = String.format("this.providers.put(\"%s\", %s);%n", fullFqn, variableName);
+            String putStatement = String.format("this.providers.putProject(\"%s\", %s);%n", fullFqn, variableName);
             builder.append(GeneratorUtils.TAB2 + putStatement);
         }
 
