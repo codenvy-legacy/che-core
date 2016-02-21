@@ -891,8 +891,12 @@ public class ProjectService extends Service {
                 || newProject.getBuilders() != null ) {
                 throw new BadRequestException("Impossible to save configurations for the project without type");
             }
+            LOG.warn("Project import failed: " + e.getMessage(), e);
             project = new NotValidProject(baseProjectFolder, projectManager);
-            project.setVisibility(visibility);
+            LOG.warn("Project import failed: " + e.getMessage(), e);
+            if (visibility != null) {
+                project.setVisibility(visibility);
+            }
 
             projectDescriptor = DtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
