@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-api-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.14.0-sap-08</version>
+        <version>3.14.0-sap-09</version>
     </parent>
     <artifactId>che-core-api-dto</artifactId>
     <packaging>jar</packaging>
