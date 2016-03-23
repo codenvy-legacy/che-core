@@ -223,7 +223,11 @@ public class BuildQueue {
                 builderList = newBuilderList;
             }
         }
-        return builderList.addBuilders(builderServer.getRemoteBuilders());
+        boolean changed = builderList.addBuilders(builderServer.getRemoteBuilders());
+        if (changed) {
+            eventService.publish(BuilderAdminEvent.buildServersChangedEvent());
+        }
+        return changed;
     }
 
     /**
@@ -715,6 +719,7 @@ public class BuildQueue {
                             } else {
                                 servers.addAll(offline);
                                 offline.clear();
+                                eventService.publish(BuilderAdminEvent.buildServersChangedEvent());
                                 synchronized (this) {
                                     try {
                                         wait(5000);
