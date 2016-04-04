@@ -95,7 +95,7 @@ public class ShellFactory {
 
             final String[] line = new String[3];
             line[0] = "/bin/bash";
-            line[1] = "-cl";
+            line[1] = "-c";
             line[2] = buff.toString();
             return line;
         }
