@@ -511,11 +511,6 @@ public class FSMountPoint implements MountPoint {
         if (!parent.isFolder()) {
             throw new ForbiddenException("Unable create new file. Item specified as parent is not a folder. ");
         }
-        
-        if (isPathUnderServiceDir(parent.getPath()))
-        {
-            throw new ForbiddenException(String.format("Unable create new file. file creation under illegal location is not allowed. ", parent.getPath()));
-        }
 
         final Path newPath = parent.getVirtualFilePath().newPath(name);
         if (systemFilter.accept(workspaceId, newPath)) {
@@ -910,20 +905,6 @@ public class FSMountPoint implements MountPoint {
         updateContent(virtualFile, null, content, lockToken, false);
     }
 
-    private boolean isPathUnderServiceDir(String pathStr)
-    {
-        java.nio.file.Path path = java.nio.file.Paths.get(pathStr);
-        Iterator<java.nio.file.Path> pathIterator = path.iterator();
-        while (pathIterator.hasNext()) {
-            java.nio.file.Path subPath = pathIterator.next();
-            if (subPath.getFileName().toString().equals(SERVICE_DIR))
-            {
-                return true;
-            }
-        }
-        
-        return false;
-    }
 
     private void updateContent(VirtualFileImpl virtualFile, String mediaType, InputStream content, String lockToken,
                                boolean updateMediaType) throws ForbiddenException, ServerException {
@@ -931,11 +912,6 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable update content. Item '%s' is not file. ", virtualFile.getPath()));
         }
 
-        if (isPathUnderServiceDir(virtualFile.getPath()))
-        {
-            throw new ForbiddenException(String.format("Unable update content. Updates under illegal location are not allowed. ", virtualFile.getPath()));
-        }
-        
         if (systemFilter.accept(workspaceId, virtualFile.getVirtualFilePath())) {
             // Don't check permissions when update file ".codenvy/misc.xml". Dirty huck :( but seems simplest solution for now.
             // Need to work with 'misc.xml' independently to user.
@@ -1008,11 +984,6 @@ public class FSMountPoint implements MountPoint {
         if (virtualFile.isRoot()) {
             throw new ForbiddenException("Unable delete root folder. ");
         }
-        if (isPathUnderServiceDir(virtualFile.getPath()))
-        {
-            throw new ForbiddenException(String.format("Unable delete file. deleting file under illegal location is not allowed. ", virtualFile.getPath()));
-        }
-             
         final String myPath = virtualFile.getPath();
         final boolean folder = virtualFile.isFolder();
         if (!hasPermission(virtualFile, BasicPermissions.WRITE.value(), true)) {
