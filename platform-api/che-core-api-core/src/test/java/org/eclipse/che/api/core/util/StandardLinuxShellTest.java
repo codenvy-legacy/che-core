@@ -20,7 +20,7 @@ public class StandardLinuxShellTest {
     public void testEscapeSpaces() throws Exception {
         CommandLine cmd = new CommandLine().add("ls", "-l", "/home/andrew/some dir");
         final String[] line = new ShellFactory.StandardLinuxShell().createShellCommand(cmd);
-        final String[] expected = {"/bin/bash", "-c", "ls -l /home/andrew/some\\ dir"};
+        final String[] expected = {"/bin/bash", "-c", "--noprofile", "ls -l /home/andrew/some\\ dir"};
         Assert.assertEquals(line, expected);
     }
 
@@ -28,7 +28,7 @@ public class StandardLinuxShellTest {
     public void testEscapeControls() {
         CommandLine cmd = new CommandLine().add("ls", "-l", "/home/andrew/c|r>a$z\"y'dir&");
         final String[] line = new ShellFactory.StandardLinuxShell().createShellCommand(cmd);
-        final String[] expected = {"/bin/bash", "-c", "ls -l /home/andrew/c\\|r\\>a\\$z\\\"y\\'dir\\&"};
+        final String[] expected = {"/bin/bash", "-c", "--noprofile", "ls -l /home/andrew/c\\|r\\>a\\$z\\\"y\\'dir\\&"};
         Assert.assertEquals(line, expected);
     }
 
@@ -36,7 +36,7 @@ public class StandardLinuxShellTest {
     public void testEscapeSpecCharacters() {
         CommandLine cmd = new CommandLine().add("ls", "-l", "/home/andrew/some\n\r\t\b\fdir");
         final String[] line = new ShellFactory.StandardLinuxShell().createShellCommand(cmd);
-        final String[] expected = {"/bin/bash", "-c", "ls -l /home/andrew/some\\n\\r\\t\\b\\fdir"};
+        final String[] expected = {"/bin/bash", "-c", "--noprofile", "ls -l /home/andrew/some\\n\\r\\t\\b\\fdir"};
         Assert.assertEquals(line, expected);
     }
 }

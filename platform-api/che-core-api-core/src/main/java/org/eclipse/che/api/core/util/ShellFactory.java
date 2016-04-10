@@ -93,10 +93,11 @@ public class ShellFactory {
                 }
             }
 
-            final String[] line = new String[3];
+            final String[] line = new String[4];
             line[0] = "/bin/bash";
-            line[1] = "-c --noprofile";
-            line[2] = buff.toString();
+            line[1] = "-c";
+			line[2] = "--noprofile";
+            line[3] = buff.toString();
             return line;
         }
     }
