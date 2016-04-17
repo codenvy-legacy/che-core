@@ -448,10 +448,13 @@ public class FSMountPoint implements MountPoint {
         }
         final Path childPath = parent.getVirtualFilePath().newPath(name);
         
-        // Find the last existing parent path (the actual parent of the new file) and check permissions on it
+        // Find the last existing parent path (the actual parent of the requested file) and check permissions on it
         VirtualFileImpl actualParentFile = getLastExistingParent(parent, name);
         if (!hasPermission(actualParentFile, BasicPermissions.READ.value(), true)) {
             throw new ForbiddenException(String.format("Unable get item '%s'. Operation not permitted. ", childPath));
+        }
+        if (isRecursiveSymbolicLink(actualParentFile)) {
+            return null;
         }
         
         final VirtualFileImpl child = new VirtualFileImpl(new java.io.File(parent.getIoFile(), name), childPath, pathToId(childPath), this);
@@ -519,6 +522,9 @@ public class FSMountPoint implements MountPoint {
 
     
     private List<VirtualFile> doGetChildren(VirtualFileImpl virtualFile, java.io.FilenameFilter filter) throws ServerException {
+        if (isRecursiveSymbolicLink(virtualFile)) {
+            return Collections.emptyList();
+        }
         final String[] names = virtualFile.getIoFile().list(filter);
         if (names == null) {
             // Something wrong. According to java docs may be null only if i/o error occurs.
@@ -1622,6 +1628,23 @@ public class FSMountPoint implements MountPoint {
             }
         }
         return true;
+    }
+    
+    private boolean isRecursiveSymbolicLink(VirtualFileImpl file) {
+        if (!Files.isSymbolicLink(file.getIoFile().toPath())) {
+            return false;
+        }
+        try {
+            // File /a1/a2/a3 is a recursive symbolic link if it points to /, /a1 or /a1/a2 (or /a1/a2/a3 if it's possible).
+            // In other words, the file is inside its target.
+            java.nio.file.Path filePath = getPath(file, false);
+            java.nio.file.Path targetPath = getPath(file, true);
+            return filePath.equals(targetPath) || filePath.startsWith(targetPath);
+        } catch (IOException e) {
+            // Either the file or its target cannot be read
+            LOG.error("Unable to check if file is recursive symbolic link", e);
+            return false;
+        }
     }
 
 
