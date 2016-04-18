@@ -41,6 +41,7 @@
     </scm>
     <properties>
         <maven.model.version>3.0.5</maven.model.version>
+        <org.eclipse.jgit.version>4.3.0.201604071810-r</org.eclipse.jgit.version>
         <specification.version>1.0-beta2</specification.version>
     </properties>
     <repositories>
