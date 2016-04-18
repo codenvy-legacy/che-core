@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner.internal;
 
+import com.google.common.io.Files;
+
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.ServiceContext;
@@ -22,18 +24,17 @@ import org.eclipse.che.api.core.util.SystemInfo;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.runner.ApplicationStatus;
 import org.eclipse.che.api.runner.RunnerException;
+import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
+import org.eclipse.che.api.runner.dto.PortMapping;
 import org.eclipse.che.api.runner.dto.RunRequest;
 import org.eclipse.che.api.runner.dto.RunnerDescriptor;
 import org.eclipse.che.api.runner.dto.RunnerServerDescriptor;
-import org.eclipse.che.api.runner.dto.ServerState;
-import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
-import org.eclipse.che.api.runner.dto.PortMapping;
 import org.eclipse.che.api.runner.dto.RunnerState;
+import org.eclipse.che.api.runner.dto.ServerState;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.dto.server.DtoFactory;
 
-import com.google.common.io.Files;
-
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +50,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
@@ -112,6 +112,7 @@ public class SlaveRunnerService extends Service {
 
     @POST
     @Path("stop/{runner:.*}/{id}")
+    @RolesAllowed({"user", "temp_user"})
     @Produces(MediaType.APPLICATION_JSON)
     public ApplicationProcessDescriptor stop(@PathParam("runner") String runner, @PathParam("id") Long id) throws Exception {
         final Runner myRunner = getRunner(runner);
@@ -122,6 +123,7 @@ public class SlaveRunnerService extends Service {
 
     @GET
     @Path("logs/{runner:.*}/{id}")
+    @RolesAllowed({"user", "temp_user"})
     public void getLogs(@PathParam("runner") String runner,
                         @PathParam("id") Long id,
                         @Context HttpServletResponse httpServletResponse) throws Exception {
@@ -149,6 +151,7 @@ public class SlaveRunnerService extends Service {
 
     @GET
     @Path("recipe/{runner:.*}/{id}")
+    @RolesAllowed({"user", "temp_user"})
     public void getRecipeFile(@PathParam("runner") String runner,
                               @PathParam("id") Long id,
                               @Context HttpServletResponse httpServletResponse) throws Exception {
@@ -317,6 +320,7 @@ public class SlaveRunnerService extends Service {
     @GenerateLink(rel = Constants.LINK_REL_GET_CURRENT_RECIPE)
     @GET
     @Path("/recipe")
+    @RolesAllowed({"user", "temp_user"})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRecipe(@QueryParam("id") String id) throws Exception {
         java.nio.file.Path dockerParentPath = Paths.get(dockerfilesRepository);

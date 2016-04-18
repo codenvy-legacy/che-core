@@ -60,7 +60,7 @@ public class GitUrlResolver {
         String mountPathNormalized = uriMountPath.getPath();
 
         StringBuilder result = new StringBuilder();
-        result.append("http");
+        result.append(baseUri.getScheme());
         result.append("://");
         result.append(baseUri.getHost());
         int port = baseUri.getPort();

@@ -113,21 +113,21 @@ public class ProjectProblemDialogViewImpl extends Window implements ProjectProbl
 
         messagePanel.addStyleName(resources.centerPanelCss().label());
 
-        configureButton = createButton(localizedConstant.projectProblemConfigureButtonTitle(), "problem-dialog-configure", new ClickHandler() {
+        configureButton = createButton(localizedConstant.projectProblemConfigureButtonTitle(), "ask-dialog-first", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onConfigure();
                 onClose();
             }
         });
-        openAsIsButton = createButton(localizedConstant.projectProblemOpenAsIsButtonTitle(), "problem-dialog-openAsIs", new ClickHandler() {
+        openAsIsButton = createButton(localizedConstant.projectProblemOpenAsIsButtonTitle(), "ask-dialog-second", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onOpenAsIs();
                 onClose();
             }
         });
-        openAsButton = createButton("", "problem-dialog-openAs", new ClickHandler() {
+        openAsButton = createButton("", "ask-dialog-third", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onOpenAs();

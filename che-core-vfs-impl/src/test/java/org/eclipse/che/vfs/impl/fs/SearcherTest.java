@@ -11,6 +11,7 @@
 package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.api.vfs.shared.dto.ItemList;
@@ -99,7 +100,7 @@ public class SearcherTest extends LocalFileSystemTest {
         virtualFileSystemRegistry.unregisterProvider(MY_WORKSPACE_ID);
         // create new one
         provider = new LocalFileSystemProvider(MY_WORKSPACE_ID, new WorkspaceHashLocalFSMountStrategy(root, root), new EventService(),
-                                               searcherProvider, virtualFileSystemRegistry);
+                                               searcherProvider, SystemPathsFilter.ANY, virtualFileSystemRegistry);
         provider.mount(testFsIoRoot);
         mountPoint = provider.getMountPoint(true);
         virtualFileSystemRegistry.registerProvider(MY_WORKSPACE_ID, provider);

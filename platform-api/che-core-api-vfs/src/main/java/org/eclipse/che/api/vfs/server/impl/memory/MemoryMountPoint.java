@@ -21,6 +21,7 @@ import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
 import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.server.Path;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileVisitor;
 
@@ -43,15 +44,17 @@ public class MemoryMountPoint implements MountPoint {
     private final VirtualFileSystemUserContext userContext;
     private final Map<String, VirtualFile>     entries;
     private final VirtualFile                  root;
+    private final SystemPathsFilter            systemFilter;
 
     public MemoryMountPoint(String workspaceId, EventService eventService, SearcherProvider searcherProvider,
-                            VirtualFileSystemUserContext userContext) {
+                            VirtualFileSystemUserContext userContext, SystemPathsFilter systemFilter) {
         this.workspaceId = workspaceId;
         this.eventService = eventService;
         this.searcherProvider = searcherProvider;
         this.userContext = userContext;
         entries = new HashMap<>();
         root = new MemoryVirtualFile(this);
+        this.systemFilter = systemFilter;
     }
 
     @Override
@@ -62,6 +65,10 @@ public class MemoryMountPoint implements MountPoint {
     @Override
     public VirtualFile getRoot() {
         return root;
+    }
+
+    public boolean acceptPath(Path path) {
+        return systemFilter.accept(workspaceId, path);
     }
 
     @Override

@@ -356,10 +356,17 @@ public class ProjectService extends Service {
                                           NewProject newProject)
             throws NotFoundException, ConflictException, ForbiddenException, ServerException {
 
+        Map<String, String> options;
+        if (newProject == null || newProject.getGeneratorDescription() == null) {
+            options = Collections.emptyMap();
+        } else {
+            options = newProject.getGeneratorDescription().getOptions();
+        }
+
         Project module = projectManager.addModule(workspace, parentPath, path,
                 (newProject == null) ? null : DtoConverter
                         .fromDto2(newProject, projectManager.getProjectTypeRegistry()),
-                (newProject == null) ? null : newProject.getGeneratorDescription().getOptions(),
+                options,
                 (newProject == null) ? null : newProject.getVisibility());
 
 
@@ -1250,7 +1257,22 @@ public class ProjectService extends Service {
                    ProjectTypeConstraintException {
 
         Project project = projectManager.getProject(workspace, projectPath(path));
-        final VirtualFileEntry entry = project.getItem(path);
+        final VirtualFileEntry entry;
+        if (project != null) {
+            // If there is a project, allow it to intercept getting file meta-data
+            entry = project.getItem(path);
+        } else {
+            // If there is no project, try to retrieve the item directly
+            FolderEntry wsRoot = projectManager.getProjectsRoot(workspace);
+            if (wsRoot != null) {
+                entry = wsRoot.getChild(path);
+            } else {
+                entry = null;
+            }
+        }
+        if (entry == null) {
+            throw new NotFoundException(path);
+        }
 
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
 

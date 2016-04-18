@@ -12,6 +12,7 @@ package org.eclipse.che.vfs.impl.fs;
 
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFileSystem;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemProvider;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
@@ -39,6 +40,7 @@ public class LocalFileSystemProvider extends VirtualFileSystemProvider {
     private final SearcherProvider             searcherProvider;
     private final MountPointRef                mountRef;
     private final VirtualFileSystemUserContext userContext;
+    private final SystemPathsFilter            systemFilter;
     private final VirtualFileSystemRegistry    vfsRegistry;
 
     /**
@@ -54,8 +56,9 @@ public class LocalFileSystemProvider extends VirtualFileSystemProvider {
                                    LocalFSMountStrategy mountStrategy,
                                    EventService eventService,
                                    SearcherProvider searcherProvider,
+                                   SystemPathsFilter systemFilter,
                                    VirtualFileSystemRegistry vfsRegistry) {
-        this(workspaceId, mountStrategy, eventService, searcherProvider, VirtualFileSystemUserContext.newInstance(), vfsRegistry);
+        this(workspaceId, mountStrategy, eventService, searcherProvider, VirtualFileSystemUserContext.newInstance(), systemFilter, vfsRegistry);
     }
 
 
@@ -73,6 +76,7 @@ public class LocalFileSystemProvider extends VirtualFileSystemProvider {
                                       EventService eventService,
                                       SearcherProvider searcherProvider,
                                       VirtualFileSystemUserContext userContext,
+                                      SystemPathsFilter systemFilter,
                                       VirtualFileSystemRegistry vfsRegistry) {
         super(workspaceId);
         this.workspaceId = workspaceId;
@@ -81,6 +85,7 @@ public class LocalFileSystemProvider extends VirtualFileSystemProvider {
         this.searcherProvider = searcherProvider;
         this.userContext = userContext;
         this.mountRef = new MountPointRef();
+        this.systemFilter = systemFilter;
         this.vfsRegistry = vfsRegistry;
     }
 
@@ -123,7 +128,7 @@ public class LocalFileSystemProvider extends VirtualFileSystemProvider {
      * @see VirtualFileSystem
      */
     public void mount(java.io.File ioFile) throws ServerException {
-        if (!mountRef.maybeSet(new FSMountPoint(getWorkspaceId(), ioFile, eventService, searcherProvider))) {
+        if (!mountRef.maybeSet(new FSMountPoint(getWorkspaceId(), ioFile, eventService, searcherProvider, systemFilter))) {
             throw new ServerException(String.format("Local filesystem '%s' already mounted. ", ioFile));
         }
     }
@@ -137,7 +142,7 @@ public class LocalFileSystemProvider extends VirtualFileSystemProvider {
         FSMountPoint mount = mountRef.get();
         if (mount == null && create) {
             final java.io.File workspaceMountPoint = mountStrategy.getMountPath(workspaceId);
-            FSMountPoint newMount = new FSMountPoint(workspaceId, workspaceMountPoint, eventService, searcherProvider);
+            FSMountPoint newMount = new FSMountPoint(workspaceId, workspaceMountPoint, eventService, searcherProvider, systemFilter);
             if (mountRef.maybeSet(newMount)) {
                 if (!(workspaceMountPoint.exists() || workspaceMountPoint.mkdirs())) {
                     LOG.error("Unable create directory {}", workspaceMountPoint);

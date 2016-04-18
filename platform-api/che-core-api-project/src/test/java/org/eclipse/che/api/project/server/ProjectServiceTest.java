@@ -54,6 +54,7 @@ import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.vfs.server.ContentStream;
 import org.eclipse.che.api.vfs.server.ContentStreamWriter;
 import org.eclipse.che.api.vfs.server.MountPoint;
+import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
 import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
@@ -156,7 +157,7 @@ public class ProjectServiceTest {
                     public VirtualFileSystemUser getVirtualFileSystemUser() {
                         return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
                     }
-                }, vfsRegistry);
+                }, vfsRegistry, new SystemPathsFilter(Collections.singleton(new ProjectMiscPathFilter())));
 
         MemoryMountPoint mmp = (MemoryMountPoint)memoryFileSystemProvider.getMountPoint(true);
         vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
@@ -745,6 +746,41 @@ public class ProjectServiceTest {
         assertEquals(pm.getProject(workspace, "my_project").getModules().get().iterator().next(), "/another");
 
 
+    }
+
+    @Test
+    public void testCreateModuleWithoutGeneratorDescription() throws Exception {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+
+
+
+        Map<String, List<String>> attributeValues = new LinkedHashMap<>();
+        attributeValues.put("new module attribute", Arrays.asList("to be or not to be"));
+
+        NewProject descriptor = DtoFactory.getInstance().createDto(NewProject.class)
+                                          .withType("my_project_type")
+                                          .withDescription("new module")
+                                          .withAttributes(attributeValues);
+
+        ContainerResponse response = launcher.service(HttpMethod.POST,
+                                                      String.format("http://localhost:8080/api/project/%s/my_project?path=%s",
+                                                                    workspace, "new_module"),
+                                                      "http://localhost:8080/api",
+                                                      headers,
+                                                      DtoFactory.getInstance().toJson(descriptor).getBytes(),
+                                                      null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        ProjectDescriptor result = (ProjectDescriptor)response.getEntity();
+        assertNotNull(result);
+        assertEquals(result.getName(), "new_module");
+        assertEquals(result.getPath(), "/my_project/new_module");
+        assertEquals(result.getDescription(), "new module");
+        assertEquals(result.getType(), "my_project_type");
+        assertEquals(result.getTypeName(), "my project type");
+        assertEquals(result.getVisibility(), "public");
+        assertEquals(result.getWorkspaceId(), workspace);
+        assertEquals(result.getBaseUrl(), String.format("http://localhost:8080/api/project/%s/my_project/new_module", workspace));
     }
 
 
@@ -2304,6 +2340,29 @@ public class ProjectServiceTest {
         assertEquals(result.getType(), "file");
         assertEquals(result.getMediaType(), MediaType.TEXT_PLAIN);
 
+    }
+
+    @Test
+    public void testGetItemWithoutParentProject() throws Exception {
+        FolderEntry a = pm.getProjectsRoot(workspace).createFolder("a");
+        a.createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
+        ContainerResponse response = launcher.service(HttpMethod.GET,
+                String.format("http://localhost:8080/api/project/%s/item/a/test.txt",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        ItemReference result = (ItemReference)response.getEntity();
+        assertEquals(result.getType(), "file");
+        assertEquals(result.getMediaType(), MediaType.TEXT_PLAIN);
+    }
+
+    @Test
+    public void testGetMissingItem() throws Exception {
+        ContainerResponse response = launcher.service(HttpMethod.GET,
+                String.format("http://localhost:8080/api/project/%s/item/some_missing_project/a/b",
+                        workspace),
+                "http://localhost:8080/api", null, null, null);
+        assertEquals(response.getStatus(), 404, "Error: " + response.getEntity());
     }
 
 
