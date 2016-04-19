@@ -95,7 +95,7 @@ public class JGitConnectionFactory extends GitConnectionFactory {
     public JGitConnection getConnection(File workDir, GitUser user, LineConsumerFactory outputPublisherFactory)
             throws GitException {
         Repository gitRepo = createRepository(workDir);
-        JGitConnection conn = new JGitConnection(gitRepo, user, credentialsLoader);
+        JGitConnection conn = new JGitConnection(gitRepo, credentialsLoader);
         conn.setOutputLineConsumerFactory(outputPublisherFactory);
         return conn;
     }
