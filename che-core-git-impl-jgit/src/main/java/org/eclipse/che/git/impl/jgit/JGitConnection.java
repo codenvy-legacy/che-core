@@ -193,41 +193,35 @@ public class JGitConnection implements GitConnection {
     @Override
     public void checkout(CheckoutRequest request) throws GitException {
         CheckoutCommand checkoutCommand = getGit().checkout();
+        String startPoint = request.getStartPoint();
+        String name = request.getName();
+        String trackBranch = request.getTrackBranch();
 
         // checkout files?
         List<String> files = request.getFiles();
-        if (files != null && !files.isEmpty()) {
-            for (int i = 0; i < files.size(); i++) {
-                checkoutCommand.addPath(files.get(i));
+        boolean shouldCheckoutToFile = name != null && new File(getWorkingDir(), name).exists();
+        if (shouldCheckoutToFile || (files != null && !files.isEmpty())) {
+            if (shouldCheckoutToFile) {
+                checkoutCommand.addPath(request.getName());
+            } else {
+                files.forEach(checkoutCommand::addPath);
             }
-            try {
-                checkoutCommand.call();
-
-                // remove untracked
-                Status status = this.status(StatusFormat.LONG);
-                List<String> untracked = status.getUntracked();
-                for (int i = 0; i < untracked.size(); i++) {
-                    if (files.contains(untracked.get(i))) {
-                        // remove file
-                        File f = new File(repository.getWorkTree(), untracked.get(i));
-                        f.delete();
-                    }
-
-                }
-
-            } catch (GitAPIException e) {
-                throw new GitException(e.getMessage(), e);
-            }
+            // remove untracked
+            Status status = this.status(StatusFormat.LONG);
+            List<String> unTracked = status.getUntracked();
+            // remove file
+            unTracked.stream().filter(files::contains).forEach(unTrackedFile -> {
+                // remove file
+                File f = new File(getWorkingDir(), unTrackedFile);
+                f.delete();
+            });
         } else {
             // checkout branch
-            String startPoint = request.getStartPoint();
-            String branchName = request.getName();
-            String trackBranch = request.getTrackBranch();
             if (startPoint != null && trackBranch != null) {
                 throw new GitException("Start point and track branch can not be used together.");
             }
 
-            if (request.isCreateNew() && branchName == null) {
+            if (request.isCreateNew() && name == null) {
                 throw new GitException("Branch name must be set when createNew equals to true.");
             }
             if (startPoint != null) {
@@ -235,19 +229,19 @@ public class JGitConnection implements GitConnection {
             }
             if (request.isCreateNew()) {
                 checkoutCommand.setCreateBranch(true);
-                checkoutCommand.setName(branchName);
-            } else if (branchName != null) {
-                checkoutCommand.setName(branchName);
+                checkoutCommand.setName(name);
+            } else if (name != null) {
+                checkoutCommand.setName(name);
 
                 List<String> localBranches =
                         branchList(newDto(BranchListRequest.class).withListMode(BranchListRequest.LIST_LOCAL)).stream()
                                                                                                               .map(Branch::getDisplayName)
                                                                                                               .collect(Collectors.toList());
 
-                if (!localBranches.contains(branchName)) {
+                if (!localBranches.contains(name)) {
                     Optional<Branch> remoteBranch = branchList(newDto(BranchListRequest.class).withListMode(BranchListRequest.LIST_REMOTE))
                             .stream()
-                            .filter(branch -> branch.getName().contains(branchName))
+                            .filter(branch -> branch.getName().contains(name))
                             .findFirst();
                     if (remoteBranch.isPresent()) {
                         checkoutCommand.setCreateBranch(true);
@@ -258,21 +252,21 @@ public class JGitConnection implements GitConnection {
                 }
             }
             if (trackBranch != null) {
-                if (branchName == null) {
+                if (name == null) {
                     checkoutCommand.setName(cleanRemoteName(trackBranch));
                 }
                 checkoutCommand.setCreateBranch(true);
                 checkoutCommand.setUpstreamMode(SetupUpstreamMode.TRACK);
                 checkoutCommand.setStartPoint(trackBranch);
             }
-            try {
-                checkoutCommand.call();
-            } catch (GitAPIException exception) {
-                if (exception.getMessage().endsWith("already exists")) {
-                    throw new GitException(Messages.getString("ERROR_BRANCH_NAME_EXISTS", branchName));
-                }
-                throw new GitException(exception.getMessage(), exception.getCause());
+        }
+        try {
+            checkoutCommand.call();
+        } catch (GitAPIException exception) {
+            if (exception.getMessage().endsWith("already exists")) {
+                throw new GitException(Messages.getString("ERROR_BRANCH_NAME_EXISTS", name));
             }
+            throw new GitException(exception.getMessage(), exception.getCause());
         }
     }
 
