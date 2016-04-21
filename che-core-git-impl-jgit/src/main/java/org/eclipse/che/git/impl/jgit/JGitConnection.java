@@ -812,7 +812,7 @@ public class JGitConnection implements GitConnection {
             }
             throw new GitException(errorMessage, exception);
         }
-        return DtoFactory.getInstance().createDto(PullResponse.class);
+        return DtoFactory.getInstance().createDto(PullResponse.class).withCommandOutput("Successfully pulled from " + remote);
     }
 
     @Override
@@ -874,7 +874,7 @@ public class JGitConnection implements GitConnection {
                 throw new GitException(exception.getMessage(), exception);
             }
         }
-        return DtoFactory.getInstance().createDto(PushResponse.class);
+        return DtoFactory.getInstance().createDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remote );
     }
 
     @Override
