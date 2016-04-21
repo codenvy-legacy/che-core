@@ -781,7 +781,7 @@ public class JGitConnection implements GitConnection {
             }
             org.eclipse.jgit.api.MergeResult res = getGit().merge().include(remoteBranchRef).call();
             if (res.getMergeStatus().equals(org.eclipse.jgit.api.MergeResult.MergeStatus.ALREADY_UP_TO_DATE)) {
-                throw new GitException(res.getMergeStatus().toString());
+                return newDto(PullResponse.class).withCommandOutput(res.getMergeStatus().toString());
             }
 
             if (res.getConflicts() != null) {
@@ -852,7 +852,7 @@ public class JGitConnection implements GitConnection {
 
                         if (remoteRefUpdate.getStatus()
                                            .equals(org.eclipse.jgit.transport.RemoteRefUpdate.Status.UP_TO_DATE)) {
-                            message.append(Messages.getString("INFO_PUSH_ATTEMPT_IGNORED_UP_TO_DATE"));
+                            return newDto(PushResponse.class).withCommandOutput(remoteRefUpdate.getStatus().toString());
                         } else {
                             String refspec = getCurrentBranch() + " -> " + request.getRefSpec().get(0).split(":")[1];
                             message.append(
