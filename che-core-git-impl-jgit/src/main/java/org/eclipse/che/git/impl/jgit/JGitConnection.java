@@ -23,8 +23,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -128,6 +130,8 @@ import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
+
 /**
  * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
  * @version $Id: JGitConnection.java 22817 2011-03-22 09:17:52Z andrew00x $
@@ -217,23 +221,55 @@ public class JGitConnection implements GitConnection {
         } else {
             // checkout branch
             String startPoint = request.getStartPoint();
-            String cleanName = cleanRemoteName(request.getName());
+            String branchName = request.getName();
+            String trackBranch = request.getTrackBranch();
+            if (startPoint != null && trackBranch != null) {
+                throw new GitException("Start point and track branch can not be used together.");
+            }
+
+            if (request.isCreateNew() && branchName == null) {
+                throw new GitException("Branch name must be set when createNew equals to true.");
+            }
             if (startPoint != null) {
                 checkoutCommand.setStartPoint(startPoint);
             }
-            checkoutCommand.setCreateBranch(request.isCreateNew());
-            checkoutCommand.setName(cleanName);
-            if (request.getTrackBranch() != null) {
+            if (request.isCreateNew()) {
+                checkoutCommand.setCreateBranch(true);
+                checkoutCommand.setName(branchName);
+            } else if (branchName != null) {
+                checkoutCommand.setName(branchName);
+
+                List<String> localBranches =
+                        branchList(newDto(BranchListRequest.class).withListMode(BranchListRequest.LIST_LOCAL)).stream()
+                                                                                                              .map(Branch::getDisplayName)
+                                                                                                              .collect(Collectors.toList());
+
+                if (!localBranches.contains(branchName)) {
+                    Optional<Branch> remoteBranch = branchList(newDto(BranchListRequest.class).withListMode(BranchListRequest.LIST_REMOTE))
+                            .stream()
+                            .filter(branch -> branch.getName().contains(branchName))
+                            .findFirst();
+                    if (remoteBranch.isPresent()) {
+                        checkoutCommand.setCreateBranch(true);
+                        checkoutCommand.setUpstreamMode(SetupUpstreamMode.TRACK);
+                        checkoutCommand.setStartPoint(remoteBranch.get().getName());
+                        return;
+                    }
+                }
+            }
+            if (trackBranch != null) {
+                if (branchName == null) {
+                    checkoutCommand.setName(cleanRemoteName(trackBranch));
+                }
+                checkoutCommand.setCreateBranch(true);
                 checkoutCommand.setUpstreamMode(SetupUpstreamMode.TRACK);
-                checkoutCommand.setStartPoint(request.getTrackBranch());
-            } else {
-                checkoutCommand.setUpstreamMode(SetupUpstreamMode.SET_UPSTREAM);
+                checkoutCommand.setStartPoint(trackBranch);
             }
             try {
                 checkoutCommand.call();
             } catch (GitAPIException exception) {
                 if (exception.getMessage().endsWith("already exists")) {
-                    throw new GitException(Messages.getString("ERROR_BRANCH_NAME_EXISTS", cleanName));
+                    throw new GitException(Messages.getString("ERROR_BRANCH_NAME_EXISTS", branchName));
                 }
                 throw new GitException(exception.getMessage(), exception.getCause());
             }
