@@ -6,7 +6,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - API 
+ *   Codenvy, S.A. - API
  *   SAP           - initial implementation
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit;
@@ -323,32 +323,37 @@ public class JGitConnection implements GitConnection {
             }
         }
         List<Ref> refs;
+        String currentRef;
         try {
             refs = listBranchCommand.call();
-        } catch (GitAPIException err) {
-            throw new GitException(err);
-        }
-        String current = null;
-        try {
-            Ref headRef = repository.exactRef(Constants.HEAD);
-            if (headRef != null && !(Constants.HEAD.equals(headRef.getLeaf().getName()))) {
-                current = headRef.getLeaf().getName();
+            String headBranch = getRepository().getBranch();
+            Optional<Ref> currentTag = getGit().tagList().call().stream()
+                                               .filter(tag -> tag.getObjectId().getName().equals(headBranch))
+                                               .findFirst();
+            if (currentTag.isPresent()) {
+                currentRef = currentTag.get().getName();
+            } else {
+                currentRef = "refs/heads/" + headBranch;
             }
-        } catch (IOException e) {
-            throw new GitException(e.getMessage(), e);
-        }
 
-        List<Branch> branches = new ArrayList<Branch>();
-        if (current == null) {
-            branches.add(createDto(Branch.class).withName("(no branch)").withActive(true).withDisplayName("(no name)")
-                                                .withRemote(false));
+        } catch (GitAPIException | IOException exception) {
+            throw new GitException(exception.getMessage());
         }
-
-        for (Ref brRef : refs) {
-            String refName = brRef.getName();
-            Branch branch = createDto(Branch.class).withName(refName).withActive(refName.equals(current))
-                                                   .withDisplayName(Repository.shortenRefName(refName))
-                                                   .withRemote(brRef.getName().startsWith("refs/remotes"));
+        List<Branch> branches = new ArrayList<>();
+        for (Ref ref : refs) {
+            String refName = ref.getName();
+            boolean isCommitOrTag = Constants.HEAD.equals(refName);
+            String branchName = isCommitOrTag ? currentRef : refName;
+            String branchDisplayName;
+            if (isCommitOrTag) {
+                branchDisplayName = "(detached from " + Repository.shortenRefName(currentRef) + ")";
+            } else {
+                branchDisplayName = Repository.shortenRefName(refName);
+            }
+            Branch branch = createDto(Branch.class).withName(branchName)
+                                                   .withActive(isCommitOrTag || refName.equals(currentRef))
+                                                   .withDisplayName(branchDisplayName)
+                                                   .withRemote(ref.getName().startsWith("refs/remotes"));
             branches.add(branch);
         }
         return branches;
@@ -465,7 +470,7 @@ public class JGitConnection implements GitConnection {
             GitUser gitUser = createDto(GitUser.class).withName(comitterName).withEmail(comitterEmail);
             Revision revision = createDto(Revision.class).withBranch(getCurrentBranch())
                                                          .withId(result.getId().getName()).withMessage(result.getFullMessage())
-                                                         .withCommitTime((long) result.getCommitTime() * 1000).withCommitter(gitUser);
+                                                         .withCommitTime((long)result.getCommitTime() * 1000).withCommitter(gitUser);
             return revision;
         } catch (GitAPIException e) {
             throw new GitException(e);
@@ -600,7 +605,8 @@ public class JGitConnection implements GitConnection {
                 GitUser gitUser = createDto(GitUser.class).withName(committerIdentity.getName())
                                                           .withEmail(committerIdentity.getEmailAddress());
                 Revision revision = createDto(Revision.class).withId(commit.getId().getName())
-                                                             .withMessage(commit.getFullMessage()).withCommitTime((long) commit.getCommitTime() * 1000)
+                                                             .withMessage(commit.getFullMessage())
+                                                             .withCommitTime((long)commit.getCommitTime() * 1000)
                                                              .withCommitter(gitUser);
                 commits.add(revision);
             }
@@ -874,7 +880,7 @@ public class JGitConnection implements GitConnection {
                 throw new GitException(exception.getMessage(), exception);
             }
         }
-        return DtoFactory.getInstance().createDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remote );
+        return DtoFactory.getInstance().createDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remote);
     }
 
     @Override
@@ -913,7 +919,8 @@ public class JGitConnection implements GitConnection {
         if (branches != null) {
             for (String branch : branches) {
                 remoteConfig.addFetchRefSpec( //
-                                              new RefSpec(Constants.R_HEADS + branch + ":" + Constants.R_REMOTES + remoteName + "/" + branch)
+                                              new RefSpec(
+                                                      Constants.R_HEADS + branch + ":" + Constants.R_REMOTES + remoteName + "/" + branch)
                                                       .setForceUpdate(true));
             }
         } else {
