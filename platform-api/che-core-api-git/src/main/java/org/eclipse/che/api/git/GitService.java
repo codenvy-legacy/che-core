@@ -79,10 +79,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** @author andrew00x */
 @Path("git/{ws-id}")
@@ -390,6 +387,17 @@ public class GitService {
                 for (String row : config.getList()) {
                     String[] keyValues = row.split("=", 2);
                     result.put(keyValues[0], keyValues[1]);
+                }
+            } else if (request.isSet()) {
+                for (Map.Entry<String, String> configData : request.getConfigData().entrySet()) {
+                    try {
+                        config.set(configData.getKey(), configData.getValue());
+                        result.put(configData.getKey(), configData.getValue());
+                    } catch (GitException exception) {
+                        final String msg = "Cannot write to config file";
+                        LOG.error(msg, exception);
+                        throw new GitException(msg);
+                    }
                 }
             } else {
                 for (String entry : request.getConfigEntry()) {
