@@ -1148,42 +1148,11 @@ public class JGitConnection implements GitConnection {
 
     @Override
     public Status status(StatusFormat format) throws GitException {
-        if (!RepositoryCache.FileKey.isGitRepository(getGit().getRepository().getDirectory(), FS.DETECTED)) {
-            throw new GitException(Messages.getString("ERROR_STATUS_NOT_GIT_REPO"));
+        if (!RepositoryCache.FileKey.isGitRepository(getRepository().getDirectory(), FS.DETECTED)) {
+            throw new GitException("Not a git repository");
         }
-
-        org.eclipse.jgit.api.Status gitStatus;
-        try {
-            gitStatus = getGit().status().call();
-        } catch (NoWorkTreeException | GitAPIException e) {
-            throw new GitException(e.getMessage(), e);
-        }
-
-        List<String> untrackedFolders = new ArrayList<>(gitStatus.getUntrackedFolders());
-        List<String> untrackedFiles = new ArrayList<>(gitStatus.getUntracked());
-
-        // The Che result
-        String currentBranch = getCurrentBranch();
-        Status cheStatus = createDto(org.eclipse.che.api.git.shared.Status.class);
-        cheStatus.setRepositoryState(repository.getRepositoryState().name());
-        cheStatus.setAdded(new ArrayList<>(gitStatus.getAdded()));
-        cheStatus.setBranchName(currentBranch);
-        cheStatus.setChanged(new ArrayList<>(gitStatus.getChanged()));
-        cheStatus.setClean(gitStatus.isClean());
-        cheStatus.setConflicting(new ArrayList<>(gitStatus.getConflicting()));
-        cheStatus.setFormat(format);
-        cheStatus.setMissing(new ArrayList<>(gitStatus.getMissing()));
-        cheStatus.setModified(new ArrayList<>(gitStatus.getModified()));
-        cheStatus.setRemoved(new ArrayList<>(gitStatus.getRemoved()));
-        cheStatus.setUntracked(untrackedFiles);
-        cheStatus.setUntrackedFolders(untrackedFolders);
-        return cheStatus;
-    }
-
-    static <T extends Comparable<T>> List<T> asSortedList(Set<T> set) {
-        List<T> list = new ArrayList<T>(set);
-        Collections.sort(list);
-        return list;
+        String branchName = getCurrentBranch();
+        return new JGitStatusImpl(branchName, getGit().status(), format);
     }
 
     @Override
