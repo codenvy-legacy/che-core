@@ -127,6 +127,7 @@ import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FS;
+import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -361,6 +362,7 @@ public class JGitConnection implements GitConnection {
 
     public void clone(CloneRequest request) throws GitException {
         String remoteUri;
+        boolean removeIfFailed = false;
         try {
             if (request.getRemoteName() == null) {
                 request.setRemoteName(Constants.DEFAULT_REMOTE_NAME);
@@ -368,6 +370,11 @@ public class JGitConnection implements GitConnection {
             if (request.getWorkingDir() == null) {
                 request.setWorkingDir(repository.getWorkTree().getCanonicalPath());
             }
+
+            // If clone fails and the .git folder didn't exist we want to remove it.
+            // We have to do this here because the clone command doesn't revert its own changes in case of failure.
+            removeIfFailed = !repository.getDirectory().exists();
+
             CloneCommand cloneCom = Git.cloneRepository();
             cloneCom.setRemote(request.getRemoteName());
             remoteUri = request.getRemoteUri();
@@ -394,6 +401,11 @@ public class JGitConnection implements GitConnection {
             config.save();
 
         } catch (GitAPIException | IOException e) {
+            // Delete .git directory in case it was created
+            if (removeIfFailed) {
+                deleteRepositoryFolder();
+            }
+
             throw new GitException(e);
         }
     }
@@ -583,10 +595,29 @@ public class JGitConnection implements GitConnection {
         if (!workDir.exists()) {
             throw new GitException(Messages.getString("ERROR_INIT_FOLDER_MISSING", workDir));
         }
+        // If create fails and the .git folder didn't exist we want to remove it.
+        // We have to do this here because the create command doesn't revert its own changes in case of failure.
+        boolean removeIfFailed = !repository.getDirectory().exists();
+
         try {
             repository.create(request.isBare());
         } catch (IOException e) {
+            if (removeIfFailed) {
+                deleteRepositoryFolder();
+            }
+
             throw new GitException(e.getMessage(), e);
+        }
+    }
+
+    private void deleteRepositoryFolder() {
+        try {
+            if (repository.getDirectory().exists()) {
+                FileUtils.delete(repository.getDirectory(), FileUtils.RECURSIVE | FileUtils.IGNORE_ERRORS | FileUtils.IGNORE_ERRORS);
+            }
+        } catch (Exception e1) {
+            // Ignore the error since we want to throw the original error
+            LOG.error("Could not remove .git folder in path " +  repository.getDirectory().getPath(), e1);
         }
     }
 

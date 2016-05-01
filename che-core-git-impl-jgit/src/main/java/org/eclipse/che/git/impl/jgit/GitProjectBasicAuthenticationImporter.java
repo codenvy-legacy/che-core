@@ -22,6 +22,7 @@ import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitProjectImporter;
 import org.eclipse.che.api.project.server.FolderEntry;
+import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.vfs.impl.fs.LocalPathResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,16 +59,37 @@ public class GitProjectBasicAuthenticationImporter extends GitProjectImporter {
         // set credentials for GitProjectCredentialsProvider in thread local
         // object
 
-        LOG.info("Setting https credentials for remote git repository " + location);
-        GitBasicAuthenticationCredentialsProvider.setCurrentCredentials(parameters.get(USER_NAME),
-                parameters.get(PASSWORD));
+        boolean setCredentials = false;
+        final String user = parameters.get(USER_NAME);
+        final String pass = parameters.get(PASSWORD);
+        if (user != null && pass != null) {
+            setCredentials = true;
+            LOG.info("Setting https credentials for remote git repository " + location);
+            GitBasicAuthenticationCredentialsProvider.setCurrentCredentials(user, pass);
+        }
+        // Make sure to delete the .git folder in case import fails
+        VirtualFile gitFolder = baseFolder.getVirtualFile().getChild(".git");
+        boolean removeIfFailed = gitFolder == null || !gitFolder.exists(); // Delete if the folder didn't exist
         try {
             super.importSources(baseFolder, location, parameters, consumerFactory);
         } catch (Exception e) {
-            // remove base folder in case of error
-            baseFolder.remove();
+            if (removeIfFailed) {
+                try {
+                    // Get the git folder again (since if it didn't exist it might be null)
+                    gitFolder = baseFolder.getVirtualFile().getChild(".git");
+                    // Delete if it exists (it might have been deleted already or not created at all)
+                    if (gitFolder != null && gitFolder.exists()) {
+                        gitFolder.delete(null);
+                    }
+                } catch (Exception e1) {
+                    LOG.error("Could not remove .git folder " + gitFolder.getPath(), e1);
+                }
+            }
+            throw e;
         } finally {
-            GitBasicAuthenticationCredentialsProvider.clearCredentials();
+            if (setCredentials) {
+                GitBasicAuthenticationCredentialsProvider.clearCredentials();
+            }
         }
     }
 
