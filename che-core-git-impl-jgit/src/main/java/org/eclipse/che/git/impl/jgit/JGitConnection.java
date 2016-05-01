@@ -613,7 +613,7 @@ public class JGitConnection implements GitConnection {
     private void deleteRepositoryFolder() {
         try {
             if (repository.getDirectory().exists()) {
-                FileUtils.delete(repository.getDirectory(), FileUtils.RECURSIVE | FileUtils.IGNORE_ERRORS | FileUtils.IGNORE_ERRORS);
+                FileUtils.delete(repository.getDirectory(), FileUtils.RECURSIVE | FileUtils.IGNORE_ERRORS);
             }
         } catch (Exception e1) {
             // Ignore the error since we want to throw the original error
