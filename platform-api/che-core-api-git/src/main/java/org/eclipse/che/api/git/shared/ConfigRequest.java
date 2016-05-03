@@ -26,10 +26,22 @@ public interface ConfigRequest {
 
     ConfigRequest withGetAll(boolean geAll);
 
+    boolean isSet();
+
+    void setSet(boolean bSet);
+
+    ConfigRequest withSet(boolean bSet);
+
     List<String> getConfigEntry();
 
     void setConfigEntry(List<String> configEntry);
 
     ConfigRequest withConfigEntry(List<String> configEntry);
+
+    Map<String, String> getConfigData();
+
+    void setConfigData(Map<String, String> configData);
+
+    ConfigRequest withConfigData(Map<String, String> configData);
 
 }
