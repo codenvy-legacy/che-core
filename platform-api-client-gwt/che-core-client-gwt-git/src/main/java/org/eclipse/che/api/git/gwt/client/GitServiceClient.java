@@ -326,18 +326,18 @@ public interface GitServiceClient {
                 @NotNull AsyncRequestCallback<Revision> callback);
 
     /**
-     * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by
-     * callback in <code>onSuccess(Revision result)</code>. Sends request over WebSocket.
+     * Performs config command which returns values of a given list of config keys. The result of the command is represented by Map of String to String, which is returned by
+     * callback in <code>onSuccess(Map<String, String> result)</code>. Sends request over WebSocket.
      *
      * @param project
      *         project (root of GIT repository)
-     * @param all
-     *         automatically stage files that have been modified and deleted
+     * @param requestedConfig
+     *         list of config keys
      * @param callback
      *         callback for sending asynchronous response
      */
-    void config(@NotNull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
-                @NotNull AsyncRequestCallback<Map<String, String>> callback);
+    void config(@NotNull ProjectDescriptor project, @Nullable List<String> requestedConfig,
+            @NotNull AsyncRequestCallback<Map<String, String>> callback);
 
     /**
      * Compare two commits, get the diff for pointed file(s) or for the whole project in text format.
