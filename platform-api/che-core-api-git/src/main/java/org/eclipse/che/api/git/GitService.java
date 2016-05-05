@@ -68,6 +68,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -79,7 +80,10 @@ import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** @author andrew00x */
 @Path("git/{ws-id}")
@@ -374,39 +378,51 @@ public class GitService {
         }
     }
 
-
     @Path("config")
-    @POST
+    @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> getConfig(ConfigRequest request) throws ApiException {
+    public Map<String, String> getConfigs(@QueryParam("requestedConfigs") List<String> requestedConfigs)
+            throws ApiException {
         Map<String, String> result = new HashMap<>();
         try (GitConnection gitConnection = getGitConnection()) {
             Config config = gitConnection.getConfig();
-            if (request.isGetAll()) {
+            if (requestedConfigs == null || requestedConfigs.isEmpty()) {
                 for (String row : config.getList()) {
                     String[] keyValues = row.split("=", 2);
                     result.put(keyValues[0], keyValues[1]);
                 }
-            } else if (request.isSet()) {
-                for (Map.Entry<String, String> configData : request.getConfigData().entrySet()) {
-                    try {
-                        config.set(configData.getKey(), configData.getValue());
-                        result.put(configData.getKey(), configData.getValue());
-                    } catch (GitException exception) {
-                        final String msg = "Cannot write to config file";
-                        LOG.error(msg, exception);
-                        throw new GitException(msg);
-                    }
-                }
             } else {
-                for (String entry : request.getConfigEntry()) {
+                for (String entry : requestedConfigs) {
                     try {
                         String value = config.get(entry);
                         result.put(entry, value);
                     } catch (GitException exception) {
                         //value for this config property non found. Do nothing
                     }
+                }
+            }
+        }
+        return result;
+    }
+
+
+    @Path("config")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> setConfig(ConfigRequest request) throws ApiException {
+        Map<String, String> result = new HashMap<>();
+        try (GitConnection gitConnection = getGitConnection()) {
+            Config config = gitConnection.getConfig();
+            for (Map.Entry<String, String> configData : request.getConfigEntries().entrySet()) {
+                try {
+                    config.set(configData.getKey(), configData.getValue());
+                    result.put(configData.getKey(), configData.getValue());
+                } catch (GitException exception) {
+                    final String msg = "Cannot write to config file";
+                    LOG.error(msg, exception);
+                    throw new GitException(msg);
                 }
             }
         }

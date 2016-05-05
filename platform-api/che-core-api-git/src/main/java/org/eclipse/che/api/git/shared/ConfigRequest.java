@@ -21,28 +21,10 @@ import java.util.Map;
 @DTO
 public interface ConfigRequest {
 
-    boolean isGetAll();
+    Map<String, String> getConfigEntries();
 
-    void setGetAll(boolean geAll);
+    void setConfigEntries(Map<String, String> ConfigEntries);
 
-    ConfigRequest withGetAll(boolean geAll);
-
-    boolean isSet();
-
-    void setSet(boolean bSet);
-
-    ConfigRequest withSet(boolean bSet);
-
-    List<String> getConfigEntry();
-
-    void setConfigEntry(List<String> configEntry);
-
-    ConfigRequest withConfigEntry(List<String> configEntry);
-
-    Map<String, String> getConfigData();
-
-    void setConfigData(Map<String, String> configData);
-
-    ConfigRequest withConfigData(Map<String, String> configData);
+    ConfigRequest withConfigEntries(Map<String, String> configEntries);
 
 }
