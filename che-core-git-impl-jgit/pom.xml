@@ -135,6 +135,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/*.java</exclude>
+                        <exclude>**/*.properties</exclude>
                         <exclude>pom.xml</exclude>
                     </excludes>
                 </configuration>

@@ -12,7 +12,7 @@
 package org.eclipse.che.git.impl.jgit;
 
 public class Messages {
-    private static final String BUNDLE_NAME = "org.eclipse.che.ide.ext.git.server.jgit.messages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.eclipse.che.git.impl.jgit.messages"; //$NON-NLS-1$
 
     private static ExternalStringsSource SOURCE = new ExternalStringsSource(BUNDLE_NAME);
 
