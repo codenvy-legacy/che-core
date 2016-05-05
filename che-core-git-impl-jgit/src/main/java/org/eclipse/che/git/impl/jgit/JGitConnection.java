@@ -393,9 +393,10 @@ public class JGitConnection implements GitConnection {
 
             remoteUri = request.getRemoteUri();
             CloneCommand cloneCommand = Git.cloneRepository()
+                                           .setCloneSubmodules(request.getRecursiveEnabled())
+                                           .setDirectory(new File(request.getWorkingDir()))
                                            .setRemote(request.getRemoteName())
-                                           .setURI(remoteUri)
-                                           .setDirectory(new File(request.getWorkingDir()));
+                                           .setURI(remoteUri);
             if (request.getBranchesToFetch() != null) {
                 cloneCommand.setBranchesToClone(new ArrayList<>(request.getBranchesToFetch()));
             } else {
@@ -404,8 +405,7 @@ public class JGitConnection implements GitConnection {
 
             executeRemoteCommand(remoteUri, cloneCommand);
 
-            Repository repository = getRepository();
-            StoredConfig repositoryConfig = repository.getConfig();
+            StoredConfig repositoryConfig = getRepository().getConfig();
             GitUser gitUser = getUser();
             if (gitUser != null) {
                 repositoryConfig.setString(ConfigConstants.CONFIG_USER_SECTION, null, ConfigConstants.CONFIG_KEY_NAME, gitUser.getName());
