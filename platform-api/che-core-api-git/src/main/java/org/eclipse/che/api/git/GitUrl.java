@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.git.impl.nativegit;
+package org.eclipse.che.api.git;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

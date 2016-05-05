@@ -16,6 +16,7 @@ import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.git.impl.jgit.JGitConnectionFactory;
+import org.eclipse.che.git.impl.jgit.ssh.SshKeyProvider;
 import org.testng.annotations.DataProvider;
 
 import static org.mockito.Matchers.anyString;
@@ -35,7 +36,8 @@ public class GitConnectionFactoryProvider {
                 new Object[]{
                         new JGitConnectionFactory(
                                 mock(CredentialsLoader.class),
-                                dao
+                                dao,
+                                mock(SshKeyProvider.class)
                         )
                 }
         };

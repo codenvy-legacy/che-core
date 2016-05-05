@@ -11,14 +11,22 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit;
 
+import com.google.common.io.Files;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +45,7 @@ import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.GitUrl;
 import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
@@ -49,7 +58,6 @@ import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.DiffRequest;
 import org.eclipse.che.api.git.shared.FetchRequest;
-import org.eclipse.che.api.git.shared.GitRequest;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.InitRequest;
 import org.eclipse.che.api.git.shared.LogRequest;
@@ -79,7 +87,7 @@ import org.eclipse.che.api.git.shared.TagCreateRequest;
 import org.eclipse.che.api.git.shared.TagDeleteRequest;
 import org.eclipse.che.api.git.shared.TagListRequest;
 import org.eclipse.che.dto.server.DtoFactory;
-import org.eclipse.che.git.impl.jgit.ssh.SshUtil;
+import org.eclipse.che.git.impl.jgit.ssh.SshKeyProvider;
 import org.eclipse.che.git.impl.jgit.shared.JGitRebaseResponse;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -100,10 +108,10 @@ import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.TransportCommand;
+import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.DetachedHeadException;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -120,10 +128,15 @@ import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.SshTransport;
+import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.util.FS;
@@ -131,6 +144,8 @@ import org.eclipse.jgit.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
@@ -145,17 +160,18 @@ public class JGitConnection implements GitConnection {
 
     private static final Logger LOG = LoggerFactory.getLogger(JGitConnection.class);
 
-    private final Repository repository;
-
-    private JGitConfigImpl config;
     private Git            git;
+    private JGitConfigImpl config;
 
     private final CredentialsLoader credentialsLoader;
+    private final SshKeyProvider    sshKeyProvider;
+    private final Repository        repository;
 
     @Inject
-    JGitConnection(Repository repository, CredentialsLoader credentialsLoader) {
+    JGitConnection(Repository repository, CredentialsLoader credentialsLoader, SshKeyProvider sshKeyProvider) {
         this.repository = repository;
         this.credentialsLoader = credentialsLoader;
+        this.sshKeyProvider = sshKeyProvider;
     }
 
     @Override
@@ -360,7 +376,7 @@ public class JGitConnection implements GitConnection {
         return branches;
     }
 
-    public void clone(CloneRequest request) throws GitException {
+    public void clone(CloneRequest request) throws GitException, UnauthorizedException {
         String remoteUri;
         boolean removeIfFailed = false;
         try {
@@ -375,38 +391,34 @@ public class JGitConnection implements GitConnection {
             // We have to do this here because the clone command doesn't revert its own changes in case of failure.
             removeIfFailed = !repository.getDirectory().exists();
 
-            CloneCommand cloneCom = Git.cloneRepository();
-            cloneCom.setRemote(request.getRemoteName());
             remoteUri = request.getRemoteUri();
-            cloneCom.setURI(remoteUri);
-            cloneCom.setDirectory(new File(request.getWorkingDir()));
+            CloneCommand cloneCommand = Git.cloneRepository()
+                                           .setRemote(request.getRemoteName())
+                                           .setURI(remoteUri)
+                                           .setDirectory(new File(request.getWorkingDir()));
             if (request.getBranchesToFetch() != null) {
-                cloneCom.setBranchesToClone(new ArrayList<>(request.getBranchesToFetch()));
+                cloneCommand.setBranchesToClone(new ArrayList<>(request.getBranchesToFetch()));
             } else {
-                cloneCom.setCloneAllBranches(true);
+                cloneCommand.setCloneAllBranches(true);
             }
 
-            setRemoteCommandCredentials(request, remoteUri, cloneCom);
+            executeRemoteCommand(remoteUri, cloneCommand);
 
-            Repository repo = cloneCom.call().getRepository();
-            StoredConfig config = repo.getConfig();
+            Repository repository = getRepository();
+            StoredConfig repositoryConfig = repository.getConfig();
             GitUser gitUser = getUser();
             if (gitUser != null) {
-                config.setString(ConfigConstants.CONFIG_USER_SECTION, null, ConfigConstants.CONFIG_KEY_NAME,
-                                 gitUser.getName());
-                config.setString(ConfigConstants.CONFIG_USER_SECTION, null, ConfigConstants.CONFIG_KEY_EMAIL,
-                                 gitUser.getEmail());
+                repositoryConfig.setString(ConfigConstants.CONFIG_USER_SECTION, null, ConfigConstants.CONFIG_KEY_NAME, gitUser.getName());
+                repositoryConfig.setString(ConfigConstants.CONFIG_USER_SECTION, null, ConfigConstants.CONFIG_KEY_EMAIL, gitUser.getEmail());
             }
-
-            config.save();
-
-        } catch (GitAPIException | IOException e) {
+            repositoryConfig.save();
+        } catch (IOException | GitAPIException exception) {
             // Delete .git directory in case it was created
             if (removeIfFailed) {
                 deleteRepositoryFolder();
             }
 
-            throw new GitException(e);
+            throw new GitException(exception.getMessage());
         }
     }
 
@@ -495,9 +507,9 @@ public class JGitConnection implements GitConnection {
     }
 
     @Override
-    public void fetch(FetchRequest request) throws GitException {
-        String remote = request.getRemote();
-
+    public void fetch(FetchRequest request) throws GitException, UnauthorizedException {
+        String remoteName = request.getRemote();
+        String remoteUri;
         try {
             List<RefSpec> fetchRefSpecs;
             List<String> refSpec = request.getRefSpec();
@@ -518,11 +530,11 @@ public class JGitConnection implements GitConnection {
 
             // If this an unknown remote with no refspecs given, put HEAD
             // (otherwise JGit fails)
-            if (remote != null && (refSpec == null || refSpec.isEmpty())) {
+            if (remoteName != null && (refSpec == null || refSpec.isEmpty())) {
                 boolean found = false;
                 List<Remote> configRemotes = remoteList(createDto(RemoteListRequest.class));
                 for (Remote configRemote : configRemotes) {
-                    if (remote.equals(configRemote.getName())) {
+                    if (remoteName.equals(configRemote.getName())) {
                         found = true;
                         break;
                     }
@@ -532,60 +544,32 @@ public class JGitConnection implements GitConnection {
                 }
             }
 
-            setRemoteCommandCredentials(request, remote, fetchCommand);
+            if (remoteName == null) {
+                remoteName = Constants.DEFAULT_REMOTE_NAME;
+            }
+            fetchCommand.setRemote(remoteName);
+            remoteUri = getRepository().getConfig().getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteName,
+                                                              ConfigConstants.CONFIG_KEY_URL);
+            fetchCommand.setRefSpecs(fetchRefSpecs);
 
-            if (remote != null) {
-                fetchCommand.setRemote(remote);
-            }
-            if (fetchRefSpecs != null) {
-                fetchCommand.setRefSpecs(fetchRefSpecs);
-            }
             int timeout = request.getTimeout();
             if (timeout > 0) {
                 fetchCommand.setTimeout(timeout);
             }
             fetchCommand.setRemoveDeletedRefs(request.isRemoveDeletedRefs());
 
-            fetchCommand.call();
-        } catch (GitAPIException exception) {
+            executeRemoteCommand(remoteUri, fetchCommand);
+        } catch (GitException | GitAPIException exception) {
             String errorMessage;
             if (exception.getMessage().contains("Invalid remote: ")) {
                 errorMessage = "No remote repository specified.  Please, specify either a URL or a " +
                                "remote name from which new revisions should be fetched in request.";
+            } else if ("Nothing to fetch.".equals(exception.getMessage())) {
+                return;
             } else {
                 errorMessage = exception.getMessage();
             }
             throw new GitException(errorMessage);
-        }
-    }
-
-    private void setRemoteCommandCredentials(GitRequest request, String remote, TransportCommand<?, ?> command)
-            throws GitException {
-        if (SshUtil.isSSH(remote)) {
-            throw new GitException("Unsupported Operation - SSH");
-        } else {
-            // workaround for clone use-case remove when normal credential
-            // storage is implemented
-            boolean useRequestCredentials = false;
-            String user = request.getAttributes().get("userName");
-            String password = request.getAttributes().get("password");
-            if (user != null && password != null) {
-                useRequestCredentials = true;
-            }
-            try {
-                if (useRequestCredentials) {
-                    GitBasicAuthenticationCredentialsProvider.setCurrentCredentials(user, password);
-                }
-                UserCredential credentials = credentialsLoader.getUserCredential(remote);
-                if (credentials != null) {
-                    command.setCredentialsProvider(new UsernamePasswordCredentialsProvider(credentials.getUserName(),
-                                                                                           credentials.getPassword()));
-                }
-            } finally {
-                if (useRequestCredentials) {
-                    GitBasicAuthenticationCredentialsProvider.clearCredentials();
-                }
-            }
         }
     }
 
@@ -756,8 +740,9 @@ public class JGitConnection implements GitConnection {
     }
 
     @Override
-    public PullResponse pull(PullRequest request) throws GitException {
-        String remote = request.getRemote();
+    public PullResponse pull(PullRequest request) throws GitException, UnauthorizedException {
+        String remoteName = request.getRemote();
+        String remoteUri;
         try {
             if (repository.getRepositoryState().equals(RepositoryState.MERGING)) {
                 throw new GitException(Messages.getString("ERROR_PULL_MERGING"));
@@ -770,13 +755,14 @@ public class JGitConnection implements GitConnection {
             String branch = fullBranch.substring(Constants.R_HEADS.length());
 
             StoredConfig config = repository.getConfig();
-            if (remote == null) {
-                remote = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, branch,
-                                          ConfigConstants.CONFIG_KEY_REMOTE);
-                if (remote == null) {
-                    remote = Constants.DEFAULT_REMOTE_NAME;
+            if (remoteName == null) {
+                remoteName = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, branch,
+                                              ConfigConstants.CONFIG_KEY_REMOTE);
+                if (remoteName == null) {
+                    remoteName = Constants.DEFAULT_REMOTE_NAME;
                 }
             }
+            remoteUri = config.getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteName, ConfigConstants.CONFIG_KEY_URL);
 
             String remoteBranch;
             RefSpec fetchRefSpecs = null;
@@ -796,7 +782,7 @@ public class JGitConnection implements GitConnection {
             }
 
             FetchCommand fetchCommand = getGit().fetch();
-            fetchCommand.setRemote(remote);
+            fetchCommand.setRemote(remoteName);
             if (fetchRefSpecs != null) {
                 fetchCommand.setRefSpecs(fetchRefSpecs);
             }
@@ -805,9 +791,7 @@ public class JGitConnection implements GitConnection {
                 fetchCommand.setTimeout(timeout);
             }
 
-            setRemoteCommandCredentials(request, remote, fetchCommand);
-
-            FetchResult fetchResult = fetchCommand.call();
+            FetchResult fetchResult = (FetchResult)executeRemoteCommand(remoteUri, fetchCommand);
 
             Ref remoteBranchRef = fetchResult.getAdvertisedRef(remoteBranch);
             if (remoteBranchRef == null) {
@@ -818,7 +802,7 @@ public class JGitConnection implements GitConnection {
             }
             org.eclipse.jgit.api.MergeResult res = getGit().merge().include(remoteBranchRef).call();
             if (res.getMergeStatus().equals(org.eclipse.jgit.api.MergeResult.MergeStatus.ALREADY_UP_TO_DATE)) {
-                return newDto(PullResponse.class).withCommandOutput(res.getMergeStatus().toString());
+                return newDto(PullResponse.class).withCommandOutput("Already up-to-date");
             }
 
             if (res.getConflicts() != null) {
@@ -841,7 +825,7 @@ public class JGitConnection implements GitConnection {
             throw new GitException(message.toString());
         } catch (IOException | GitAPIException exception) {
             String errorMessage;
-            if (exception.getMessage().equals("Invalid remote: " + remote)) {
+            if (exception.getMessage().equals("Invalid remote: " + remoteName)) {
                 errorMessage = "No remote repository specified.  Please, specify either a URL or a " +
                                "remote name from which new revisions should be fetched in request.";
             } else {
@@ -849,26 +833,27 @@ public class JGitConnection implements GitConnection {
             }
             throw new GitException(errorMessage, exception);
         }
-        return DtoFactory.getInstance().createDto(PullResponse.class).withCommandOutput("Successfully pulled from " + remote);
+        return DtoFactory.getInstance().createDto(PullResponse.class).withCommandOutput("Successfully pulled from " + remoteUri);
     }
 
     @Override
-    public PushResponse push(PushRequest request) throws GitException {
+    @SuppressWarnings("unchecked")
+    public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
         StringBuilder message = new StringBuilder();
-        String remote = request.getRemote();
+        String remoteName = request.getRemote();
+        String remoteUri = getRepository().getConfig().getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteName,
+                                                                 ConfigConstants.CONFIG_KEY_URL);
 
         try {
             PushCommand pushCommand = getGit().push();
 
             if (request.getRemote() != null) {
-                pushCommand.setRemote(remote);
+                pushCommand.setRemote(remoteName);
             }
             List<String> refSpec = request.getRefSpec();
             if (refSpec != null && refSpec.size() > 0) {
-                List<RefSpec> refSpecInst = new ArrayList<RefSpec>(refSpec.size());
-                for (String refSpecItem : refSpec) {
-                    refSpecInst.add(new RefSpec(refSpecItem));
-                }
+                List<RefSpec> refSpecInst = new ArrayList<>(refSpec.size());
+                refSpecInst.addAll(refSpec.stream().map(RefSpec::new).collect(Collectors.toList()));
                 pushCommand.setRefSpecs(refSpecInst);
             }
 
@@ -879,9 +864,7 @@ public class JGitConnection implements GitConnection {
                 pushCommand.setTimeout(timeout);
             }
 
-            setRemoteCommandCredentials(request, remote, pushCommand);
-
-            Iterable<PushResult> list = pushCommand.call();
+            Iterable<PushResult> list = (Iterable<PushResult>)executeRemoteCommand(remoteUri, pushCommand);
             for (PushResult pushResult : list) {
                 Collection<RemoteRefUpdate> refUpdates = pushResult.getRemoteUpdates();
                 for (RemoteRefUpdate remoteRefUpdate : refUpdates) {
@@ -889,7 +872,7 @@ public class JGitConnection implements GitConnection {
 
                         if (remoteRefUpdate.getStatus()
                                            .equals(org.eclipse.jgit.transport.RemoteRefUpdate.Status.UP_TO_DATE)) {
-                            return newDto(PushResponse.class).withCommandOutput(remoteRefUpdate.getStatus().toString());
+                            return newDto(PushResponse.class).withCommandOutput("Everything up-to-date");
                         } else {
                             String refspec = getCurrentBranch() + " -> " + request.getRefSpec().get(0).split(":")[1];
                             message.append(
@@ -911,7 +894,7 @@ public class JGitConnection implements GitConnection {
                 throw new GitException(exception.getMessage(), exception);
             }
         }
-        return DtoFactory.getInstance().createDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remote);
+        return DtoFactory.getInstance().createDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remoteUri);
     }
 
     @Override
@@ -1306,7 +1289,7 @@ public class JGitConnection implements GitConnection {
      * is needed for view-compatibility with console Git client.
      *
      * @param branchName
-     *            is a name of branch to be cleaned
+     *         is a name of branch to be cleaned
      * @return branchName without remote repository name
      * @throws GitException
      */
@@ -1387,4 +1370,100 @@ public class JGitConnection implements GitConnection {
         }));
     }
 
+    /**
+     * Execute remote jgit command.
+     *
+     * @param remoteUrl
+     *          remote url
+     * @param command
+     *          command to execute
+     * @return executed command
+     *
+     * @throws GitException
+     * @throws GitAPIException
+     * @throws UnauthorizedException
+     */
+    private Object executeRemoteCommand(String remoteUrl, TransportCommand command)
+            throws GitException, GitAPIException, UnauthorizedException {
+        String sshKeyDirectoryPath = "";
+        try {
+            if (GitUrl.isSSH(remoteUrl)) {
+                File keyDirectory = Files.createTempDir();
+                sshKeyDirectoryPath = keyDirectory.getPath();
+                File sshKey = writePrivateKeyFile(remoteUrl, keyDirectory);
+
+                SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+                    @Override
+                    protected void configure(OpenSshConfig.Host host, Session session) {
+                        //do nothing
+                    }
+
+                    @Override
+                    protected JSch getJSch(final OpenSshConfig.Host hc, FS fs) throws JSchException {
+                        JSch jsch = super.getJSch(hc, fs);
+                        jsch.removeAllIdentity();
+                        jsch.addIdentity(sshKey.getAbsolutePath());
+                        return jsch;
+                    }
+                };
+                command.setTransportConfigCallback(new TransportConfigCallback() {
+                    @Override
+                    public void configure(Transport transport) {
+                        SshTransport sshTransport = (SshTransport)transport;
+                        sshTransport.setSshSessionFactory(sshSessionFactory);
+                    }
+                });
+            } else {
+                UserCredential credentials = credentialsLoader.getUserCredential(remoteUrl);
+                if (credentials != null) {
+                    command.setCredentialsProvider(new UsernamePasswordCredentialsProvider(credentials.getUserName(),
+                                                                                           credentials.getPassword()));
+                }
+            }
+            return command.call();
+        }
+        catch (GitException exception) {
+            if ("Unable get private ssh key".equals(exception.getMessage())) {
+                throw new UnauthorizedException(exception.getMessage());
+            } else {
+                throw exception;
+            }
+        }
+        finally {
+            if (!sshKeyDirectoryPath.isEmpty()) {
+                try {
+                    FileUtils.delete(new File(sshKeyDirectoryPath), FileUtils.RECURSIVE);
+                } catch (IOException exception) {
+                    throw new GitException("Can't remove SSH key directory", exception);
+                }
+            }
+        }
+    }
+
+    /**
+     * Writes private SSH key into file.
+     *
+     * @return file that contains SSH key
+     * @throws GitException
+     *         if other error occurs
+     */
+    private File writePrivateKeyFile(String url, File keyDirectory) throws GitException {
+        byte[] sshKey = sshKeyProvider.getPrivateKey(url);
+
+        final File keyFile = new File(keyDirectory, "identity");
+        try (FileOutputStream fos = new FileOutputStream(keyFile)) {
+            fos.write(sshKey);
+        } catch (IOException e) {
+            LOG.error("Can't store ssh key. ", e);
+            throw new GitException("Can't store ssh key. ");
+        }
+        Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
+        try {
+            java.nio.file.Files.setPosixFilePermissions(keyFile.toPath(), permissions);
+        } catch (IOException e) {
+            throw new GitException(e.getMessage());
+        }
+
+        return keyFile;
+    }
 }

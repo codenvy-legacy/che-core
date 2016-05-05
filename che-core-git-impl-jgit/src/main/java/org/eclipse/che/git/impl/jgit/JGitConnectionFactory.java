@@ -33,6 +33,7 @@ import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.user.server.dao.User;
 import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.git.impl.jgit.ssh.SshKeyProvider;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
@@ -45,7 +46,8 @@ import org.eclipse.jgit.lib.Repository;
 public class JGitConnectionFactory extends GitConnectionFactory {
 
     private final CredentialsLoader credentialsLoader;
-    private final UserDao userDao;
+    private final UserDao           userDao;
+    private final SshKeyProvider    sshKeyProvider;
 
     // Create a trust manager that does not validate certificate chains
     TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -61,9 +63,10 @@ public class JGitConnectionFactory extends GitConnectionFactory {
     } };
 
     @Inject
-    public JGitConnectionFactory(CredentialsLoader credentialsLoader, UserDao userDao) throws GitException {
+    public JGitConnectionFactory(CredentialsLoader credentialsLoader, UserDao userDao, SshKeyProvider sshKeyProvider) throws GitException {
         this.credentialsLoader = credentialsLoader;
         this.userDao = userDao;
+        this.sshKeyProvider = sshKeyProvider;
 
         // Install the all-trusting trust manager
        try {
@@ -95,7 +98,7 @@ public class JGitConnectionFactory extends GitConnectionFactory {
     public JGitConnection getConnection(File workDir, GitUser user, LineConsumerFactory outputPublisherFactory)
             throws GitException {
         Repository gitRepo = createRepository(workDir);
-        JGitConnection conn = new JGitConnection(gitRepo, credentialsLoader);
+        JGitConnection conn = new JGitConnection(gitRepo, credentialsLoader, sshKeyProvider);
         conn.setOutputLineConsumerFactory(outputPublisherFactory);
         return conn;
     }
