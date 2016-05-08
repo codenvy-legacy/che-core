@@ -382,18 +382,18 @@ public class GitService {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> getConfigs(@QueryParam("requestedConfigs") List<String> requestedConfigs)
+    public Map<String, String> getConfig(@QueryParam("requestedConfig") List<String> requestedConfig)
             throws ApiException {
         Map<String, String> result = new HashMap<>();
         try (GitConnection gitConnection = getGitConnection()) {
             Config config = gitConnection.getConfig();
-            if (requestedConfigs == null || requestedConfigs.isEmpty()) {
+            if (requestedConfig == null || requestedConfig.isEmpty()) {
                 for (String row : config.getList()) {
                     String[] keyValues = row.split("=", 2);
                     result.put(keyValues[0], keyValues[1]);
                 }
             } else {
-                for (String entry : requestedConfigs) {
+                for (String entry : requestedConfig) {
                     try {
                         String value = config.get(entry);
                         result.put(entry, value);
@@ -410,15 +410,12 @@ public class GitService {
     @Path("config")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> setConfig(ConfigRequest request) throws ApiException {
-        Map<String, String> result = new HashMap<>();
+    public void setConfig(ConfigRequest request) throws ApiException {
         try (GitConnection gitConnection = getGitConnection()) {
             Config config = gitConnection.getConfig();
             for (Map.Entry<String, String> configData : request.getConfigEntries().entrySet()) {
                 try {
                     config.set(configData.getKey(), configData.getValue());
-                    result.put(configData.getKey(), configData.getValue());
                 } catch (GitException exception) {
                     final String msg = "Cannot write to config file";
                     LOG.error(msg, exception);
@@ -426,7 +423,6 @@ public class GitService {
                 }
             }
         }
-        return result;
     }
 
     @Path("tag-list")

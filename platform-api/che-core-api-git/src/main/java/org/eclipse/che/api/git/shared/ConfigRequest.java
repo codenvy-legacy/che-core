@@ -12,7 +12,6 @@ package org.eclipse.che.api.git.shared;
 
 import org.eclipse.che.dto.shared.DTO;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,7 +22,7 @@ public interface ConfigRequest {
 
     Map<String, String> getConfigEntries();
 
-    void setConfigEntries(Map<String, String> ConfigEntries);
+    void setConfigEntries(Map<String, String> configEntries);
 
     ConfigRequest withConfigEntries(Map<String, String> configEntries);
 
