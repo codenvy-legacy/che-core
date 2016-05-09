@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.net.ssl.SSLHandshakeException;
 
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
@@ -418,8 +419,24 @@ public class JGitConnection implements GitConnection {
                 deleteRepositoryFolder();
             }
 
-            throw new GitException(exception.getMessage());
+            String message = generateSSLExceptionMessage(exception);
+            throw new GitException(message, exception);
         }
+    }
+
+    private String generateSSLExceptionMessage(Throwable e) {
+        String message = e.getMessage();
+
+        //if e caused by an SSLHandshakeException - replace thrown message with a hardcoded message
+        while (e.getCause() != null) {
+            if (e.getCause() instanceof SSLHandshakeException) {
+                message = "The system is not configured to trust the security certificate provided by the Git server.";
+                break;
+            }
+            e = e.getCause();
+        }
+
+        return message;
     }
 
     @Override
@@ -567,9 +584,9 @@ public class JGitConnection implements GitConnection {
             } else if ("Nothing to fetch.".equals(exception.getMessage())) {
                 return;
             } else {
-                errorMessage = exception.getMessage();
+                errorMessage = generateSSLExceptionMessage(exception);
             }
-            throw new GitException(errorMessage);
+            throw new GitException(errorMessage, exception);
         }
     }
 
@@ -829,7 +846,7 @@ public class JGitConnection implements GitConnection {
                 errorMessage = "No remote repository specified.  Please, specify either a URL or a " +
                                "remote name from which new revisions should be fetched in request.";
             } else {
-                errorMessage = exception.getMessage();
+                errorMessage = generateSSLExceptionMessage(exception);
             }
             throw new GitException(errorMessage, exception);
         }
@@ -887,12 +904,14 @@ public class JGitConnection implements GitConnection {
                 }
             }
         } catch (GitAPIException exception) {
+            String errorMessage;
             if ("origin: not found.".equals(exception.getMessage())) {
-                throw new GitException("No remote repository specified.  Please, specify either a URL or a remote " +
-                                       "name from which new revisions should be fetched in request.", exception);
+                errorMessage = "No remote repository specified.  Please, specify either a URL or a remote " +
+                        "name from which new revisions should be fetched in request.";
             } else {
-                throw new GitException(exception.getMessage(), exception);
+                errorMessage = generateSSLExceptionMessage(exception);
             }
+            throw new GitException(errorMessage, exception);
         }
         return DtoFactory.getInstance().createDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remoteUri);
     }
@@ -1163,7 +1182,7 @@ public class JGitConnection implements GitConnection {
     @Override
     public Status status(StatusFormat format) throws GitException {
         if (!RepositoryCache.FileKey.isGitRepository(getRepository().getDirectory(), FS.DETECTED)) {
-            throw new GitException("Not a git repository");
+            throw new GitException(Messages.getString("ERROR_STATUS_NOT_GIT_REPO", getGit().getRepository().getDirectory().getParentFile().getName()));
         }
         String branchName = getCurrentBranch();
         return new JGitStatusImpl(branchName, getGit().status(), format);
