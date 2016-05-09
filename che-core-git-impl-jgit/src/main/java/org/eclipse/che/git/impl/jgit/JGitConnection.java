@@ -416,21 +416,22 @@ public class JGitConnection implements GitConnection {
                 deleteRepositoryFolder();
             }
 
-            String message = generateSSLExceptionMessage(exception);
+            String message = getErrorMessage(exception);
             throw new GitException(message, exception);
         }
     }
 
-    private String generateSSLExceptionMessage(Throwable e) {
+    private String getErrorMessage(Throwable e) {
         String message = e.getMessage();
 
+        Throwable causedBy = e.getCause();
         //if e caused by an SSLHandshakeException - replace thrown message with a hardcoded message
-        while (e.getCause() != null) {
-            if (e.getCause() instanceof SSLHandshakeException) {
+        while (causedBy != null) {
+            if (causedBy instanceof SSLHandshakeException) {
                 message = "The system is not configured to trust the security certificate provided by the Git server.";
                 break;
             }
-            e = e.getCause();
+            causedBy = causedBy.getCause();
         }
 
         return message;
@@ -581,7 +582,7 @@ public class JGitConnection implements GitConnection {
             } else if ("Nothing to fetch.".equals(exception.getMessage())) {
                 return;
             } else {
-                errorMessage = generateSSLExceptionMessage(exception);
+                errorMessage = getErrorMessage(exception);
             }
             throw new GitException(errorMessage, exception);
         }
@@ -843,7 +844,7 @@ public class JGitConnection implements GitConnection {
                 errorMessage = "No remote repository specified.  Please, specify either a URL or a " +
                                "remote name from which new revisions should be fetched in request.";
             } else {
-                errorMessage = generateSSLExceptionMessage(exception);
+                errorMessage = getErrorMessage(exception);
             }
             throw new GitException(errorMessage, exception);
         }
@@ -906,7 +907,7 @@ public class JGitConnection implements GitConnection {
                 errorMessage = "No remote repository specified.  Please, specify either a URL or a remote " +
                         "name from which new revisions should be fetched in request.";
             } else {
-                errorMessage = generateSSLExceptionMessage(exception);
+                errorMessage = getErrorMessage(exception);
             }
             throw new GitException(errorMessage, exception);
         }
