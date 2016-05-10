@@ -250,12 +250,10 @@ public class JGitConnection implements GitConnection {
                 checkoutCommand.setName(name);
             } else if (name != null) {
                 checkoutCommand.setName(name);
-
                 List<String> localBranches =
                         branchList(newDto(BranchListRequest.class).withListMode(BranchListRequest.LIST_LOCAL)).stream()
                                                                                                               .map(Branch::getDisplayName)
                                                                                                               .collect(Collectors.toList());
-
                 if (!localBranches.contains(name)) {
                     Optional<Branch> remoteBranch = branchList(newDto(BranchListRequest.class).withListMode(BranchListRequest.LIST_REMOTE))
                             .stream()
@@ -263,7 +261,6 @@ public class JGitConnection implements GitConnection {
                             .findFirst();
                     if (remoteBranch.isPresent()) {
                         checkoutCommand.setCreateBranch(true);
-                        checkoutCommand.setUpstreamMode(SetupUpstreamMode.TRACK);
                         checkoutCommand.setStartPoint(remoteBranch.get().getName());
                         return;
                     }
@@ -274,9 +271,9 @@ public class JGitConnection implements GitConnection {
                     checkoutCommand.setName(cleanRemoteName(trackBranch));
                 }
                 checkoutCommand.setCreateBranch(true);
-                checkoutCommand.setUpstreamMode(SetupUpstreamMode.TRACK);
                 checkoutCommand.setStartPoint(trackBranch);
             }
+            checkoutCommand.setUpstreamMode(SetupUpstreamMode.SET_UPSTREAM);
         }
         try {
             checkoutCommand.call();
