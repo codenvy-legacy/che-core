@@ -38,6 +38,9 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
@@ -112,6 +115,7 @@ import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.DetachedHeadException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -596,9 +600,9 @@ public class JGitConnection implements GitConnection {
             if (repository.getDirectory().exists()) {
                 FileUtils.delete(repository.getDirectory(), FileUtils.RECURSIVE | FileUtils.IGNORE_ERRORS);
             }
-        } catch (Exception e1) {
+        } catch (Exception exception) {
             // Ignore the error since we want to throw the original error
-            LOG.error("Could not remove .git folder in path " +  repository.getDirectory().getPath(), e1);
+            LOG.error("Could not remove .git folder in path " + repository.getDirectory().getPath(), exception);
         }
     }
 
@@ -836,7 +840,6 @@ public class JGitConnection implements GitConnection {
     @Override
     @SuppressWarnings("unchecked")
     public PushResponse push(PushRequest request) throws GitException, UnauthorizedException {
-        StringBuilder message = new StringBuilder();
         String remoteName = request.getRemote();
         String remoteUri = getRepository().getConfig().getString(ConfigConstants.CONFIG_REMOTE_SECTION, remoteName,
                                                                  ConfigConstants.CONFIG_KEY_URL);
@@ -866,20 +869,12 @@ public class JGitConnection implements GitConnection {
                 Collection<RemoteRefUpdate> refUpdates = pushResult.getRemoteUpdates();
                 for (RemoteRefUpdate remoteRefUpdate : refUpdates) {
                     if (!remoteRefUpdate.getStatus().equals(org.eclipse.jgit.transport.RemoteRefUpdate.Status.OK)) {
-
                         if (remoteRefUpdate.getStatus()
                                            .equals(org.eclipse.jgit.transport.RemoteRefUpdate.Status.UP_TO_DATE)) {
                             return newDto(PushResponse.class).withCommandOutput("Everything up-to-date");
                         } else {
-                            String refspec = getCurrentBranch() + " -> " + request.getRefSpec().get(0).split(":")[1];
-                            message.append(
-                                    Messages.getString("ERROR_PUSH_ATTEMPT_FAILED_1", refspec, request.getRemote()));
-                            message.append("\n");
-                            message.append(Messages.getString("ERROR_PUSH_ATTEMPT_FAILED_2",
-                                                              remoteRefUpdate.getStatus(), remoteRefUpdate.getMessage()));
-                            message.append("\n");
+                            throw new GitException(remoteRefUpdate.getStatus().toString());
                         }
-                        throw new GitException(message.toString());
                     }
                 }
             }
@@ -1418,15 +1413,13 @@ public class JGitConnection implements GitConnection {
                 }
             }
             return command.call();
-        }
-        catch (GitException exception) {
+        } catch (GitException exception) {
             if ("Unable get private ssh key".equals(exception.getMessage())) {
                 throw new UnauthorizedException(exception.getMessage());
             } else {
                 throw exception;
             }
-        }
-        finally {
+        } finally {
             if (!sshKeyDirectoryPath.isEmpty()) {
                 try {
                     FileUtils.delete(new File(sshKeyDirectoryPath), FileUtils.RECURSIVE);
@@ -1462,5 +1455,42 @@ public class JGitConnection implements GitConnection {
         }
 
         return keyFile;
+    }
+
+    @Override
+    public void cloneWithSparseCheckout(String directory, String remoteUrl, String branch) throws GitException, UnauthorizedException {
+        //TODO rework this code when jgit will support sparse-checkout. Tracked issue: https://bugs.eclipse.org/bugs/show_bug.cgi?id=383772
+        clone(newDto(CloneRequest.class).withRemoteUri(remoteUrl));
+        if (!"master".equals(branch)) {
+            checkout(newDto(CheckoutRequest.class).withName(branch));
+        }
+        final String sourcePath = getWorkingDir().getPath();
+        final String keepDirectoryPath = sourcePath + "/" + directory;
+        IOFileFilter folderFilter = new DirectoryFileFilter() {
+            public boolean accept(File dir) {
+                String directoryPath = dir.getPath();
+                return !(directoryPath.startsWith(keepDirectoryPath) || directoryPath.startsWith(sourcePath + "/.git"));
+            }
+        };
+        Collection<File> files = org.apache.commons.io.FileUtils.listFilesAndDirs(getWorkingDir(), TrueFileFilter.INSTANCE, folderFilter);
+        try {
+            DirCache index = getRepository().lockDirCache();
+            int sourcePathLength = sourcePath.length() + 1;
+            files.stream()
+                 .filter(File::isFile)
+                 .forEach(file -> index.getEntry(file.getPath().substring(sourcePathLength)).setAssumeValid(true));
+            index.write();
+            index.commit();
+            for (File file : files) {
+                if (keepDirectoryPath.startsWith(file.getPath())) {
+                    continue;
+                }
+                if (file.exists()) {
+                    FileUtils.delete(file, FileUtils.RECURSIVE);
+                }
+            }
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage());
+        }
     }
 }

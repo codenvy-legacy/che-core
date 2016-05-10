@@ -10,9 +10,6 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit;
 
-
-import com.google.common.base.Strings;
-
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
@@ -79,14 +76,19 @@ import org.eclipse.che.git.impl.nativegit.commands.RemoteListCommand;
 import org.eclipse.che.git.impl.nativegit.commands.RemoteOperationCommand;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
  * Native implementation of GitConnection
@@ -154,6 +156,39 @@ public class NativeGitConnection implements GitConnection {
                                request.getFilepattern());
         command.setUpdate(request.isUpdate());
         command.execute();
+    }
+
+    @Override
+    public void cloneWithSparseCheckout(String directory, String remoteUrl, String branch) throws GitException, UnauthorizedException {
+        /*
+        Does following sequence of Git commands:
+        $ git init
+        $ git remote add origin <URL>
+        $ git config core.sparsecheckout true
+        $ echo keepDirectory >> .git/info/sparse-checkout
+        $ git pull origin master
+        */
+        init(newDto(InitRequest.class).withInitCommit(false).withBare(false));
+        remoteAdd(newDto(RemoteAddRequest.class).withName("origin").withUrl(remoteUrl));
+        getConfig().add("core.sparsecheckout", "true");
+        final File sparseCheckout = new File(getWorkingDir(), ".git" + File.separator + "info" + File.separator + "sparse-checkout");
+        try (BufferedWriter writer = Files.newBufferedWriter(sparseCheckout.toPath(), Charset.forName("UTF-8"))) {
+            writer.write(directory.startsWith("/") ? directory : "/" + directory);
+        } catch (IOException e) {
+            throw new GitException(e);
+        }
+        try {
+            fetch(newDto(FetchRequest.class).withRemote("origin"));
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to fetch remote branch %s. Make sure it exists and can be accessed.", branch), e);
+        }
+        try {
+            checkout(newDto(CheckoutRequest.class).withName(branch));
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to checkout branch %s. Make sure it exists and can be accessed.", branch), e);
+        }
     }
 
     @Override

@@ -76,6 +76,22 @@ public interface GitConnection extends Closeable {
      */
     void add(AddRequest request) throws GitException;
 
+
+    /**
+     * Perform clone with scarce-checkout  to specified directory.
+     *
+     * @param directory
+     *         path to keep in working tree
+     * @param remoteUrl
+     *         url to clone
+     * @param branch
+     *         branch to checkout
+     * @throws GitException
+     * @throws UnauthorizedException
+     *         if any error occurs when add files to the index
+     */
+    void cloneWithSparseCheckout(String directory, String remoteUrl, String branch) throws GitException, UnauthorizedException;
+
     /**
      * Checkout a branch / file to the working tree.
      *
