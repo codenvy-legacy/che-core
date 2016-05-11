@@ -69,6 +69,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -381,7 +382,6 @@ public class GitService {
 
     @Path("config")
     @GET
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getConfig(@QueryParam("requestedConfig") List<String> requestedConfig)
             throws ApiException {
@@ -421,6 +421,24 @@ public class GitService {
                     final String msg = "Cannot write to config file";
                     LOG.error(msg, exception);
                     throw new GitException(msg);
+                }
+            }
+        }
+    }
+
+    @Path("config")
+    @DELETE
+    public void unsetConfig(@QueryParam("requestedConfig") List<String> requestedConfig)
+            throws ApiException {
+        try (GitConnection gitConnection = getGitConnection()) {
+            Config config = gitConnection.getConfig();
+            if (requestedConfig != null && !requestedConfig.isEmpty()) {
+                for (String entry : requestedConfig) {
+                    try {
+                        config.unset(entry);
+                    } catch (GitException exception) {
+                        //value for this config property non found. Do nothing
+                    }
                 }
             }
         }
