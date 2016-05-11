@@ -85,7 +85,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     public static final String BRANCH_RENAME     = "/branch-rename";
     public static final String CLONE             = "/clone";
     public static final String COMMIT            = "/commit";
-    public static final String CONFIG            = "/config";
+    public static final String CONFIG            = "/get-config";
     public static final String DIFF              = "/diff";
     public static final String FETCH             = "/fetch";
     public static final String INIT              = "/init";

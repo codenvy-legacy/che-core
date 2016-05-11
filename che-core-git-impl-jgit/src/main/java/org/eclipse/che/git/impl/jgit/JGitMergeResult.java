@@ -35,7 +35,7 @@ public class JGitMergeResult implements MergeResult {
         this.jgitMergeResult = jgitMergeResult;
     }
 
-    /** @see org.exoplatform.ide.git.shared.MergeResult#getNewHead() */
+    /** @see org.eclipse.che.api.git.shared.MergeResult#getNewHead() */
     @Override
     public String getNewHead() {
         ObjectId newHead = jgitMergeResult.getNewHead();
@@ -46,7 +46,7 @@ public class JGitMergeResult implements MergeResult {
         return null;
     }
 
-    /** @see org.exoplatform.ide.git.shared.MergeResult#getMergeStatus() */
+    /** @see org.eclipse.che.api.git.shared.MergeResult#getMergeStatus() */
     @Override
     public MergeStatus getMergeStatus() {
         switch (jgitMergeResult.getMergeStatus()) {
@@ -68,7 +68,7 @@ public class JGitMergeResult implements MergeResult {
         throw new IllegalStateException("Unknown merge status " + jgitMergeResult.getMergeStatus());
     }
 
-    /** @see org.exoplatform.ide.git.shared.MergeResult#getMergedCommits() */
+    /** @see org.eclipse.che.api.git.shared.MergeResult#getMergedCommits() */
     @Override
     public List<String> getMergedCommits() {
         ObjectId[] jgitMergedCommits = jgitMergeResult.getMergedCommits();
@@ -81,7 +81,7 @@ public class JGitMergeResult implements MergeResult {
         return mergedCommits;
     }
 
-    /** @see org.exoplatform.ide.git.shared.MergeResult#getConflicts() */
+    /** @see org.eclipse.che.api.git.shared.MergeResult#getConflicts() */
     @Override
     public List<String> getConflicts() {
         if (jgitMergeResult.getMergeStatus().equals(org.eclipse.jgit.api.MergeResult.MergeStatus.CHECKOUT_CONFLICT)) {
@@ -96,7 +96,7 @@ public class JGitMergeResult implements MergeResult {
         return files;
     }
 
-    /** @see org.exoplatform.ide.git.shared.MergeResult#getFailed() */
+    /** @see org.eclipse.che.api.git.shared.MergeResult#getFailed() */
     @Override
     public List<String> getFailed() {
         List<String> files = null;

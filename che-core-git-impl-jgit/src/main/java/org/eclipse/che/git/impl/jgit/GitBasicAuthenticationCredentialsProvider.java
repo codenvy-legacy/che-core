@@ -26,12 +26,12 @@ public class GitBasicAuthenticationCredentialsProvider implements CredentialsPro
 
     private static final Logger LOG = LoggerFactory.getLogger(GitBasicAuthenticationCredentialsProvider.class);
 
-    public static final String GIT_PROJECT_ID = "git-project-id";
+    public static final String PROVIDER_ID = "git-basic";
 
-    private static ThreadLocal<UserCredential> currRequestCredentials = new ThreadLocal<UserCredential>();
+    private static ThreadLocal<UserCredential> currRequestCredentials = new ThreadLocal<>();
 
     public static void setCurrentCredentials(String user, String password) {
-        UserCredential creds = new UserCredential(user, password, GIT_PROJECT_ID);
+        UserCredential creds = new UserCredential(user, password, PROVIDER_ID);
         currRequestCredentials.set(creds);
     }
 
@@ -58,7 +58,7 @@ public class GitBasicAuthenticationCredentialsProvider implements CredentialsPro
 
     @Override
     public String getId() {
-        return GIT_PROJECT_ID;
+        return PROVIDER_ID;
     }
 
     @Override

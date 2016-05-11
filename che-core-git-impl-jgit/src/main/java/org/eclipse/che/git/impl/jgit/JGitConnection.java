@@ -115,6 +115,7 @@ import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.DetachedHeadException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
@@ -153,8 +154,8 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
- * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
- * @version $Id: JGitConnection.java 22817 2011-03-22 09:17:52Z andrew00x $
+ * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>*
+ * @author <a href="mailto:ivinokur@codenvy.com">Igor Vinokur</a>
  */
 public class JGitConnection implements GitConnection {
     private static final String REBASE_OPERATION_SKIP     = "SKIP";
@@ -1413,8 +1414,9 @@ public class JGitConnection implements GitConnection {
                 }
             }
             return command.call();
-        } catch (GitException exception) {
-            if ("Unable get private ssh key".equals(exception.getMessage())) {
+        } catch (GitException | TransportException exception) {
+            if ("Unable get private ssh key".equals(exception.getMessage())
+                || exception.getMessage().contains("Authentication is required")) {
                 throw new UnauthorizedException(exception.getMessage());
             } else {
                 throw exception;

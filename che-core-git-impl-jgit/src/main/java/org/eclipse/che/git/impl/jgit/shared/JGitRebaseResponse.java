@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.che.api.git.shared.*;
+import org.eclipse.che.api.git.shared.RebaseResponse;
 import org.eclipse.jgit.api.RebaseResult;
 
 public class JGitRebaseResponse implements RebaseResponse {

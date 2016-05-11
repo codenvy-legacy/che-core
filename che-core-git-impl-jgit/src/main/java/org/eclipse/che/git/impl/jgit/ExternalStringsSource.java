@@ -37,7 +37,9 @@ public class ExternalStringsSource {
      * Get the externally defined string with the given key.
      * 
      * @param key
+     *          key of the defined string
      * @param params
+     *          object(s) to format
      * @return
      */
     public String getString(String key, Object... params) {

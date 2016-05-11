@@ -15,9 +15,6 @@
     <artifactId>che-core-git-impl-jgit</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Git Impl JGit</name>
-    <properties>
-        <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>
