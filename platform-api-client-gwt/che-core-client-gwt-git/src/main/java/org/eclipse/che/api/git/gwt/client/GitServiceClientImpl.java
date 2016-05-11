@@ -23,7 +23,6 @@ import org.eclipse.che.api.git.shared.BranchListRequest;
 import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.Commiters;
-import org.eclipse.che.api.git.shared.ConfigRequest;
 import org.eclipse.che.api.git.shared.DiffRequest;
 import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.GitUrlVendorInfo;
@@ -228,14 +227,16 @@ public class GitServiceClientImpl implements GitServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void config(@NotNull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
-                       @NotNull AsyncRequestCallback<Map<String, String>> callback) {
-        ConfigRequest configRequest = dtoFactory.createDto(ConfigRequest.class)
-                                                .withGetAll(all)
-                                                .withConfigEntry(entries);
-        String url = baseHttpUrl + CONFIG + "?projectPath=" + project.getPath();
-
-        asyncRequestFactory.createPostRequest(url, configRequest).loader(loader).send(callback);
+    public void config(@NotNull ProjectDescriptor project, @Nullable List<String> requestedConfig,
+            @NotNull AsyncRequestCallback<Map<String, String>> callback) {
+        String params = "?projectPath=" + project.getPath();
+        if (requestedConfig != null) {
+            for (String entry : requestedConfig) {
+                params += "&requestedConfig=" + entry;
+            }
+        }
+        String url = baseHttpUrl + CONFIG + params;
+        asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
