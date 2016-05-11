@@ -22,7 +22,7 @@ import org.eclipse.che.dto.shared.DTO;
  */
 @DTO
 public interface RebaseResponse {
-    public enum RebaseStatus {
+    enum RebaseStatus {
         OK("OK"), 
         ABORTED("Aborted"), 
         FAST_FORWARD("Fast-forward"), 
@@ -44,12 +44,12 @@ public interface RebaseResponse {
             return value;
         }
     }
-    
-    public RebaseStatus getStatus();
+
+    RebaseStatus getStatus();
 	
     /* @return files that has conflicts. Empty array if there is no conflicts */
-    public List<String> getConflicts();
+    List<String> getConflicts();
 	
     /* @return files that failed to merge. Empty array if there is aren't any */
-    public List<String> getFailed();
+    List<String> getFailed();
 }

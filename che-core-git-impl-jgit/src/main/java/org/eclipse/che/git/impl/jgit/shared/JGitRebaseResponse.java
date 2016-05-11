@@ -12,7 +12,6 @@
 package org.eclipse.che.git.impl.jgit.shared;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,8 +51,8 @@ public class JGitRebaseResponse implements RebaseResponse {
             status = RebaseStatus.FAILED;
         }
 
-        conflicts = copyList(result.getConflicts());
-        failed = copyList(result.getFailingPaths() != null ? result.getFailingPaths().keySet() : null);
+        conflicts = result.getConflicts() != null ? result.getConflicts() : Collections.emptyList();
+        failed = result.getFailingPaths() != null ? new ArrayList<>(result.getFailingPaths().keySet()) : Collections.emptyList();
     }
 
     @Override
@@ -70,9 +69,4 @@ public class JGitRebaseResponse implements RebaseResponse {
     public List<String> getFailed() {
         return failed;
     }
-
-    private static <T> List<T> copyList(Collection<T> coll) {
-        return coll == null ? Collections.<T> emptyList() : new ArrayList<T>(coll);
-    }
-
 }
