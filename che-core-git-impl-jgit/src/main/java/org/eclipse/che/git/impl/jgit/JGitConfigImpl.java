@@ -26,12 +26,12 @@ import org.eclipse.jgit.lib.StoredConfig;
  * 
  * @author Tareq Sharafy (tareq.sha@sap.com)
  */
-public class JGitConfigImpl extends Config {
-    private final Repository _repository;
+class JGitConfigImpl extends Config {
+    private final Repository repository;
 
-    public JGitConfigImpl(Repository repository) throws GitException {
+    JGitConfigImpl(Repository repository) throws GitException {
         super(repository.getDirectory());
-        this._repository = repository;
+        this.repository = repository;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class JGitConfigImpl extends Config {
 
     private String[] getInternalValues(String name) throws GitException {
         ConfigKey key = parseName(name);
-        String[] values = _repository.getConfig().getStringList(key.section, key.subsection, key.name);
+        String[] values = repository.getConfig().getStringList(key.section, key.subsection, key.name);
         // Make sure the property exists
         if (values == null || values.length == 0) {
             throw new GitException("");
@@ -58,7 +58,7 @@ public class JGitConfigImpl extends Config {
     public List<String> getList() throws GitException {
         List<String> results = new ArrayList<>();
         // Iterate all sections and subsections, printing all values
-        StoredConfig config = _repository.getConfig();
+        StoredConfig config = repository.getConfig();
         for (String section : config.getSections()) {
             for (String subsection : config.getSubsections(section)) {
                 Set<String> names = config.getNames(section, subsection);
@@ -83,7 +83,7 @@ public class JGitConfigImpl extends Config {
             builder.append(name);
             builder.append('=');
             String firstPart = builder.toString();
-            String[] values = _repository.getConfig().getStringList(section, subsection, name);
+            String[] values = repository.getConfig().getStringList(section, subsection, name);
             for (String value : values) {
                 output.add(firstPart + value);
             }
@@ -93,7 +93,7 @@ public class JGitConfigImpl extends Config {
     @Override
     public Config set(String name, String value) throws GitException {
         ConfigKey key = parseName(name);
-        _repository.getConfig().setString(key.section, key.subsection, key.name, value);
+        repository.getConfig().setString(key.section, key.subsection, key.name, value);
         return this;
     }
 
@@ -105,7 +105,7 @@ public class JGitConfigImpl extends Config {
     @Override
     public Config unset(String name) throws GitException {
         ConfigKey key = parseName(name);
-        _repository.getConfig().unset(key.section, key.subsection, key.name);
+        repository.getConfig().unset(key.section, key.subsection, key.name);
         return this;
     }
 
