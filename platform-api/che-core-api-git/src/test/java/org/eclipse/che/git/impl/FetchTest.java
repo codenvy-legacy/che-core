@@ -11,6 +11,7 @@
 package org.eclipse.che.git.impl;
 
 import com.google.common.io.Files;
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
@@ -91,7 +92,7 @@ public class FetchTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testFetchBranch(GitConnectionFactory connectionFactory)
-            throws ServerException, IOException, UnauthorizedException, URISyntaxException {
+            throws ApiException, IOException, UnauthorizedException, URISyntaxException {
 
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);

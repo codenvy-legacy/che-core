@@ -13,6 +13,7 @@ package org.eclipse.che.git.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
 import org.eclipse.che.api.git.GitException;
@@ -75,7 +76,7 @@ public class BranchCreateTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testBranchCreateWithStartPoint(GitConnectionFactory connectionFactory) throws GitException, IOException {
+    public void testBranchCreateWithStartPoint(GitConnectionFactory connectionFactory) throws ApiException, IOException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "newfile1", "file 1 content");

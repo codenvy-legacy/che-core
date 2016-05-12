@@ -13,6 +13,7 @@ package org.eclipse.che.git.impl.nativegit;
 
 import com.google.common.base.Strings;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
@@ -157,7 +158,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void checkout(CheckoutRequest request) throws GitException {
+    public void checkout(CheckoutRequest request) throws ApiException {
         ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createCheckoutCommand()
                  .setBranchName(request.getName())
