@@ -162,7 +162,32 @@ class JGitConnection implements GitConnection {
     private static final String REBASE_OPERATION_ABORT    = "ABORT";
     private static final String ADD_ALL_OPTION            = "all";
 
-    private static final Logger LOG = LoggerFactory.getLogger(JGitConnection.class);
+    private static final String ERROR_UPDATE_REMOTE_NAME_MISSING   = "Update operation failed, remote name is required.";
+    private static final String ERROR_ADD_REMOTE_NAME_MISSING      = "Add operation failed, remote name is required.";
+    private static final String ERROR_REMOTE_NAME_ALREADY_EXISTS   = "Add Remote operation failed, remote name %s already exists.";
+    private static final String ERROR_REMOTE_URL_MISSING           = "Add Remote operation failed, Remote url required.";
+    private static final String ERROR_PULL_MERGING                 = "Could not pull because the repository state is 'MERGING'.";
+    private static final String ERROR_PULL_HEAD_DETACHED           = "Could not pull because HEAD is detached.";
+    private static final String ERROR_PULL_REF_MISSING             = "Could not pull because remote ref is missing for branch %s.";
+    private static final String ERROR_PULL_AUTO_MERGE_FAILED       = "Automatic merge failed; fix conflicts and then commit the result.";
+    private static final String ERROR_PULL_MERGE_CONFLICT_IN_FILES = "Could not pull because a merge conflict is detected in the files:";
+    private static final String ERROR_PULL_COMMIT_BEFORE_MERGE     = "Could not pull. Commit your changes before merging.";
+    private static final String ERROR_TAG_DELETE                   = "Could not delete the tag %1s. An error occurred: %2s.";
+    private static final String ERROR_INIT_FOLDER_MISSING          = "The working folder %s does not exist.";
+    private static final String ERROR_CHECKOUT_CONFLICT            = "Checkout operation failed, the following files would be " +
+                                                                     "overwritten by merge:";
+    private static final String ERROR_REMOVING_INVALID_URL         = "remoteUpdate: Ignore this error. Cannot remove invalid URL.";
+    private static final String ERROR_BRANCH_NAME_EXISTS           = "A branch named '%s' already exists.";
+    private static final String ERROR_UNSUPPORTED_LIST_MODE        = "Unsupported list mode '%s'. Must be either 'a' or 'r'.";
+    private static final String ERROR_NO_REMOTE_REPOSITORY         = "No remote repository specified.  Please, specify either a URL or a " +
+                                                                     "remote name from which new revisions should be fetched in request.";
+    private static final String ERROR_AUTHENTICATION_REQUIRED      = "Authentication is required but no CredentialsProvider has " +
+                                                                     "been registered";
+    private static final String ERROR_AUTHENTICATION_FAILED        = "fatal: Authentication failed for '%s/'\n";
+    private static final String MESSAGE_COMMIT_NOT_POSSIBLE        = "Commit is not possible because repository state is '%s'";
+    private static final String MESSAGE_AMEND_NOT_POSSIBLE         = "Amend is not possible because repository state is '%s'";
+
+    private static final Logger       LOG                           = LoggerFactory.getLogger(JGitConnection.class);
 
     private Git            git;
     private JGitConfigImpl config;
@@ -272,7 +297,7 @@ class JGitConnection implements GitConnection {
             checkoutCommand.call();
         } catch (GitAPIException exception) {
             if (exception.getMessage().endsWith("already exists")) {
-                throw new GitException("A branch named '" + (name != null ? name : cleanRemoteName(trackBranch)) + "' already exists.");
+                throw new GitException(String.format(ERROR_BRANCH_NAME_EXISTS, name != null ? name : cleanRemoteName(trackBranch)));
             }
             throw new GitException(exception.getMessage(), exception);
         }
@@ -326,7 +351,7 @@ class JGitConnection implements GitConnection {
     public List<Branch> branchList(BranchListRequest request) throws GitException {
         String listMode = request.getListMode();
         if (listMode != null && !(listMode.equals(BranchListRequest.LIST_ALL) || listMode.equals(BranchListRequest.LIST_REMOTE))) {
-            throw new IllegalArgumentException("Unsupported list mode '" + listMode + "'. Must be either 'a' or 'r'. ");
+            throw new IllegalArgumentException(String.format(ERROR_UNSUPPORTED_LIST_MODE, listMode));
         }
 
         ListBranchCommand listBranchCommand = getGit().branchList();
@@ -424,15 +449,13 @@ class JGitConnection implements GitConnection {
         try {
             if (!repository.getRepositoryState().canCommit()) {
                 Revision rev = newDto(Revision.class);
-                rev.setMessage("Commit is not possible because repository state is '"
-                               + repository.getRepositoryState().getDescription() + "'");
+                rev.setMessage(String.format(MESSAGE_COMMIT_NOT_POSSIBLE, repository.getRepositoryState().getDescription()));
                 return rev;
             }
 
             if (request.isAmend() && !repository.getRepositoryState().canAmend()) {
                 Revision rev = newDto(Revision.class);
-                rev.setMessage("Amend is not possible because repository state is '"
-                               + repository.getRepositoryState().getDescription() + "'");
+                rev.setMessage(String.format(MESSAGE_AMEND_NOT_POSSIBLE, repository.getRepositoryState().getDescription()));
                 return rev;
             }
 
@@ -530,8 +553,7 @@ class JGitConnection implements GitConnection {
         } catch (GitException | GitAPIException exception) {
             String errorMessage;
             if (exception.getMessage().contains("Invalid remote: ")) {
-                errorMessage = "No remote repository specified.  Please, specify either a URL or a " +
-                               "remote name from which new revisions should be fetched in request.";
+                errorMessage = ERROR_NO_REMOTE_REPOSITORY;
             } else if ("Nothing to fetch.".equals(exception.getMessage())) {
                 return;
             } else {
@@ -545,7 +567,7 @@ class JGitConnection implements GitConnection {
     public void init(InitRequest request) throws GitException {
         File workDir = repository.getWorkTree();
         if (!workDir.exists()) {
-            throw new GitException("The working folder " + workDir + " does not exist.");
+            throw new GitException(String.format(ERROR_INIT_FOLDER_MISSING, workDir));
         }
         // If create fails and the .git folder didn't exist we want to remove it.
         // We have to do this here because the create command doesn't revert its own changes in case of failure.
@@ -741,11 +763,11 @@ class JGitConnection implements GitConnection {
         String remoteUri;
         try {
             if (repository.getRepositoryState().equals(RepositoryState.MERGING)) {
-                throw new GitException("Could not pull because the repository state is 'MERGING'.");
+                throw new GitException(ERROR_PULL_MERGING);
             }
             String fullBranch = repository.getFullBranch();
             if (!fullBranch.startsWith(Constants.R_HEADS)) {
-                throw new DetachedHeadException("Could not pull because HEAD is detached.");
+                throw new DetachedHeadException(ERROR_PULL_HEAD_DETACHED);
             }
 
             String branch = fullBranch.substring(Constants.R_HEADS.length());
@@ -794,7 +816,7 @@ class JGitConnection implements GitConnection {
                 remoteBranchRef = fetchResult.getAdvertisedRef(Constants.R_HEADS + remoteBranch);
             }
             if (remoteBranchRef == null) {
-                throw new GitException("Could not pull because remote ref is missing for branch " + remoteBranch + ".");
+                throw new GitException(String.format(ERROR_PULL_REF_MISSING, remoteBranch));
             }
             org.eclipse.jgit.api.MergeResult res = getGit().merge().include(remoteBranchRef).call();
             if (res.getMergeStatus().equals(org.eclipse.jgit.api.MergeResult.MergeStatus.ALREADY_UP_TO_DATE)) {
@@ -802,28 +824,27 @@ class JGitConnection implements GitConnection {
             }
 
             if (res.getConflicts() != null) {
-                StringBuilder message = new StringBuilder("Could not pull because a merge conflict is detected in the files:");
+                StringBuilder message = new StringBuilder(ERROR_PULL_MERGE_CONFLICT_IN_FILES);
                 message.append("\n");
                 Map<String, int[][]> allConflicts = res.getConflicts();
                 for (String path : allConflicts.keySet()) {
                     message.append(path).append("\n");
                 }
-                message.append("Automatic merge failed; fix conflicts and then commit the result.");
+                message.append(ERROR_PULL_AUTO_MERGE_FAILED);
                 throw new GitException(message.toString());
             }
         } catch (CheckoutConflictException exception) {
-            StringBuilder message = new StringBuilder("Checkout operation failed, the following files would be over written by merge:");
+            StringBuilder message = new StringBuilder(ERROR_CHECKOUT_CONFLICT);
             message.append("\n");
             for (String path : exception.getConflictingPaths()) {
                 message.append(path).append("\n");
             }
-            message.append("Could not pull. Commit your changes before merging.");
+            message.append(ERROR_PULL_COMMIT_BEFORE_MERGE);
             throw new GitException(message.toString(), exception);
         } catch (IOException | GitAPIException exception) {
             String errorMessage;
             if (exception.getMessage().equals("Invalid remote: " + remoteName)) {
-                errorMessage = "No remote repository specified.  Please, specify either a URL or a " +
-                               "remote name from which new revisions should be fetched in request.";
+                errorMessage = ERROR_NO_REMOTE_REPOSITORY;
             } else {
                 errorMessage = exception.getMessage();
             }
@@ -874,8 +895,7 @@ class JGitConnection implements GitConnection {
             }
         } catch (GitAPIException exception) {
             if ("origin: not found.".equals(exception.getMessage())) {
-                throw new GitException("No remote repository specified.  Please, specify either a URL or a remote " +
-                                       "name from which new revisions should be fetched in request.", exception);
+                throw new GitException(ERROR_NO_REMOTE_REPOSITORY, exception);
             } else {
                 throw new GitException(exception.getMessage(), exception);
             }
@@ -887,18 +907,18 @@ class JGitConnection implements GitConnection {
     public void remoteAdd(RemoteAddRequest request) throws GitException {
         String remoteName = request.getName();
         if (remoteName == null || remoteName.length() == 0) {
-            throw new IllegalArgumentException("Add operation failed, remote name is required.");
+            throw new IllegalArgumentException(ERROR_ADD_REMOTE_NAME_MISSING);
         }
 
         StoredConfig config = repository.getConfig();
         Set<String> remoteNames = config.getSubsections("remote");
         if (remoteNames.contains(remoteName)) {
-            throw new IllegalArgumentException("Add Remote operation failed, remote name " + remoteName + " already exists.");
+            throw new IllegalArgumentException(String.format(ERROR_REMOTE_NAME_ALREADY_EXISTS, remoteName));
         }
 
         String url = request.getUrl();
         if (url == null || url.length() == 0) {
-            throw new IllegalArgumentException("Add Remote operation failed, Remote url required.");
+            throw new IllegalArgumentException(ERROR_REMOTE_URL_MISSING);
         }
 
         RemoteConfig remoteConfig;
@@ -995,7 +1015,7 @@ class JGitConnection implements GitConnection {
     public void remoteUpdate(RemoteUpdateRequest request) throws GitException {
         String remoteName = request.getName();
         if (remoteName == null || remoteName.length() == 0) {
-            throw new IllegalArgumentException("Update operation failed, remote name is required.");
+            throw new IllegalArgumentException(ERROR_UPDATE_REMOTE_NAME_MISSING);
         }
 
         StoredConfig config = repository.getConfig();
@@ -1042,7 +1062,7 @@ class JGitConnection implements GitConnection {
                 try {
                     remoteConfig.removeURI(new URIish(url));
                 } catch (URISyntaxException e) {
-                    LOG.debug("remoteUpdate: Ignore this error. Cannot remove invalid URL.");
+                    LOG.debug(ERROR_REMOVING_INVALID_URL);
                 }
             }
         }
@@ -1066,7 +1086,7 @@ class JGitConnection implements GitConnection {
                 try {
                     remoteConfig.removePushURI(new URIish(url));
                 } catch (URISyntaxException e) {
-                    LOG.debug("remoteUpdate: Ignore this error. Cannot remove invalid URL.");
+                    LOG.debug(ERROR_REMOVING_INVALID_URL);
                 }
             }
         }
@@ -1196,7 +1216,7 @@ class JGitConnection implements GitConnection {
             updateRef.setForceUpdate(true);
             Result deleteResult = updateRef.delete();
             if (deleteResult != Result.FORCED && deleteResult != Result.FAST_FORWARD) {
-                throw new GitException("Could not delete the tag " + tagName + ". An error occurred: " + deleteResult + ".");
+                throw new GitException(String.format(ERROR_TAG_DELETE, tagName, deleteResult));
             }
         } catch (IOException exception) {
             throw new GitException(exception.getMessage(), exception);
@@ -1252,8 +1272,8 @@ class JGitConnection implements GitConnection {
         try {
             refs = lsRemoteCommand.call();
         } catch (GitAPIException exception) {
-            if (exception.getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
-                throw new UnauthorizedException("fatal: Authentication failed for '" + remoteUrl + "/'\n");
+            if (exception.getMessage().contains(ERROR_AUTHENTICATION_REQUIRED)) {
+                throw new UnauthorizedException(String.format(ERROR_AUTHENTICATION_FAILED, remoteUrl));
             } else {
                 throw new GitException(exception.getMessage(), exception);
             }
@@ -1389,7 +1409,7 @@ class JGitConnection implements GitConnection {
             return command.call();
         } catch (GitException | TransportException exception) {
             if ("Unable get private ssh key".equals(exception.getMessage())
-                || exception.getMessage().contains("Authentication is required")) {
+                || exception.getMessage().contains(ERROR_AUTHENTICATION_REQUIRED)) {
                 throw new UnauthorizedException(exception.getMessage());
             } else {
                 throw exception;
