@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * NativeGit implementation {@link Status}
+ * Jgit implementation of {@link Status}
  *
  * @author Igor Vinokur
  */
-public class JGitStatusImpl implements Status, InfoPage {
+class JGitStatusImpl implements Status, InfoPage {
 
     private String branchName;
 
@@ -63,7 +63,7 @@ public class JGitStatusImpl implements Status, InfoPage {
      * @throws GitException
      *         when any error occurs
      */
-    public JGitStatusImpl(String branchName, StatusCommand statusCommand, StatusFormat format) throws GitException {
+    JGitStatusImpl(String branchName, StatusCommand statusCommand, StatusFormat format) throws GitException {
         this.branchName = branchName;
         this.format = format;
 

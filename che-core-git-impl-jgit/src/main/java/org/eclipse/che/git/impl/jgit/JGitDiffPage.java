@@ -41,12 +41,14 @@ import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 /**
- * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
- * @version $Id: DiffPage.java 22811 2011-03-22 07:28:35Z andrew00x $
+ * Contains information about difference between two commits, commit and working tree,
+ * working tree and index, commit and index.
+ *
+ * @author Andrey Parfonov
  */
 class JGitDiffPage extends DiffPage {
     private final DiffRequest request;
-    private final Repository repository;
+    private final Repository  repository;
 
     JGitDiffPage(DiffRequest request, Repository repository) {
         this.request = request;
@@ -59,23 +61,23 @@ class JGitDiffPage extends DiffPage {
         formatter.setRepository(repository);
         List<String> rawFileFilter = request.getFileFilter();
         TreeFilter pathFilter = (rawFileFilter != null && rawFileFilter.size() > 0)
-                ? PathFilterGroup.createFromStrings(rawFileFilter) : TreeFilter.ALL;
+                                ? PathFilterGroup.createFromStrings(rawFileFilter) : TreeFilter.ALL;
         formatter.setPathFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, pathFilter));
 
         try {
-            String a = request.getCommitA();
-            String b = request.getCommitB();
+            String commitA = request.getCommitA();
+            String commitB = request.getCommitB();
             boolean cached = request.isCached();
 
             List<DiffEntry> diff;
-            if (a == null && b == null && !cached) {
+            if (commitA == null && commitB == null && !cached) {
                 diff = indexToWorkingTree(formatter);
-            } else if (a != null && b == null && !cached) {
-                diff = commitToWorkingTree(a, formatter);
-            } else if (b == null && cached) {
-                diff = commitToIndex(a, formatter);
+            } else if (commitA != null && commitB == null && !cached) {
+                diff = commitToWorkingTree(commitA, formatter);
+            } else if (commitB == null) {
+                diff = commitToIndex(commitA, formatter);
             } else {
-                diff = commitToCommit(a, b, formatter);
+                diff = commitToCommit(commitA, commitB, formatter);
             }
 
             DiffType type = request.getType();
@@ -94,14 +96,14 @@ class JGitDiffPage extends DiffPage {
 
     /**
      * Show changes between index and working tree.
-     * 
+     *
      * @param formatter
      *            diff formatter
      * @return list of diff entries
      * @throws IOException
      *             if any i/o errors occurs
      */
-    List<DiffEntry> indexToWorkingTree(DiffFormatter formatter) throws IOException {
+    private List<DiffEntry> indexToWorkingTree(DiffFormatter formatter) throws IOException {
         DirCache dirCache = null;
         ObjectReader reader = repository.newObjectReader();
         List<DiffEntry> diff;
@@ -117,7 +119,7 @@ class JGitDiffPage extends DiffPage {
                 // Detect renames.
                 RenameDetector renameDetector = createRenameDetector();
                 ContentSource.Pair sourcePairReader = new ContentSource.Pair(ContentSource.create(reader),
-                        ContentSource.create(iterB));
+                                                                             ContentSource.create(iterB));
                 renameDetector.addAll(diff);
                 diff = renameDetector.compute(sourcePairReader, NullProgressMonitor.INSTANCE);
             }
@@ -132,31 +134,27 @@ class JGitDiffPage extends DiffPage {
 
     /**
      * Show changes between specified revision and working tree.
-     * 
-     * @param a
-     *            commit
+     *
+     * @param commitId
+     *            id of commit
      * @param formatter
      *            diff formatter
      * @return list of diff entries
      * @throws IOException
      *             if any i/o errors occurs
      */
-    List<DiffEntry> commitToWorkingTree(String a, DiffFormatter formatter) throws IOException {
-        ObjectId commitA = repository.resolve(a);
+    private List<DiffEntry> commitToWorkingTree(String commitId, DiffFormatter formatter) throws IOException {
+        ObjectId commitA = repository.resolve(commitId);
         if (commitA == null) {
-            throw new IllegalArgumentException("Invalid commit id " + a);
+            throw new IllegalArgumentException("Invalid commit id " + commitId);
         }
-        RevWalk revWalkA = new RevWalk(repository);
         RevTree treeA;
-        try {
+        try (RevWalk revWalkA = new RevWalk(repository)) {
             treeA = revWalkA.parseTree(commitA);
-        } finally {
-            revWalkA.close();
         }
 
-        ObjectReader reader = repository.newObjectReader();
         List<DiffEntry> diff;
-        try {
+        try (ObjectReader reader = repository.newObjectReader()) {
             CanonicalTreeParser iterA = new CanonicalTreeParser();
             iterA.reset(reader, treeA);
             FileTreeIterator iterB = new FileTreeIterator(repository);
@@ -168,49 +166,43 @@ class JGitDiffPage extends DiffPage {
                 // Detect renames.
                 RenameDetector renameDetector = createRenameDetector();
                 ContentSource.Pair sourcePairReader = new ContentSource.Pair(ContentSource.create(reader),
-                        ContentSource.create(iterB));
+                                                                             ContentSource.create(iterB));
                 renameDetector.addAll(diff);
                 diff = renameDetector.compute(sourcePairReader, NullProgressMonitor.INSTANCE);
             }
-        } finally {
-            reader.close();
         }
         return diff;
     }
 
     /**
      * Show changes between specified revision and index. If
-     * <code>a == null</code> then view changes between HEAD and index.
-     * 
-     * @param a
-     *            commit, pass <code>null</code> is the same as pass HEAD
+     * <code>commitId == null</code> then view changes between HEAD and index.
+     *
+     * @param commitId
+     *            id of commit, pass <code>null</code> is the same as pass HEAD
      * @param formatter
      *            diff formatter
      * @return list of diff entries
      * @throws IOException
      *             if any i/o errors occurs
      */
-    List<DiffEntry> commitToIndex(String a, DiffFormatter formatter) throws IOException {
-        if (a == null) {
-            a = Constants.HEAD;
+    private List<DiffEntry> commitToIndex(String commitId, DiffFormatter formatter) throws IOException {
+        if (commitId == null) {
+            commitId = Constants.HEAD;
         }
 
-        ObjectId commitA = repository.resolve(a);
+        ObjectId commitA = repository.resolve(commitId);
         if (commitA == null) {
-            throw new IllegalArgumentException("Invalid commit id " + a);
+            throw new IllegalArgumentException("Invalid commit id " + commitId);
         }
-        RevWalk revWalkA = new RevWalk(repository);
         RevTree treeA;
-        try {
+        try (RevWalk revWalkA = new RevWalk(repository)) {
             treeA = revWalkA.parseTree(commitA);
-        } finally {
-            revWalkA.close();
         }
 
         DirCache dirCache = null;
-        ObjectReader reader = repository.newObjectReader();
         List<DiffEntry> diff;
-        try {
+        try (ObjectReader reader = repository.newObjectReader()) {
             dirCache = repository.lockDirCache();
             CanonicalTreeParser iterA = new CanonicalTreeParser();
             iterA.reset(reader, treeA);
@@ -226,7 +218,6 @@ class JGitDiffPage extends DiffPage {
             }
             diff = formatter.scan(iterA, iterB);
         } finally {
-            reader.close();
             if (dirCache != null) {
                 dirCache.unlock();
             }
@@ -236,46 +227,40 @@ class JGitDiffPage extends DiffPage {
 
     /**
      * Show changes between specified two revisions and index. If
-     * <code>a == null</code> then view changes between HEAD and revision b.
-     * 
-     * @param a
-     *            commit a, pass <code>null</code> is the same as pass HEAD
-     * @param b
-     *            commit b
+     * <code>commitAId == null</code> then view changes between HEAD and revision commitBId.
+     *
+     * @param commitAId
+     *            id of commit A, pass <code>null</code> is the same as pass HEAD
+     * @param commitBId
+     *            id of commit B
      * @param formatter
      *            diff formatter
      * @return list of diff entries
      * @throws IOException
      *             if any i/o errors occurs
      */
-    List<DiffEntry> commitToCommit(String a, String b, DiffFormatter formatter) throws IOException {
-        if (a == null) {
-            a = Constants.HEAD;
+    private List<DiffEntry> commitToCommit(String commitAId, String commitBId, DiffFormatter formatter) throws IOException {
+        if (commitAId == null) {
+            commitAId = Constants.HEAD;
         }
 
-        ObjectId commitA = repository.resolve(a);
+        ObjectId commitA = repository.resolve(commitAId);
         if (commitA == null) {
-            throw new IllegalArgumentException("Invalid commit id " + a);
+            throw new IllegalArgumentException("Invalid commit id " + commitAId);
         }
-        ObjectId commitB = repository.resolve(b);
+        ObjectId commitB = repository.resolve(commitBId);
         if (commitB == null) {
-            throw new IllegalArgumentException("Invalid commit id " + b);
+            throw new IllegalArgumentException("Invalid commit id " + commitBId);
         }
 
-        RevWalk revWalkA = new RevWalk(repository);
         RevTree treeA;
-        try {
+        try (RevWalk revWalkA = new RevWalk(repository)) {
             treeA = revWalkA.parseTree(commitA);
-        } finally {
-            revWalkA.close();
         }
 
-        RevWalk revWalkB = new RevWalk(repository);
         RevTree treeB;
-        try {
+        try (RevWalk revWalkB = new RevWalk(repository)) {
             treeB = revWalkB.parseTree(commitB);
-        } finally {
-            revWalkB.close();
         }
 
         if (!request.isNoRenames()) {
@@ -299,12 +284,12 @@ class JGitDiffPage extends DiffPage {
         return renameDetector;
     }
 
-    void writeRawDiff(List<DiffEntry> diff, DiffFormatter formatter) throws IOException {
+    private void writeRawDiff(List<DiffEntry> diff, DiffFormatter formatter) throws IOException {
         formatter.format(diff);
         formatter.flush();
     }
 
-    void writeNames(List<DiffEntry> diff, OutputStream out) throws IOException {
+    private void writeNames(List<DiffEntry> diff, OutputStream out) throws IOException {
         PrintWriter writer = new PrintWriter(out);
         for (DiffEntry de : diff) {
             writer.println(de.getChangeType() == ChangeType.DELETE ? de.getOldPath() : de.getNewPath());
@@ -312,7 +297,7 @@ class JGitDiffPage extends DiffPage {
         writer.flush();
     }
 
-    void writeNamesAndStatus(List<DiffEntry> diff, OutputStream out) throws IOException {
+    private void writeNamesAndStatus(List<DiffEntry> diff, OutputStream out) throws IOException {
         PrintWriter writer = new PrintWriter(out);
         for (DiffEntry de : diff) {
             if (de.getChangeType() == ChangeType.ADD) {

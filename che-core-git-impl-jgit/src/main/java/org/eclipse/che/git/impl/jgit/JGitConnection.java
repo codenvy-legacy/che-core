@@ -75,6 +75,7 @@ import org.eclipse.che.api.git.shared.PushRequest;
 import org.eclipse.che.api.git.shared.PushResponse;
 import org.eclipse.che.api.git.shared.RebaseRequest;
 import org.eclipse.che.api.git.shared.RebaseResponse;
+import org.eclipse.che.api.git.shared.RebaseResponse.RebaseStatus;
 import org.eclipse.che.api.git.shared.Remote;
 import org.eclipse.che.api.git.shared.RemoteAddRequest;
 import org.eclipse.che.api.git.shared.RemoteListRequest;
@@ -89,9 +90,7 @@ import org.eclipse.che.api.git.shared.Tag;
 import org.eclipse.che.api.git.shared.TagCreateRequest;
 import org.eclipse.che.api.git.shared.TagDeleteRequest;
 import org.eclipse.che.api.git.shared.TagListRequest;
-import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.git.impl.jgit.ssh.SshKeyProvider;
-import org.eclipse.che.git.impl.jgit.shared.JGitRebaseResponse;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CloneCommand;
@@ -154,8 +153,8 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
- * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>*
- * @author <a href="mailto:ivinokur@codenvy.com">Igor Vinokur</a>
+ * @author Andrey Parfonov
+ * @author Igor Vinokur
  */
 class JGitConnection implements GitConnection {
     private static final String REBASE_OPERATION_SKIP     = "SKIP";
@@ -228,21 +227,11 @@ class JGitConnection implements GitConnection {
             } else {
                 files.forEach(checkoutCommand::addPath);
             }
-            // remove untracked
-            Status status = this.status(StatusFormat.LONG);
-            List<String> unTracked = status.getUntracked();
-            // remove file
-            unTracked.stream().filter(files::contains).forEach(unTrackedFile -> {
-                // remove file
-                File f = new File(getWorkingDir(), unTrackedFile);
-                f.delete();
-            });
         } else {
             // checkout branch
             if (startPoint != null && trackBranch != null) {
                 throw new GitException("Start point and track branch can not be used together.");
             }
-
             if (request.isCreateNew() && name == null) {
                 throw new GitException("Branch name must be set when createNew equals to true.");
             }
@@ -283,9 +272,9 @@ class JGitConnection implements GitConnection {
             checkoutCommand.call();
         } catch (GitAPIException exception) {
             if (exception.getMessage().endsWith("already exists")) {
-                throw new GitException("A branch named '" + name + "' already exists.");
+                throw new GitException("A branch named '" + (name != null ? name : cleanRemoteName(trackBranch)) + "' already exists.");
             }
-            throw new GitException(exception.getMessage(), exception.getCause());
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -300,36 +289,43 @@ class JGitConnection implements GitConnection {
             Ref brRef = createBranchCommand.call();
             String refName = brRef.getName();
             String displayName = Repository.shortenRefName(refName);
-            Branch branch = createDto(Branch.class);
-            return branch.withName(refName).withActive(false).withDisplayName(displayName).withRemote(false);
-        } catch (GitAPIException e) {
-            throw new GitException(e);
+            return newDto(Branch.class).withName(refName)
+                                       .withDisplayName(displayName)
+                                       .withActive(false)
+                                       .withRemote(false);
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public void branchDelete(BranchDeleteRequest request) throws GitException {
         try {
-            getGit().branchDelete().setBranchNames(request.getName()).setForce(request.isForce()).call();
-        } catch (GitAPIException e) {
-            throw new GitException(e);
+            getGit().branchDelete()
+                    .setBranchNames(request.getName())
+                    .setForce(request.isForce())
+                    .call();
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public void branchRename(String oldName, String newName) throws GitException {
         try {
-            getGit().branchRename().setOldName(oldName).setNewName(newName).call();
-        } catch (GitAPIException e) {
-            throw new GitException(e);
+            getGit().branchRename()
+                    .setOldName(oldName)
+                    .setNewName(newName)
+                    .call();
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public List<Branch> branchList(BranchListRequest request) throws GitException {
         String listMode = request.getListMode();
-        if (listMode != null
-            && !(listMode.equals(BranchListRequest.LIST_ALL) || listMode.equals(BranchListRequest.LIST_REMOTE))) {
+        if (listMode != null && !(listMode.equals(BranchListRequest.LIST_ALL) || listMode.equals(BranchListRequest.LIST_REMOTE))) {
             throw new IllegalArgumentException("Unsupported list mode '" + listMode + "'. Must be either 'a' or 'r'. ");
         }
 
@@ -356,7 +352,7 @@ class JGitConnection implements GitConnection {
             }
 
         } catch (GitAPIException | IOException exception) {
-            throw new GitException(exception.getMessage());
+            throw new GitException(exception.getMessage(), exception);
         }
         List<Branch> branches = new ArrayList<>();
         for (Ref ref : refs) {
@@ -369,10 +365,10 @@ class JGitConnection implements GitConnection {
             } else {
                 branchDisplayName = Repository.shortenRefName(refName);
             }
-            Branch branch = createDto(Branch.class).withName(branchName)
-                                                   .withActive(isCommitOrTag || refName.equals(currentRef))
-                                                   .withDisplayName(branchDisplayName)
-                                                   .withRemote(ref.getName().startsWith("refs/remotes"));
+            Branch branch = newDto(Branch.class).withName(branchName)
+                                                .withActive(isCommitOrTag || refName.equals(currentRef))
+                                                .withDisplayName(branchDisplayName)
+                                                .withRemote(ref.getName().startsWith("refs/remotes"));
             branches.add(branch);
         }
         return branches;
@@ -419,8 +415,7 @@ class JGitConnection implements GitConnection {
             if (removeIfFailed) {
                 deleteRepositoryFolder();
             }
-
-            throw new GitException(exception.getMessage());
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -428,14 +423,14 @@ class JGitConnection implements GitConnection {
     public Revision commit(CommitRequest request) throws GitException {
         try {
             if (!repository.getRepositoryState().canCommit()) {
-                Revision rev = createDto(Revision.class);
+                Revision rev = newDto(Revision.class);
                 rev.setMessage("Commit is not possible because repository state is '"
                                + repository.getRepositoryState().getDescription() + "'");
                 return rev;
             }
 
             if (request.isAmend() && !repository.getRepositoryState().canAmend()) {
-                Revision rev = createDto(Revision.class);
+                Revision rev = newDto(Revision.class);
                 rev.setMessage("Amend is not possible because repository state is '"
                                + repository.getRepositoryState().getDescription() + "'");
                 return rev;
@@ -445,13 +440,13 @@ class JGitConnection implements GitConnection {
             if (status.getAdded().isEmpty() && status.getChanged().isEmpty() && status.getRemoved().isEmpty()) {
                 if (request.isAll()) {
                     if (status.getMissing().isEmpty() && status.getModified().isEmpty()) {
-                        return createDto(Revision.class).withMessage(request.getMessage());
+                        return newDto(Revision.class).withMessage(request.getMessage());
                     }
                 } else {
                     if (status.getMissing().isEmpty() && status.getModified().isEmpty()) {
-                        return createDto(Revision.class).withMessage(request.getMessage());
+                        return newDto(Revision.class).withMessage(request.getMessage());
                     } else {
-                        return createDto(Revision.class).withMessage(request.getMessage());
+                        return newDto(Revision.class).withMessage(request.getMessage());
                     }
                 }
             }
@@ -465,13 +460,13 @@ class JGitConnection implements GitConnection {
                                                   .setAmend(request.isAmend());
 
             RevCommit result = commitCommand.call();
-            GitUser gitUser = createDto(GitUser.class).withName(committerName).withEmail(committerEmail);
+            GitUser gitUser = newDto(GitUser.class).withName(committerName).withEmail(committerEmail);
 
-            return createDto(Revision.class).withBranch(getCurrentBranch())
-                                            .withId(result.getId().getName()).withMessage(result.getFullMessage())
-                                            .withCommitTime((long)result.getCommitTime() * 1000).withCommitter(gitUser);
-        } catch (GitAPIException e) {
-            throw new GitException(e);
+            return newDto(Revision.class).withBranch(getCurrentBranch())
+                                         .withId(result.getId().getName()).withMessage(result.getFullMessage())
+                                         .withCommitTime((long)result.getCommitTime() * 1000).withCommitter(gitUser);
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -496,7 +491,6 @@ class JGitConnection implements GitConnection {
                     fetchRefSpecs.add(fetchRefSpec);
                 }
             } else {
-                // fetchRefSpecs = Arrays.asList(new RefSpec(Constants.HEAD));
                 fetchRefSpecs = Collections.emptyList();
             }
 
@@ -506,7 +500,7 @@ class JGitConnection implements GitConnection {
             // (otherwise JGit fails)
             if (remoteName != null && (refSpec == null || refSpec.isEmpty())) {
                 boolean found = false;
-                List<Remote> configRemotes = remoteList(createDto(RemoteListRequest.class));
+                List<Remote> configRemotes = remoteList(newDto(RemoteListRequest.class));
                 for (Remote configRemote : configRemotes) {
                     if (remoteName.equals(configRemote.getName())) {
                         found = true;
@@ -543,7 +537,7 @@ class JGitConnection implements GitConnection {
             } else {
                 errorMessage = exception.getMessage();
             }
-            throw new GitException(errorMessage);
+            throw new GitException(errorMessage, exception);
         }
     }
 
@@ -559,23 +553,11 @@ class JGitConnection implements GitConnection {
 
         try {
             repository.create(request.isBare());
-        } catch (IOException e) {
+        } catch (IOException exception) {
             if (removeIfFailed) {
                 deleteRepositoryFolder();
             }
-
-            throw new GitException(e.getMessage(), e);
-        }
-    }
-
-    private void deleteRepositoryFolder() {
-        try {
-            if (repository.getDirectory().exists()) {
-                FileUtils.delete(repository.getDirectory(), FileUtils.RECURSIVE | FileUtils.IGNORE_ERRORS);
-            }
-        } catch (Exception exception) {
-            // Ignore the error since we want to throw the original error
-            LOG.error("Could not remove .git folder in path " + repository.getDirectory().getPath(), exception);
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -591,22 +573,23 @@ class JGitConnection implements GitConnection {
             while (revIterator.hasNext()) {
                 RevCommit commit = revIterator.next();
                 PersonIdent committerIdentity = commit.getCommitterIdent();
-                GitUser gitUser = createDto(GitUser.class).withName(committerIdentity.getName())
-                                                          .withEmail(committerIdentity.getEmailAddress());
-                Revision revision = createDto(Revision.class).withId(commit.getId().getName())
-                                                             .withMessage(commit.getFullMessage())
-                                                             .withCommitTime((long)commit.getCommitTime() * 1000)
-                                                             .withCommitter(gitUser);
+
+                GitUser gitUser = newDto(GitUser.class).withName(committerIdentity.getName())
+                                                       .withEmail(committerIdentity.getEmailAddress());
+
+                Revision revision = newDto(Revision.class).withId(commit.getId().getName())
+                                                          .withMessage(commit.getFullMessage())
+                                                          .withCommitTime((long)commit.getCommitTime() * 1000)
+                                                          .withCommitter(gitUser);
                 commits.add(revision);
             }
             return new LogPage(commits);
-        } catch (GitAPIException | IOException e) {
-            throw new GitException(e);
+        } catch (GitAPIException | IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
     private void setRevisionRange(LogCommand logCommand, LogRequest request) throws IOException {
-        // Revision Range
         if (request != null) {
             String revisionRangeSince = request.getRevisionRangeSince();
             String revisionRangeUntil = request.getRevisionRangeUntil();
@@ -623,17 +606,16 @@ class JGitConnection implements GitConnection {
         List<GitUser> gitUsers = new ArrayList<>();
         try {
             LogCommand logCommand = getGit().log();
-
             for (RevCommit commit : logCommand.call()) {
                 PersonIdent committerIdentity = commit.getCommitterIdent();
-                GitUser gitUser = createDto(GitUser.class).withName(committerIdentity.getName())
-                                                          .withEmail(committerIdentity.getEmailAddress());
+                GitUser gitUser = newDto(GitUser.class).withName(committerIdentity.getName())
+                                                       .withEmail(committerIdentity.getEmailAddress());
                 if (!gitUsers.contains(gitUser)) {
                     gitUsers.add(gitUser);
                 }
             }
-        } catch (GitAPIException e) {
-            throw new GitException(e);
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
 
         return gitUsers;
@@ -642,45 +624,82 @@ class JGitConnection implements GitConnection {
     @Override
     public MergeResult merge(MergeRequest request) throws GitException {
         try {
-            Ref ref = repository.getRef(request.getCommit());
+            Ref ref = repository.findRef(request.getCommit());
             if (ref == null) {
                 throw new IllegalArgumentException("Invalid reference to commit for merge " + request.getCommit());
             }
-            // Shorten local branch names by removing '/refs/heads/' from the
-            // beginning
+            // Shorten local branch names by removing '/refs/heads/' from the beginning
             String name = ref.getName();
             if (name.startsWith(Constants.R_HEADS)) {
                 name = name.substring(Constants.R_HEADS.length());
             }
             org.eclipse.jgit.api.MergeResult jgitMergeResult = getGit().merge().include(name, ref.getObjectId()).call();
             return new JGitMergeResult(jgitMergeResult);
-        } catch (CheckoutConflictException e) {
-            org.eclipse.jgit.api.MergeResult jgitMergeResult = new org.eclipse.jgit.api.MergeResult(
-                    e.getConflictingPaths());
+        } catch (CheckoutConflictException exception) {
+            org.eclipse.jgit.api.MergeResult jgitMergeResult = new org.eclipse.jgit.api.MergeResult(exception.getConflictingPaths());
             return new JGitMergeResult(jgitMergeResult);
-        } catch (IOException | GitAPIException e) {
-            throw new GitException(e.getMessage(), e);
+        } catch (IOException | GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public RebaseResponse rebase(RebaseRequest request) throws GitException {
         RebaseResult result;
+        RebaseStatus status;
+        List<String> failed;
+        List<String> conflicts;
         try {
-            // Create a jgit command
             RebaseCommand rebaseCommand = getGit().rebase();
-
             setRebaseOperation(rebaseCommand, request);
-
             String branch = request.getBranch();
             if (branch != null && !branch.isEmpty()) {
                 rebaseCommand.setUpstream(branch);
             }
             result = rebaseCommand.call();
-        } catch (GitAPIException e) {
-            throw new GitException(e.getMessage(), e);
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
-        return new JGitRebaseResponse(result);
+        switch (result.getStatus()) {
+            case ABORTED:
+                status = RebaseStatus.ABORTED;
+                break;
+            case CONFLICTS:
+                status = RebaseStatus.CONFLICTING;
+                break;
+            case UP_TO_DATE:
+                status = RebaseStatus.ALREADY_UP_TO_DATE;
+                break;
+            case FAST_FORWARD:
+                status = RebaseStatus.FAST_FORWARD;
+                break;
+            case NOTHING_TO_COMMIT:
+                status = RebaseStatus.NOTHING_TO_COMMIT;
+                break;
+            case OK:
+                status = RebaseStatus.OK;
+                break;
+            case STOPPED:
+                status = RebaseStatus.STOPPED;
+                break;
+            case UNCOMMITTED_CHANGES:
+                status = RebaseStatus.UNCOMMITTED_CHANGES;
+                break;
+            case EDIT:
+                status = RebaseStatus.EDITED;
+                break;
+            case INTERACTIVE_PREPARED:
+                status = RebaseStatus.INTERACTIVE_PREPARED;
+                break;
+            case STASH_APPLY_CONFLICTS:
+                status = RebaseStatus.STASH_APPLY_CONFLICTS;
+                break;
+            default:
+                status = RebaseStatus.FAILED;
+        }
+        conflicts = result.getConflicts() != null ? result.getConflicts() : Collections.emptyList();
+        failed = result.getFailingPaths() != null ? new ArrayList<>(result.getFailingPaths().keySet()) : Collections.emptyList();
+        return newDto(RebaseResponse.class).withStatus(status).withConflicts(conflicts).withFailed(failed);
     }
 
     private void setRebaseOperation(RebaseCommand rebaseCommand, RebaseRequest request) {
@@ -708,7 +727,12 @@ class JGitConnection implements GitConnection {
 
     @Override
     public void mv(MoveRequest request) throws GitException {
-        throw new RuntimeException("Not implemented yet. ");
+        try {
+            getGit().add().addFilepattern(request.getTarget()).call();
+            getGit().rm().addFilepattern(request.getSource()).call();
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
+        }
     }
 
     @Override
@@ -787,14 +811,14 @@ class JGitConnection implements GitConnection {
                 message.append("Automatic merge failed; fix conflicts and then commit the result.");
                 throw new GitException(message.toString());
             }
-        } catch (CheckoutConflictException e) {
+        } catch (CheckoutConflictException exception) {
             StringBuilder message = new StringBuilder("Checkout operation failed, the following files would be over written by merge:");
             message.append("\n");
-            for (String path : e.getConflictingPaths()) {
+            for (String path : exception.getConflictingPaths()) {
                 message.append(path).append("\n");
             }
             message.append("Could not pull. Commit your changes before merging.");
-            throw new GitException(message.toString());
+            throw new GitException(message.toString(), exception);
         } catch (IOException | GitAPIException exception) {
             String errorMessage;
             if (exception.getMessage().equals("Invalid remote: " + remoteName)) {
@@ -805,7 +829,7 @@ class JGitConnection implements GitConnection {
             }
             throw new GitException(errorMessage, exception);
         }
-        return DtoFactory.getInstance().createDto(PullResponse.class).withCommandOutput("Successfully pulled from " + remoteUri);
+        return newDto(PullResponse.class).withCommandOutput("Successfully pulled from " + remoteUri);
     }
 
     @Override
@@ -840,8 +864,7 @@ class JGitConnection implements GitConnection {
                 Collection<RemoteRefUpdate> refUpdates = pushResult.getRemoteUpdates();
                 for (RemoteRefUpdate remoteRefUpdate : refUpdates) {
                     if (!remoteRefUpdate.getStatus().equals(org.eclipse.jgit.transport.RemoteRefUpdate.Status.OK)) {
-                        if (remoteRefUpdate.getStatus()
-                                           .equals(org.eclipse.jgit.transport.RemoteRefUpdate.Status.UP_TO_DATE)) {
+                        if (remoteRefUpdate.getStatus().equals(org.eclipse.jgit.transport.RemoteRefUpdate.Status.UP_TO_DATE)) {
                             return newDto(PushResponse.class).withCommandOutput("Everything up-to-date");
                         } else {
                             throw new GitException(remoteRefUpdate.getStatus().toString());
@@ -857,7 +880,7 @@ class JGitConnection implements GitConnection {
                 throw new GitException(exception.getMessage(), exception);
             }
         }
-        return DtoFactory.getInstance().createDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remoteUri);
+        return newDto(PushResponse.class).withCommandOutput("Successfully pushed to " + remoteUri);
     }
 
     @Override
@@ -881,14 +904,14 @@ class JGitConnection implements GitConnection {
         RemoteConfig remoteConfig;
         try {
             remoteConfig = new RemoteConfig(config, remoteName);
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException exception) {
             // Not happen since it is newly created remote.
-            throw new GitException(e.getMessage(), e);
+            throw new GitException(exception.getMessage(), exception);
         }
 
         try {
             remoteConfig.addURI(new URIish(url));
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException exception) {
             throw new IllegalArgumentException("Remote url " + url + " is invalid. ");
         }
 
@@ -900,16 +923,15 @@ class JGitConnection implements GitConnection {
             }
         } else {
             remoteConfig.addFetchRefSpec(
-                    new RefSpec(Constants.R_HEADS + "*" + ":" + Constants.R_REMOTES + remoteName + "/*")
-                            .setForceUpdate(true));
+                    new RefSpec(Constants.R_HEADS + "*" + ":" + Constants.R_REMOTES + remoteName + "/*").setForceUpdate(true));
         }
 
         remoteConfig.update(config);
 
         try {
             config.save();
-        } catch (IOException e) {
-            throw new GitException(e.getMessage(), e);
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -930,11 +952,10 @@ class JGitConnection implements GitConnection {
             if (name.equals(r)) {
                 config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, branch, ConfigConstants.CONFIG_KEY_REMOTE);
                 config.unset(ConfigConstants.CONFIG_BRANCH_SECTION, branch, ConfigConstants.CONFIG_KEY_MERGE);
-                List<Branch> remoteBranches = branchList(createDto(BranchListRequest.class).withListMode("r"));
+                List<Branch> remoteBranches = branchList(newDto(BranchListRequest.class).withListMode("r"));
                 for (Branch remoteBranch : remoteBranches) {
                     if (remoteBranch.getDisplayName().startsWith(name)) {
-                        branchDelete(
-                                createDto(BranchDeleteRequest.class).withName(remoteBranch.getName()).withForce(true));
+                        branchDelete(newDto(BranchDeleteRequest.class).withName(remoteBranch.getName()).withForce(true));
                     }
                 }
             }
@@ -942,8 +963,8 @@ class JGitConnection implements GitConnection {
 
         try {
             config.save();
-        } catch (IOException e) {
-            throw new GitException(e.getMessage(), e);
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -959,13 +980,12 @@ class JGitConnection implements GitConnection {
         }
 
         List<Remote> result = new ArrayList<>(remoteNames.size());
-        for (String rn : remoteNames) {
+        for (String remoteName : remoteNames) {
             try {
-                List<URIish> uris = new RemoteConfig(config, rn).getURIs();
-                result.add(
-                        createDto(Remote.class).withName(rn).withUrl(uris.isEmpty() ? null : uris.get(0).toString()));
-            } catch (URISyntaxException e) {
-                throw new GitException(e.getMessage(), e);
+                List<URIish> uris = new RemoteConfig(config, remoteName).getURIs();
+                result.add(newDto(Remote.class).withName(remoteName).withUrl(uris.isEmpty() ? null : uris.get(0).toString()));
+            } catch (URISyntaxException exception) {
+                throw new GitException(exception.getMessage(), exception);
             }
         }
         return result;
@@ -1067,38 +1087,37 @@ class JGitConnection implements GitConnection {
 
         try {
             config.save();
-        } catch (IOException e) {
-            throw new GitException(e.getMessage(), e);
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
     @Override
     public void reset(ResetRequest request) throws GitException {
         try {
-
-            ResetCommand req = getGit().reset();
-            req.setRef(request.getCommit());
+            ResetCommand resetCommand = getGit().reset();
+            resetCommand.setRef(request.getCommit());
             for (int i = 0; i < request.getFilePattern().size(); i++) {
-                req.addPath(request.getFilePattern().get(i));
+                resetCommand.addPath(request.getFilePattern().get(i));
             }
 
             if (request.getType() != null) {
                 if (request.getType().equals(ResetRequest.ResetType.HARD)) {
-                    req.setMode(ResetCommand.ResetType.HARD);
+                    resetCommand.setMode(ResetCommand.ResetType.HARD);
                 } else if (request.getType().equals(ResetRequest.ResetType.KEEP)) {
-                    req.setMode(ResetCommand.ResetType.KEEP);
+                    resetCommand.setMode(ResetCommand.ResetType.KEEP);
                 } else if (request.getType().equals(ResetRequest.ResetType.MERGE)) {
-                    req.setMode(ResetCommand.ResetType.MERGE);
+                    resetCommand.setMode(ResetCommand.ResetType.MERGE);
                 } else if (request.getType().equals(ResetRequest.ResetType.MIXED)) {
-                    req.setMode(ResetCommand.ResetType.MIXED);
+                    resetCommand.setMode(ResetCommand.ResetType.MIXED);
                 } else if (request.getType().equals(ResetRequest.ResetType.SOFT)) {
-                    req.setMode(ResetCommand.ResetType.SOFT);
+                    resetCommand.setMode(ResetCommand.ResetType.SOFT);
                 }
             }
 
-            req.call();
-        } catch (GitAPIException e) {
-            throw new GitException(e);
+            resetCommand.call();
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -1114,8 +1133,8 @@ class JGitConnection implements GitConnection {
         }
         try {
             rmCommand.call();
-        } catch (GitAPIException e) {
-            throw new GitException(e);
+        } catch (GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -1157,9 +1176,9 @@ class JGitConnection implements GitConnection {
 
             Ref revTagRef = tagCommand.call();
             RevTag revTag = revWalk.parseTag(revTagRef.getLeaf().getObjectId());
-            return createDto(Tag.class).withName(revTag.getTagName());
-        } catch (IOException | GitAPIException e) {
-            throw new GitException(e.getMessage(), e);
+            return newDto(Tag.class).withName(revTag.getTagName());
+        } catch (IOException | GitAPIException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -1167,7 +1186,7 @@ class JGitConnection implements GitConnection {
     public void tagDelete(TagDeleteRequest request) throws GitException {
         try {
             String tagName = request.getName();
-            Ref tagRef = repository.getRef(tagName);
+            Ref tagRef = repository.findRef(tagName);
             if (tagRef == null) {
                 throw new IllegalArgumentException("Tag " + tagName + " not found. ");
             }
@@ -1175,13 +1194,12 @@ class JGitConnection implements GitConnection {
             RefUpdate updateRef = repository.updateRef(tagRef.getName());
             updateRef.setRefLogMessage("tag deleted", false);
             updateRef.setForceUpdate(true);
-            Result deleteResult;
-            deleteResult = updateRef.delete();
+            Result deleteResult = updateRef.delete();
             if (deleteResult != Result.FORCED && deleteResult != Result.FAST_FORWARD) {
                 throw new GitException("Could not delete the tag " + tagName + ". An error occurred: " + deleteResult + ".");
             }
-        } catch (IOException e) {
-            throw new GitException(e.getMessage(), e);
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -1209,7 +1227,7 @@ class JGitConnection implements GitConnection {
 
         for (String tagName : tagNames) {
             if (pattern == null || pattern.matcher(tagName).matches()) {
-                tags.add(createDto(Tag.class).withName(tagName));
+                tags.add(newDto(Tag.class).withName(tagName));
             }
         }
         return tags;
@@ -1218,41 +1236,6 @@ class JGitConnection implements GitConnection {
     @Override
     public void close() {
         repository.close();
-    }
-
-    public Repository getRepository() {
-        return repository;
-    }
-
-    public String getCurrentBranch() throws GitException {
-        try {
-            Ref headRef;
-            headRef = repository.getRef(Constants.HEAD);
-            return Repository.shortenRefName(headRef.getLeaf().getName());
-        } catch (IOException e) {
-            throw new GitException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Method for cleaning name of remote branch to be checked out. I.e. it
-     * takes something like "origin/testBranch" and returns "testBranch". This
-     * is needed for view-compatibility with console Git client.
-     *
-     * @param branchName
-     *         is a name of branch to be cleaned
-     * @return branchName without remote repository name
-     * @throws GitException
-     */
-    private String cleanRemoteName(String branchName) throws GitException {
-        String returnName = branchName;
-        List<Remote> remotes = this.remoteList(createDto(RemoteListRequest.class));
-        for (Remote remote : remotes) {
-            if (branchName.startsWith(remote.getName())) {
-                returnName = branchName.replaceFirst(remote.getName() + "/", "");
-            }
-        }
-        return returnName;
     }
 
     @Override
@@ -1265,23 +1248,22 @@ class JGitConnection implements GitConnection {
         String remoteUrl = request.getRemoteUrl();
         LsRemoteCommand lsRemoteCommand = getGit().lsRemote();
         lsRemoteCommand.setRemote(remoteUrl);
-        // TODO handle cases of isUseAuthorization()
         Collection<Ref> refs;
         try {
             refs = lsRemoteCommand.call();
-        } catch (GitAPIException e) {
-            if (e.getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
+        } catch (GitAPIException exception) {
+            if (exception.getMessage().contains("Authentication is required but no CredentialsProvider has been registered")) {
                 throw new UnauthorizedException("fatal: Authentication failed for '" + remoteUrl + "/'\n");
             } else {
-                throw new GitException(e.getMessage(), e);
+                throw new GitException(exception.getMessage(), exception);
             }
         }
         // Translate the JGit result
-        List<RemoteReference> remoteRefs = new ArrayList<RemoteReference>(refs.size());
+        List<RemoteReference> remoteRefs = new ArrayList<>(refs.size());
         for (Ref ref : refs) {
             String commitId = ref.getObjectId().name();
             String name = ref.getName();
-            RemoteReference remoteRef = createDto(RemoteReference.class).withCommitId(commitId).withReferenceName(name);
+            RemoteReference remoteRef = newDto(RemoteReference.class).withCommitId(commitId).withReferenceName(name);
             remoteRefs.add(remoteRef);
         }
         return remoteRefs;
@@ -1305,10 +1287,6 @@ class JGitConnection implements GitConnection {
             return git;
         }
         return git = new Git(repository);
-    }
-
-    private static <T> T createDto(Class<T> clazz) {
-        return DtoFactory.getInstance().createDto(clazz);
     }
 
     @Override
@@ -1354,7 +1332,7 @@ class JGitConnection implements GitConnection {
                 }
             }
         } catch (IOException exception) {
-            throw new GitException(exception.getMessage());
+            throw new GitException(exception.getMessage(), exception);
         }
     }
 
@@ -1447,8 +1425,8 @@ class JGitConnection implements GitConnection {
         Set<PosixFilePermission> permissions = EnumSet.of(OWNER_READ, OWNER_WRITE);
         try {
             java.nio.file.Files.setPosixFilePermissions(keyFile.toPath(), permissions);
-        } catch (IOException e) {
-            throw new GitException(e.getMessage());
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
 
         return keyFile;
@@ -1458,10 +1436,56 @@ class JGitConnection implements GitConnection {
         String credentialsProvider = "che";
         try {
             credentialsProvider = getConfig().get("codenvy.credentialsProvider");
-        } catch (GitException e) {
+        } catch (GitException exception) {
             //ignore property not found.
         }
 
         return credentialsLoader.getUser(credentialsProvider);
+    }
+
+    private void deleteRepositoryFolder() {
+        try {
+            if (repository.getDirectory().exists()) {
+                FileUtils.delete(repository.getDirectory(), FileUtils.RECURSIVE | FileUtils.IGNORE_ERRORS);
+            }
+        } catch (Exception exception) {
+            // Ignore the error since we want to throw the original error
+            LOG.error("Could not remove .git folder in path " + repository.getDirectory().getPath(), exception);
+        }
+    }
+
+    private Repository getRepository() {
+        return repository;
+    }
+
+    private String getCurrentBranch() throws GitException {
+        try {
+            Ref headRef;
+            headRef = repository.exactRef(Constants.HEAD);
+            return Repository.shortenRefName(headRef.getLeaf().getName());
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
+        }
+    }
+
+    /**
+     * Method for cleaning name of remote branch to be checked out. I.e. it
+     * takes something like "origin/testBranch" and returns "testBranch". This
+     * is needed for view-compatibility with console Git client.
+     *
+     * @param branchName
+     *         is a name of branch to be cleaned
+     * @return branchName without remote repository name
+     * @throws GitException
+     */
+    private String cleanRemoteName(String branchName) throws GitException {
+        String returnName = branchName;
+        List<Remote> remotes = this.remoteList(newDto(RemoteListRequest.class));
+        for (Remote remote : remotes) {
+            if (branchName.startsWith(remote.getName())) {
+                returnName = branchName.replaceFirst(remote.getName() + "/", "");
+            }
+        }
+        return returnName;
     }
 }

@@ -380,7 +380,7 @@ public class GitService {
     }
 
 
-    @Path("get-config")
+    @Path("config")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, String> getConfig(@QueryParam("requestedConfig") List<String> requestedConfig)
@@ -408,7 +408,7 @@ public class GitService {
     }
 
 
-    @Path("set-config")
+    @Path("config")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     public void setConfig(ConfigRequest request) throws ApiException {
