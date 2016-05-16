@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
@@ -91,7 +92,7 @@ public class BranchDeleteTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void shouldDeleteNotFullyMergedBranchWithForce(GitConnectionFactory connectionFactory)
-            throws GitException, IOException, UnauthorizedException {
+            throws ApiException, IOException, UnauthorizedException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
@@ -121,7 +122,7 @@ public class BranchDeleteTest {
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class,
             expectedExceptions = GitException.class)
     public void shouldThrowExceptionOnDeletingNotFullyMergedBranchWithoutForce(GitConnectionFactory connectionFactory)
-            throws GitException, IOException, UnauthorizedException, NoSuchFieldException, IllegalAccessException {
+            throws ApiException, IOException, UnauthorizedException, NoSuchFieldException, IllegalAccessException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);

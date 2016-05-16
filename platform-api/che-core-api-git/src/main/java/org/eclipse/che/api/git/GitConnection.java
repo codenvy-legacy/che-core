@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
@@ -90,7 +91,7 @@ public interface GitConnection extends Closeable {
      * @throws UnauthorizedException
      *         if any error occurs when add files to the index
      */
-    void cloneWithSparseCheckout(String directory, String remoteUrl, String branch) throws GitException, UnauthorizedException;
+    void cloneWithSparseCheckout(String directory, String remoteUrl, String branch) throws ApiException, UnauthorizedException;
 
     /**
      * Checkout a branch / file to the working tree.
@@ -101,7 +102,7 @@ public interface GitConnection extends Closeable {
      *         if any error occurs when checkout
      * @see CheckoutRequest
      */
-    void checkout(CheckoutRequest request) throws GitException;
+    void checkout(CheckoutRequest request) throws ApiException;
 
     /**
      * Create new branch.
