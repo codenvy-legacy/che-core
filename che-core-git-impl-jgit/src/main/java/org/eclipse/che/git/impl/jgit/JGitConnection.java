@@ -4,10 +4,10 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- * <p>
+ *
  * Contributors:
- * Codenvy, S.A. - API
- * SAP           - initial implementation
+ *   Codenvy, S.A. - API
+ *   SAP           - initial implementation
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit;
 
@@ -151,7 +151,6 @@ import org.slf4j.LoggerFactory;
 
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-import static org.eclipse.che.api.git.shared.MergeResult.MergeStatus.*;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
