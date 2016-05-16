@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Igor Vinokur
  */
-class JGitStatusImpl implements Status, InfoPage {
+public class JGitStatusImpl implements Status, InfoPage {
 
     private String branchName;
 
@@ -63,7 +63,7 @@ class JGitStatusImpl implements Status, InfoPage {
      * @throws GitException
      *         when any error occurs
      */
-    JGitStatusImpl(String branchName, StatusCommand statusCommand, StatusFormat format) throws GitException {
+    public JGitStatusImpl(String branchName, StatusCommand statusCommand, StatusFormat format) throws GitException {
         this.branchName = branchName;
         this.format = format;
 

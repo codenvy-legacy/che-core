@@ -49,7 +49,7 @@ class JGitConfigImpl extends Config {
         String[] values = repository.getConfig().getStringList(key.section, key.subsection, key.name);
         // Make sure the property exists
         if (values == null || values.length == 0) {
-            throw new GitException("");
+            throw new GitException("Can not find property '" + name + "' in repository configuration");
         }
         return values;
     }

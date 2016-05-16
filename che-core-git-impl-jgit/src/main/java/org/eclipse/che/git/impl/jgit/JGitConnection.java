@@ -4,10 +4,10 @@
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
+ * <p>
  * Contributors:
- *   Codenvy, S.A. - API
- *   SAP           - initial implementation
+ * Codenvy, S.A. - API
+ * SAP           - initial implementation
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit;
 
@@ -127,6 +127,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryCache;
 import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.merge.ResolveMerger;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
@@ -150,6 +151,7 @@ import org.slf4j.LoggerFactory;
 
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.eclipse.che.api.git.shared.MergeResult.MergeStatus.*;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
@@ -172,7 +174,7 @@ class JGitConnection implements GitConnection {
     private static final String ERROR_PULL_AUTO_MERGE_FAILED       = "Automatic merge failed; fix conflicts and then commit the result.";
     private static final String ERROR_PULL_MERGE_CONFLICT_IN_FILES = "Could not pull because a merge conflict is detected in the files:";
     private static final String ERROR_PULL_COMMIT_BEFORE_MERGE     = "Could not pull. Commit your changes before merging.";
-    private static final String ERROR_TAG_DELETE                   = "Could not delete the tag %1s. An error occurred: %2s.";
+    private static final String ERROR_TAG_DELETE                   = "Could not delete the tag %1$s. An error occurred: %2$s.";
     private static final String ERROR_INIT_FOLDER_MISSING          = "The working folder %s does not exist.";
     private static final String ERROR_CHECKOUT_CONFLICT            = "Checkout operation failed, the following files would be " +
                                                                      "overwritten by merge:";
@@ -187,7 +189,7 @@ class JGitConnection implements GitConnection {
     private static final String MESSAGE_COMMIT_NOT_POSSIBLE        = "Commit is not possible because repository state is '%s'";
     private static final String MESSAGE_AMEND_NOT_POSSIBLE         = "Amend is not possible because repository state is '%s'";
 
-    private static final Logger       LOG                           = LoggerFactory.getLogger(JGitConnection.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JGitConnection.class);
 
     private Git            git;
     private JGitConfigImpl config;
@@ -645,6 +647,8 @@ class JGitConnection implements GitConnection {
 
     @Override
     public MergeResult merge(MergeRequest request) throws GitException {
+        org.eclipse.jgit.api.MergeResult jGitMergeResult;
+        MergeResult.MergeStatus status;
         try {
             Ref ref = repository.findRef(request.getCommit());
             if (ref == null) {
@@ -655,14 +659,63 @@ class JGitConnection implements GitConnection {
             if (name.startsWith(Constants.R_HEADS)) {
                 name = name.substring(Constants.R_HEADS.length());
             }
-            org.eclipse.jgit.api.MergeResult jgitMergeResult = getGit().merge().include(name, ref.getObjectId()).call();
-            return new JGitMergeResult(jgitMergeResult);
+            jGitMergeResult = getGit().merge().include(name, ref.getObjectId()).call();
         } catch (CheckoutConflictException exception) {
-            org.eclipse.jgit.api.MergeResult jgitMergeResult = new org.eclipse.jgit.api.MergeResult(exception.getConflictingPaths());
-            return new JGitMergeResult(jgitMergeResult);
+            jGitMergeResult = new org.eclipse.jgit.api.MergeResult(exception.getConflictingPaths());
         } catch (IOException | GitAPIException exception) {
             throw new GitException(exception.getMessage(), exception);
         }
+
+        switch (jGitMergeResult.getMergeStatus()) {
+            case ALREADY_UP_TO_DATE:
+                status = MergeResult.MergeStatus.ALREADY_UP_TO_DATE;
+                break;
+            case CONFLICTING:
+                status = MergeResult.MergeStatus.CONFLICTING;
+                break;
+            case FAILED:
+                status = MergeResult.MergeStatus.FAILED;
+                break;
+            case FAST_FORWARD:
+                status = MergeResult.MergeStatus.FAST_FORWARD;
+                break;
+            case MERGED:
+                status = MergeResult.MergeStatus.MERGED;
+                break;
+            case NOT_SUPPORTED:
+                status = MergeResult.MergeStatus.NOT_SUPPORTED;
+                break;
+            case CHECKOUT_CONFLICT:
+                status = MergeResult.MergeStatus.CONFLICTING;
+                break;
+            default:
+                throw new IllegalStateException("Unknown merge status " + jGitMergeResult.getMergeStatus());
+        }
+
+        ObjectId[] jGitMergedCommits = jGitMergeResult.getMergedCommits();
+        List<String> mergedCommits = new ArrayList<>();
+        if (jGitMergedCommits != null) {
+            for (ObjectId commit : jGitMergedCommits) {
+                mergedCommits.add(commit.getName());
+            }
+        }
+
+        List<String> conflicts;
+        if (org.eclipse.jgit.api.MergeResult.MergeStatus.CHECKOUT_CONFLICT.equals(jGitMergeResult.getMergeStatus())) {
+            conflicts = jGitMergeResult.getCheckoutConflicts();
+        } else {
+            Map<String, int[][]> jGitConflicts = jGitMergeResult.getConflicts();
+            conflicts = jGitConflicts != null ? new ArrayList<>(jGitConflicts.keySet()) : Collections.emptyList();
+        }
+
+        Map<String, ResolveMerger.MergeFailureReason> jGitFailing = jGitMergeResult.getFailingPaths();
+        ObjectId newHead = jGitMergeResult.getNewHead();
+
+        return newDto(MergeResult.class).withFailed(jGitFailing != null ? new ArrayList<>(jGitFailing.keySet()) : Collections.emptyList())
+                                        .withNewHead(newHead != null ? newHead.getName() : null)
+                                        .withMergeStatus(status)
+                                        .withConflicts(conflicts)
+                                        .withMergedCommits(mergedCommits);
     }
 
     @Override
@@ -1117,11 +1170,12 @@ class JGitConnection implements GitConnection {
         try {
             ResetCommand resetCommand = getGit().reset();
             resetCommand.setRef(request.getCommit());
-            for (int i = 0; i < request.getFilePattern().size(); i++) {
+            int filePatternsAmount = request.getFilePattern().size();
+            for (int i = 0; i < filePatternsAmount; i++) {
                 resetCommand.addPath(request.getFilePattern().get(i));
             }
 
-            if (request.getType() != null) {
+            if (request.getType() != null && filePatternsAmount == 0) {
                 if (request.getType().equals(ResetRequest.ResetType.HARD)) {
                     resetCommand.setMode(ResetCommand.ResetType.HARD);
                 } else if (request.getType().equals(ResetRequest.ResetType.KEEP)) {

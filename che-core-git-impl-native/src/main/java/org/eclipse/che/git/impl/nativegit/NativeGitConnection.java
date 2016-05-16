@@ -82,6 +82,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -171,23 +172,23 @@ public class NativeGitConnection implements GitConnection {
         init(newDto(InitRequest.class).withInitCommit(false).withBare(false));
         remoteAdd(newDto(RemoteAddRequest.class).withName("origin").withUrl(remoteUrl));
         getConfig().add("core.sparsecheckout", "true");
-        final File sparseCheckout = new File(getWorkingDir(), ".git" + File.separator + "info" + File.separator + "sparse-checkout");
-        try (BufferedWriter writer = Files.newBufferedWriter(sparseCheckout.toPath(), Charset.forName("UTF-8"))) {
-            writer.write(directory.startsWith("/") ? directory : "/" + directory);
-        } catch (IOException e) {
-            throw new GitException(e);
+        try {
+            Files.write(Paths.get(getWorkingDir() + "/.git/info/sparse-checkout"),
+                        (directory.startsWith("/") ? directory : "/" + directory).getBytes());
+        } catch (IOException exception) {
+            throw new GitException(exception.getMessage(), exception);
         }
         try {
             fetch(newDto(FetchRequest.class).withRemote("origin"));
-        } catch (GitException e) {
+        } catch (GitException exception) {
             throw new GitException(
-                    String.format("Unable to fetch remote branch %s. Make sure it exists and can be accessed.", branch), e);
+                    String.format("Unable to fetch remote branch %s. Make sure it exists and can be accessed.", branch), exception);
         }
         try {
             checkout(newDto(CheckoutRequest.class).withName(branch));
-        } catch (GitException e) {
+        } catch (GitException exception) {
             throw new GitException(
-                    String.format("Unable to checkout branch %s. Make sure it exists and can be accessed.", branch), e);
+                    String.format("Unable to checkout branch %s. Make sure it exists and can be accessed.", branch), exception);
         }
     }
 
