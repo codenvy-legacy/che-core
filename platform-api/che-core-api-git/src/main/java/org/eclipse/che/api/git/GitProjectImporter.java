@@ -127,19 +127,10 @@ public class GitProjectImporter implements ProjectImporter {
             }
             // Get path to local file. Git works with local filesystem only.
             final String localPath = localPathResolver.resolve((VirtualFileImpl)baseFolder.getVirtualFile());
+            git = gitConnectionFactory.getConnection(localPath, consumerFactory);
             if (keepDirectory != null) {
-                final File temp = Files.createTempDirectory(null).toFile();
-                try {
-                    git = gitConnectionFactory.getConnection(temp, consumerFactory);
-                    sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory);
-                    // Copy content of directory to the project folder.
-                    final File projectDir = new File(localPath);
-                    IoUtil.copy(temp, projectDir, IoUtil.ANY_FILTER);
-                } finally {
-                    FileCleaner.addFile(temp);
-                }
+                git.cloneWithSparseCheckout(keepDirectory, location, branch == null ? "master" : branch);
             } else {
-                git = gitConnectionFactory.getConnection(localPath, consumerFactory);
                 if (baseFolder.getChildren().size() == 0) {
                     cloneRepository(git, "origin", location, recursiveEnabled);
                     if (commitId != null) {
@@ -265,30 +256,6 @@ public class GitProjectImporter implements ProjectImporter {
                     String.format("Unable to checkout remote branch %s. Make sure it exists and can be accessed.",
                                   branch), e);
         }
-    }
-
-    private void sparsecheckout(GitConnection git, String url, String branch, String directory)
-            throws GitException, UnauthorizedException {
-        /*
-        Does following sequence of Git commands:
-        $ git init
-        $ git remote add origin <URL>
-        $ git config core.sparsecheckout true
-        $ echo keepDirectory >> .git/info/sparse-checkout
-        $ git pull origin master
-        */
-        initRepository(git);
-        addRemote(git, "origin", url);
-        git.getConfig().add("core.sparsecheckout", "true");
-        final File workingDir = git.getWorkingDir();
-        final File sparseCheckout = new File(workingDir, ".git" + File.separator + "info" + File.separator + "sparse-checkout");
-        try (BufferedWriter writer = Files.newBufferedWriter(sparseCheckout.toPath(), Charset.forName("UTF-8"))) {
-            writer.write(directory);
-        } catch (IOException e) {
-            throw new GitException(e);
-        }
-        fetchBranch(git, "origin", branch);
-        checkoutBranch(git, branch);
     }
 
     private void cleanGit(File project) {
