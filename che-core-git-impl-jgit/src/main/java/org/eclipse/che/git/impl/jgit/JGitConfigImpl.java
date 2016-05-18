@@ -16,6 +16,7 @@ import org.eclipse.che.api.git.GitException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,6 +97,11 @@ class JGitConfigImpl extends Config {
     public Config set(String name, String value) throws GitException {
         ConfigKey key = parseName(name);
         repository.getConfig().setString(key.section, key.subsection, key.name, value);
+        try {
+            this.repository.getConfig().save();
+        } catch (IOException e) {
+            throw new GitException(e.getMessage(), e);
+        }
         return this;
     }
 
@@ -108,6 +114,11 @@ class JGitConfigImpl extends Config {
     public Config unset(String name) throws GitException {
         ConfigKey key = parseName(name);
         repository.getConfig().unset(key.section, key.subsection, key.name);
+        try {
+            this.repository.getConfig().save();
+        } catch (IOException e) {
+            throw new GitException(e.getMessage(), e);
+        }
         return this;
     }
 
