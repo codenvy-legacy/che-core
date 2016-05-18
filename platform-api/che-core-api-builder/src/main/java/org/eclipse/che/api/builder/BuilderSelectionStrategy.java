@@ -11,6 +11,7 @@
 package org.eclipse.che.api.builder;
 
 import java.util.List;
+import org.eclipse.che.api.builder.dto.BaseBuilderRequest;
 
 /**
  * Selects the 'best' SlaveBuilder from the List according to implementation. BuildQueue uses implementation of this interface fo
@@ -22,4 +23,8 @@ import java.util.List;
  */
 public interface BuilderSelectionStrategy {
     RemoteBuilder select(List<RemoteBuilder> slaveBuilders);
+
+    default RemoteBuilder select(List<RemoteBuilder> slaveBuilders, BaseBuilderRequest request){
+        return select(slaveBuilders);
+    }
 }

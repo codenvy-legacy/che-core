@@ -11,6 +11,7 @@
 package org.eclipse.che.api.builder;
 
 import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
+import org.eclipse.che.api.builder.dto.BuilderEnvironment;
 import org.eclipse.che.api.builder.internal.Constants;
 import org.eclipse.che.api.builder.dto.BaseBuilderRequest;
 import org.eclipse.che.api.builder.dto.BuildRequest;
@@ -31,6 +32,8 @@ import org.eclipse.che.dto.server.DtoFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 
 /**
  * Represents remote {@code Builder}.
@@ -57,6 +60,7 @@ public class RemoteBuilder {
     private final String     name;
     private final String     description;
     private final int        hashCode;
+    private final Map<String, BuilderEnvironment> environmentMap;
 
     private volatile long lastUsage = -1;
 
@@ -65,6 +69,7 @@ public class RemoteBuilder {
         this.baseUrl = baseUrl;
         name = builderDescriptor.getName();
         description = builderDescriptor.getDescription();
+        this.environmentMap = builderDescriptor.getEnvironments();
         this.links = new ArrayList<>(links);
         int hashCode = 7;
         hashCode = hashCode * 31 + baseUrl.hashCode();
@@ -104,6 +109,15 @@ public class RemoteBuilder {
     public long getLastUsageTime() {
         return lastUsage;
     }
+
+    /**
+     * Get Builder Environment map
+     * @return map of BuilderEnvironment
+     */
+    public Map<String, BuilderEnvironment> getBuilderEnvironment(){
+        return Collections.unmodifiableMap(this.environmentMap);
+    }
+
 
     /**
      * Stats new build process.

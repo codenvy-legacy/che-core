@@ -914,10 +914,7 @@ public class BuildQueue {
                         return null; // expected to get here if task is canceled
                     }
                 } else {
-                    if (available.size() > 1) {
-                        return builderSelector.select(available);
-                    }
-                    return available.get(0);
+                    return builderSelector.select(available, request);
                 }
             }
         }
