@@ -15,6 +15,10 @@
     <artifactId>che-core-git-impl-jgit</artifactId>
     <packaging>jar</packaging>
     <name>Che Core :: Git Impl JGit</name>
+    <properties>
+        <license_contributor2>SAP           - Implementation</license_contributor2>
+        <license_header>license-header2.txt</license_header>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.code.gson</groupId>
