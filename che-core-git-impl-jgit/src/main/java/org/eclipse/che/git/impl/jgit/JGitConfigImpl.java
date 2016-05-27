@@ -11,19 +11,21 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 import org.eclipse.che.api.git.Config;
 import org.eclipse.che.api.git.GitException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import static java.lang.System.lineSeparator;
+
 /**
  * JGit implementation for Che's git configuration.
- * 
+ *
  * @author Tareq Sharafy (tareq.sha@sap.com)
  */
 class JGitConfigImpl extends Config {
@@ -120,19 +122,19 @@ class JGitConfigImpl extends Config {
         // Split the qualified name
         String[] parts = name.split("\\.");
         switch (parts.length) {
-        case 1:
-            throw new GitException("error: key does not contain a section: " + name + "\n");
-        case 2:
-            key.section = parts[0];
-            key.name = parts[1];
-            break;
-        case 3:
-            key.section = parts[0];
-            key.subsection = parts[1];
-            key.name = parts[2];
-            break;
-        default:
-            throw new GitException("Invalid configuration key " + name);
+            case 1:
+                throw new GitException("error: key does not contain a section: " + name + lineSeparator());
+            case 2:
+                key.section = parts[0];
+                key.name = parts[1];
+                break;
+            case 3:
+                key.section = parts[0];
+                key.subsection = parts[1];
+                key.name = parts[2];
+                break;
+            default:
+                throw new GitException("Invalid configuration key " + name);
         }
         return key;
     }

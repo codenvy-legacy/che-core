@@ -11,12 +11,6 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.util.List;
-
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.shared.DiffRequest;
 import org.eclipse.che.api.git.shared.DiffRequest.DiffType;
@@ -39,6 +33,16 @@ import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
+
+import static java.lang.System.lineSeparator;
 
 /**
  * Contains information about difference between two commits, commit and working tree,
@@ -146,6 +150,10 @@ class JGitDiffPage extends DiffPage {
     private List<DiffEntry> commitToWorkingTree(String commitId, DiffFormatter formatter) throws IOException {
         ObjectId commitA = repository.resolve(commitId);
         if (commitA == null) {
+            File heads = new File(repository.getWorkTree().getPath() + "/.git/refs/heads");
+            if (heads.exists() && heads.list().length == 0) {
+                return Collections.emptyList();
+            }
             throw new IllegalArgumentException("Invalid commit id " + commitId);
         }
         RevTree treeA;
@@ -292,24 +300,26 @@ class JGitDiffPage extends DiffPage {
     private void writeNames(List<DiffEntry> diff, OutputStream out) throws IOException {
         PrintWriter writer = new PrintWriter(out);
         for (DiffEntry de : diff) {
-            writer.println(de.getChangeType() == ChangeType.DELETE ? de.getOldPath() : de.getNewPath());
+            writer.print((de.getChangeType() == ChangeType.DELETE ? de.getOldPath() : de.getNewPath()) +
+                         (diff.size() != diff.indexOf(de) + 1 ? lineSeparator() : ""));
         }
         writer.flush();
     }
 
     private void writeNamesAndStatus(List<DiffEntry> diff, OutputStream out) throws IOException {
         PrintWriter writer = new PrintWriter(out);
+        int diffSize = diff.size();
         for (DiffEntry de : diff) {
             if (de.getChangeType() == ChangeType.ADD) {
-                writer.println("A\t" + de.getNewPath());
+                writer.print("A\t" + de.getNewPath() + (diffSize != diff.indexOf(de) + 1 ? lineSeparator() : ""));
             } else if (de.getChangeType() == ChangeType.DELETE) {
-                writer.println("D\t" + de.getOldPath());
+                writer.print("D\t" + de.getOldPath() + (diffSize != diff.indexOf(de) + 1 ? lineSeparator() : ""));
             } else if (de.getChangeType() == ChangeType.MODIFY) {
-                writer.println("M\t" + de.getNewPath());
+                writer.print("M\t" + de.getNewPath() + (diffSize != diff.indexOf(de) + 1 ? lineSeparator() : ""));
             } else if (de.getChangeType() == ChangeType.COPY) {
-                writer.println("C\t" + de.getOldPath() + '\t' + de.getNewPath());
+                writer.print("C\t" + de.getOldPath() + '\t' + de.getNewPath() + (diffSize != diff.indexOf(de) + 1 ? lineSeparator() : ""));
             } else if (de.getChangeType() == ChangeType.RENAME) {
-                writer.println("R\t" + de.getOldPath() + '\t' + de.getNewPath());
+                writer.print("R\t" + de.getOldPath() + '\t' + de.getNewPath() + (diffSize != diff.indexOf(de) + 1 ? lineSeparator() : ""));
             }
         }
         writer.flush();

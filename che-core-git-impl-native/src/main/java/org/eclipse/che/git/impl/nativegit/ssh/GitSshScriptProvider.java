@@ -14,7 +14,7 @@ import org.eclipse.che.api.git.GitException;
 
 import static org.eclipse.che.api.core.util.SystemInfo.isUnix;
 import static org.eclipse.che.api.core.util.SystemInfo.isWindows;
-import static org.eclipse.che.api.git.GitUrl.getHost;
+import static org.eclipse.che.api.git.GitUrlUtils.getHost;
 
 import javax.inject.Inject;
 
