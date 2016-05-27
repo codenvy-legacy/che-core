@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.System.lineSeparator;
+
 /**
  * Jgit implementation of {@link Status}
  *
@@ -30,29 +32,18 @@ import java.util.List;
  */
 public class JGitStatusImpl implements Status, InfoPage {
 
-    private String branchName;
-
+    private String       branchName;
     private StatusFormat format;
-
-    private boolean clean;
-
+    private boolean      clean;
     private List<String> added;
-
     private List<String> changed;
-
     private List<String> removed;
-
     private List<String> missing;
-
     private List<String> modified;
-
     private List<String> untracked;
-
     private List<String> untrackedFolders;
-
     private List<String> conflicting;
-
-    private String repositoryState;
+    private String       repositoryState;
 
     /**
      * @param branchName
@@ -90,27 +81,27 @@ public class JGitStatusImpl implements Status, InfoPage {
     public void writeTo(OutputStream out) throws IOException {
         StringBuilder status = new StringBuilder();
 
-        status.append("On branch ").append(branchName).append("\n");
+        status.append("On branch ").append(branchName).append(lineSeparator());
         if (isClean()) {
-            status.append("\nnothing to commit, working directory clean");
+            status.append(lineSeparator()).append("nothing to commit, working directory clean");
         } else {
             if (!added.isEmpty() || !changed.isEmpty() || !removed.isEmpty()) {
-                status.append("\nChanges to be committed:\n");
-                added.forEach(file -> status.append("\n\tnew file:   ").append(file));
-                changed.forEach(file -> status.append("\n\tmodified:   ").append(file));
-                removed.forEach(file -> status.append("\n\tdeleted:    ").append(file));
-                status.append("\n");
+                status.append(lineSeparator()).append("Changes to be committed:").append(lineSeparator());
+                added.forEach(file -> status.append(lineSeparator()).append("\tnew file:   ").append(file));
+                changed.forEach(file -> status.append(lineSeparator()).append("\tmodified:   ").append(file));
+                removed.forEach(file -> status.append(lineSeparator()).append("\tdeleted:    ").append(file));
+                status.append(lineSeparator());
             }
             if (!untracked.isEmpty() || !modified.isEmpty() || !missing.isEmpty()) {
-                status.append("\nChanges not staged for commit:\n");
-                untracked.forEach(file -> status.append("\n\tnew file:   ").append(file));
-                modified.forEach(file -> status.append("\n\tmodified:   ").append(file));
-                missing.forEach(file -> status.append("\n\tdeleted:    ").append(file));
-                status.append("\n");
+                status.append(lineSeparator()).append("Changes not staged for commit:").append(lineSeparator());
+                untracked.forEach(file -> status.append(lineSeparator()).append("\tnew file:   ").append(file));
+                modified.forEach(file -> status.append(lineSeparator()).append("\tmodified:   ").append(file));
+                missing.forEach(file -> status.append(lineSeparator()).append("\tdeleted:    ").append(file));
+                status.append(lineSeparator());
             }
             if (!conflicting.isEmpty()) {
-                status.append("\nUnmerged paths:\n");
-                conflicting.forEach(file -> status.append("\n\tboth modified:   ").append(file));
+                status.append(lineSeparator()).append("Unmerged paths:").append(lineSeparator());
+                conflicting.forEach(file -> status.append(lineSeparator()).append("\tboth modified:   ").append(file));
             }
         }
 

@@ -11,17 +11,6 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.inject.Inject;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.GitConnectionFactory;
@@ -31,9 +20,19 @@ import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 
+import javax.inject.Inject;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+
 /**
  * JGit implementation for GitConnectionFactory
- * 
+ *
  * @author Tareq Sharafy (tareq.sha@gmail.com)
  */
 public class JGitConnectionFactory extends GitConnectionFactory {

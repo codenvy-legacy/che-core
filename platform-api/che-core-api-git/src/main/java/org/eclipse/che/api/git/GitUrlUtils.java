@@ -20,11 +20,11 @@ import java.util.regex.Pattern;
  * @author Vladyslav Zhukovskii
  * @author Kevin Pollet
  */
-public class GitUrl {
+public class GitUrlUtils {
     public static final Pattern GIT_SSH_URL_PATTERN =
             Pattern.compile("((((git|ssh)://)(([^\\\\/@:]+@)??)[^\\\\/@:]+)|([^\\\\/@:]+@[^\\\\/@:]+))(:|/)[^\\\\@:]+");
 
-    private GitUrl() {
+    private GitUrlUtils() {
 
     }
 
