@@ -172,10 +172,12 @@ public class WorkspaceService extends Service {
         }
         final Account account = accountDao.getById(newWorkspace.getAccountId());
 
+        // TODO consult with che colleagues regarding handling of this check
+        // currently disabled to allow workspace creation by regular users
         //check user has access to add new workspace
-        if (!context.isUserInRole("system/admin")) {
-            ensureCurrentUserOwnerOf(account);
-        }
+//        if (!context.isUserInRole("system/admin")) {
+//            ensureCurrentUserOwnerOf(account);
+//        }
 
         if (account.getAttributes().containsKey(org.eclipse.che.api.account.server.Constants.RESOURCES_LOCKED_PROPERTY)) {
             newWorkspace.getAttributes().put(org.eclipse.che.api.account.server.Constants.RESOURCES_LOCKED_PROPERTY, "true");
