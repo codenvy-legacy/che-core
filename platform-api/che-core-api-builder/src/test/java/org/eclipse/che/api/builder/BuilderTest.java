@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012-2016 Codenvy, S.A.
+ * Copyright (c) 2012-2015 Codenvy, S.A.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.builder;
 
+import org.eclipse.che.api.builder.dto.BuilderDescriptor;
+import org.eclipse.che.api.builder.dto.BuilderEnvironment;
 import org.eclipse.che.api.builder.internal.BuildListener;
 import org.eclipse.che.api.builder.internal.BuildLogger;
 import org.eclipse.che.api.builder.internal.BuildResult;
@@ -21,6 +23,7 @@ import org.eclipse.che.api.builder.internal.SourceManagerListener;
 import org.eclipse.che.api.builder.internal.SourcesManager;
 import org.eclipse.che.api.builder.dto.BuildRequest;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.CommandLine;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.commons.lang.IoUtil;
@@ -33,6 +36,12 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /** @author andrew00x */
 public class BuilderTest {
@@ -94,6 +103,16 @@ public class BuilderTest {
                     return false;
                 }
             };
+        }
+
+        @Override
+        public Map<String, BuilderEnvironment> getEnvironments() {
+            BuilderEnvironment builderEnvironment = DtoFactory.getInstance().createDto(BuilderEnvironment.class)
+                    .withId("default")
+                    .withIsDefault(true)
+                    .withDisplayName(this.getName());
+
+            return Collections.singletonMap(builderEnvironment.getId(), builderEnvironment);
         }
     }
 
@@ -184,6 +203,17 @@ public class BuilderTest {
         Assert.assertTrue(beginFlag[0]);
         Assert.assertTrue(endFlag[0]);
         Assert.assertTrue(builder.removeBuildListener(listener));
+    }
+
+    @Test
+    public void testRemoteBuildSameEnvironment(){
+        BuilderDescriptor builderDescriptor = newDto(BuilderDescriptor.class)
+                .withName(builder.getName())
+                .withDescription(builder.getDescription())
+                .withEnvironments(builder.getEnvironments());
+
+        RemoteBuilder remoteBuilder = new RemoteBuilder("", builderDescriptor, new ArrayList<Link>());
+        Assert.assertEquals(remoteBuilder.getBuilderEnvironment(), builder.getEnvironments());
     }
 
     private void waitForTask(BuildTask task) throws Exception {
