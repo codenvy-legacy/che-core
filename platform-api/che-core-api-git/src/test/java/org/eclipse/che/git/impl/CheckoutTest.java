@@ -15,6 +15,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
@@ -61,7 +62,7 @@ public class CheckoutTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testSimpleCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
+    public void testSimpleCheckout(GitConnectionFactory connectionFactory) throws ApiException, IOException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
@@ -86,7 +87,7 @@ public class CheckoutTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testSimpleFileCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
+    public void testSimpleFileCheckout(GitConnectionFactory connectionFactory) throws ApiException, IOException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
@@ -111,7 +112,7 @@ public class CheckoutTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testCheckoutTwoFiles(GitConnectionFactory connectionFactory) throws GitException, IOException {
+    public void testCheckoutTwoFiles(GitConnectionFactory connectionFactory) throws ApiException, IOException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
@@ -148,7 +149,7 @@ public class CheckoutTest {
 
     
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testCreateNewAndCheckout(GitConnectionFactory connectionFactory) throws GitException, IOException {
+    public void testCreateNewAndCheckout(GitConnectionFactory connectionFactory) throws ApiException, IOException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
@@ -166,7 +167,7 @@ public class CheckoutTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testCheckoutFromStartPoint(GitConnectionFactory connectionFactory) throws GitException, IOException {
+    public void testCheckoutFromStartPoint(GitConnectionFactory connectionFactory) throws ApiException, IOException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);
@@ -196,7 +197,7 @@ public class CheckoutTest {
     }
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
-    public void testTrackRemoteBranch(GitConnectionFactory connectionFactory) throws GitException, IOException, UnauthorizedException {
+    public void testTrackRemoteBranch(GitConnectionFactory connectionFactory) throws ApiException, IOException, UnauthorizedException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         addFile(connection, "README.txt", org.eclipse.che.git.impl.GitTestUtil.CONTENT);

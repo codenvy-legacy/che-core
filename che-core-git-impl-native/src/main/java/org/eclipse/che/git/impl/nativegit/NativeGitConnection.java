@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit;
 
+
+import com.google.common.base.Strings;
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.Config;
@@ -160,7 +163,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void cloneWithSparseCheckout(String directory, String remoteUrl, String branch) throws GitException, UnauthorizedException {
+    public void cloneWithSparseCheckout(String directory, String remoteUrl, String branch) throws ApiException, UnauthorizedException {
         /*
         Does following sequence of Git commands:
         $ git init
@@ -186,14 +189,14 @@ public class NativeGitConnection implements GitConnection {
         }
         try {
             checkout(newDto(CheckoutRequest.class).withName(branch));
-        } catch (GitException exception) {
+        } catch (ApiException exception) {
             throw new GitException(
                     String.format("Unable to checkout branch %s. Make sure it exists and can be accessed.", branch), exception);
         }
     }
 
     @Override
-    public void checkout(CheckoutRequest request) throws GitException {
+    public void checkout(CheckoutRequest request) throws ApiException {
         ensureExistenceRepoRootInWorkingDirectory();
         nativeGit.createCheckoutCommand()
                  .setBranchName(request.getName())

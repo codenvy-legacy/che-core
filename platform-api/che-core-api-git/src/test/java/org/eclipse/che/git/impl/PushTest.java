@@ -12,6 +12,7 @@ package org.eclipse.che.git.impl;
 
 import com.google.common.io.Files;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
@@ -61,7 +62,7 @@ public class PushTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = org.eclipse.che.git.impl.GitConnectionFactoryProvider.class)
     public void testSimplePush(GitConnectionFactory connectionFactory)
-            throws IOException, ServerException, URISyntaxException, UnauthorizedException {
+            throws IOException, ApiException, URISyntaxException, UnauthorizedException {
         //given
         GitConnection connection = connectToInitializedGitRepository(connectionFactory, repository);
         GitConnection remoteConnection = connectionFactory.getConnection(remoteRepo.getAbsolutePath());

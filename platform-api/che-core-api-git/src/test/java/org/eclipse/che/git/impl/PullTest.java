@@ -12,6 +12,7 @@ package org.eclipse.che.git.impl;
 
 import com.google.common.io.Files;
 
+import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.git.GitConnection;
@@ -82,7 +83,7 @@ public class PullTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testPullWithRefSpec(GitConnectionFactory connectionFactory)
-            throws ServerException, URISyntaxException, IOException, UnauthorizedException {
+            throws ApiException, URISyntaxException, IOException, UnauthorizedException {
         //given
         //create new repository clone of default
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
@@ -106,7 +107,7 @@ public class PullTest {
 
     @Test(dataProvider = "GitConnectionFactory", dataProviderClass = GitConnectionFactoryProvider.class)
     public void testPullRemote(GitConnectionFactory connectionFactory)
-            throws GitException, IOException, URISyntaxException, UnauthorizedException {
+            throws ApiException, IOException, URISyntaxException, UnauthorizedException {
         //given
         GitConnection connection = connectToGitRepositoryWithContent(connectionFactory, repository);
         String branchName = "remoteBranch";

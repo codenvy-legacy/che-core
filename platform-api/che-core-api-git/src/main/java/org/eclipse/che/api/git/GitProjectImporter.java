@@ -10,10 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.api.git;
 
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.core.*;
 import org.eclipse.che.api.core.util.FileCleaner;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.project.server.FolderEntry;
@@ -239,7 +236,7 @@ public class GitProjectImporter implements ProjectImporter {
                                                                      .withStartPoint(commit);
         try {
             git.checkout(request);
-        } catch (GitException e) {
+        } catch (ApiException e) {
             LOG.warn("Git exception on commit checkout", e);
             throw new GitException(
                     String.format("Unable to checkout commit %s. Make sure it exists and can be accessed.", commit), e);
@@ -250,7 +247,7 @@ public class GitProjectImporter implements ProjectImporter {
         final CheckoutRequest request = newDto(CheckoutRequest.class).withName(branch);
         try {
             git.checkout(request);
-        } catch (GitException e) {
+        } catch (ApiException e) {
             LOG.warn("Git exception on branch checkout", e);
             throw new GitException(
                     String.format("Unable to checkout remote branch %s. Make sure it exists and can be accessed.",
