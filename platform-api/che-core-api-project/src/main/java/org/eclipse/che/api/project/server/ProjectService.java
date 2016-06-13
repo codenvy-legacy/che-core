@@ -1614,7 +1614,7 @@ public class ProjectService extends Service {
         if (Strings.isNullOrEmpty(name)) {
             throw new BadRequestException("Project name required");
         }
-        if (!Pattern.compile("[a-zA-Z0-9]+[\\w-]*").matcher(name).matches()) {
+        if (!Pattern.compile("[a-zA-Z0-9]+[\\.\\w-]*").matcher(name).matches()) {
             throw new BadRequestException("Project name " + name + " is invalid");
         }
     }
