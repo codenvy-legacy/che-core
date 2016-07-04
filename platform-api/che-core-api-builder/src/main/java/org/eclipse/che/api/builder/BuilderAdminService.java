@@ -48,8 +48,7 @@ import java.util.List;
      description = "Builder manager (admin)")
 @Path("/admin/builder")
 @Description("Builder API")
-// role check temporarily disabled to allow anonymous registration
-//@RolesAllowed("system/admin")
+@RolesAllowed("system/admin")
 public class BuilderAdminService extends Service {
     private static final Logger LOG = LoggerFactory.getLogger(BuilderAdminService.class);
     @Inject

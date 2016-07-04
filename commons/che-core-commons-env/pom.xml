@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-commons-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.14.0-sap-29</version>
+        <version>3.14.0-sap-30</version>
     </parent>
     <artifactId>che-core-commons-env</artifactId>
     <packaging>jar</packaging>

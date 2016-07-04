@@ -53,8 +53,7 @@ import java.util.List;
      description = "Runner manager (admin)")
 @Path("/admin/runner")
 @Description("Runner administration REST API")
-//role check temporarily disabled to allow anonymous registration
-//@RolesAllowed("system/admin")
+@RolesAllowed("system/admin")
 public class RunnerAdminService extends Service {
     private static final Logger LOG = LoggerFactory.getLogger(RunnerAdminService.class);
     @Inject
