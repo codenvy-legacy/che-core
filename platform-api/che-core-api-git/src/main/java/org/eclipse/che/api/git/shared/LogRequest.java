@@ -11,6 +11,7 @@
 package org.eclipse.che.api.git.shared;
 
 import org.eclipse.che.dto.shared.DTO;
+import java.util.List;
 
 /**
  * Request to get commit logs.
@@ -21,12 +22,35 @@ import org.eclipse.che.dto.shared.DTO;
 public interface LogRequest extends GitRequest {
     /** @return revision range since */
     String getRevisionRangeSince();
-    /** @return revision range since */
-    String getRevisionRangeUntil();
-    
+	/** @set revision range since */
     void setRevisionRangeSince(String revisionRangeSince);
-    void setRevisionRangeUntil(String revisionRangeUntil);	
-    // private List<String> fileFilter;
-    // private boolean noRenames = true;
-    // private int renameLimit;
+    LogRequest withRevisionRangeSince(String v);
+
+
+    /** @return revision range until */
+    String getRevisionRangeUntil();
+	/** @set revision range until */
+    void setRevisionRangeUntil(String revisionRangeUntil);
+    LogRequest withRevisionRangeUntil(String v);
+
+
+    /** @return the integer value of the number of commits that will be skipped when calling log API */
+    int getSkip();
+    /**  set the integer value of the number of commits that will be skipped when calling log API */
+    void setSkip(int skip);
+    LogRequest withSkip(int v);
+
+
+    /** @return the integer value of the number of commits that will be returned when calling log API */
+    int getMaxCount();
+    /**  set the integer value of the number of commits that will be returned when calling log API */
+    void setMaxCount(int maxCount);
+    LogRequest withMaxCount(int v);
+
+
+    /** @return get the file/folder path used when calling the log API */
+    String getFilePath();
+    /** set the file/folder path used when calling the log API */
+    void setFilePath(String filePath);
+    LogRequest withFilePath(String filePath);
 }

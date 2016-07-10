@@ -11,6 +11,7 @@
 package org.eclipse.che.api.git.shared;
 
 import org.eclipse.che.dto.shared.DTO;
+import java.util.List;
 
 /**
  * Describe single commit.
@@ -25,37 +26,51 @@ public interface Revision {
      * @return
      */
     boolean isFake();
-
     void setFake(boolean fake);
 
     /** @return branch name */
     String getBranch();
-    
     void setBranch(String branch);
-    
     Revision withBranch(String branch);
 
     /** @return commit id */
     String getId();
-    
     void setId(String id);
-    
     Revision withId(String id);
 
     /** @return commit message */
     String getMessage();
-    
     void setMessage(String message);
-    
     Revision withMessage(String message);
 
     /** @return time of commit */
     long getCommitTime();
-    
     Revision withCommitTime(long time);
+    void setCommitTime(long v);
 
-    /** @return committer */
+    /** @return commit committer */
     GitUser getCommitter();
-    
     Revision withCommitter(GitUser user);
+    void setCommitter(GitUser v);
+
+    /** @return commit author */
+    GitUser getAuthor();
+    Revision withAuthor(GitUser user);
+    void setAuthor(GitUser v);
+
+
+    /** @return commit branches */
+    List<Branch> getBranches();
+    Revision withBranches(List<Branch> branches);
+    void setBranches(List<Branch> v);
+
+    /** @return diff commit files */
+    List<DiffCommitFile> getDiffCommitFile();
+    Revision withDiffCommitFile(List<DiffCommitFile> diffCommitFiles);
+    void setDiffCommitFile(List<DiffCommitFile> v);
+
+    /** @return commit parents */
+    List<String> getCommitParent();
+    Revision withCommitParent(List<String> commitParents);
+    void setCommitParent(List<String> v);
 }
