@@ -162,6 +162,11 @@ public class AccountServiceTest {
             public boolean isTemporary() {
                 return false;
             }
+
+			@Override
+			public String getTokenByUrl(String url) {
+				return getToken();
+			}
         });
     }
 

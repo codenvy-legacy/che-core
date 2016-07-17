@@ -38,6 +38,11 @@ public interface User {
         public boolean isTemporary() {
             return false;
         }
+
+		@Override
+		public String getTokenByUrl(String url) {
+			return getToken();
+		}
     };
 
     /** Get user name. */
@@ -58,6 +63,13 @@ public interface User {
      * @return - user token
      */
     String getToken();
+    
+    /**
+     * Get user auth token, according to the URL 
+     * to be able to execute request as user to applications that uses different authentication 
+     * @return - user token
+     */
+    String getTokenByUrl(String url);
 
     /**
      * Get user unique identifier of user.

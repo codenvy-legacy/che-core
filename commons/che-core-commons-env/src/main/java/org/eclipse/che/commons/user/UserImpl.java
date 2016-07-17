@@ -64,6 +64,11 @@ public class UserImpl implements User {
     public String getToken() {
         return token;
     }
+    
+    @Override
+    public String getTokenByUrl(String url) {
+    	return getToken();
+    }
 
     @Override
     public String getId() {

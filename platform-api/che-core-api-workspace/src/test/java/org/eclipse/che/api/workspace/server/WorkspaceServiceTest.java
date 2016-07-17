@@ -55,6 +55,7 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -176,6 +177,11 @@ public class WorkspaceServiceTest {
             public boolean isTemporary() {
                 return false;
             }
+
+			@Override
+			public String getTokenByUrl(String url) {
+				return getToken();
+			}
         });
         when(securityContext.getUserPrincipal()).thenReturn(new PrincipalImpl(testUser.getEmail()));
     }

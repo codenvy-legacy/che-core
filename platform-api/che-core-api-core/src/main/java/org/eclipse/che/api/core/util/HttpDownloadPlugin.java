@@ -99,7 +99,7 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
         conn.setReadTimeout(READ_TIMEOUT);
         // Set authorization if present
         final EnvironmentContext context = EnvironmentContext.getCurrent();
-        if (context.getUser() != null && context.getUser().getToken() != null) {
+        if (context.getUser() != null && context.getUser().getTokenByUrl(downloadUrl) != null) {
             conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
         }
         // Connect

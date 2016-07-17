@@ -180,7 +180,7 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
                                                                                UnauthorizedException,
                                                                                ConflictException,
                                                                                BadRequestException {
-        final String authToken = getAuthenticationToken();
+        final String authToken = getAuthenticationToken(url);
         final boolean hasQueryParams = parameters != null && !parameters.isEmpty();
         if (hasQueryParams || authToken != null) {
             final UriBuilder ub = UriBuilder.fromUri(url);
@@ -269,10 +269,10 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
         }
     }
 
-    private String getAuthenticationToken() {
+    private String getAuthenticationToken(String url) {
         final User user = EnvironmentContext.getCurrent().getUser();
         if (user != null) {
-            return user.getToken();
+            return user.getTokenByUrl(url);
         }
         return null;
     }

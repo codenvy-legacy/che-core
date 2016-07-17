@@ -29,6 +29,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -385,10 +386,10 @@ public class HttpJsonHelper {
             return null;
         }
 
-        private String getAuthenticationToken() {
+        private String getAuthenticationToken(String url) {
             User user = EnvironmentContext.getCurrent().getUser();
             if (user != null) {
-                return user.getToken();
+                return user.getTokenByUrl(url);
             }
             return null;
         }
@@ -407,7 +408,7 @@ public class HttpJsonHelper {
                                     Object body,
                                     Pair<String, ?>... parameters)
                 throws IOException, ServerException, ForbiddenException, NotFoundException, UnauthorizedException, ConflictException {
-            final String authToken = getAuthenticationToken();
+            final String authToken = getAuthenticationToken(url);
             if ((parameters != null && parameters.length > 0) || authToken != null) {
                 final UriBuilder ub = UriBuilder.fromUri(url);
                 //remove sensitive information from url.
