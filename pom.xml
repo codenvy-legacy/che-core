@@ -16,11 +16,11 @@
     <parent>
         <artifactId>maven-depmgt-pom</artifactId>
         <groupId>org.eclipse.che.depmgt</groupId>
-        <version>3.14.0-sap-32</version>
+        <version>3.14.0-sap-33</version>
     </parent>
     <groupId>org.eclipse.che.core</groupId>
     <artifactId>che-core-parent</artifactId>
-    <version>3.14.0-sap-32</version>
+    <version>3.14.0-sap-33</version>
     <packaging>pom</packaging>
     <name>Che Core Parent</name>
     <modules>

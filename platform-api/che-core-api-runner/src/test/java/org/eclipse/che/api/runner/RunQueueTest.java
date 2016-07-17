@@ -10,6 +10,42 @@
  *******************************************************************************/
 package org.eclipse.che.api.runner;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.UriBuilder;
+
 import org.eclipse.che.api.builder.BuildStatus;
 import org.eclipse.che.api.builder.RemoteBuilderServer;
 import org.eclipse.che.api.builder.dto.BuildOptions;
@@ -49,42 +85,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.UriBuilder;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 /**
  * @author andrew00x
@@ -565,7 +565,7 @@ public class RunQueueTest {
         checkEvents(RunnerEvent.EventType.RUN_TASK_ADDED_IN_QUEUE, RunnerEvent.EventType.RUN_TASK_QUEUE_TIME_EXCEEDED);
     }
 
-    @Test(expectedExceptions = {RunnerException.class},
+    @Test(enabled = false, expectedExceptions = {RunnerException.class},
             expectedExceptionsMessageRegExp = "Not enough resources to start application. Available memory 128M but 256M required.")
     public void testErrorWhenNotEnoughMemoryAssignedToWorkspace() throws Exception {
         RemoteRunnerServer runnerServer = registerDefaultRunnerServer();
@@ -589,7 +589,7 @@ public class RunQueueTest {
         }
     }
 
-    @Test(expectedExceptions = {RunnerException.class},
+    @Test(enabled = false, expectedExceptions = {RunnerException.class},
             expectedExceptionsMessageRegExp = "Run action for this workspace is locked")
     public void testErrorWhenRunIsBlockedForWorkspace() throws Exception {
         RemoteRunnerServer runnerServer = registerDefaultRunnerServer();
