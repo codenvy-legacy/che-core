@@ -11,8 +11,6 @@
 package org.eclipse.che.git.impl.nativegit;
 
 
-import com.google.common.base.Strings;
-
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
@@ -20,7 +18,7 @@ import org.eclipse.che.api.git.Config;
 import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
 import org.eclipse.che.api.git.shared.AddRequest;
@@ -82,7 +80,6 @@ import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;

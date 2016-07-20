@@ -17,6 +17,7 @@ import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.FileCleaner;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.api.project.server.FolderEntry;
 import org.eclipse.che.api.project.server.ProjectImporter;
 import org.eclipse.che.commons.lang.IoUtil;

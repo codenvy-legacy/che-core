@@ -13,7 +13,7 @@ package org.eclipse.che.git.impl.nativegit.commands;
 import org.eclipse.che.api.core.util.CommandLine;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.core.util.ListLineConsumer;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.git.impl.nativegit.CommandProcess;
 
 import java.io.File;

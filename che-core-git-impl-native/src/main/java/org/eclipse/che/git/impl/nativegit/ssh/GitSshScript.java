@@ -13,7 +13,7 @@ package org.eclipse.che.git.impl.nativegit.ssh;
 import com.google.common.io.Files;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

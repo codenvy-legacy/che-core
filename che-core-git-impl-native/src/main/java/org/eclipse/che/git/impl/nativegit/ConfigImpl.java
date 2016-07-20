@@ -12,7 +12,7 @@ package org.eclipse.che.git.impl.nativegit;
 
 
 import org.eclipse.che.api.git.Config;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.git.impl.nativegit.commands.GetConfigCommand;
 import org.eclipse.che.git.impl.nativegit.commands.SetConfigCommand;
 

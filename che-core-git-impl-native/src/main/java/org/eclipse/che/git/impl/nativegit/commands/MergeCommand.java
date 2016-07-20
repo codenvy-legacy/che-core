@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.commands;
 
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.git.impl.nativegit.NativeGitMergeResult;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.MergeResult;
@@ -18,10 +18,8 @@ import org.eclipse.che.api.git.shared.MergeResult;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Join two development histories together

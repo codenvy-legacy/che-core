@@ -11,13 +11,11 @@
 package org.eclipse.che.git.impl.nativegit.commands;
 
 import org.eclipse.che.dto.server.DtoFactory;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.Tag;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Create tag
