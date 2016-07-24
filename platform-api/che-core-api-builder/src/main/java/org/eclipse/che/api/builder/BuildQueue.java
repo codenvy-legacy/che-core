@@ -524,14 +524,6 @@ public class BuildQueue {
         return timeoutAttr != null ? Integer.parseInt(timeoutAttr) : maxExecutionTimeMillis;
     }
 
-    private String getAuthenticationToken() {
-        User user = EnvironmentContext.getCurrent().getUser();
-        if (user != null) {
-            return user.getToken();
-        }
-        return null;
-    }
-
     /**
      * Return tasks of this queue.
      */

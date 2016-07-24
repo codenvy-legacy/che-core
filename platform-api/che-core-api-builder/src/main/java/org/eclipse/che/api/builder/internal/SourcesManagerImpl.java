@@ -18,6 +18,7 @@ import org.eclipse.che.commons.json.JsonParseException;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.lang.ZipUtils;
+import org.eclipse.che.commons.user.User;
 
 import com.google.common.hash.Hashing;
 import com.google.common.io.CharStreams;
@@ -220,10 +221,14 @@ public class SourcesManagerImpl implements SourcesManager {
             conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
             conn.setConnectTimeout(CONNECT_TIMEOUT);
             conn.setReadTimeout(READ_TIMEOUT);
-            final EnvironmentContext context = EnvironmentContext.getCurrent();
-            if (context.getUser() != null && context.getUser().getToken() != null) {
-                conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
-            }
+			// Set token if present
+			User user = EnvironmentContext.getCurrent().getUser();
+			if (user != null) {
+				String token = user.getTokenByUrl(downloadUrl);
+				if (token != null) {
+					conn.setRequestProperty(HttpHeaders.AUTHORIZATION, token);
+				}
+			}
             if (!md5sums.isEmpty()) {
                 conn.setRequestMethod(HttpMethod.POST);
                 conn.setRequestProperty("Content-type", MediaType.TEXT_PLAIN);

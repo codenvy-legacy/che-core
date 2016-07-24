@@ -12,6 +12,7 @@ package org.eclipse.che.api.core.util;
 
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.NameGenerator;
+import org.eclipse.che.commons.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,10 +99,13 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);
         // Set authorization if present
-        final EnvironmentContext context = EnvironmentContext.getCurrent();
-        if (context.getUser() != null && context.getUser().getTokenByUrl(downloadUrl) != null) {
-            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
-        }
+		User user = EnvironmentContext.getCurrent().getUser();
+		if (user != null) {
+			String token = user.getTokenByUrl(downloadUrl);
+			if (token != null) {
+				conn.setRequestProperty(HttpHeaders.AUTHORIZATION, token);
+			}
+		}
         // Connect
         final int responseCode = conn.getResponseCode();
         if (responseCode != 200) {
