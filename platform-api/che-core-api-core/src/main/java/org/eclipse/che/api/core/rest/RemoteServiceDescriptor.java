@@ -64,7 +64,7 @@ public class RemoteServiceDescriptor {
                 throw new IllegalArgumentException(String.format("Invalid URL: %s", baseUrl));
             }
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(String.format("Invalid URL: %s", baseUrl));
+            throw new IllegalArgumentException(String.format("Invalid URL: %s", baseUrl), e);
         }
     }
 
@@ -115,7 +115,7 @@ public class RemoteServiceDescriptor {
         try {
             return (HttpJsonHelper.options(getServiceDescriptorClass(), baseUrl) != null);
         } catch (Exception e) {
-            LOG.warn(e.getLocalizedMessage());
+            LOG.warn(e.getLocalizedMessage(), e);
             return false;
         }
     }

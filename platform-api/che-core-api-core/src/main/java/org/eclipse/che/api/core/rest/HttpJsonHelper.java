@@ -23,6 +23,8 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
@@ -46,6 +48,9 @@ import java.util.List;
  * @author andrew00x
  */
 public class HttpJsonHelper {
+
+	private static final Logger LOG = LoggerFactory.getLogger(HttpJsonHelper.class);
+
     @SuppressWarnings("unchecked")
     private static final Pair<String, ?>[] EMPTY = new Pair[0];
 
@@ -483,15 +488,22 @@ public class HttpJsonHelper {
                 final String contentType = conn.getContentType();
                 if (!(contentType == null || contentType.startsWith(MediaType.APPLICATION_JSON))) {
                     throw new IOException("We received an error response from the server." +
-                                          " Retry the request. If this issue continues, contact. support.");
+                                          " Retry the request. If this issue continues, contact. support.",
+                                          new RuntimeException("Request " + url + " received an nexpected response with content type " +
+                                                   contentType + " : " + readResponseString(conn)));
                 }
 
-                try (Reader reader = new InputStreamReader(conn.getInputStream())) {
-                    return CharStreams.toString(reader);
-                }
+                return readResponseString(conn);
             } finally {
                 conn.disconnect();
             }
         }
     }
+
+    private static String readResponseString(HttpURLConnection conn) throws IOException {
+        try (Reader reader = new InputStreamReader(conn.getInputStream())) {
+            return CharStreams.toString(reader);
+        }
+    }
+
 }

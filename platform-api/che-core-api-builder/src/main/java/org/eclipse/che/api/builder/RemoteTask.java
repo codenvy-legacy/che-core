@@ -23,6 +23,7 @@ import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.HttpOutputMessage;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,11 +235,13 @@ public class RemoteTask {
         conn.setConnectTimeout(60 * 1000);
         conn.setReadTimeout(60 * 1000);
         conn.setRequestMethod(HttpMethod.GET);
-        final EnvironmentContext context = EnvironmentContext.getCurrent();
-        String token;
-        if (context.getUser() != null && (token = context.getUser().getTokenByUrl(url)) != null) {
-            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, token);
-        }
+		User user = EnvironmentContext.getCurrent().getUser();
+		if (user != null) {
+			String token = user.getTokenByUrl(url);
+			if (token != null) {
+				conn.setRequestProperty(HttpHeaders.AUTHORIZATION, token);
+			}
+		}
         try {
             output.setStatus(conn.getResponseCode());
             final String contentType = conn.getContentType();

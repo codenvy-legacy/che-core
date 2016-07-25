@@ -663,7 +663,7 @@ public class BuildQueue {
                             }
                         } catch (NotFoundException ignored) {
                         } catch (Exception e) {
-                            LOG.warn(String.format("%s: %s", event, e.getMessage()));
+                            LOG.warn(String.format("%s: %s", event, e.getMessage()), e);
                         }
                     }
                 }
@@ -696,7 +696,7 @@ public class BuildQueue {
                                 if (server.isAvailable()) {
                                     try {
                                         doRegisterBuilderServer(server);
-                                        LOG.debug("Pre-configured slave builder server {} registered. ", server.getBaseUrl());
+                                        LOG.info("Pre-configured slave builder server {} registered. ", server.getBaseUrl());
                                     } catch (BuilderException e) {
                                         LOG.error(e.getMessage(), e);
                                         offline.add(server);
