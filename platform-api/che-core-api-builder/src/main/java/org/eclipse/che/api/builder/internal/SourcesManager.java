@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.api.builder.internal;
 
+import java.io.File;
 import java.io.IOException;
+
+import com.google.inject.ImplementedBy;
 
 /**
  * Manages build sources.
@@ -18,6 +21,7 @@ import java.io.IOException;
  * @author andrew00x
  * @author Eugene Voevodin
  */
+@ImplementedBy(SourcesManagerImpl.class)
 public interface SourcesManager {
     /**
      * Get build sources. Sources are copied to the directory <code>workDir</code>.
@@ -28,12 +32,12 @@ public interface SourcesManager {
      *         project
      * @param sourcesUrl
      *         sources url
+     * @param sourcesDir
+     *         The sources directory of the builder
      * @param workDir
      *         directory where sources will be copied
      */
-    void getSources(BuildLogger logger, String workspace, String project, String sourcesUrl, java.io.File workDir) throws IOException;
-
-    java.io.File getDirectory();
+    void getSources(BuildLogger logger, String workspace, String project, String sourcesUrl, File sourcesDir, File workDir) throws IOException;
 
     boolean addListener(SourceManagerListener listener);
 
