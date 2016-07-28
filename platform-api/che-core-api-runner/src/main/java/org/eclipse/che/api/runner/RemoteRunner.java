@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.shared.dto.RunnerEnvironment;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
@@ -24,6 +25,8 @@ import org.eclipse.che.api.runner.dto.RunnerState;
 import org.eclipse.che.api.runner.internal.Constants;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.dto.server.DtoFactory;
+
+import static org.eclipse.che.api.runner.RunnerUtils.runnerRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,11 +55,12 @@ public class RemoteRunner {
     private final String     name;
     private final int        hashCode;
     private final List<Link> links;
+    private final HttpJsonRequestFactory requestFactory;
 
     private volatile long lastUsage = -1;
 
     /* Package visibility, not expected to be created by api users. They should use RemoteRunnerServer to get an instance of RemoteRunner. */
-    RemoteRunner(String baseUrl, String name, List<Link> links) {
+    RemoteRunner(String baseUrl, String name, List<Link> links, HttpJsonRequestFactory requestFactory) {
         this.baseUrl = baseUrl;
         this.name = name;
         this.links = new ArrayList<>(links);
@@ -64,6 +68,7 @@ public class RemoteRunner {
         hashCode = hashCode * 31 + baseUrl.hashCode();
         hashCode = hashCode * 31 + this.name.hashCode();
         this.hashCode = hashCode;
+        this.requestFactory = requestFactory;
     }
 
     public final String getBaseUrl() {
@@ -103,13 +108,7 @@ public class RemoteRunner {
         if (link == null) {
             throw new RunnerException("Unable get URL for retrieving runner's environments");
         }
-        try {
-            return HttpJsonHelper.requestArray(RunnerEnvironment.class, link, Pair.of("runner", name));
-        } catch (IOException e) {
-            throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new RunnerException(e.getServiceError());
-        }
+        return runnerRequest(requestFactory.fromLink(link).addQueryParam("runner", name)).asList(RunnerEnvironment.class);
     }
 
     /**
@@ -126,16 +125,9 @@ public class RemoteRunner {
         if (link == null) {
             throw new RunnerException("Unable get URL for starting application's process");
         }
-        final ApplicationProcessDescriptor process;
-        try {
-            process = HttpJsonHelper.request(ApplicationProcessDescriptor.class, link, request);
-        } catch (IOException e) {
-            throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new RunnerException(e.getServiceError());
-        }
+        final ApplicationProcessDescriptor process = runnerRequest(requestFactory.fromLink(link)).asDto(ApplicationProcessDescriptor.class);
         lastUsage = System.currentTimeMillis();
-        return new RemoteRunnerProcess(baseUrl, name, process.getProcessId());
+        return new RemoteRunnerProcess(baseUrl, name, process.getProcessId(), requestFactory);
     }
 
     /**
@@ -151,13 +143,7 @@ public class RemoteRunner {
             throw new RunnerException(
                     String.format("Unable get URL for getting state of a remote runner '%s' at '%s'", name, baseUrl));
         }
-        try {
-            return HttpJsonHelper.request(RunnerState.class, 10000, stateLink, Pair.of("runner", name));
-        } catch (IOException e) {
-            throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new RunnerException(e.getServiceError());
-        }
+        return runnerRequest(requestFactory.fromLink(stateLink).addQueryParam("runner", name).setTimeout(10000)).asDto(RunnerState.class);
     }
 
     private Link getLink(String rel) {

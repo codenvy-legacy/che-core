@@ -22,14 +22,10 @@ import org.eclipse.che.api.builder.dto.BuilderState;
 import org.eclipse.che.api.builder.dto.DependencyRequest;
 import org.eclipse.che.api.builder.internal.BuilderEvent;
 import org.eclipse.che.api.builder.internal.Constants;
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.ServiceContext;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.project.server.ProjectService;
@@ -57,7 +53,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.core.UriBuilder;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,6 +75,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.eclipse.che.api.builder.BuilderUtils.builderRequest;
 
 //import org.eclipse.che.commons.lang.CollectionUtils;
 
@@ -104,6 +100,7 @@ public class BuildQueue {
     private final ConcurrentMap<Long, BuildQueueTask>        tasks;
     private final ConcurrentMap<BuilderListKey, BuilderList> builderListMapping;
     private final int                                        maxExecutionTimeMillis;
+    private final HttpJsonRequestFactory                     requestFactory;
     private final EventService                               eventService;
     /** Max time for request to be in queue in milliseconds. */
     private final long                                       waitingTimeMillis;
@@ -131,12 +128,14 @@ public class BuildQueue {
                       @Named(Constants.MAX_EXECUTION_TIME) int maxExecutionTime,
                       @Named(Constants.KEEP_RESULT_TIME) int keepResultTime,
                       BuilderSelectionStrategy builderSelector,
+                      HttpJsonRequestFactory requestFactory,
                       EventService eventService) {
         this.maxExecutionTimeMillis = maxExecutionTime;
         this.eventService = eventService;
         this.waitingTimeMillis = TimeUnit.SECONDS.toMillis(waitingTime);
         this.builderSelector = builderSelector;
         this.keepResultTimeMillis = TimeUnit.SECONDS.toMillis(keepResultTime);
+        this.requestFactory = requestFactory;
 
         tasks = new ConcurrentHashMap<>();
         builderListMapping = new ConcurrentHashMap<>();
@@ -207,7 +206,7 @@ public class BuildQueue {
     // Switched to default for test.
     // private
     RemoteBuilderServer createRemoteBuilderServer(String url) {
-        return new RemoteBuilderServer(url);
+        return new RemoteBuilderServer(url, requestFactory);
     }
 
     // Switched to default for test.
@@ -450,13 +449,7 @@ public class BuildQueue {
                                                        .path(ProjectService.class, "getProject")
                                                        .build(workspace, project.startsWith("/") ? project.substring(1) : project)
                                                        .toString();
-        try {
-            return HttpJsonHelper.get(ProjectDescriptor.class, projectUrl);
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new BuilderException(e.getServiceError());
-        }
+        return builderRequest(requestFactory.fromUrl(projectUrl)).asDto(ProjectDescriptor.class);
     }
 
     private WorkspaceDescriptor getWorkspaceDescriptor(String workspace, ServiceContext serviceContext) throws BuilderException {
@@ -464,13 +457,7 @@ public class BuildQueue {
         final String workspaceUrl = baseWorkspaceUriBuilder.path(WorkspaceService.class)
                                                            .path(WorkspaceService.class, "getById")
                                                            .build(workspace).toString();
-        try {
-            return HttpJsonHelper.get(WorkspaceDescriptor.class, workspaceUrl);
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new BuilderException(e.getServiceError());
-        }
+        return builderRequest(requestFactory.fromUrl(workspaceUrl)).asDto(WorkspaceDescriptor.class);
     }
 
     // Switched to default for test.

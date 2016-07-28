@@ -207,7 +207,7 @@ public class BuilderTest {
                 .withDescription(builder.getDescription())
                 .withEnvironments(builder.getEnvironments());
 
-        RemoteBuilder remoteBuilder = new RemoteBuilder("", builderDescriptor, new ArrayList<Link>());
+        RemoteBuilder remoteBuilder = new RemoteBuilder("", builderDescriptor, new ArrayList<Link>(), null);
         Assert.assertEquals(remoteBuilder.getBuilderEnvironment(), builder.getEnvironments());
     }
 

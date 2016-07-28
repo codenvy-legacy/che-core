@@ -22,6 +22,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpServletProxyResponse;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.annotations.Description;
@@ -79,14 +80,17 @@ public class RunnerService extends Service {
     private final RunQueue     runQueue;
     private final WorkspaceDao workspaceDao;
     private final AccountDao   accountDao;
+    private final HttpJsonRequestFactory requestFactory;
 
     @Inject
     public RunnerService(RunQueue runQueue,
                          WorkspaceDao workspaceDao,
+                         HttpJsonRequestFactory requestFactory,
                          AccountDao accountDao) {
         this.runQueue = runQueue;
         this.workspaceDao = workspaceDao;
         this.accountDao = accountDao;
+        this.requestFactory = requestFactory;
     }
 
 
@@ -413,7 +417,7 @@ public class RunnerService extends Service {
         }
 
         // TODO needs to improve this code
-        String json = HttpJsonHelper.requestString(link.getHref(), HttpMethod.GET, null, Pair.of("id", id));
+        String json = requestFactory.fromUrl(link.getHref()).addQueryParam("id", id).request().asString();
         json = json.substring(START.length());
         json = json.substring(0, json.length() - END.length());
 

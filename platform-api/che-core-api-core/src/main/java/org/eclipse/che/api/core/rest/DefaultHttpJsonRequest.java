@@ -72,11 +72,12 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
     private Object                body;
     private List<Pair<String, ?>> queryParams;
 
-    DefaultHttpJsonRequest(String url) {
+    protected DefaultHttpJsonRequest(String url) {
         this.url = requireNonNull(url, "Required non-null url");
+        this.method = HttpMethod.GET; // Default is GET for convenience
     }
 
-    DefaultHttpJsonRequest(Link link) {
+    protected DefaultHttpJsonRequest(Link link) {
         this(requireNonNull(link, "Required non-null link").getHref());
         this.method = link.getMethod();
     }
@@ -169,7 +170,7 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
      * @throws BadRequestException
      *         when response code is 400
      */
-    DefaultHttpJsonResponse doRequest(int timeout,
+    protected DefaultHttpJsonResponse doRequest(int timeout,
                                       String url,
                                       String method,
                                       Object body,
