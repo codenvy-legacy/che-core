@@ -269,7 +269,7 @@ public class RunQueue {
             };
             cleanScheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("RunQueueScheduler-%d")
                                                                                                   .setDaemon(true).build());
-            cleanScheduler.scheduleAtFixedRate(new Runnable() {
+            cleanScheduler.scheduleAtFixedRate(ThreadLocalPropagateContext.wrap(new Runnable() {
                 @Override
                 public void run() {
                     int num = 0;
@@ -327,7 +327,7 @@ public class RunQueue {
                         LOG.debug("Remove {} expired tasks, {} of them were waiting for processing", num, waitingNum);
                     }
                 }
-            }, cleanerPeriod, cleanerPeriod, TimeUnit.MILLISECONDS);
+            }), cleanerPeriod, cleanerPeriod, TimeUnit.MILLISECONDS);
 
             // sending message by websocket connection for notice about used memory size changing
             eventService.subscribe(new ResourcesChangesMessenger());

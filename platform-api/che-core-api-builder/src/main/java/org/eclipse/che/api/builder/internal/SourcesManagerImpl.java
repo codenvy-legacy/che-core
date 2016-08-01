@@ -18,6 +18,7 @@ import org.eclipse.che.commons.json.JsonParseException;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.lang.ZipUtils;
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.commons.user.User;
 
 import com.google.common.hash.Hashing;
@@ -126,7 +127,7 @@ public class SourcesManagerImpl implements SourcesManager {
         Future<Void> future = tasks.get(key);
         final ValueHolder<IOException> errorHolder = new ValueHolder<>();
         if (future == null) {
-            final FutureTask<Void> newFuture = new FutureTask<>(new Runnable() {
+            final FutureTask<Void> newFuture = new FutureTask<>(ThreadLocalPropagateContext.wrap(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -136,7 +137,7 @@ public class SourcesManagerImpl implements SourcesManager {
                         errorHolder.set(e);
                     }
                 }
-            }, null);
+            }), null);
             future = tasks.putIfAbsent(key, newFuture);
             if (future == null) {
                 future = newFuture;
@@ -363,7 +364,7 @@ public class SourcesManagerImpl implements SourcesManager {
      * @return runnable task for scheduler
      */
     private Runnable createSchedulerTask() {
-        return new Runnable() {
+        return ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
                 //get list of workspaces
@@ -392,6 +393,6 @@ public class SourcesManagerImpl implements SourcesManager {
                     }
                 }
             }
-        };
+        });
     }
 }

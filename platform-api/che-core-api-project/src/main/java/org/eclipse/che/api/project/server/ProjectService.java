@@ -99,6 +99,7 @@ import org.eclipse.che.api.vfs.server.search.SearcherProvider;
 import org.eclipse.che.api.vfs.shared.dto.AccessControlEntry;
 import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
@@ -1115,7 +1116,7 @@ public class ProjectService extends Service {
      */
     private void reindexProject(long creationDate, FolderEntry baseProjectFolder, final Project project) throws ServerException {
         final VirtualFile file = baseProjectFolder.getVirtualFile();
-        executor.execute(new Runnable() {
+        executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -1124,7 +1125,7 @@ public class ProjectService extends Service {
                     LOG.warn(String.format("Workspace: %s, project: %s", project.getWorkspace(), project.getPath()), e.getMessage());
                 }
             }
-        });
+        }));
         if (creationDate > 0) {
             final ProjectMisc misc = project.getMisc();
             misc.setCreationDate(creationDate);
