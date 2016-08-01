@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +59,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -68,11 +74,11 @@ import javax.ws.rs.core.MediaType;
  * @author andrew00x
  * @author Eugene Voevodin
  */
-// TODO: make singleton
+@Singleton
 public class SourcesManagerImpl implements SourcesManager {
     private static final Logger LOG = LoggerFactory.getLogger(SourcesManagerImpl.class);
 
-    private final java.io.File                        directory;
+    private final File                                rootDirectory;
     private final ConcurrentMap<String, Future<Void>> tasks;
     private final AtomicReference<String>             projectKeyHolder;
     private final Set<SourceManagerListener>          listeners;
@@ -82,8 +88,9 @@ public class SourcesManagerImpl implements SourcesManager {
     private static final int  CONNECT_TIMEOUT   = (int)TimeUnit.MINUTES.toMillis(4);//This time is chosen empirically and
     private static final int  READ_TIMEOUT      = (int)TimeUnit.MINUTES.toMillis(4);//necessary for some large projects. See IDEX-1957.
 
-    public SourcesManagerImpl(java.io.File directory) {
-        this.directory = directory;
+    @Inject
+    public SourcesManagerImpl(@Named(Constants.BASE_DIRECTORY) File rootDirectory) {
+        this.rootDirectory = rootDirectory;
         tasks = new ConcurrentHashMap<>();
         projectKeyHolder = new AtomicReference<>();
         executor = Executors.newSingleThreadScheduledExecutor(
@@ -91,22 +98,24 @@ public class SourcesManagerImpl implements SourcesManager {
         listeners = new CopyOnWriteArraySet<>();
     }
 
-    public void start() { // TODO: guice must do this
+    @PostConstruct
+    public void start() {
         executor.scheduleAtFixedRate(createSchedulerTask(), 5, 5, TimeUnit.MINUTES);
     }
 
-    public void stop() { // TODO: guice must do this
+    @PreDestroy
+    public void stop() {
         listeners.clear();
         executor.shutdown();
     }
 
-    public void getSources(BuildLogger logger, BuilderConfiguration configuration) throws IOException {
+    public void getSources(BuildLogger logger, File sourcesDir, BuilderConfiguration configuration) throws IOException {
         final BaseBuilderRequest request = configuration.getRequest();
-        getSources(logger, request.getWorkspace(), request.getProject(), request.getSourcesUrl(), configuration.getWorkDir());
+        getSources(logger, request.getWorkspace(), request.getProject(), request.getSourcesUrl(), sourcesDir, configuration.getWorkDir());
     }
 
     @Override
-    public void getSources(BuildLogger logger, String workspace, String project, final String sourcesUrl, java.io.File workDir)
+    public void getSources(BuildLogger logger, String workspace, String project, final String sourcesUrl, File directory, File workDir)
             throws IOException {
         // Directory for sources. Keep sources to avoid download whole project before build.
         // This directory is not permanent and may be removed at any time.
@@ -131,7 +140,7 @@ public class SourcesManagerImpl implements SourcesManager {
                 @Override
                 public void run() {
                     try {
-                        download(sourcesUrl, srcDir);
+                        download(sourcesUrl, srcDir, directory);
                     } catch (IOException e) {
                         LOG.error(e.getMessage(), e);
                         errorHolder.set(e);
@@ -193,7 +202,7 @@ public class SourcesManagerImpl implements SourcesManager {
         }
     };
 
-    private void download(String downloadUrl, java.io.File downloadTo) throws IOException {
+    private void download(String downloadUrl, java.io.File downloadTo, File directory) throws IOException {
         HttpURLConnection conn = null;
         try {
             final LinkedList<java.io.File> q = new LinkedList<>();
@@ -344,11 +353,6 @@ public class SourcesManagerImpl implements SourcesManager {
     }
 
     @Override
-    public java.io.File getDirectory() {
-        return directory;
-    }
-
-    @Override
     public boolean addListener(SourceManagerListener listener) {
         return listeners.add(listener);
     }
@@ -367,6 +371,10 @@ public class SourcesManagerImpl implements SourcesManager {
         return ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
+                // get a list of the builder source dirs
+                File[] builders = rootDirectory.listFiles();
+                for (File builderDir : builders) {
+                File directory = new File(builderDir, Constants.SOURCES_DIR_NAME);
                 //get list of workspaces
                 java.io.File[] workspaces = directory.listFiles();
                 for (java.io.File workspace : workspaces) {
@@ -391,6 +399,7 @@ public class SourcesManagerImpl implements SourcesManager {
                             }
                         }
                     }
+                }
                 }
             }
         });

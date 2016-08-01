@@ -70,6 +70,9 @@ public class Constants {
     /** Build results archive type: .tar */
     public static final String RESULT_ARCHIVE_TAR         = "tar";
 
+    /** Name of directory that contains project sources inside each builder directory */
+    public static final String SOURCES_DIR_NAME           = "sources";
+
     /* ================================================= */
 
     /** @deprecated use {@link #BASE_DIRECTORY} */
