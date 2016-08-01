@@ -167,7 +167,7 @@ public abstract class Builder {
                                                 queueSize);
             scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat(
                     getName() + "-BuilderSchedulerPool-%d").setDaemon(true).build());
-            scheduler.scheduleAtFixedRate(new Runnable() {
+            scheduler.scheduleAtFixedRate(ThreadLocalPropagateContext.wrap(new Runnable() {
                 public void run() {
                     int num = 0;
                     for (Iterator<FutureBuildTask> i = tasks.values().iterator(); i.hasNext(); ) {
@@ -189,7 +189,7 @@ public abstract class Builder {
                         LOG.debug("Remove {} expired tasks", num);
                     }
                 }
-            }, 1, 1, TimeUnit.MINUTES);
+            }), 1, 1, TimeUnit.MINUTES);
         } else {
             throw new IllegalStateException("Already started");
         }
@@ -727,7 +727,7 @@ public abstract class Builder {
         final synchronized void started() {
             if (callback != null) {
                 // NOTE: important to do it in separate thread!
-                getExecutor().execute(new Runnable() {
+                getExecutor().execute(ThreadLocalPropagateContext.wrap(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -740,7 +740,7 @@ public abstract class Builder {
                         }
                         callback.begin(FutureBuildTask.this);
                     }
-                });
+                }));
             }
         }
 
@@ -761,12 +761,12 @@ public abstract class Builder {
             endTime = System.currentTimeMillis();
             if (callback != null) {
                 // NOTE: important to do it in separate thread!
-                getExecutor().execute(new Runnable() {
+                getExecutor().execute(ThreadLocalPropagateContext.wrap(new Runnable() {
                     @Override
                     public void run() {
                         callback.done(FutureBuildTask.this);
                     }
-                });
+                }));
             }
         }
 

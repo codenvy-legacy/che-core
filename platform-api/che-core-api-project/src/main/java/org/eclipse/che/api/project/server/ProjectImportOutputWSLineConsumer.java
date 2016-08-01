@@ -11,6 +11,8 @@
 package org.eclipse.che.api.project.server;
 
 import org.eclipse.che.api.core.util.LineConsumer;
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.everrest.core.impl.provider.json.JsonUtils;
@@ -45,7 +47,7 @@ public class ProjectImportOutputWSLineConsumer implements LineConsumer {
         lineToSendQueue = new ArrayBlockingQueue<>(1024);
         executor = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat(ProjectImportOutputWSLineConsumer.class.getSimpleName()+"-%d").setDaemon(true).build());
-        executor.scheduleAtFixedRate(new Runnable() {
+        executor.scheduleAtFixedRate(ThreadLocalPropagateContext.wrap(new Runnable() {
             @Override
             public void run() {
                 String lineToSend = null;
@@ -57,7 +59,7 @@ public class ProjectImportOutputWSLineConsumer implements LineConsumer {
                 }
                 sendMessage(lineToSend);
             }
-        }, 0, delayBetweenMessages, TimeUnit.MILLISECONDS);
+        }), 0, delayBetweenMessages, TimeUnit.MILLISECONDS);
         lineCounter = new AtomicInteger(1);
     }
 

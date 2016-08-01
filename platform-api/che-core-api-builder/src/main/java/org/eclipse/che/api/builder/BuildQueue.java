@@ -596,7 +596,7 @@ public class BuildQueue {
             };
             scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat("BuildQueueScheduler-%d")
                                                                                              .setDaemon(true).build());
-            scheduler.scheduleAtFixedRate(new Runnable() {
+            scheduler.scheduleAtFixedRate(ThreadLocalPropagateContext.wrap(new Runnable() {
                 @Override
                 public void run() {
                     int num = 0;
@@ -650,7 +650,7 @@ public class BuildQueue {
                         LOG.debug("Remove {} expired tasks, {} of them were waiting for processing", num, waitingNum);
                     }
                 }
-            }, 1, 1, TimeUnit.MINUTES);
+            }), 1, 1, TimeUnit.MINUTES);
 
             eventService.subscribe(new EventSubscriber<BuilderEvent>() {
                 @Override
