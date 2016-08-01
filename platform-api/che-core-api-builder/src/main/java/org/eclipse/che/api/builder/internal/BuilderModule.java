@@ -20,5 +20,6 @@ public class BuilderModule extends AbstractModule {
         // Initialize empty set of Builders.
         Multibinder.newSetBinder(binder(), Builder.class);
         bind(BuilderRegistryPlugin.class).asEagerSingleton();
+        bind(BuilderCleaner.class).asEagerSingleton();
     }
 }

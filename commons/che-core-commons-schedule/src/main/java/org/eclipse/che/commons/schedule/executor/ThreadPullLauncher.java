@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.commons.schedule.executor;
 
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.commons.schedule.Launcher;
 import org.eclipse.che.inject.ConfigurationException;
 
@@ -77,7 +78,7 @@ public class ThreadPullLauncher implements Launcher {
         }
         try {
             CronExpression expression = new CronExpression(cron);
-            service.schedule(runnable, expression);
+            service.schedule(wrap(runnable), expression);
             LOG.debug("Schedule method {} with cron  {} schedule", runnable, cron);
         } catch (ParseException e) {
             LOG.error(e.getLocalizedMessage(), e);
@@ -87,7 +88,7 @@ public class ThreadPullLauncher implements Launcher {
 
     @Override
     public void scheduleWithFixedDelay(Runnable runnable, long initialDelay, long delay, TimeUnit unit) {
-        service.scheduleWithFixedDelay(runnable, initialDelay, delay, unit);
+        service.scheduleWithFixedDelay(wrap(runnable), initialDelay, delay, unit);
         LOG.debug("Schedule method {} with fixed initial delay {} delay {} unit {}",
                   runnable,
                   initialDelay,
@@ -96,11 +97,16 @@ public class ThreadPullLauncher implements Launcher {
 
     @Override
     public void scheduleAtFixedRate(Runnable runnable, long initialDelay, long period, TimeUnit unit) {
-        service.scheduleAtFixedRate(runnable, initialDelay, period, unit);
+        service.scheduleAtFixedRate(wrap(runnable), initialDelay, period, unit);
         LOG.debug("Schedule method {} with fixed rate. Initial delay {} period {} unit {}",
                   runnable,
                   initialDelay,
                   period,
                   unit);
     }
+
+    private static Runnable wrap(Runnable runnable) {
+        return ThreadLocalPropagateContext.wrap(runnable);
+    }
+
 }

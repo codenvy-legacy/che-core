@@ -43,8 +43,9 @@ import javax.ws.rs.core.MediaType;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,10 +58,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -80,14 +79,12 @@ public abstract class Builder {
     private final java.io.File                         rootDirectory;
     private File                                       sources;
     private final Set<BuildListener>                   buildListeners;
-    private final long                                 keepResultTimeMillis;
     private final EventService                         eventService;
     private final int                                  queueSize;
     private final int                                  numberOfWorkers;
     private final AtomicBoolean                        started;
 
     private ThreadPoolExecutor       executor;
-    private ScheduledExecutorService scheduler;
     private java.io.File             repository;
     private java.io.File             builds;
     @Inject
@@ -97,7 +94,6 @@ public abstract class Builder {
         this.rootDirectory = rootDirectory;
         this.numberOfWorkers = numberOfWorkers;
         this.queueSize = queueSize;
-        this.keepResultTimeMillis = TimeUnit.SECONDS.toMillis(keepResultTime);
         this.eventService = eventService;
 
         buildListeners = new CopyOnWriteArraySet<>();
@@ -167,31 +163,6 @@ public abstract class Builder {
             // TODO: use single instance of SourceManager
             executor = new MyThreadPoolExecutor(numberOfWorkers <= 0 ? Runtime.getRuntime().availableProcessors() : numberOfWorkers,
                                                 queueSize);
-            scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat(
-                    getName() + "-BuilderSchedulerPool-%d").setDaemon(true).build());
-            scheduler.scheduleAtFixedRate(ThreadLocalPropagateContext.wrap(new Runnable() {
-                public void run() {
-                    int num = 0;
-                    for (Iterator<FutureBuildTask> i = tasks.values().iterator(); i.hasNext(); ) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            return;
-                        }
-                        final FutureBuildTask task = i.next();
-                        if (task.isExpired()) {
-                            i.remove();
-                            try {
-                                cleanup(task);
-                            } catch (RuntimeException e) {
-                                LOG.error(e.getMessage(), e);
-                            }
-                            num++;
-                        }
-                    }
-                    if (num > 0) {
-                        LOG.debug("Remove {} expired tasks", num);
-                    }
-                }
-            }), 1, 1, TimeUnit.MINUTES);
         } else {
             throw new IllegalStateException("Already started");
         }
@@ -212,14 +183,6 @@ public abstract class Builder {
     public void stop() {
         if (started.compareAndSet(true, false)) {
             boolean interrupted = false;
-            scheduler.shutdownNow();
-            try {
-                if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                    LOG.warn("Unable terminate scheduler");
-                }
-            } catch (InterruptedException e) {
-                interrupted = true;
-            }
             executor.shutdown();
             try {
                 if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
@@ -231,20 +194,6 @@ public abstract class Builder {
             } catch (InterruptedException e) {
                 interrupted |= true;
                 executor.shutdownNow();
-            }
-            final java.io.File[] files = repository.listFiles();
-            if (files != null && files.length > 0) {
-                for (java.io.File f : files) {
-                    boolean deleted;
-                    if (f.isDirectory()) {
-                        deleted = IoUtil.deleteRecursive(f);
-                    } else {
-                        deleted = f.delete();
-                    }
-                    if (!deleted) {
-                        LOG.warn("Failed delete {}", f);
-                    }
-                }
             }
             tasks.clear();
             buildListeners.clear();
@@ -488,6 +437,23 @@ public abstract class Builder {
     }
 
     /**
+     * Clean-up all resources and files allocated for the given build task.
+     * 
+     * @param id
+     *            The ID of the task to clean-up.
+     * @throws NotFoundException
+     *             If the task was not found.
+     */
+    public void cleanBuildTask(long id) throws NotFoundException {
+        FutureBuildTask task = tasks.remove(id);
+        if (task == null) {
+            throw new NotFoundException(String.format("Invalid build task id: %d", id));
+        }
+        task.cancel(true); // just to make sure
+        cleanup(task);
+    }
+
+    /**
      * Cleanup task. Cleanup means removing all local files which were created by build process, e.g logs, sources, build reports, etc.
      * <p/>
      * Sub-classes should invoke {@code super.cleanup} at the start of this method.
@@ -562,6 +528,10 @@ public abstract class Builder {
             throw new NotFoundException(String.format("Invalid build task id: %d", id));
         }
         return task;
+    }
+
+    public Collection<? extends BuildTask> getAllBduildTasks() {
+        return new ArrayList<>(tasks.values());
     }
 
     /**
@@ -769,11 +739,6 @@ public abstract class Builder {
                     }
                 }));
             }
-        }
-
-        synchronized boolean isExpired() {
-            return endTime > 0
-                   && (endTime + keepResultTimeMillis) < System.currentTimeMillis();
         }
 
         @Override
