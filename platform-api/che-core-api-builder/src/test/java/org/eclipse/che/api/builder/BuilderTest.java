@@ -84,13 +84,8 @@ public class BuilderTest {
         public SourcesManager getSourcesManager() {
             return new SourcesManager() {
                 @Override
-                public void getSources(BuildLogger logger, String workspace, String project, String sourcesUrl, File workDir) throws IOException {
+                public void getSources(BuildLogger logger, String workspace, String project, String sourcesUrl, File sourcesDir, File workDir) throws IOException {
                     // Don't need for current set of tests.
-                }
-
-                @Override
-                public java.io.File getDirectory() {
-                    return getSourcesDirectory();
                 }
 
                 @Override

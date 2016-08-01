@@ -38,8 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -76,6 +78,7 @@ public abstract class Builder {
 
     private final ConcurrentMap<Long, FutureBuildTask> tasks;
     private final java.io.File                         rootDirectory;
+    private File                                       sources;
     private final Set<BuildListener>                   buildListeners;
     private final long                                 keepResultTimeMillis;
     private final EventService                         eventService;
@@ -87,7 +90,8 @@ public abstract class Builder {
     private ScheduledExecutorService scheduler;
     private java.io.File             repository;
     private java.io.File             builds;
-    private SourcesManagerImpl       sourcesManager;
+    @Inject
+    private SourcesManager           sourcesManager; // TODO inject this from constructor
 
     public Builder(java.io.File rootDirectory, int numberOfWorkers, int queueSize, int keepResultTime, EventService eventService) {
         this.rootDirectory = rootDirectory;
@@ -152,7 +156,7 @@ public abstract class Builder {
             if (!(repository.exists() || repository.mkdirs())) {
                 throw new IllegalStateException(String.format("Unable create directory %s", repository.getAbsolutePath()));
             }
-            final java.io.File sources = new java.io.File(repository, "sources");
+            sources = new java.io.File(repository, Constants.SOURCES_DIR_NAME);
             if (!(sources.exists() || sources.mkdirs())) {
                 throw new IllegalStateException(String.format("Unable create directory %s", sources.getAbsolutePath()));
             }
@@ -161,8 +165,6 @@ public abstract class Builder {
                 throw new IllegalStateException(String.format("Unable create directory %s", builds.getAbsolutePath()));
             }
             // TODO: use single instance of SourceManager
-            sourcesManager = new SourcesManagerImpl(sources);
-            sourcesManager.start(); // TODO: guice must do this
             executor = new MyThreadPoolExecutor(numberOfWorkers <= 0 ? Runtime.getRuntime().availableProcessors() : numberOfWorkers,
                                                 queueSize);
             scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder().setNameFormat(
@@ -246,7 +248,6 @@ public abstract class Builder {
             }
             tasks.clear();
             buildListeners.clear();
-            sourcesManager.stop(); // TODO: guice must do this
             if (interrupted) {
                 Thread.currentThread().interrupt();
             }
@@ -272,7 +273,7 @@ public abstract class Builder {
 
     public java.io.File getSourcesDirectory() {
         checkStarted();
-        return getSourcesManager().getDirectory();
+        return sources;
     }
 
     public int getNumberOfWorkers() {
@@ -433,7 +434,7 @@ public abstract class Builder {
             public Boolean call() throws Exception {
                 BaseBuilderRequest request = configuration.getRequest();
                 getSourcesManager()
-                        .getSources(logger, request.getWorkspace(), request.getProject(), request.getSourcesUrl(), configuration.getWorkDir());
+                        .getSources(logger, request.getWorkspace(), request.getProject(), request.getSourcesUrl(), sources, configuration.getWorkDir());
                 // build effectively starts right after sources downloading is done
                 eventService.publish(BuilderEvent.buildTimeStartedEvent(request.getId(), request.getWorkspace(), request.getProject(),
                                                                         System.currentTimeMillis()));
