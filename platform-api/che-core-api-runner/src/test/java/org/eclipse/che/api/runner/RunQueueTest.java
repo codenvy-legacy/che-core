@@ -14,8 +14,17 @@ import org.eclipse.che.api.builder.BuildStatus;
 import org.eclipse.che.api.builder.RemoteBuilderServer;
 import org.eclipse.che.api.builder.dto.BuildOptions;
 import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
+import org.eclipse.che.api.core.BadRequestException;
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.DefaultHttpJsonRequest;
+import org.eclipse.che.api.core.rest.DefaultHttpJsonResponse;
+import org.eclipse.che.api.core.rest.HttpJsonRequest;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.RemoteServiceDescriptor;
 import org.eclipse.che.api.core.rest.ServiceContext;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -39,6 +48,7 @@ import org.eclipse.che.api.runner.internal.Constants;
 import org.eclipse.che.api.runner.internal.RunnerEvent;
 import org.eclipse.che.api.workspace.shared.dto.WorkspaceDescriptor;
 import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.mockito.ArgumentCaptor;
@@ -53,6 +63,7 @@ import org.testng.annotations.Test;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.UriBuilder;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,7 +103,6 @@ import static org.testng.Assert.fail;
 @Listeners(value = {MockitoTestNGListener.class})
 public class RunQueueTest {
     private DtoFactory dtoFactory = DtoFactory.getInstance();
-    private HttpJsonHelper.HttpJsonHelperImpl httpJsonHelper;
     private RunQueue                          runQueue;
     private String wsId   = "my_ws";
     private String wsName = wsId;
@@ -101,15 +111,47 @@ public class RunQueueTest {
     private ProjectDescriptor   project;
     private WorkspaceDescriptor workspace;
     private EnvironmentContext  codenvyContext;
+    private TestRequestInterceptor interceptor;
+    private TestRequestFactory requestFactory;
 
     private List<RunnerEvent> events = new CopyOnWriteArrayList<>();
 
+    public interface TestRequestInterceptor {
+        String request(int timeout, String url, String method, Object body, List<Pair<String, ?>> parameters);
+    }
+
+    private class TestJsonRequest extends DefaultHttpJsonRequest {
+        TestJsonRequest(Link link) {
+            super(link);
+        }
+
+        TestJsonRequest(String url) {
+            super(url);
+        }
+
+        @Override
+        protected DefaultHttpJsonResponse doRequest(int timeout, String url, String method, Object body,
+                List<Pair<String, ?>> parameters) throws IOException, ServerException, ForbiddenException,
+                        NotFoundException, UnauthorizedException, ConflictException, BadRequestException {
+            String str = interceptor.request(timeout, url, method, body, parameters);
+            return new DefaultHttpJsonResponse(str, 200);
+        }
+    }
+
+    private class TestRequestFactory implements HttpJsonRequestFactory {
+        @Override
+        public HttpJsonRequest fromUrl(String url) {
+            return new TestJsonRequest(url);
+        }
+
+        @Override
+        public HttpJsonRequest fromLink(Link link) {
+            return new TestJsonRequest(link);
+        }
+    }
+    
     @BeforeMethod
     public void beforeMethod() throws Exception {
-        httpJsonHelper = mock(HttpJsonHelper.HttpJsonHelperImpl.class);
-        Field field = HttpJsonHelper.class.getDeclaredField("httpJsonHelperImpl");
-        field.setAccessible(true);
-        field.set(null, httpJsonHelper);
 
         EventService eventService = mock(EventService.class);
         doAnswer(new Answer() {
@@ -120,11 +162,14 @@ public class RunQueueTest {
             }
         }).when(eventService).publish(any(RunnerEvent.class));
         RunnerSelectionStrategy selectionStrategy = new LastInUseRunnerSelectionStrategy();
+        interceptor = mock(TestRequestInterceptor.class);
+        requestFactory = new TestRequestFactory();
         runQueue = spy(new RunQueue(256,
                                     5,
                                     5,
                                     5,
                                     selectionStrategy,
+                                    requestFactory,
                                     eventService));
         runQueue.cleanerPeriod = 1000; // run cleaner every second
         runQueue.checkAvailableRunnerPeriod = 1000;
@@ -279,7 +324,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L, requestFactory));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -312,7 +357,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L, requestFactory));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -362,7 +407,7 @@ public class RunQueueTest {
         RemoteRunnerServer runnerServer = registerRunnerServer(remoteUrl, runnerDescriptor, null);
         RemoteRunner runner = runnerServer.getRemoteRunner(runnerDescriptor.getName());
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L, requestFactory));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -428,7 +473,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L, requestFactory));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -464,7 +509,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L, requestFactory));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -494,7 +539,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L, requestFactory));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -518,7 +563,7 @@ public class RunQueueTest {
         RemoteRunner runner = runnerServer.getRemoteRunner("java/web");
         // Free memory should be more than 256.
         doReturn(dto(RunnerState.class).withServerState(dto(ServerState.class).withFreeMemory(512))).when(runner).getRemoteRunnerState();
-        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L));
+        RemoteRunnerProcess process = spy(new RemoteRunnerProcess(runnerServer.getBaseUrl(), runner.getName(), 1L, requestFactory));
         doReturn(process).when(runner).run(any(RunRequest.class));
 
         ServiceContext serviceContext = newServiceContext();
@@ -689,21 +734,21 @@ public class RunQueueTest {
         buildTaskDone.getLinks().add(dto(Link.class).withMethod(HttpMethod.GET)
                                                     .withHref(downloadLink)
                                                     .withRel(org.eclipse.che.api.builder.internal.Constants.LINK_REL_DOWNLOAD_RESULT));
-        doAnswer(new Answer<BuildTaskDescriptor>() {
+        doAnswer(new Answer<String>() {
             int tick = 0;
 
             @Override
-            public BuildTaskDescriptor answer(InvocationOnMock invocation) throws Throwable {
+            public String answer(InvocationOnMock invocation) throws Throwable {
                 if (tick == 0) {
                     ++tick;
-                    return buildTaskQueue;
+                    return buildTaskQueue.toString();
                 } else if (tick < inProgressNum) {
                     ++tick;
-                    return buildTaskProgress;
+                    return buildTaskProgress.toString();
                 }
-                return buildTaskDone;
+                return buildTaskDone.toString();
             }
-        }).when(httpJsonHelper).request(eq(BuildTaskDescriptor.class), eq(statusLink), eq(HttpMethod.GET), any());
+        }).when(interceptor).request(anyInt(), eq(statusLink), eq(HttpMethod.GET), any(),  any());
         return downloadLink;
     }
 
@@ -746,10 +791,10 @@ public class RunQueueTest {
 
     private RemoteRunnerServer registerRunnerServer(String remoteUrl, RunnerDescriptor runnerDescriptor,
                                                     RunnerServerAccessCriteria accessRules) throws Exception {
-        RemoteRunnerServer runnerServer = spy(new RemoteRunnerServer(remoteUrl));
+        RemoteRunnerServer runnerServer = spy(new RemoteRunnerServer(remoteUrl, requestFactory));
         doReturn(dto(RunnerServerDescriptor.class)).when(runnerServer).getServiceDescriptor();
         doReturn(Arrays.asList(runnerDescriptor)).when(runnerServer).getRunnerDescriptors();
-        RemoteRunner runner = spy(new RemoteRunner(remoteUrl, runnerDescriptor.getName(), new ArrayList<Link>()));
+        RemoteRunner runner = spy(new RemoteRunner(remoteUrl, runnerDescriptor.getName(), new ArrayList<Link>(), requestFactory));
         doReturn(runnerDescriptor.getEnvironments()).when(runner).getEnvironments();
         doReturn(Arrays.asList(runner)).when(runnerServer).getRemoteRunners();
         doReturn(runner).when(runnerServer).getRemoteRunner(eq(runnerDescriptor.getName()));

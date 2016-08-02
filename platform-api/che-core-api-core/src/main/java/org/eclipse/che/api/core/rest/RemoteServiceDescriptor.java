@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -45,6 +46,7 @@ public class RemoteServiceDescriptor {
 
     protected final String baseUrl;
     private final   URL    baseUrlURL;
+    protected final HttpJsonRequestFactory requestFactory;
 
     // will be initialized when it is needed
     private volatile ServiceDescriptor serviceDescriptor;
@@ -55,7 +57,7 @@ public class RemoteServiceDescriptor {
      * @throws java.lang.IllegalArgumentException
      *         if URL is invalid
      */
-    public RemoteServiceDescriptor(String baseUrl) throws IllegalArgumentException {
+    public RemoteServiceDescriptor(String baseUrl, HttpJsonRequestFactory requestFactory) throws IllegalArgumentException {
         this.baseUrl = baseUrl;
         try {
             baseUrlURL = new URL(baseUrl);
@@ -66,6 +68,7 @@ public class RemoteServiceDescriptor {
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(String.format("Invalid URL: %s", baseUrl));
         }
+        this.requestFactory = requestFactory;
     }
 
     public String getBaseUrl() {
@@ -95,8 +98,8 @@ public class RemoteServiceDescriptor {
                 myServiceDescriptor = serviceDescriptor;
                 if (myServiceDescriptor == null) {
                     try {
-                        myServiceDescriptor = serviceDescriptor = HttpJsonHelper.options(getServiceDescriptorClass(), baseUrl);
-                    } catch (NotFoundException | ConflictException | UnauthorizedException | ForbiddenException e) {
+                        myServiceDescriptor = serviceDescriptor = retrieveDescriptor();
+                    } catch (NotFoundException | ConflictException | UnauthorizedException | ForbiddenException | BadRequestException e) {
                         throw new ServerException(e.getServiceError());
                     }
                 }
@@ -113,10 +116,16 @@ public class RemoteServiceDescriptor {
     public boolean isAvailable() {
         LOG.debug("Testing availability {}", baseUrl);
         try {
-            return (HttpJsonHelper.options(getServiceDescriptorClass(), baseUrl) != null);
+            return retrieveDescriptor() != null;
         } catch (Exception e) {
             LOG.warn(e.getLocalizedMessage());
             return false;
         }
     }
+
+    private ServiceDescriptor retrieveDescriptor() throws ServerException, UnauthorizedException, ForbiddenException,
+            NotFoundException, ConflictException, BadRequestException, IOException {
+        return requestFactory.fromUrl(baseUrl).useOptionsMethod().request().asDto(getServiceDescriptorClass());
+    }
+
 }

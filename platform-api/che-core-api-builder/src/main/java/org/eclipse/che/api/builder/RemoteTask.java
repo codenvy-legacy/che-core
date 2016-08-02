@@ -14,16 +14,11 @@ import com.google.common.io.ByteStreams;
 
 import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
 import org.eclipse.che.api.builder.internal.Constants;
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpOutputMessage;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.eclipse.che.api.builder.BuilderUtils.builderRequest;
 
 /**
  * Representation of remote builder's task.
@@ -49,14 +45,16 @@ public class RemoteTask {
     private final String builder;
     private final Long   taskId;
     private final long   created;
+    private final HttpJsonRequestFactory requestFactory;
 
     /* Package visibility, not expected to be created by api users. They should use RemoteBuilder instead and get an instance of remote
     task. */
-    RemoteTask(String baseUrl, String builder, Long taskId) {
+    RemoteTask(String baseUrl, String builder, Long taskId, HttpJsonRequestFactory requestFactory) {
         this.baseUrl = baseUrl;
         this.builder = builder;
         this.taskId = taskId;
         created = System.currentTimeMillis();
+        this.requestFactory = requestFactory;
     }
 
     /**
@@ -91,13 +89,8 @@ public class RemoteTask {
      *         if can't get status of remote task because isn't available anymore, e.g. its already removed on remote server
      */
     public BuildTaskDescriptor getBuildTaskDescriptor() throws BuilderException, NotFoundException {
-        try {
-            return HttpJsonHelper.get(BuildTaskDescriptor.class, String.format("%s/status/%s/%d", baseUrl, builder, taskId));
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | ConflictException e) {
-            throw new BuilderException(e.getServiceError());
-        }
+    	String url = String.format("%s/status/%s/%d", baseUrl, builder, taskId);
+    	return builderRequest(requestFactory.fromUrl(url)).asDto(BuildTaskDescriptor.class);
     }
 
     /**
@@ -123,13 +116,7 @@ public class RemoteTask {
                     throw new BuilderException("Can't cancel task. Cancellation link is not available");
             }
         }
-        try {
-            return HttpJsonHelper.request(BuildTaskDescriptor.class, DtoFactory.getInstance().clone(link));
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | ConflictException e) {
-            throw new BuilderException(e.getServiceError());
-        }
+        return builderRequest(requestFactory.fromLink(link)).asDto(BuildTaskDescriptor.class);
     }
 
     /**

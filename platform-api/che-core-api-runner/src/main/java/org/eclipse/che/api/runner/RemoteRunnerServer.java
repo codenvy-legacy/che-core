@@ -16,6 +16,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.RemoteServiceDescriptor;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.rest.shared.dto.ServiceDescriptor;
@@ -23,6 +24,8 @@ import org.eclipse.che.api.runner.dto.RunnerDescriptor;
 import org.eclipse.che.api.runner.dto.RunnerServerDescriptor;
 import org.eclipse.che.api.runner.dto.ServerState;
 import org.eclipse.che.api.runner.internal.Constants;
+
+import static org.eclipse.che.api.runner.RunnerUtils.runnerRequest;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -41,8 +44,8 @@ public class RemoteRunnerServer extends RemoteServiceDescriptor {
 
     private String infra = "community";
 
-    public RemoteRunnerServer(String baseUrl) {
-        super(baseUrl);
+    public RemoteRunnerServer(String baseUrl, HttpJsonRequestFactory requestFactory) {
+        super(baseUrl, requestFactory);
     }
 
     public String getInfra() {
@@ -110,7 +113,7 @@ public class RemoteRunnerServer extends RemoteServiceDescriptor {
 
     private RemoteRunner createRemoteRunner(RunnerDescriptor descriptor) throws RunnerException {
         try {
-            return new RemoteRunner(baseUrl, descriptor.getName(), getLinks());
+            return new RemoteRunner(baseUrl, descriptor.getName(), getLinks(), requestFactory);
         } catch (IOException e) {
             throw new RunnerException(e);
         } catch (ServerException e) {
@@ -124,10 +127,10 @@ public class RemoteRunnerServer extends RemoteServiceDescriptor {
             if (link == null) {
                 throw new RunnerException("Unable get URL for retrieving list of remote runners");
             }
-            return HttpJsonHelper.requestArray(RunnerDescriptor.class, link);
+            return runnerRequest(requestFactory.fromLink(link)).asList(RunnerDescriptor.class);
         } catch (IOException e) {
             throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
+        } catch (ServerException e) {
             throw new RunnerException(e.getServiceError());
         }
     }
@@ -138,10 +141,10 @@ public class RemoteRunnerServer extends RemoteServiceDescriptor {
             if (stateLink == null) {
                 throw new RunnerException(String.format("Unable get URL for getting state of a remote server '%s'", baseUrl));
             }
-            return HttpJsonHelper.request(ServerState.class, 10000, stateLink);
+            return runnerRequest(requestFactory.fromLink(stateLink).setTimeout(10000)).asDto(ServerState.class);
         } catch (IOException e) {
             throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
+        } catch (ServerException e) {
             throw new RunnerException(e.getServiceError());
         }
     }
