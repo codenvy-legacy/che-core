@@ -259,7 +259,7 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
             }
             final String contentType = conn.getContentType();
             if (contentType != null && !contentType.startsWith(MediaType.APPLICATION_JSON)) {
-                throw new IOException(conn.getResponseMessage());
+                throw new IOException(conn.getResponseMessage() + " [ Content-Type: " + contentType + " ]");
             }
 
             try (Reader reader = new InputStreamReader(conn.getInputStream())) {
