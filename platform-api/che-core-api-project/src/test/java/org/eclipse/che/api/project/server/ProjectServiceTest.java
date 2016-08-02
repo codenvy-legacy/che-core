@@ -617,6 +617,92 @@ public class ProjectServiceTest {
     }
 
 
+    @Test
+    public void testCreateProjectWithDot() throws Exception {
+
+
+        phRegistry.register(new CreateProjectHandler() {
+            @Override
+            public void onCreateProject(FolderEntry baseFolder, Map<String, AttributeValue> attributes, Map<String, String> options) throws ForbiddenException, ConflictException, ServerException {
+                baseFolder.createFolder("a");
+                baseFolder.createFolder("b");
+                baseFolder.createFile("test.txt", "test".getBytes(), MediaType.TEXT_PLAIN);
+            }
+
+            @Override
+            public String getProjectType() {
+                return "testCreateProject";
+            }
+        });
+
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(MediaType.APPLICATION_JSON));
+
+
+        ProjectType pt = new ProjectType("testCreateProject", "my project type", true, false) {
+
+            {
+                addConstantDefinition("new_project_attribute", "attr description", "to be or not to be");
+            }
+
+        };
+
+        pm.getProjectTypeRegistry().registerProjectType(pt);
+
+
+        Map<String, List<String>> attributeValues = new LinkedHashMap<>();
+        attributeValues.put("new project attribute", Arrays.asList("to be or not to be"));
+        GeneratorDescription generatorDescription = DtoFactory.getInstance().createDto(GeneratorDescription.class);
+//                                                          .withName("my_generator");
+
+        NewProject descriptor = DtoFactory.getInstance().createDto(NewProject.class)
+                                          .withType("testCreateProject")
+                                          .withDescription("new project with dot")
+                                          .withAttributes(attributeValues)
+                                          .withGeneratorDescription(generatorDescription);
+
+
+        ContainerResponse response = launcher.service(HttpMethod.POST,
+                                                      String.format("http://localhost:8080/api/project/%s?name=new_project.test", workspace),
+                                                      "http://localhost:8080/api",
+                                                      headers,
+                                                      DtoFactory.getInstance().toJson(descriptor).getBytes(),
+                                                      null);
+        assertEquals(response.getStatus(), 200, "Error: " + response.getEntity());
+        ProjectDescriptor result = (ProjectDescriptor)response.getEntity();
+        assertNotNull(result);
+        assertEquals(result.getName(), "new_project.test");
+        assertEquals(result.getPath(), "/new_project.test");
+        assertEquals(result.getDescription(), "new project with dot");
+        assertEquals(result.getType(), "testCreateProject");
+        assertEquals(result.getTypeName(), "my project type");
+        assertEquals(result.getVisibility(), "public");
+        assertEquals(result.getWorkspaceId(), workspace);
+//        assertEquals(result.getIdeUrl(), String.format("http://localhost:8080/ws/%s/new_project", workspace));
+        assertEquals(result.getBaseUrl(), String.format("http://localhost:8080/api/project/%s/new_project.test", workspace));
+        Map<String, List<String>> attributes = result.getAttributes();
+        assertNotNull(attributes);
+        assertEquals(attributes.size(), 1);
+        assertEquals(attributes.get("new_project_attribute"), Arrays.asList("to be or not to be"));
+        validateProjectLinks(result);
+
+        Project project = pm.getProject(workspace, "new_project.test");
+        assertNotNull(project);
+
+
+        ProjectConfig config = project.getConfig(); //new ProjectConfig("new project", "testCreateProject");
+
+        assertEquals(config.getDescription(), "new project with dot");
+        assertEquals(config.getTypeId(), "testCreateProject");
+        AttributeValue attributeVal = config.getAttributes().get("new_project_attribute");
+        assertNotNull(attributeVal);
+        assertEquals(attributeVal.getString(), "to be or not to be");
+
+        assertNotNull(project.getBaseFolder().getChild("a"));
+        assertNotNull(project.getBaseFolder().getChild("b"));
+        assertNotNull(project.getBaseFolder().getChild("test.txt"));
+
+    }
 
     @Test
     public void testCreateModule() throws Exception {
