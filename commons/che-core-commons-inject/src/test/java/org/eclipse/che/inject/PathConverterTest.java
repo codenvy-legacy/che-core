@@ -13,6 +13,7 @@ package org.eclipse.che.inject;
 import static org.testng.Assert.assertEquals;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.testng.annotations.Test;
 
@@ -39,7 +40,7 @@ public class PathConverterTest {
             }
         });
         Path path = injector.getInstance(Key.get(Path.class, Names.named("abc")));
-        assertEquals("aa/bb", path.toString());
+        assertEquals(Paths.get("aa/bb"), path);
     }
 
 }
