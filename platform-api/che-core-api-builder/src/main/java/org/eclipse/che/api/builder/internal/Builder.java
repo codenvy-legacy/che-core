@@ -21,12 +21,8 @@ import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.core.util.Cancellable;
-import org.eclipse.che.api.core.util.CancellableProcessWrapper;
 import org.eclipse.che.api.core.util.CommandLine;
-import org.eclipse.che.api.core.util.ProcessUtil;
 import org.eclipse.che.api.core.util.StreamPump;
-import org.eclipse.che.api.core.util.Watchdog;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.dto.server.DtoFactory;
@@ -382,52 +378,34 @@ public abstract class Builder {
             @Override
             public Boolean call() throws Exception {
                 BaseBuilderRequest request = configuration.getRequest();
-                getSourcesManager()
-                        .getSources(logger, request.getWorkspace(), request.getProject(), request.getSourcesUrl(), sources, configuration.getWorkDir());
+                if (!prepareWorkingDirectory(configuration, logger)) {
+                    return Boolean.FALSE;
+                }
                 // build effectively starts right after sources downloading is done
                 eventService.publish(BuilderEvent.buildTimeStartedEvent(request.getId(), request.getWorkspace(), request.getProject(),
                                                                         System.currentTimeMillis()));
                 eventService.publish(BuilderEvent.beginEvent(request.getId(), request.getWorkspace(), request.getProject()));
-                StreamPump output = null;
-                Watchdog watcher = null;
                 int result = -1;
-                try {
-                    ProcessBuilder processBuilder = new ProcessBuilder().command(commandLine.toShellCommand()).directory(
-                            configuration.getWorkDir()).redirectErrorStream(true);
+                boolean terminated = false;
+                ProcessBuilder processBuilder = createProcessBuilder(commandLine, configuration);
+                try (StreamPump output = new StreamPump()) {
                     Process process = processBuilder.start();
-
-                    if (timeout > 0) {
-                        watcher = new Watchdog(getName().toUpperCase() + "-WATCHDOG", timeout, TimeUnit.SECONDS);
-                        watcher.start(new CancellableProcessWrapper(process, new Cancellable.Callback() {
-                            @Override
-                            public void cancelled(Cancellable cancellable) {
-                                try {
-                                    logger.writeLine("[ERROR] Your build has been shutdown due to timeout.");
-                                } catch (IOException e) {
-                                    LOG.error(e.getMessage(), e);
-                                }
-                            }
-                        }));
-                    }
-                    output = new StreamPump();
-                    output.start(process, logger);
-                    try {
-                        result = process.waitFor();
-                    } catch (InterruptedException e) {
-                        Thread.interrupted(); // we interrupt thread when cancel task
-                        ProcessUtil.kill(process);
-                    }
+                    terminated = waitForProcess(process, timeout, configuration, logger);
+                    // Wait until the full output of the command process is sent to the logger asynchronously
                     try {
                         output.await(); // wait for logger
                     } catch (InterruptedException e) {
+                        // Interrupting the log pump shouldn't fail the build task
                         Thread.interrupted(); // we interrupt thread when cancel task, NOTE: logs may be incomplete
                     }
-                } finally {
-                    if (watcher != null) {
-                        watcher.stop();
-                    }
-                    if (output != null) {
-                        output.stop();
+                }
+                // If the process exceeded the allowed time, print a log message
+                // do this after closing the pump to avoid garbling the process's full output
+                if (terminated) {
+                    try {
+                        logger.writeLine("[ERROR] Your build has been shutdown due to timeout.");
+                    } catch (IOException e) {
+                        LOG.error(e.getMessage(), e);
                     }
                 }
                 LOG.debug("Done: {}, exit code: {}", commandLine, result);
@@ -451,6 +429,48 @@ public abstract class Builder {
         }
         task.cancel(true); // just to make sure
         cleanup(task);
+    }
+
+    /**
+     * Prepare the working directory before executing the build command.
+     */
+    protected boolean prepareWorkingDirectory(final BuilderConfiguration configuration, final BuildLogger logger)
+            throws Exception {
+        BaseBuilderRequest request = configuration.getRequest();
+        getSourcesManager().getSources(logger, request.getWorkspace(), request.getProject(), request.getSourcesUrl(),
+                sources, configuration.getWorkDir());
+        return true;
+    }
+
+    /**
+     * Create a {@link ProcessBuilder} that when {@link ProcessBuilder#start() started} execute the given command line.
+     */
+    protected ProcessBuilder createProcessBuilder(CommandLine commandLine, BuilderConfiguration configuration) throws Exception {
+        return new ProcessBuilder()
+                .command(commandLine.toShellCommand())
+                .directory(configuration.getWorkDir())
+                .redirectErrorStream(true);
+    }
+
+    /**
+     * Wait for the build command's process to terminate.
+     */
+    protected boolean waitForProcess(Process process, long timeout, BuilderConfiguration configuration,
+            BuildLogger logger) throws Exception {
+        try {
+            if (timeout > 0) {
+                return process.waitFor(timeout, TimeUnit.SECONDS);
+            } else {
+                process.waitFor();
+                return true;
+            }
+        } catch (InterruptedException e) {
+            // If the thread was interrupted while waiting for the command process, the task should fail
+            Thread.interrupted();
+            return false;
+        } finally {
+            process.destroyForcibly();
+        }
     }
 
     /**

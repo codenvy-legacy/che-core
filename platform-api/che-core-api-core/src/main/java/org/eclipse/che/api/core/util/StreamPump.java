@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /** @author andrew00x */
-public final class StreamPump implements Runnable {
+public final class StreamPump implements Runnable, AutoCloseable {
 
     private BufferedReader bufferedReader;
     private LineConsumer   lineConsumer;
@@ -33,9 +33,11 @@ public final class StreamPump implements Runnable {
 
     public synchronized void stop() {
         // Not clear do we need close original stream, but since it was wrapped by BufferedReader close it anyway.
-        try {
-            bufferedReader.close();
-        } catch (IOException ignored) {
+        if (bufferedReader != null) {
+            try {
+                bufferedReader.close();
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -73,4 +75,10 @@ public final class StreamPump implements Runnable {
             }
         }
     }
+
+    @Override
+    public void close() {
+        stop();
+    }
+
 }
