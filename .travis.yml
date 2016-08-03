@@ -8,8 +8,6 @@ before_install:
   - echo $MAVEN_OPTS
   - export MAVEN_OPTS="$MAVEN_OPTS -Xms128m"
 
-install: true
-
 jdk:
   - oraclejdk8
 
