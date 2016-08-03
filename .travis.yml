@@ -11,6 +11,7 @@ jdk:
 
 branches:
   only:
+# disable until maven version issue is solved in ci
 #   - 3.x
     - master
 
