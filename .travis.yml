@@ -5,15 +5,14 @@ before_install:
   - unzip -qq apache-maven-3.3.9-bin.zip
   - export M2_HOME=$PWD/apache-maven-3.3.9
   - export PATH=$M2_HOME/bin:$PATH
-  - echo $MAVEN_OPTS
-  - export MAVEN_OPTS="$MAVEN_OPTS -Xms128m"
 
 jdk:
   - oraclejdk8
 
 branches:
   only:
-    - 3.x
+#   - 3.x
+    - master
 
 sudo: false
 
