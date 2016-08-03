@@ -6,8 +6,7 @@ before_install:
   - export M2_HOME=$PWD/apache-maven-3.3.9
   - export PATH=$M2_HOME/bin:$PATH
   - echo $MAVEN_OPTS
-  - echo $JAVA_OPTIONS
-  - echo $JAVA_OPTS
+  - export MAVEN_OPTS="$MAVEN_OPTS -Xms128m"
 
 install: true
 
