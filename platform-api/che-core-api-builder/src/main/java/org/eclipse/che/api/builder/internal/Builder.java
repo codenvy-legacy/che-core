@@ -390,7 +390,12 @@ public abstract class Builder {
                 ProcessBuilder processBuilder = createProcessBuilder(commandLine, configuration);
                 try (StreamPump output = new StreamPump()) {
                     Process process = processBuilder.start();
-                    terminated = waitForProcess(process, timeout, configuration, logger);
+                    output.start(process, logger);
+                    if (waitForProcess(process, timeout, configuration, logger)) {
+                        result = process.exitValue();
+                    } else {
+                        terminated = true;
+                    }
                     // Wait until the full output of the command process is sent to the logger asynchronously
                     try {
                         output.await(); // wait for logger
