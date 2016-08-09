@@ -13,7 +13,7 @@ package org.eclipse.che.git.impl.nativegit;
 
 
 import org.eclipse.che.api.git.DiffPage;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.api.git.shared.DiffRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

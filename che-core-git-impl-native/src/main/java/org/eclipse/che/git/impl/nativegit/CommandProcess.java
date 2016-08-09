@@ -18,7 +18,7 @@ import org.eclipse.che.api.core.util.LineConsumer;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.core.util.ProcessUtil;
 import org.eclipse.che.api.core.util.Watchdog;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.git.impl.nativegit.commands.GitCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

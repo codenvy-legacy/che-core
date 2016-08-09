@@ -12,6 +12,7 @@ package org.eclipse.che.api.git;
 
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.api.git.shared.ConfigRequest;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.VirtualFileSystem;

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.ssh;
 
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 
 import static org.eclipse.che.api.core.util.SystemInfo.isUnix;
 import static org.eclipse.che.api.core.util.SystemInfo.isWindows;

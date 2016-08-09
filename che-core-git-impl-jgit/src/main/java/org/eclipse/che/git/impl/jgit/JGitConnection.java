@@ -26,7 +26,11 @@ import org.eclipse.che.api.git.Config;
 import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.api.git.DiffPage;
 import org.eclipse.che.api.git.GitConnection;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
+import org.eclipse.che.api.git.exception.GitConflictException;
+import org.eclipse.che.api.git.exception.GitRefAlreadyExistsException;
+import org.eclipse.che.api.git.exception.GitRefNotFoundException;
+import org.eclipse.che.api.git.exception.GitInvalidRefNameException;
 import org.eclipse.che.api.git.GitUrlUtils;
 import org.eclipse.che.api.git.LogPage;
 import org.eclipse.che.api.git.UserCredential;
@@ -92,6 +96,9 @@ import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.TransportCommand;
 import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.api.errors.DetachedHeadException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -153,6 +160,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
 import static java.lang.System.lineSeparator;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
@@ -316,9 +324,17 @@ class JGitConnection implements GitConnection {
         }
         try {
             checkoutCommand.call();
+        } catch(CheckoutConflictException exception){
+            throw new GitConflictException(exception.getMessage(), exception.getConflictingPaths());
+        } catch(RefAlreadyExistsException exception){
+            throw new GitRefAlreadyExistsException(exception.getMessage());
+        } catch(RefNotFoundException exception){
+            throw new GitRefNotFoundException(exception.getMessage());
+        } catch(InvalidRefNameException exception){
+            throw new GitInvalidRefNameException(exception.getMessage());
         } catch (GitAPIException exception) {
             if (exception.getMessage().endsWith("already exists")) {
-                throw new GitException(String.format(ERROR_BRANCH_NAME_EXISTS, name != null ? name : cleanRemoteName(trackBranch)));
+                throw new GitException(format(ERROR_BRANCH_NAME_EXISTS, name != null ? name : cleanRemoteName(trackBranch)));
             }
             throw new GitException(exception.getMessage(), exception);
         }

@@ -12,13 +12,11 @@ package org.eclipse.che.git.impl;
 
 import com.google.common.io.Files;
 
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.api.git.CredentialsLoader;
 import org.eclipse.che.git.impl.nativegit.NativeGitConnectionFactory;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 import org.testng.annotations.DataProvider;
-
-import java.io.File;
 
 import static org.mockito.Mockito.mock;
 
