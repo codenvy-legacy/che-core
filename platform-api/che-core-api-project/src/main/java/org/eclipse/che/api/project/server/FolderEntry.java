@@ -229,12 +229,13 @@ public class FolderEntry extends VirtualFileEntry {
      *         if an error occurs
      */
     public boolean isProjectFolder() throws ServerException {
-        final VirtualFileEntry projectFile;
+        VirtualFileEntry projectFile;
         try {
             projectFile = getChild(Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH);
         } catch (ForbiddenException e) {
-            // If have access to the project then must have access to its meta-information. If don't have access then treat that as server error.
-            throw new ServerException(e.getServiceError());
+            // Assume that it's not a project if we don't have access to the project file.
+            // If it were a project we should have access to its meta-information because we have access to its folder.
+            projectFile = null;
         }
         return projectFile != null && projectFile.isFile();
     }

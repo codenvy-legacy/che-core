@@ -341,15 +341,21 @@ public class IoUtil {
 
     private static void copy(File source, File target, FilenameFilter filter, boolean nio, boolean replaceIfExists)
             throws IOException {
-        if (source.isDirectory()) {
+        if (Files.isSymbolicLink(source.toPath())) {
+            File parent = target.getParentFile();
+            if (!(parent.exists() || parent.mkdirs())) {
+                throw new IOException(String.format("Unable create directory '%s'. ", parent.getAbsolutePath()));
+            }
+            copySymbolicLink(source, target, replaceIfExists);
+        } else if (source.isDirectory()) {
             if (!(target.exists() || target.mkdirs())) {
                 throw new IOException(String.format("Unable create directory '%s'. ", target.getAbsolutePath()));
             }
             if (filter == null) {
                 filter = ANY_FILTER;
             }
-            String sourceRoot = source.getAbsolutePath();
             LinkedList<File> q = new LinkedList<>();
+            String sourceRoot = source.getAbsolutePath();
             q.add(source);
             while (!q.isEmpty()) {
                 File current = q.pop();
@@ -360,7 +366,9 @@ public class IoUtil {
                             continue;
                         }
                         File newFile = new File(target, f.getAbsolutePath().substring(sourceRoot.length() + 1));
-                        if (f.isDirectory()) {
+                        if (Files.isSymbolicLink(f.toPath())) {
+                            copySymbolicLink(f, newFile, replaceIfExists);
+                        } else if (f.isDirectory()) {
                             if (!(newFile.exists() || newFile.mkdirs())) {
                                 throw new IOException(String.format("Unable create directory '%s'. ", newFile.getAbsolutePath()));
                             }
@@ -388,6 +396,19 @@ public class IoUtil {
                 copyFile(source, target, replaceIfExists);
             }
         }
+    }
+
+    private static void copySymbolicLink(File source, File target, boolean replaceIfExists) throws IOException {
+        if (target.exists() && !replaceIfExists) {
+            throw new IOException(String.format("File '%s' already exists. ", target.getAbsolutePath()));
+        }
+        Path newLink = target.toPath();
+        Path linkTarget = Files.readSymbolicLink(source.toPath());
+        if (replaceIfExists) {
+            Files.deleteIfExists(newLink);
+        }
+        Files.createSymbolicLink(newLink, linkTarget);
+        return;
     }
 
     private static void copyFile(File source, File target, boolean replaceIfExists) throws IOException {
