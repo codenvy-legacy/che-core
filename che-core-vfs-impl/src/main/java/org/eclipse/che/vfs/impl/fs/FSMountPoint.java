@@ -21,6 +21,7 @@ import org.eclipse.che.api.vfs.server.LazyIterator;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.Path;
 import org.eclipse.che.api.vfs.server.PathLockFactory;
+import org.eclipse.che.api.vfs.server.PathLockFactory.PathLock;
 import org.eclipse.che.api.vfs.server.SystemPathsFilter;
 import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
@@ -180,13 +181,9 @@ public class FSMountPoint implements MountPoint {
                 final Path lockFilePath = getLockFilePath(key);
                 final java.io.File lockIoFile = new java.io.File(ioRoot, toIoPath(lockFilePath));
                 if (lockIoFile.exists()) {
-                    final PathLockFactory.PathLock lockFilePathLock =
-                            pathLockFactory.getLock(lockFilePath, false).acquire(LOCK_FILE_TIMEOUT);
-                    try {
+                    try (PathLockFactory.PathLock lockFilePathLock = acquireLock(lockFilePath, false)) {
                         dis = new DataInputStream(new BufferedInputStream(new FileInputStream(lockIoFile)));
                         return locksSerializer.read(dis);
-                    } finally {
-                        lockFilePathLock.release();
                     }
                 }
                 return NO_LOCK;
@@ -213,13 +210,9 @@ public class FSMountPoint implements MountPoint {
                 final Path metadataFilePath = getMetadataFilePath(key);
                 java.io.File metadataIoFile = new java.io.File(ioRoot, toIoPath(metadataFilePath));
                 if (metadataIoFile.exists()) {
-                    final PathLockFactory.PathLock metadataFilePathLock =
-                            pathLockFactory.getLock(metadataFilePath, false).acquire(LOCK_FILE_TIMEOUT);
-                    try {
+                    try (PathLockFactory.PathLock metadataFilePathLock = acquireLock(metadataFilePath, false)) {
                         dis = new DataInputStream(new BufferedInputStream(new FileInputStream(metadataIoFile)));
                         return metadataSerializer.read(dis);
-                    } finally {
-                        metadataFilePathLock.release();
                     }
                 }
                 return Collections.emptyMap();
@@ -246,12 +239,9 @@ public class FSMountPoint implements MountPoint {
                 final Path aclFilePath = getAclFilePath(key);
                 final java.io.File aclIoFile = new java.io.File(ioRoot, toIoPath(aclFilePath));
                 if (aclIoFile.exists()) {
-                    final PathLockFactory.PathLock aclFilePathLock = pathLockFactory.getLock(aclFilePath, false).acquire(LOCK_FILE_TIMEOUT);
-                    try {
+                    try (PathLockFactory.PathLock aclFilePathLock = acquireLock(aclFilePath, false)) {
                         dis = new DataInputStream(new BufferedInputStream(new FileInputStream(aclIoFile)));
                         return aclSerializer.read(dis);
-                    } finally {
-                        aclFilePathLock.release();
                     }
                 }
 
@@ -856,8 +846,7 @@ public class FSMountPoint implements MountPoint {
             throw new ForbiddenException(String.format("Unable get content. Item '%s' is not a file. ", virtualFile.getPath()));
         }
 
-        final PathLockFactory.PathLock lock = pathLockFactory.getLock(virtualFile.getVirtualFilePath(), false).acquire(LOCK_FILE_TIMEOUT);
-        try {
+        try (PathLockFactory.PathLock lock = acquireLock(virtualFile, false)) {
             final java.io.File ioFile = virtualFile.getIoFile();
             FileInputStream fIn = null;
             try {
@@ -889,8 +878,6 @@ public class FSMountPoint implements MountPoint {
             } finally {
                 closeQuietly(fIn);
             }
-        } finally {
-            lock.release();
         }
     }
 
@@ -942,21 +929,15 @@ public class FSMountPoint implements MountPoint {
 
 
     private void doUpdateContent(VirtualFileImpl virtualFile, String mediaType, InputStream content) throws ServerException {
-        final PathLockFactory.PathLock lock = pathLockFactory.getLock(virtualFile.getVirtualFilePath(), true).acquire(LOCK_FILE_TIMEOUT);
-        try {
+        try (PathLockFactory.PathLock lock = acquireLock(virtualFile, true)) {
             _doUpdateContent(virtualFile, content);
             setProperty(virtualFile, "vfs:mimeType", mediaType);
-        } finally {
-            lock.release();
         }
     }
 
     private void doUpdateContent(VirtualFileImpl virtualFile, InputStream content) throws ServerException {
-        final PathLockFactory.PathLock lock = pathLockFactory.getLock(virtualFile.getVirtualFilePath(), true).acquire(LOCK_FILE_TIMEOUT);
-        try {
+        try (PathLockFactory.PathLock lock = acquireLock(virtualFile, true)) {
             _doUpdateContent(virtualFile, content);
-        } finally {
-            lock.release();
         }
     }
 
@@ -1115,9 +1096,7 @@ public class FSMountPoint implements MountPoint {
                             final ZipEntry zipEntry = new ZipEntry(zipEntryName);
                             zipOut.putNextEntry(zipEntry);
                             InputStream in = null;
-                            final PathLockFactory.PathLock lock =
-                                    pathLockFactory.getLock(current.getVirtualFilePath(), false).acquire(LOCK_FILE_TIMEOUT);
-                            try {
+                            try (PathLockFactory.PathLock lock = acquireLock(current, false)) {
                                 zipEntry.setTime(virtualFile.getLastModificationDate());
                                 in = new FileInputStream(((VirtualFileImpl)current).getIoFile());
                                 int r;
@@ -1126,7 +1105,6 @@ public class FSMountPoint implements MountPoint {
                                 }
                             } finally {
                                 closeQuietly(in);
-                                lock.release();
                             }
                             zipOut.closeEntry();
                         } else if (current.isFolder()) {
@@ -1282,12 +1260,9 @@ public class FSMountPoint implements MountPoint {
                 final java.io.File lockIoFile = new java.io.File(ioRoot, toIoPath(lockFilePath));
                 lockIoFile.getParentFile().mkdirs(); // Ignore result of 'mkdirs' here. If we are failed to create
                 // directory we will get FileNotFoundException at the next line when try to create FileOutputStream.
-                final PathLockFactory.PathLock lockFilePathLock = pathLockFactory.getLock(lockFilePath, true).acquire(LOCK_FILE_TIMEOUT);
-                try {
+                try (PathLockFactory.PathLock lockFilePathLock = acquireLock(lockFilePath, true)) {
                     dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(lockIoFile)));
                     locksSerializer.write(dos, fileLock);
-                } finally {
-                    lockFilePathLock.release();
                 }
             } catch (IOException e) {
                 String msg = String.format("Unable lock file '%s'. ", virtualFile.getPath());
@@ -1418,12 +1393,9 @@ public class FSMountPoint implements MountPoint {
             } else {
                 aclFile.getParentFile().mkdirs(); // Ignore result of 'mkdirs' here. If we are failed to create directory
                 // we will get FileNotFoundException at the next line when try to create FileOutputStream.
-                final PathLockFactory.PathLock lock = pathLockFactory.getLock(aclFilePath, true).acquire(LOCK_FILE_TIMEOUT);
-                try {
+                try (PathLockFactory.PathLock lock = acquireLock(aclFilePath, true)) {
                     dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(aclFile)));
                     aclSerializer.write(dos, copy);
-                } finally {
-                    lock.release();
                 }
             }
         } catch (IOException e) {
@@ -1614,12 +1586,9 @@ public class FSMountPoint implements MountPoint {
             } else {
                 metadataFile.getParentFile().mkdirs(); // Ignore result of 'mkdirs' here. If we are failed to create
                 // directory we will get FileNotFoundException at the next line when try to create FileOutputStream.
-                final PathLockFactory.PathLock lock = pathLockFactory.getLock(metadataFilePath, true).acquire(LOCK_FILE_TIMEOUT);
-                try {
+                try (PathLockFactory.PathLock lock = acquireLock(metadataFilePath, true)) {
                     dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(metadataFile)));
                     metadataSerializer.write(dos, properties);
-                } finally {
-                    lock.release();
                 }
             }
         } catch (IOException e) {
@@ -1698,19 +1667,25 @@ public class FSMountPoint implements MountPoint {
 
 
     private String countHashSum(VirtualFile virtualFile, HashFunction hashFunction) throws ServerException {
-        final PathLockFactory.PathLock lock = pathLockFactory.getLock(virtualFile.getVirtualFilePath(), false).acquire(LOCK_FILE_TIMEOUT);
-        try (InputStream contentStream = virtualFile.getContent().getStream()) {
+        try (PathLockFactory.PathLock lock = acquireLock(virtualFile, false);
+                InputStream contentStream = virtualFile.getContent().getStream()) {
             return ByteSource.wrap(ByteStreams.toByteArray(contentStream)).hash(hashFunction).toString();
         } catch (ForbiddenException e) {
             throw new ServerException(e.getServiceError());
         } catch (IOException e) {
             throw new ServerException(e);
-        } finally {
-            lock.release();
         }
     }
 
    /* ============ HELPERS  ============ */
+
+    private PathLock acquireLock(VirtualFile virtualFile, boolean exclusive) {
+        return acquireLock(virtualFile.getVirtualFilePath(), exclusive);
+    }
+
+    private PathLock acquireLock(Path virtualFilePath, boolean exclusive) {
+        return pathLockFactory.getLock(virtualFilePath, exclusive).acquire(LOCK_FILE_TIMEOUT);
+    }
 
     /* Relative system path */
     private String toIoPath(Path vfsPath) {
