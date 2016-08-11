@@ -182,7 +182,7 @@ public final class PathLockFactory {
         }
     }
 
-    public final class PathLock {
+    public final class PathLock implements AutoCloseable {
         private final Path path;
         private final int  permits;
 
@@ -224,6 +224,11 @@ public final class PathLockFactory {
         /** Returns <code>true</code> if this lock is exclusive and <code>false</code> otherwise. */
         public boolean isExclusive() {
             return permits == PathLockFactory.this.maxThreads;
+        }
+
+        @Override
+        public void close() {
+            this.release();
         }
     }
 }
