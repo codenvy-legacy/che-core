@@ -330,7 +330,7 @@ public class RunQueue {
             }), cleanerPeriod, cleanerPeriod, TimeUnit.MILLISECONDS);
 
             // sending message by websocket connection for notice about used memory size changing
-            eventService.subscribe(new ResourcesChangesMessenger());
+            //eventService.subscribe(new ResourcesChangesMessenger());
             eventService.subscribe(new ProcessStartedMessenger());
             eventService.subscribe(new RunStatusMessenger());
             //Log events for analytics
