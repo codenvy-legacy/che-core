@@ -16,7 +16,7 @@
     <parent>
         <artifactId>che-core-api-parent</artifactId>
         <groupId>org.eclipse.che.core</groupId>
-        <version>3.14.0-sap-39</version>
+        <version>3.14.0-sap-40</version>
     </parent>
     <artifactId>che-core-api-infrastructure-local</artifactId>
     <name>Che Core :: API :: Local Infrastructure</name>
