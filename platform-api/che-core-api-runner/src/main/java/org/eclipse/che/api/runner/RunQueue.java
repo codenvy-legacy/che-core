@@ -60,6 +60,7 @@ import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.RemoteServiceDescriptor;
 import org.eclipse.che.api.core.rest.ServiceContext;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -100,6 +101,46 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.eclipse.che.commons.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
+import static org.eclipse.che.api.runner.RunnerUtils.runnerRequest;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author andrew00x
@@ -132,6 +173,7 @@ public class RunQueue {
     private final long                                            maxWaitingTimeMillis;
     private final AtomicBoolean                                   started;
     private final long                                            appCleanupTime;
+    private final HttpJsonRequestFactory                          requestFactory;
     // Helps to reduce lock contentions when check available resources.
     private final Lock[]                                          resourceCheckerLocks;
     private final int                                             resourceCheckerMask;
@@ -183,6 +225,7 @@ public class RunQueue {
                     @Named(Constants.APP_LIFETIME) int defLifetime,
                     @Named(Constants.APP_CLEANUP_TIME) int appCleanupTime,
                     RunnerSelectionStrategy runnerSelector,
+                    HttpJsonRequestFactory requestFactory,
                     EventService eventService) {
         this.defMemSize = defMemSize;
         this.eventService = eventService;
@@ -190,6 +233,7 @@ public class RunQueue {
         this.defLifetime = defLifetime;
         this.runnerSelector = runnerSelector;
         this.appCleanupTime = TimeUnit.SECONDS.toMillis(appCleanupTime);
+        this.requestFactory = requestFactory;
 
         runnerServers = new ConcurrentHashMap<>();
         tasks = new ConcurrentHashMap<>();
@@ -582,13 +626,7 @@ public class RunQueue {
         final String workspaceUrl = baseWorkspaceUriBuilder.path(WorkspaceService.class)
                                                            .path(WorkspaceService.class, "getById")
                                                            .build(workspace).toString();
-        try {
-            return HttpJsonHelper.get(WorkspaceDescriptor.class, workspaceUrl);
-        } catch (IOException e) {
-            throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new RunnerException(e.getServiceError());
-        }
+        return runnerRequest(requestFactory.fromUrl(workspaceUrl)).asDto(WorkspaceDescriptor.class);
     }
 
     // Switched to default for test.
@@ -599,13 +637,7 @@ public class RunQueue {
                                                        .path(ProjectService.class, "getProject")
                                                        .build(workspace, project.startsWith("/") ? project.substring(1) : project)
                                                        .toString();
-        try {
-            return HttpJsonHelper.get(ProjectDescriptor.class, projectUrl);
-        } catch (IOException e) {
-            throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new RunnerException(e.getServiceError());
-        }
+        return runnerRequest(requestFactory.fromUrl(projectUrl)).asDto(ProjectDescriptor.class);
     }
 
     // Switched to default for test.
@@ -745,27 +777,26 @@ public class RunQueue {
     RemoteServiceDescriptor getBuilderServiceDescriptor(String workspace, ServiceContext serviceContext) {
         final UriBuilder baseBuilderUriBuilder = serviceContext.getBaseUriBuilder();
         final String builderUrl = baseBuilderUriBuilder.path(BuilderService.class).build(workspace).toString();
-        return new RemoteServiceDescriptor(builderUrl);
+        return new RemoteServiceDescriptor(builderUrl, requestFactory);
     }
 
     // Switched to default for test.
     // private
     BuildTaskDescriptor startBuild(RemoteServiceDescriptor builderService, String project, BuildOptions buildOptions)
             throws RunnerException {
-        final BuildTaskDescriptor buildDescriptor;
+        final Link buildLink;
         try {
-            final Link buildLink = builderService.getLink(org.eclipse.che.api.builder.internal.Constants.LINK_REL_BUILD);
+            buildLink = builderService.getLink(org.eclipse.che.api.builder.internal.Constants.LINK_REL_BUILD);
             if (buildLink == null) {
                 throw new RunnerException("You requested a run and your project has not been built." +
                                           " The runner was unable to get the proper build URL to initiate a build.");
             }
-            buildDescriptor = HttpJsonHelper.request(BuildTaskDescriptor.class, buildLink, buildOptions, Pair.of("project", project));
         } catch (IOException e) {
             throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
+        } catch (ServerException e) {
             throw new RunnerException(e.getServiceError());
         }
-        return buildDescriptor;
+        return runnerRequest(requestFactory.fromLink(buildLink).addQueryParam("project", project).setBody(buildOptions)).asDto(BuildTaskDescriptor.class);
     }
 
     protected Callable<RemoteRunnerProcess> createTaskFor(final List<RemoteRunner> matched,
@@ -782,18 +813,10 @@ public class RunQueue {
             throw new RunnerException("You requested a run and your project with custom environment." +
                                       " The runner was unable to get the proper URL to load runner environments from project.");
         }
-        try {
-            return HttpJsonHelper.requestArray(ItemReference.class, DtoFactory.getInstance()
-                                                                              .clone(childrenLink)
-                                                                              .withHref(String.format("%s/%s/%s",
-                                                                                      childrenLink.getHref(),
-                                                                                      org.eclipse.che.api.project.server.Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR,
-                                                                                      envName)));
-        } catch (IOException e) {
-            throw new RunnerException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new RunnerException(e.getServiceError());
-        }
+		String href = String.format("%s/%s/%s", childrenLink.getHref(),
+				org.eclipse.che.api.project.server.Constants.CODENVY_RUNNER_ENVIRONMENTS_DIR, envName);
+		Link link = DtoFactory.getInstance().clone(childrenLink).withHref(href);
+        return runnerRequest(requestFactory.fromLink(link)).asList(ItemReference.class);
     }
 
     // Switched to default for test.
@@ -805,8 +828,7 @@ public class RunQueue {
             return false;
         } else {
             try {
-                final BuildTaskDescriptor result = HttpJsonHelper.request(BuildTaskDescriptor.class,
-                                                                          DtoFactory.getInstance().clone(cancelLink));
+                final BuildTaskDescriptor result = requestFactory.fromLink(cancelLink).request().asDto(BuildTaskDescriptor.class);
                 LOG.debug("Build cancellation result: {}", result);
                 return result != null && result.getStatus() == BuildStatus.CANCELLED;
             } catch (Exception e) {
@@ -862,7 +884,7 @@ public class RunQueue {
     // Switched to default for test.
     // private
     RemoteRunnerServer createRemoteRunnerServer(String url) {
-        return new RemoteRunnerServer(url);
+        return new RemoteRunnerServer(url, requestFactory);
     }
 
     // Switched to default for test.
@@ -1032,7 +1054,7 @@ public class RunQueue {
                             return null;
                         }
                     }
-                    buildDescriptor = HttpJsonHelper.request(BuildTaskDescriptor.class, DtoFactory.getInstance().clone(buildStatusLink));
+                    buildDescriptor = runnerRequest(requestFactory.fromLink(buildStatusLink)).asDto(BuildTaskDescriptor.class);
                     // to be able show current state of build process with RunQueueTask.
                     buildTaskHolder.set(buildDescriptor);
                     final BuildStatus buildStatus = buildDescriptor.getStatus();

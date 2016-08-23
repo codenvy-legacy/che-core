@@ -22,11 +22,11 @@ import java.util.List;
 
 public class RandomRunnerSelectionStrategyTest {
 
-    RemoteRunner runner1 = new RemoteRunner("url1", "java/web", Collections.<Link>emptyList());
+    RemoteRunner runner1 = new RemoteRunner("url1", "java/web", Collections.<Link>emptyList(), null);
 
-    RemoteRunner runner2 = new RemoteRunner("url2", "java/web2", Collections.<Link>emptyList());
+    RemoteRunner runner2 = new RemoteRunner("url2", "java/web2", Collections.<Link>emptyList(), null);
 
-    RemoteRunner runner3 = new RemoteRunner("url3", "java/web3", Collections.<Link>emptyList());
+    RemoteRunner runner3 = new RemoteRunner("url3", "java/web3", Collections.<Link>emptyList(), null);
 
     @Test
     public void shouldSelectFromOneElementInList() {

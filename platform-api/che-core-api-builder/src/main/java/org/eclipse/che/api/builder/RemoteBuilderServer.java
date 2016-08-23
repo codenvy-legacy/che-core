@@ -13,14 +13,20 @@ package org.eclipse.che.api.builder;
 import org.eclipse.che.api.builder.internal.Constants;
 import org.eclipse.che.api.builder.dto.BuilderDescriptor;
 import org.eclipse.che.api.builder.dto.ServerState;
+import org.eclipse.che.api.core.BadRequestException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequest;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
+import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.core.rest.RemoteServiceDescriptor;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
+
+import static org.eclipse.che.api.builder.BuilderUtils.builderRequest;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -39,8 +45,8 @@ public class RemoteBuilderServer extends RemoteServiceDescriptor {
     /** Name of project inside IDE workspace this server used for. */
     private String assignedProject;
 
-    public RemoteBuilderServer(String baseUrl) {
-        super(baseUrl);
+    public RemoteBuilderServer(String baseUrl, HttpJsonRequestFactory requestFactory) {
+        super(baseUrl, requestFactory);
     }
 
     public String getAssignedWorkspace() {
@@ -82,7 +88,7 @@ public class RemoteBuilderServer extends RemoteServiceDescriptor {
 
     private RemoteBuilder createRemoteBuilder(BuilderDescriptor descriptor) throws BuilderException {
         try {
-            return new RemoteBuilder(baseUrl, descriptor, getLinks());
+            return new RemoteBuilder(baseUrl, descriptor, getLinks(), requestFactory);
         } catch (IOException e) {
             throw new BuilderException(e);
         } catch (ServerException e) {
@@ -91,30 +97,26 @@ public class RemoteBuilderServer extends RemoteServiceDescriptor {
     }
 
     public List<BuilderDescriptor> getBuilderDescriptors() throws BuilderException {
-        try {
-            final Link link = getLink(Constants.LINK_REL_AVAILABLE_BUILDERS);
-            if (link == null) {
-                throw new BuilderException("Unable get URL for retrieving list of remote builders");
-            }
-            return HttpJsonHelper.requestArray(BuilderDescriptor.class, link);
-        } catch (IOException e) {
-            throw new BuilderException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
-            throw new BuilderException(e.getServiceError());
-        }
+        return linkReq(Constants.LINK_REL_AVAILABLE_BUILDERS, 0).asList(BuilderDescriptor.class);
     }
 
     public ServerState getServerState() throws BuilderException {
+        return linkReq(Constants.LINK_REL_SERVER_STATE, 10000).asDto(ServerState.class);
+    }
+
+    private HttpJsonResponse linkReq(String linkName, int timeout) throws BuilderException {
+        final Link link;
         try {
-            final Link stateLink = getLink(Constants.LINK_REL_SERVER_STATE);
-            if (stateLink == null) {
-                throw new BuilderException(String.format("Unable get URL for getting state of a remote server '%s'", baseUrl));
+            link = getLink(linkName);
+            if (link == null) {
+                throw new BuilderException("Unable get URL for '" + linkName + "'");
             }
-            return HttpJsonHelper.request(ServerState.class, 10000, stateLink);
         } catch (IOException e) {
             throw new BuilderException(e);
-        } catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
+        } catch (ServerException e) {
             throw new BuilderException(e.getServiceError());
         }
+        return builderRequest(requestFactory.fromLink(link).setTimeout(timeout));
     }
+
 }

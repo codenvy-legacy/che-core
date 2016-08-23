@@ -18,6 +18,7 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.Service;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.factory.dto.Author;
@@ -105,6 +106,7 @@ public class FactoryService extends Service {
     private FactoryBuilder         factoryBuilder;
     private ProjectManager         projectManager;
     private AccountDao             accountDao;
+    private HttpJsonRequestFactory requestFactory;
 
     @Inject
     public FactoryService(@Named("api.endpoint") String baseApiUrl,
@@ -115,6 +117,7 @@ public class FactoryService extends Service {
                           FactoryEditValidator factoryEditValidator,
                           LinksHelper linksHelper,
                           FactoryBuilder factoryBuilder,
+                          HttpJsonRequestFactory requestFactory,
                           ProjectManager projectManager) {
         this.baseApiUrl = baseApiUrl;
         this.accountDao = accountDao;
@@ -125,6 +128,7 @@ public class FactoryService extends Service {
         this.linksHelper = linksHelper;
         this.factoryBuilder = factoryBuilder;
         this.projectManager = projectManager;
+        this.requestFactory = requestFactory;
     }
 
     /**
@@ -601,7 +605,7 @@ public class FactoryService extends Service {
                                                                         .path(workspace)
                                                                         .path("import-source-descriptor")
                                                                         .build().toString());
-            source = HttpJsonHelper.request(ImportSourceDescriptor.class, importSourceLink, new Pair<>("projectPath", path));
+            source = requestFactory.fromLink(importSourceLink).addQueryParam("projectPath", path).request().asDto(ImportSourceDescriptor.class);
 
             // Read again project.json file even we already have all information about project in 'projectDescription' variable.
             // We do so because 'projectDescription' variable contains all attributes of project including 'calculated' attributes but we

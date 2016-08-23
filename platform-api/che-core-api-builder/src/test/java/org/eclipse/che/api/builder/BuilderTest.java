@@ -10,6 +10,14 @@
  *******************************************************************************/
 package org.eclipse.che.api.builder;
 
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.eclipse.che.api.builder.dto.BuildRequest;
+import org.eclipse.che.api.builder.dto.BuilderDescriptor;
 import org.eclipse.che.api.builder.internal.BuildListener;
 import org.eclipse.che.api.builder.internal.BuildLogger;
 import org.eclipse.che.api.builder.internal.BuildResult;
@@ -19,20 +27,16 @@ import org.eclipse.che.api.builder.internal.BuilderConfiguration;
 import org.eclipse.che.api.builder.internal.DelegateBuildLogger;
 import org.eclipse.che.api.builder.internal.SourceManagerListener;
 import org.eclipse.che.api.builder.internal.SourcesManager;
-import org.eclipse.che.api.builder.dto.BuildRequest;
 import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.core.util.CommandLine;
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.dto.server.DtoFactory;
-
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 /** @author andrew00x */
 public class BuilderTest {
@@ -179,6 +183,17 @@ public class BuilderTest {
         Assert.assertTrue(beginFlag[0]);
         Assert.assertTrue(endFlag[0]);
         Assert.assertTrue(builder.removeBuildListener(listener));
+    }
+
+    @Test
+    public void testRemoteBuildSameEnvironment(){
+        BuilderDescriptor builderDescriptor = newDto(BuilderDescriptor.class)
+                .withName(builder.getName())
+                .withDescription(builder.getDescription())
+                .withEnvironments(builder.getEnvironments());
+
+        RemoteBuilder remoteBuilder = new RemoteBuilder("", builderDescriptor, new ArrayList<Link>(), null);
+        Assert.assertEquals(remoteBuilder.getBuilderEnvironment(), builder.getEnvironments());
     }
 
     private void waitForTask(BuildTask task) throws Exception {

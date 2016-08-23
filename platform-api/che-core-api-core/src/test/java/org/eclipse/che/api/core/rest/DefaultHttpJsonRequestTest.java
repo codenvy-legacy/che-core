@@ -158,6 +158,12 @@ public class DefaultHttpJsonRequestTest {
         assertEquals(listCaptor.getValue(), body);
     }
 
+    @Test
+    public void defaultMethodIsGet() throws Exception {
+    	request.request();
+    	verify(request).doRequest(0, DEFAULT_URL, "GET", null, null);
+    }
+
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowNullPointerExceptionIfSetMethodArgumentIsNull() throws Exception {
         new DefaultHttpJsonRequest("http://localhost:8080").setMethod(null);
@@ -202,11 +208,6 @@ public class DefaultHttpJsonRequestTest {
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowNullPointerExceptionWhenLinkHrefIsNull() throws Exception {
         new DefaultHttpJsonRequest(createLink("GET", null, null));
-    }
-
-    @Test(expectedExceptions = IllegalStateException.class)
-    public void shouldThrowIllegalStateExceptionIfMethodWasNotSet() throws Exception {
-        new DefaultHttpJsonRequest(DEFAULT_URL).request();
     }
 
     @Test(expectedExceptions = BadRequestException.class)

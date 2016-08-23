@@ -27,7 +27,7 @@ import javax.validation.constraints.NotNull;
 public interface HttpJsonRequestFactory {
 
     /**
-     * Creates {@link HttpJsonRequest} based on {@code url}.
+     * Creates {@link HttpJsonRequest} based on {@code url}, with an initial HTTP method {@code GET}. 
      *
      * @param url
      *         request url
