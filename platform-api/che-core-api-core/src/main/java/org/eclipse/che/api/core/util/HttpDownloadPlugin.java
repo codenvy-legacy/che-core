@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.util;
 
+import org.eclipse.che.api.core.rest.HttpResponse;
+import org.eclipse.che.api.core.rest.URLConnectionHttpResponse;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.commons.user.User;
@@ -31,17 +33,15 @@ import javax.ws.rs.core.HttpHeaders;
  *
  * @author andrew00x
  */
-public final class HttpDownloadPlugin implements DownloadPlugin {
+public class HttpDownloadPlugin implements DownloadPlugin {
     private static final Logger LOG = LoggerFactory.getLogger(HttpDownloadPlugin.class);
 
     private static final int CONNECT_TIMEOUT = (int)TimeUnit.MINUTES.toMillis(3);
-    private static final int READ_TIMEOUT    = (int)TimeUnit.MINUTES.toMillis(3);
+    protected static final int READ_TIMEOUT    = (int)TimeUnit.MINUTES.toMillis(3);
 
     @Override
     public void download(String downloadUrl, java.io.File downloadTo, Callback callback) {
-        HttpURLConnection conn = null;
-        try {
-            conn = openUrlConnection(downloadUrl);
+        try (HttpResponse conn = openUrlConnection(downloadUrl)) {
             final String contentDisposition = conn.getHeaderField(HttpHeaders.CONTENT_DISPOSITION);
             String fileName = null;
             if (contentDisposition != null) {
@@ -66,18 +66,12 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
         } catch (IOException e) {
             LOG.debug(String.format("Failed access: %s, error: %s", downloadUrl, e.getMessage()), e);
             callback.error(e);
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
         }
     }
 
     @Override
     public void download(String downloadUrl, java.io.File downloadTo, String fileName, boolean replaceExisting) throws IOException {
-        HttpURLConnection conn = null;
-        try {
-            conn = openUrlConnection(downloadUrl);
+        try (HttpResponse conn = openUrlConnection(downloadUrl)) {
             final java.io.File downloadFile = new java.io.File(downloadTo, fileName);
             try (InputStream in = conn.getInputStream()) {
                 if (replaceExisting) {
@@ -86,14 +80,10 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
                     Files.copy(in, downloadFile.toPath());
                 }
             }
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
         }
     }
 
-    private static HttpURLConnection openUrlConnection(String downloadUrl) throws IOException {
+    protected HttpResponse openUrlConnection(String downloadUrl) throws IOException {
         HttpURLConnection conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
         // Set timeouts
         conn.setConnectTimeout(CONNECT_TIMEOUT);
@@ -111,6 +101,6 @@ public final class HttpDownloadPlugin implements DownloadPlugin {
         if (responseCode != 200) {
             throw new IOException(String.format("Invalid response status %d from remote server. ", responseCode));
         }
-        return conn;
+        return new URLConnectionHttpResponse(conn);
     }
 }

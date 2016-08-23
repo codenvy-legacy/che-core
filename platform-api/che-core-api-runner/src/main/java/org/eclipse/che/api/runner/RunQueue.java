@@ -52,15 +52,12 @@ import org.eclipse.che.api.builder.BuildStatus;
 import org.eclipse.che.api.builder.BuilderService;
 import org.eclipse.che.api.builder.dto.BuildOptions;
 import org.eclipse.che.api.builder.dto.BuildTaskDescriptor;
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.notification.EventSubscriber;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
+import org.eclipse.che.api.core.rest.HttpResponse;
 import org.eclipse.che.api.core.rest.RemoteServiceDescriptor;
 import org.eclipse.che.api.core.rest.ServiceContext;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -114,7 +111,6 @@ import javax.ws.rs.core.UriBuilder;
 import static org.eclipse.che.api.runner.RunnerUtils.runnerRequest;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1227,7 +1223,7 @@ public class RunQueue {
 
     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> application start checker
 
-    private static class ApplicationUrlChecker implements Runnable {
+    private class ApplicationUrlChecker implements Runnable {
         final long taskId;
         final URL  url;
         final int  healthCheckerTimeout;
@@ -1253,13 +1249,7 @@ public class RunQueue {
                 } catch (InterruptedException e) {
                     return;
                 }
-                HttpURLConnection conn = null;
-                try {
-                    conn = (HttpURLConnection)url.openConnection();
-                    conn.setRequestMethod(requestMethod);
-                    conn.setConnectTimeout(1000);
-                    conn.setReadTimeout(1000);
-
+                try (HttpResponse conn = requestFactory.fromUrl(url.toString()).setTimeout(1000).setMethod(requestMethod).requestGeneral()) {
                     LOG.debug(String.format("Response code: %d.", conn.getResponseCode()));
                     if (405 == conn.getResponseCode()) {
                         // In case of Method not allowed, we use get instead of HEAD. X-HTTP-Method-Override would be nice but support is
@@ -1287,10 +1277,6 @@ public class RunQueue {
                         }
                     }
                 } catch (IOException ignored) {
-                } finally {
-                    if (conn != null) {
-                        conn.disconnect();
-                    }
                 }
             }
         }

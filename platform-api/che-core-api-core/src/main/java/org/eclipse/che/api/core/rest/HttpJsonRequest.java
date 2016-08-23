@@ -24,6 +24,8 @@ import org.eclipse.che.dto.server.JsonSerializable;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.HttpMethod;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -61,6 +63,12 @@ import java.util.Objects;
  */
 @Beta
 public interface HttpJsonRequest {
+
+    static final int DEFAULT_TIMEOUT = 60 * 1000;
+
+    public interface BodyWriter {
+        public void writeTo(OutputStream out) throws IOException;
+    }
 
     /**
      * Sets http method to use in this request(e.g. {@link javax.ws.rs.HttpMethod#GET GET}).
@@ -109,6 +117,17 @@ public interface HttpJsonRequest {
     HttpJsonRequest setBody(@NotNull List<?> list);
 
     /**
+     * Copy the given input stream to the request body.
+     *
+     * @param bodyWriter
+     *            write data to the request output stream.
+     * @return this request instance
+     * @throws NullPointerException
+     *             when {@code body} is null
+     */
+    HttpJsonRequest setBodyWriter(@NotNull BodyWriter bodyWriter);
+
+    /**
      * Adds query parameter to the request.
      *
      * @param name
@@ -120,6 +139,17 @@ public interface HttpJsonRequest {
      *         when either name or value is null
      */
     HttpJsonRequest addQueryParam(@NotNull String name, @NotNull Object value);
+
+    /**
+     * Adds a header to the request.
+     * 
+     * @param name
+     *            The name of the header.
+     * @param value
+     *            The value of the header.
+     * @return this request instance
+     */
+    HttpJsonRequest addHeader(@NotNull String name, String value);
 
     /**
      * Sets request timeout.
@@ -159,6 +189,8 @@ public interface HttpJsonRequest {
                                       NotFoundException,
                                       ConflictException,
                                       BadRequestException;
+
+    HttpResponse requestGeneral() throws IOException;
 
     /**
      * Uses {@link HttpMethod#GET} as a request method.

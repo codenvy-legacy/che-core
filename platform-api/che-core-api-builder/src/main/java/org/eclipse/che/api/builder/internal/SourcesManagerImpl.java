@@ -11,8 +11,11 @@
 package org.eclipse.che.api.builder.internal;
 
 import org.eclipse.che.api.builder.dto.BaseBuilderRequest;
+import org.eclipse.che.api.core.rest.HttpJsonRequest;
+import org.eclipse.che.api.core.rest.HttpJsonRequest.BodyWriter;
+import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
+import org.eclipse.che.api.core.rest.HttpResponse;
 import org.eclipse.che.api.core.util.ValueHolder;
-import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.commons.json.JsonParseException;
 import org.eclipse.che.commons.lang.IoUtil;
@@ -30,6 +33,7 @@ import org.everrest.core.impl.header.HeaderParameterParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,7 +45,9 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -83,19 +89,21 @@ public class SourcesManagerImpl implements SourcesManager {
     private final AtomicReference<String>             projectKeyHolder;
     private final Set<SourceManagerListener>          listeners;
     private final ScheduledExecutorService            executor;
+    private final HttpJsonRequestFactory              provider;
 
     private static final long KEEP_PROJECT_TIME = TimeUnit.MINUTES.toMillis(30);
     private static final int  CONNECT_TIMEOUT   = (int)TimeUnit.MINUTES.toMillis(4);//This time is chosen empirically and
     private static final int  READ_TIMEOUT      = (int)TimeUnit.MINUTES.toMillis(4);//necessary for some large projects. See IDEX-1957.
 
     @Inject
-    public SourcesManagerImpl(@Named(Constants.BASE_DIRECTORY) File rootDirectory) {
+    public SourcesManagerImpl(@Named(Constants.BASE_DIRECTORY) File rootDirectory, HttpJsonRequestFactory provider) {
         this.rootDirectory = rootDirectory;
         tasks = new ConcurrentHashMap<>();
         projectKeyHolder = new AtomicReference<>();
         executor = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder().setNameFormat(getClass().getSimpleName() + "-FileCleaner-%d").setDaemon(true).build());
         listeners = new CopyOnWriteArraySet<>();
+        this.provider = provider;
     }
 
     @PostConstruct
@@ -203,57 +211,51 @@ public class SourcesManagerImpl implements SourcesManager {
     };
 
     private void download(String downloadUrl, java.io.File downloadTo, File directory) throws IOException {
-        HttpURLConnection conn = null;
-        try {
-            final LinkedList<java.io.File> q = new LinkedList<>();
-            q.add(downloadTo);
-            final long start = System.currentTimeMillis();
-            final List<Pair<String, String>> md5sums = new LinkedList<>();
-            while (!q.isEmpty()) {
-                java.io.File current = q.pop();
-                java.io.File[] list = current.listFiles();
-                if (list != null) {
-                    for (java.io.File f : list) {
-                        if (f.isDirectory()) {
-                            q.push(f);
-                        } else {
-                            md5sums.add(Pair.of(com.google.common.io.Files.hash(f, Hashing.md5()).toString(),
-                                                downloadTo.toPath().relativize(f.toPath()).toString()
-                                                          .replace("\\", "/"))); //Replacing of "\" is need for windows support
+        final LinkedList<java.io.File> q = new LinkedList<>();
+        q.add(downloadTo);
+        final long start = System.currentTimeMillis();
+        final List<Pair<String, String>> md5sums = new LinkedList<>();
+        while (!q.isEmpty()) {
+            java.io.File current = q.pop();
+            java.io.File[] list = current.listFiles();
+            if (list != null) {
+                for (java.io.File f : list) {
+                    if (f.isDirectory()) {
+                        q.push(f);
+                    } else {
+                        md5sums.add(Pair.of(com.google.common.io.Files.hash(f, Hashing.md5()).toString(),
+                                            downloadTo.toPath().relativize(f.toPath()).toString()
+                                                      .replace("\\", "/"))); //Replacing of "\" is need for windows support
+                    }
+                }
+            }
+        }
+        final long end = System.currentTimeMillis();
+        if (md5sums.size() > 0) {
+            LOG.debug("count md5sums of {} files, time: {}ms", md5sums.size(), (end - start));
+        }
+        // Create the main request
+        HttpJsonRequest request = provider.fromUrl(downloadUrl).setTimeout(READ_TIMEOUT);
+        // handle case where checksums are sent
+        if (!md5sums.isEmpty()) {
+            request.usePostMethod();
+            request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN);
+            request.addHeader(HttpHeaders.ACCEPT, MediaType.MULTIPART_FORM_DATA);
+            request.setBodyWriter(new BodyWriter() {
+                @Override
+                public void writeTo(OutputStream output) throws IOException {
+                    try (Writer writer = new OutputStreamWriter(output)) {
+                        for (Pair<String, String> pair : md5sums) {
+                            writer.write(pair.first);
+                            writer.write(' ');
+                            writer.write(pair.second);
+                            writer.write('\n');
                         }
                     }
                 }
-            }
-            final long end = System.currentTimeMillis();
-            if (md5sums.size() > 0) {
-                LOG.debug("count md5sums of {} files, time: {}ms", md5sums.size(), (end - start));
-            }
-            conn = (HttpURLConnection)new URL(downloadUrl).openConnection();
-            conn.setConnectTimeout(CONNECT_TIMEOUT);
-            conn.setReadTimeout(READ_TIMEOUT);
-			// Set token if present
-			User user = EnvironmentContext.getCurrent().getUser();
-			if (user != null) {
-				String token = user.getTokenByUrl(downloadUrl);
-				if (token != null) {
-					conn.setRequestProperty(HttpHeaders.AUTHORIZATION, token);
-				}
-			}
-            if (!md5sums.isEmpty()) {
-                conn.setRequestMethod(HttpMethod.POST);
-                conn.setRequestProperty("Content-type", MediaType.TEXT_PLAIN);
-                conn.setRequestProperty(HttpHeaders.ACCEPT, MediaType.MULTIPART_FORM_DATA);
-                conn.setDoOutput(true);
-                try (OutputStream output = conn.getOutputStream();
-                     Writer writer = new OutputStreamWriter(output)) {
-                    for (Pair<String, String> pair : md5sums) {
-                        writer.write(pair.first);
-                        writer.write(' ');
-                        writer.write(pair.second);
-                        writer.write('\n');
-                    }
-                }
-            }
+            });
+        }
+        try (HttpResponse conn = request.requestGeneral()) {
             final int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 final String contentType = conn.getHeaderField("content-type");
@@ -319,10 +321,6 @@ public class SourcesManagerImpl implements SourcesManager {
             }
         } catch (ParseException | JsonParseException e) {
             throw new IOException(e.getMessage(), e);
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
         }
     }
 

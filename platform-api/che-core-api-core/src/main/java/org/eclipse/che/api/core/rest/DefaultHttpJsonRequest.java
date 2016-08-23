@@ -44,8 +44,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -63,14 +65,15 @@ import static java.util.Objects.requireNonNull;
 public class DefaultHttpJsonRequest implements HttpJsonRequest {
  
     private static final int      DEFAULT_QUERY_PARAMS_LIST_SIZE = 5;
-    private static final Object[] EMPTY_ARRAY                    = new Object[0];
 
     private final String url;
 
     private int                   timeout;
     private String                method;
     private Object                body;
+    private BodyWriter            bodyWriter;
     private List<Pair<String, ?>> queryParams;
+    private Map<String,String>    headers;
 
     protected DefaultHttpJsonRequest(String url) {
         this.url = requireNonNull(url, "Required non-null url");
@@ -91,18 +94,28 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
     @Override
     public HttpJsonRequest setBody(@NotNull Object body) {
         this.body = requireNonNull(body, "Required non-null body");
+        this.bodyWriter = null;
         return this;
     }
 
     @Override
     public HttpJsonRequest setBody(@NotNull Map<String, String> map) {
         this.body = new JsonStringMapImpl<>(requireNonNull(map, "Required non-null body"));
+        this.bodyWriter = null;
         return this;
     }
 
     @Override
     public HttpJsonRequest setBody(@NotNull List<?> list) {
         this.body = new JsonArrayImpl<>(requireNonNull(list, "Required non-null body"));
+        this.bodyWriter = null;
+        return this;
+    }
+
+    @Override
+    public HttpJsonRequest setBodyWriter(BodyWriter bodyWriter) {
+        this.bodyWriter = Objects.requireNonNull(bodyWriter, "Required non-null body writer");
+        this.body = null;
         return this;
     }
 
@@ -116,7 +129,14 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
         queryParams.add(Pair.of(name, value));
         return this;
     }
-    
+
+    @Override
+    public HttpJsonRequest addHeader(String name, String value) {
+        requireNonNull(name, "Required non-null header name");
+        this.headers.put(name, value);
+        return this;
+    }
+
     @Override
     public HttpJsonRequest setTimeout(int timeout) {
         this.timeout = timeout;
@@ -134,7 +154,21 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
         if (method == null) {
             throw new IllegalStateException("Could not perform request, request method wasn't set");
         }
+        if (bodyWriter != null) {
+            throw new IllegalStateException("Could issue a JSON rqeuest in stream mode");
+        }
         return doRequest(timeout, url, method, body, queryParams);
+    }
+
+    @Override
+    public HttpResponse requestGeneral() throws IOException {
+        if (method == null) {
+            throw new IllegalStateException("Could not perform request, request method wasn't set");
+        }
+        if (bodyWriter == null) {
+            throw new IllegalStateException("Could issue a stream rqeuest in JSON mode");
+        }
+        return doRequestGeneral(timeout, url, method, bodyWriter, headers, queryParams);
     }
 
     /**
@@ -181,48 +215,22 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
                                                                                UnauthorizedException,
                                                                                ConflictException,
                                                                                BadRequestException {
-        final String authToken = getAuthenticationToken(url);
-        final boolean hasQueryParams = parameters != null && !parameters.isEmpty();
-        if (hasQueryParams || authToken != null) {
-            final UriBuilder ub = UriBuilder.fromUri(url);
-            //remove sensitive information from url.
-            ub.replaceQueryParam("token", EMPTY_ARRAY);
 
-            if (hasQueryParams) {
-                for (Pair<String, ?> parameter : parameters) {
-                    String name = URLEncoder.encode(parameter.first, "UTF-8");
-                    String value = parameter.second == null ?
-                                   null :
-                                   URLEncoder.encode(String.valueOf(parameter.second), "UTF-8");
-                    ub.queryParam(name, value);
+        Map<String,String> headers = (this.headers == null ? new HashMap<>() : new HashMap<>(this.headers));
+        headers.put(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
+
+        BodyWriter bw = null;
+        if (body != null) {
+            headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+            bw = new BodyWriter() {
+                @Override
+                public void writeTo(OutputStream out) throws IOException {
+                    out.write(DtoFactory.getInstance().toJson(body).getBytes());
                 }
-            }
-            url = ub.build().toString();
+            };
         }
-        final HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
-        conn.setConnectTimeout(timeout > 0 ? timeout : 60000);
-        conn.setReadTimeout(timeout > 0 ? timeout : 60000);
-        try {
-            conn.setRequestMethod(method);
-            //drop a hint for server side that we want to receive application/json
-            conn.addRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-            if (authToken != null) {
-                conn.setRequestProperty(HttpHeaders.AUTHORIZATION, authToken);
-            }
-            if (body != null) {
-                conn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-                conn.setDoOutput(true);
 
-                if (HttpMethod.DELETE.equals(method)) { //to avoid jdk bug described here http://bugs.java.com/view_bug.do?bug_id=7157360
-                    conn.setRequestMethod(HttpMethod.POST);
-                    conn.setRequestProperty("X-HTTP-Method-Override", HttpMethod.DELETE);
-                }
-
-                try (OutputStream output = conn.getOutputStream()) {
-                    output.write(DtoFactory.getInstance().toJson(body).getBytes());
-                }
-            }
-
+        try (HttpResponse conn = doRequestGeneral(timeout, url, method, bw, headers, parameters)) {
             final int responseCode = conn.getResponseCode();
             if ((responseCode / 100) != 2) {
                 InputStream in = conn.getErrorStream();
@@ -259,21 +267,58 @@ public class DefaultHttpJsonRequest implements HttpJsonRequest {
             }
             final String contentType = conn.getContentType();
             if (contentType != null && !contentType.startsWith(MediaType.APPLICATION_JSON)) {
-                throw new IOException(conn.getResponseMessage() + " [ Content-Type: " + contentType + " ]");
+                throw new IOException(Response.Status.Family.familyOf(conn.getResponseCode()) + " [ Content-Type: " + contentType + " ]");
             }
 
             try (Reader reader = new InputStreamReader(conn.getInputStream())) {
                 return new DefaultHttpJsonResponse(CharStreams.toString(reader), responseCode);
             }
-        } finally {
-            conn.disconnect();
         }
     }
 
-    private String getAuthenticationToken(String url) {
+    protected HttpResponse doRequestGeneral(int timeout, String url, String method, BodyWriter bodyWriter,
+            Map<String, String> headers, List<Pair<String, ?>> queryParams) throws IOException {
+        // Set the query parameters
+        if (queryParams != null && !queryParams.isEmpty()) {
+            final UriBuilder ub = UriBuilder.fromUri(url);
+            for (Pair<String, ?> parameter : queryParams) {
+                String name = URLEncoder.encode(parameter.first, "UTF-8");
+                String value = parameter.second == null ? null
+                        : URLEncoder.encode(String.valueOf(parameter.second), "UTF-8");
+                ub.queryParam(name, value);
+            }
+            url = ub.build().toString();
+        }
+        // Initialize the connection
+        URL urlObj = new URL(url);
+        HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
+        conn.setConnectTimeout(timeout > 0 ? timeout : DEFAULT_TIMEOUT);
+        conn.setReadTimeout(timeout > 0 ? timeout : DEFAULT_TIMEOUT);
+        if (method != null) {
+            conn.setRequestMethod(method);
+        }
+        // Set the authorization header if present
+        String authToken = getAuthenticationToken(urlObj);
+        if (authToken != null) {
+            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, authToken);
+        }
+        // Set all the custom headers
+        if (headers != null) {
+            headers.forEach(conn::setRequestProperty);
+        }
+        // Write the body
+        if (bodyWriter != null) {
+            conn.setDoOutput(true);
+            bodyWriter.writeTo(conn.getOutputStream());
+        }
+        // The result
+        return new URLConnectionHttpResponse(conn);
+    }
+
+    protected String getAuthenticationToken(URL urlObj) {
         final User user = EnvironmentContext.getCurrent().getUser();
         if (user != null) {
-            return user.getTokenByUrl(url);
+            return user.getToken();
         }
         return null;
     }

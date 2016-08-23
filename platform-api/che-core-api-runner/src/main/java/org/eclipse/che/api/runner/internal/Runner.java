@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -90,6 +92,10 @@ public abstract class Runner {
     private ScheduledExecutorService cleanScheduler;
     private java.io.File             deployDirectory;
 
+    @Inject
+    private DownloadPlugin theDownloadPlugin;
+    /** @deprecated use {@link #downloadFile(String, java.io.File, String, boolean)} */
+    @Deprecated
     protected final DownloadPlugin downloadPlugin;
 
     public Runner(java.io.File deployDirectoryRoot, int cleanupDelay, ResourceAllocators allocators, EventService eventService) {
@@ -374,7 +380,7 @@ public abstract class Runner {
             return NO_SOURCES;
         }
         final DownloadCallback callback = new DownloadCallback();
-        downloadPlugin.download(url, dir, callback);
+        theDownloadPlugin.download(url, dir, callback);
         if (callback.getError() != null) {
             throw callback.getError();
         }
@@ -413,7 +419,7 @@ public abstract class Runner {
     }
 
     protected java.io.File downloadFile(String url, java.io.File downloadDir, String fileName, boolean replaceExisting) throws IOException {
-        downloadPlugin.download(url, downloadDir, fileName, replaceExisting);
+        theDownloadPlugin.download(url, downloadDir, fileName, replaceExisting);
         return new java.io.File(downloadDir, fileName);
     }
 

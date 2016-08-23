@@ -196,14 +196,12 @@ public class BuilderTest {
         Assert.assertEquals(remoteBuilder.getBuilderEnvironment(), builder.getEnvironments());
     }
 
-    private void waitForTask(BuildTask task) throws Exception {
+    private static void waitForTask(BuildTask task) throws Exception {
         final long end = System.currentTimeMillis() + 5000;
-        synchronized (this) {
-            while (!task.isDone()) {
-                wait(100);
-                if (System.currentTimeMillis() > end) {
-                    Assert.fail("timeout");
-                }
+        while (!task.isDone()) {
+            Thread.sleep(100);
+            if (System.currentTimeMillis() > end) {
+                Assert.fail("timeout");
             }
         }
     }

@@ -12,11 +12,14 @@ package org.eclipse.che.api.core.util;
 
 import java.io.IOException;
 
+import com.google.inject.ImplementedBy;
+
 /**
  * Downloads remote file.
  *
  * @author andrew00x
  */
+@ImplementedBy(DownloadPluginImpl.class)
 public interface DownloadPlugin {
 
     interface Callback {
