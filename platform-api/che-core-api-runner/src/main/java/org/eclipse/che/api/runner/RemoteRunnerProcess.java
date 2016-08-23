@@ -12,20 +12,14 @@ package org.eclipse.che.api.runner;
 
 import com.google.common.io.ByteStreams;
 
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
-import org.eclipse.che.api.core.rest.HttpJsonHelper;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpOutputMessage;
+import org.eclipse.che.api.core.rest.HttpResponse;
 import org.eclipse.che.api.core.rest.OutputProvider;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
 import org.eclipse.che.api.runner.dto.ApplicationProcessDescriptor;
 import org.eclipse.che.api.runner.internal.Constants;
-import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.dto.server.DtoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +31,6 @@ import static org.eclipse.che.api.runner.RunnerUtils.runnerRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 /**
  * Representation of remote application process.
@@ -128,15 +120,7 @@ public class RemoteRunnerProcess {
     }
 
     private void doRequest(String url, String method, final OutputProvider output) throws IOException {
-        final HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
-        conn.setConnectTimeout(60 * 1000);
-        conn.setReadTimeout(60 * 1000);
-        conn.setRequestMethod(method);
-        final EnvironmentContext context = EnvironmentContext.getCurrent();
-        if (context.getUser() != null && context.getUser().getToken() != null) {
-            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
-        }
-        try {
+        try (HttpResponse conn = requestFactory.target(url).setTimeout(60 * 1000).setMethod(method).request()) {
             if (output instanceof HttpOutputMessage) {
                 HttpOutputMessage httpOutput = (HttpOutputMessage)output;
                 httpOutput.setStatus(conn.getResponseCode());
@@ -155,9 +139,6 @@ public class RemoteRunnerProcess {
                  OutputStream out = output.getOutputStream()) {
                 ByteStreams.copy(in, out);
             }
-
-        } finally {
-            conn.disconnect();
         }
     }
 }

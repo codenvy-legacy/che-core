@@ -37,10 +37,10 @@ public class BuilderUtils {
 		try {
 			return req.request();
 		} catch (IOException e) {
-			throw new BuilderException(e);
+			throw new BuilderException(e.getMessage(), e);
 		} catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException
 				| BadRequestException e) {
-			throw new BuilderException(e.getServiceError());
+			throw new BuilderException(e.getMessage(), e);
 		}
 	}
 
