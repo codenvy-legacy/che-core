@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.che.api.git.GitBasicAuthenticationCredentialsProvider.clearCredentials;
+import static org.eclipse.che.api.git.GitBasicAuthenticationCredentialsProvider.setCurrentCredentials;
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 /**
@@ -96,6 +98,7 @@ public class GitProjectImporter implements ProjectImporter {
                               LineConsumerFactory consumerFactory)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         GitConnection git = null;
+        boolean credentialsHaveBeenSet = false;
         try {
             // For factory: checkout particular commit after clone
             String commitId = null;
@@ -124,6 +127,12 @@ public class GitProjectImporter implements ProjectImporter {
                     recursiveEnabled = true;
                 }
                 branchMerge = parameters.get("branchMerge");
+                final String user = parameters.get("userName");
+                final String pass = parameters.get("password");
+                if (user != null && pass != null) {
+                    credentialsHaveBeenSet = true;
+                    setCurrentCredentials(user, pass);
+                }
             }
             // Get path to local file. Git works with local filesystem only.
             final String localPath = localPathResolver.resolve((VirtualFileImpl)baseFolder.getVirtualFile());
@@ -185,6 +194,9 @@ public class GitProjectImporter implements ProjectImporter {
         } finally {
             if (git != null) {
                 git.close();
+            }
+            if (credentialsHaveBeenSet) {
+                clearCredentials();
             }
         }
     }
