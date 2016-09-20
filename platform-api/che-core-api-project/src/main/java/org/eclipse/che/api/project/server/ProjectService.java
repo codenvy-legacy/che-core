@@ -806,15 +806,25 @@ public class ProjectService extends Service {
         // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
         // correct creation time. Need do it manually.
         long creationDate = System.currentTimeMillis();
+        boolean folderExistedBeforeCommand = virtualEntryExists(workspace, path);
         VirtualFileEntry virtualFile = getVirtualFile(workspace, path, force);
 
-        final FolderEntry baseProjectFolder = (FolderEntry)virtualFile;
-        importer.importSources(baseProjectFolder, projectSource.getLocation(), projectSource.getParameters(), outputOutputConsumerFactory);
-
-        //project source already imported going to configure project
-        return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+        FolderEntry baseProjectFolder = null;
+        try {
+        	 baseProjectFolder = (FolderEntry)virtualFile;
+             importer.importSources(baseProjectFolder, projectSource.getLocation(), projectSource.getParameters(), outputOutputConsumerFactory);
+             //project source already imported going to configure project
+             return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+        } catch (Exception e) {
+        	handleImportException(e, folderExistedBeforeCommand, baseProjectFolder );
+        	throw e;
+        }
     }
 
+    private boolean virtualEntryExists(String workspace, String path) throws ForbiddenException, ServerException, NotFoundException {
+        return ( projectManager.getProjectsRoot(workspace).getChild(path) != null );
+    }
+ 
     private VirtualFileEntry getVirtualFile(String workspace, String path, boolean force)
             throws ServerException, ForbiddenException, ConflictException, NotFoundException {
         VirtualFileEntry virtualFile = projectManager.getProjectsRoot(workspace).getChild(path);
@@ -831,8 +841,20 @@ public class ProjectService extends Service {
         }
         return virtualFile;
     }
+    private void handleImportException(Exception e, boolean folderExistedBeforeCommand, FolderEntry baseProjectFolder )
+    {
+   	 // if import failed for some reason and the folder was created for this import
+        // remove it
+        if( !folderExistedBeforeCommand && baseProjectFolder != null ) {
+            try {
+               baseProjectFolder.remove();
+            } catch(Exception removeException) {
+               LOG.error(String.format("An exception was thrown while trying to remove folder %s", baseProjectFolder.getPath()), removeException);
+            }
+        }
+    }
 
-    private ImportResponse configureProject(ImportProject importProject, FolderEntry baseProjectFolder, String workspace, long creationDate)
+   private ImportResponse configureProject(ImportProject importProject, FolderEntry baseProjectFolder, String workspace, long creationDate)
             throws IOException, ForbiddenException, ConflictException, NotFoundException, ServerException, BadRequestException {
         NewProject newProject = importProject.getProject();
         requiredNotNull(newProject, "Project descriptor");
@@ -946,8 +968,6 @@ public class ProjectService extends Service {
         // Not all importers uses virtual file system API. In this case virtual file system API doesn't get events and isn't able to set
         // correct creation time. Need do it manually.
         long creationDate = System.currentTimeMillis();
-        final FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(workspace, path, force);
-
         int stripNumber = 0;
         String projectName = "";
         String projectDescription = "";
@@ -983,23 +1003,31 @@ public class ProjectService extends Service {
         if (contentItem == null) {
             throw new ServerException("Cannot find zip file for upload.");
         }
+        
+        boolean folderExistedBeforeCommand = virtualEntryExists(workspace, path);
+        final FolderEntry baseProjectFolder = (FolderEntry)getVirtualFile(workspace, path, force);
+        
         try (InputStream zip = contentItem.getInputStream()) {
             baseProjectFolder.getVirtualFile().unzip(zip, true, stripNumber);
-        }
-
-        final DtoFactory dtoFactory = DtoFactory.getInstance();
-        NewProject newProject = dtoFactory.createDto(NewProject.class)
-                                          .withName(projectName)
-                                          .withDescription(projectDescription)
-                                          .withVisibility(privacy);
-        Source source = dtoFactory.createDto(Source.class)
-                                  .withRunners(new HashMap<String, RunnerSource>());
-        ImportProject importProject = dtoFactory.createDto(ImportProject.class)
-                                                .withProject(newProject)
-                                                .withSource(source);
-
-        //project source already imported going to configure project
-        return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+            
+	        final DtoFactory dtoFactory = DtoFactory.getInstance();
+	        NewProject newProject = dtoFactory.createDto(NewProject.class)
+	                                          .withName(projectName)
+	                                          .withDescription(projectDescription)
+	                                          .withVisibility(privacy);
+	        Source source = dtoFactory.createDto(Source.class)
+	                                  .withRunners(new HashMap<String, RunnerSource>());
+	        ImportProject importProject = dtoFactory.createDto(ImportProject.class)
+	                                                .withProject(newProject)
+	                                                .withSource(source);
+	
+	        //project source already imported going to configure project
+	        return configureProject(importProject, baseProjectFolder, workspace, creationDate);
+	     } catch (Exception e) {
+	    	 handleImportException(e, folderExistedBeforeCommand, baseProjectFolder);
+	    	 throw e;
+	     }
+        
     }
 
     /**
