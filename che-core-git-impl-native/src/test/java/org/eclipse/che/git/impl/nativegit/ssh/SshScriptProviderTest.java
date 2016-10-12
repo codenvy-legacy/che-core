@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.nativegit.ssh;
 
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;

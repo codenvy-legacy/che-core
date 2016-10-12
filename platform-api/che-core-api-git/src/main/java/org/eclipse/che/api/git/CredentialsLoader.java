@@ -11,6 +11,7 @@
 package org.eclipse.che.api.git;
 
 
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -13,7 +13,7 @@ package org.eclipse.che.git.impl.nativegit;
 import com.google.common.io.Files;
 
 import org.eclipse.che.api.git.GitConnectionFactory;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.testng.annotations.Test;
 
 import java.io.File;

@@ -12,10 +12,9 @@ package org.eclipse.che.git.impl.nativegit;
 
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.git.CredentialsLoader;
-import org.eclipse.che.api.git.CredentialsProvider;
 import org.eclipse.che.api.git.GitConnection;
 import org.eclipse.che.api.git.GitConnectionFactory;
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 import org.eclipse.che.git.impl.nativegit.ssh.GitSshScriptProvider;
 
 import javax.inject.Inject;

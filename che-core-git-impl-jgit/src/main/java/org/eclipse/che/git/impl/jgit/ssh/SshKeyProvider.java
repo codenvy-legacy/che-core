@@ -11,7 +11,7 @@
  *******************************************************************************/
 package org.eclipse.che.git.impl.jgit.ssh;
 
-import org.eclipse.che.api.git.GitException;
+import org.eclipse.che.api.git.exception.GitException;
 
 /**
  * @author Igor Vinokur
