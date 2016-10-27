@@ -12,6 +12,7 @@ package org.eclipse.che.api.user.server;
 
 
 import com.google.common.annotations.Beta;
+import com.google.common.collect.ImmutableMap;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -43,6 +44,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -92,10 +94,16 @@ import static org.eclipse.che.commons.lang.NameGenerator.generate;
 @Path("/user")
 public class UserService extends Service {
 
+    public static final String USER_SELF_CREATION_ALLOWED = "user.self.creation.allowed";
+
     private final UserDao        userDao;
     private final UserProfileDao profileDao;
     private final PreferenceDao  preferenceDao;
     private final TokenValidator tokenValidator;
+
+    @Inject
+    @Named(USER_SELF_CREATION_ALLOWED)
+    private boolean userSelfCreationAllowed;
 
     @Inject
     public UserService(UserDao userDao,
@@ -369,6 +377,13 @@ public class UserService extends Service {
                          .withScopeId(
                                  scopeId);
 
+    }
+
+    @GET
+    @Path("/settings")
+    @Produces(APPLICATION_JSON)
+    public Map<String, String> getSettings() {
+        return ImmutableMap.of(USER_SELF_CREATION_ALLOWED, Boolean.toString(userSelfCreationAllowed));
     }
 
     private User fromEntity(NewUser newUser) throws ForbiddenException {
