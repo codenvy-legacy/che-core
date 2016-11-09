@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.vfs.impl.fs;
 
+import java.io.File;
+
 import javax.inject.Singleton;
+
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.vfs.server.VirtualFile;
 
 /**
  * Resolves location of virtual filesystem item on local filesystem.
@@ -19,7 +24,11 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class LocalPathResolver {
-    public String resolve(VirtualFileImpl virtualFile) {
-        return virtualFile.getIoFile().getAbsolutePath();
+    public String resolve(VirtualFile virtualFile) throws ServerException {
+        File file = virtualFile.getIoFile();
+        if (file == null) {
+            throw new ServerException("Not a local file: " + virtualFile.getPath());
+        }
+        return file.getAbsolutePath();
     }
 }

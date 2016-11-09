@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -1283,6 +1284,11 @@ public class MemoryVirtualFile implements VirtualFile {
             return 1;
         }
         return getName().compareTo(o.getName());
+    }
+
+    @Override
+    public File getIoFile() {
+        return null;
     }
 
     boolean hasPermission(String permission, boolean checkParent) {

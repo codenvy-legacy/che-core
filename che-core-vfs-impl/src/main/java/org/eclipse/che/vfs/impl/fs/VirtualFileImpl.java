@@ -327,6 +327,7 @@ public class VirtualFileImpl implements VirtualFile {
 
    /* =================== */
 
+    @Override
     public final java.io.File getIoFile() {
         return ioFile;
     }
