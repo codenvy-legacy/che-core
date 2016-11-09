@@ -126,7 +126,7 @@ public class GitProjectImporter implements ProjectImporter {
                 branchMerge = parameters.get("branchMerge");
             }
             // Get path to local file. Git works with local filesystem only.
-            final String localPath = localPathResolver.resolve((VirtualFileImpl)baseFolder.getVirtualFile());
+            final String localPath = localPathResolver.resolve(baseFolder.getVirtualFile());
             git = gitConnectionFactory.getConnection(localPath, consumerFactory);
             if (keepDirectory != null) {
                 git.cloneWithSparseCheckout(keepDirectory, location, branch == null ? "master" : branch);

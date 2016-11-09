@@ -22,6 +22,7 @@ import org.eclipse.che.api.vfs.shared.dto.Principal;
 import org.eclipse.che.api.vfs.shared.dto.Property;
 import org.eclipse.che.commons.lang.Pair;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -592,4 +593,12 @@ public interface VirtualFile extends Comparable<VirtualFile> {
      *         if any error occurs
      */
     LazyIterator<Pair<String, String>> countMd5Sums() throws ServerException;
+
+    /**
+     * Get the {@link File} that this virtual file corresponds to.
+     * 
+     * @return The File that this virtual file corresponds to, or null if no such file exists.
+     */
+    File getIoFile();
+
 }
