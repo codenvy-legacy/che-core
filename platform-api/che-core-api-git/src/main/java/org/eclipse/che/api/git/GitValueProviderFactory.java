@@ -77,6 +77,6 @@ public class GitValueProviderFactory implements ValueProviderFactory {
         Item gitProject = vfs.getItemByPath(folderPath, null, false, PropertyFilter.ALL_FILTER);
         final MountPoint mountPoint = vfs.getMountPoint();
         final VirtualFile virtualFile = mountPoint.getVirtualFile(gitProject.getPath());
-        return localPathResolver.resolve((VirtualFileImpl)virtualFile);
+        return localPathResolver.resolve(virtualFile);
     }
 }

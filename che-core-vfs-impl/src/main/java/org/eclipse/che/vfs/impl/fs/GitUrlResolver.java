@@ -13,6 +13,7 @@ package org.eclipse.che.vfs.impl.fs;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.vfs.server.VirtualFile;
 import org.eclipse.che.api.vfs.server.VirtualFileSystem;
 
 import javax.inject.Inject;
@@ -43,14 +44,14 @@ public class GitUrlResolver {
     public String resolve(UriInfo uriInfo, VirtualFileSystem vfs, String path)
             throws ServerException, NotFoundException, ForbiddenException {
 
-        return resolve(uriInfo.getBaseUri(), ((FSMountPoint)vfs.getMountPoint()).getVirtualFile(path));
+        return resolve(uriInfo.getBaseUri(), vfs.getMountPoint().getVirtualFile(path));
     }
 
-    public String resolve(UriInfo uriInfo, VirtualFileImpl virtualFile) {
+    public String resolve(UriInfo uriInfo, VirtualFile virtualFile) throws ServerException {
         return resolve(uriInfo.getBaseUri(), virtualFile);
     }
 
-    public String resolve(URI baseUri, VirtualFileImpl virtualFile) {
+    public String resolve(URI baseUri, VirtualFile virtualFile) throws ServerException {
         final String localPath = pathResolver.resolve(virtualFile);
 
         URI uriLocalPath = Paths.get(localPath).toUri();

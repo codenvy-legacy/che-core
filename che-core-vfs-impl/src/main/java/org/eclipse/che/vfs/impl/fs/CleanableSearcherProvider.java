@@ -58,7 +58,10 @@ public class CleanableSearcherProvider extends LuceneSearcherProvider {
 
     @Override
     public Searcher getSearcher(final MountPoint mountPoint, boolean create) throws ServerException {
-        final java.io.File vfsIoRoot = ((VirtualFileImpl)mountPoint.getRoot()).getIoFile();
+        final java.io.File vfsIoRoot = mountPoint.getRoot().getIoFile();
+        if (vfsIoRoot == null) {
+            throw new ServerException("Unable create searcher, mount point is not local");
+        }
         CleanableSearcher searcher = instances.get(vfsIoRoot);
         if (searcher == null && create) {
             final java.io.File myIndexDir;

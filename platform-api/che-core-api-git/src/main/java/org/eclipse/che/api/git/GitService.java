@@ -60,7 +60,6 @@ import org.eclipse.che.api.vfs.shared.dto.Item;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.vfs.impl.fs.GitUrlResolver;
 import org.eclipse.che.vfs.impl.fs.LocalPathResolver;
-import org.eclipse.che.vfs.impl.fs.VirtualFileImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -461,7 +460,7 @@ public class GitService {
     public String readOnlyGitUrlTextPlain(@Context UriInfo uriInfo) throws ApiException {
         final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
         if (virtualFile.getChild(".git") != null) {
-            return gitUrlResolver.resolve(uriInfo.getBaseUri(), (VirtualFileImpl)virtualFile);
+            return gitUrlResolver.resolve(uriInfo.getBaseUri(), virtualFile);
         } else {
             throw new ServerException("Not git repository");
         }
@@ -478,7 +477,7 @@ public class GitService {
                 return DtoFactory.getInstance().createDto(ImportSourceDescriptor.class)
                                  .withType("git")
                                  .withLocation(
-                                         gitUrlResolver.resolve(uriInfo.getBaseUri(), (VirtualFileImpl)virtualFile))
+                                         gitUrlResolver.resolve(uriInfo.getBaseUri(), virtualFile))
                                  .withParameters(
                                          Collections.singletonMap("commitId", gitConnection.log(null).getCommits().get(0).getId()));
 
@@ -518,7 +517,7 @@ public class GitService {
         Item gitProject = getGitProjectByPath(vfs, folderPath);
         final MountPoint mountPoint = vfs.getMountPoint();
         final VirtualFile virtualFile = mountPoint.getVirtualFile(gitProject.getPath());
-        return localPathResolver.resolve((VirtualFileImpl)virtualFile);
+        return localPathResolver.resolve(virtualFile);
     }
 
     protected GitConnection getGitConnection() throws ApiException {
