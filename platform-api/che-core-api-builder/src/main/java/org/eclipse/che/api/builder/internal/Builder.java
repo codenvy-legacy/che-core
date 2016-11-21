@@ -614,7 +614,8 @@ public abstract class Builder {
         private final String               builder;
         private final BuilderConfiguration configuration;
         private final BuildLogger          buildLogger;
-        private final Callback             callback;
+        private final Runnable             callbackBegin;
+        private final Runnable             callbackDone;
 
         private BuildResult result;
         private long        startTime;
@@ -633,9 +634,16 @@ public abstract class Builder {
             this.builder = builder;
             this.configuration = configuration;
             this.buildLogger = buildLogger;
-            this.callback = callback;
             startTime = -1L;
             endTime = -1L;
+
+            if (callback != null) {
+                this.callbackBegin = ThreadLocalPropagateContext.wrap(() -> callback.begin(this));
+                this.callbackDone = ThreadLocalPropagateContext.wrap(() -> callback.done(this));
+            } else {
+                this.callbackBegin = null;
+                this.callbackDone = null;
+            }
 
             eventService.subscribe(new EventSubscriber<BuilderEvent>() {
                 @Override
@@ -721,9 +729,9 @@ public abstract class Builder {
         }
 
         final synchronized void started() {
-            if (callback != null) {
+            if (callbackBegin != null) {
                 // NOTE: important to do it in separate thread!
-                getExecutor().execute(ThreadLocalPropagateContext.wrap(new Runnable() {
+                getExecutor().execute(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -734,9 +742,9 @@ public abstract class Builder {
                             Thread.sleep(300);
                         } catch (InterruptedException ignored) {
                         }
-                        callback.begin(FutureBuildTask.this);
+                        callbackBegin.run();
                     }
-                }));
+                });
             }
         }
 
@@ -755,14 +763,9 @@ public abstract class Builder {
 
         final synchronized void ended() {
             endTime = System.currentTimeMillis();
-            if (callback != null) {
+            if (callbackDone != null) {
                 // NOTE: important to do it in separate thread!
-                getExecutor().execute(ThreadLocalPropagateContext.wrap(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.done(FutureBuildTask.this);
-                    }
-                }));
+                getExecutor().execute(callbackDone);
             }
         }
 
