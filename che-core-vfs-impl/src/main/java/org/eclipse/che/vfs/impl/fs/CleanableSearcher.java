@@ -13,7 +13,7 @@ package org.eclipse.che.vfs.impl.fs;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.vfs.server.MountPoint;
 import org.eclipse.che.api.vfs.server.VirtualFileFilter;
-
+import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class CleanableSearcher extends FSIndexSearcher {
         doInit();
         final ExecutorService executor = searcherService.getExecutor();
         if (!executor.isShutdown()) {
-            executor.execute(new Runnable() {
+            executor.execute(ThreadLocalPropagateContext.wrap(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -58,7 +58,7 @@ public class CleanableSearcher extends FSIndexSearcher {
                         LOG.error(e.getMessage());
                     }
                 }
-            });
+            }));
         }
     }
 
