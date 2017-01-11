@@ -69,7 +69,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author andrew00x
  */
 @Singleton
-public final class DefaultProjectManager implements ProjectManager {
+public class DefaultProjectManager implements ProjectManager {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultProjectManager.class);
 
     private static final int CACHE_NUM  = 1 << 2;
