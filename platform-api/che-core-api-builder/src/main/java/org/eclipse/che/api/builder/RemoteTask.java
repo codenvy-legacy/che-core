@@ -17,20 +17,16 @@ import org.eclipse.che.api.builder.internal.Constants;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpOutputMessage;
+import org.eclipse.che.api.core.rest.HttpResponse;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.commons.env.EnvironmentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.eclipse.che.api.builder.BuilderUtils.builderRequest;
 
 /**
@@ -217,15 +213,7 @@ public class RemoteTask {
     }
 
     private void readFromUrl(String url, final HttpOutputMessage output) throws IOException {
-        final HttpURLConnection conn = (HttpURLConnection)new URL(url).openConnection();
-        conn.setConnectTimeout(60 * 1000);
-        conn.setReadTimeout(60 * 1000);
-        conn.setRequestMethod(HttpMethod.GET);
-        final EnvironmentContext context = EnvironmentContext.getCurrent();
-        if (context.getUser() != null && context.getUser().getToken() != null) {
-            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
-        }
-        try {
+        try (HttpResponse conn = requestFactory.target(url).setTimeout(60 * 1000).request()) {
             output.setStatus(conn.getResponseCode());
             final String contentType = conn.getContentType();
             if (contentType != null) {
@@ -237,13 +225,10 @@ public class RemoteTask {
                 output.addHttpHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
             }
 
-            try (InputStream in = firstNonNull(conn.getErrorStream(), conn.getInputStream());
+            try (InputStream in = conn.getInputStream();
                  OutputStream out = output.getOutputStream()) {
                 ByteStreams.copy(in, out);
             }
-
-        } finally {
-            conn.disconnect();
         }
     }
 }

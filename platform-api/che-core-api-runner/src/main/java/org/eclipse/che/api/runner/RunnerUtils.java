@@ -37,10 +37,10 @@ public class RunnerUtils {
 		try {
 			return req.request();
 		} catch (IOException e) {
-			throw new RunnerException(e);
+			throw new RunnerException(e.getMessage(), e);
 		} catch (ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException
 				| BadRequestException e) {
-			throw new RunnerException(e.getServiceError());
+			throw new RunnerException(e.getMessage(), e);
 		}
 	}
 

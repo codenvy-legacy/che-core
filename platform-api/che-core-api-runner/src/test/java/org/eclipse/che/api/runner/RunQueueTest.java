@@ -25,6 +25,8 @@ import org.eclipse.che.api.core.rest.DefaultHttpJsonRequest;
 import org.eclipse.che.api.core.rest.DefaultHttpJsonResponse;
 import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
+import org.eclipse.che.api.core.rest.HttpRequest;
+import org.eclipse.che.api.core.rest.HttpResponse;
 import org.eclipse.che.api.core.rest.RemoteServiceDescriptor;
 import org.eclipse.che.api.core.rest.ServiceContext;
 import org.eclipse.che.api.core.rest.shared.dto.Link;
@@ -147,6 +149,11 @@ public class RunQueueTest {
         @Override
         public HttpJsonRequest fromLink(Link link) {
             return new TestJsonRequest(link);
+        }
+
+        @Override
+        public HttpRequest target(String url) {
+            return null;
         }
     }
     

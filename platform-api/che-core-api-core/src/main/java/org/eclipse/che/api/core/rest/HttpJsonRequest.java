@@ -22,11 +22,9 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.dto.server.JsonSerializable;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.HttpMethod;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Defines simple set of methods for requesting json objects.
@@ -60,18 +58,7 @@ import java.util.Objects;
  * @see HttpJsonRequestFactory
  */
 @Beta
-public interface HttpJsonRequest {
-
-    /**
-     * Sets http method to use in this request(e.g. {@link javax.ws.rs.HttpMethod#GET GET}).
-     *
-     * @param method
-     *         http method
-     * @return this request instance
-     * @throws NullPointerException
-     *         when {@code method} is null
-     */
-    HttpJsonRequest setMethod(@NotNull String method);
+public interface HttpJsonRequest extends HttpRequestBase<HttpJsonRequest> {
 
     /**
      * Sets request body.
@@ -108,27 +95,6 @@ public interface HttpJsonRequest {
      */
     HttpJsonRequest setBody(@NotNull List<?> list);
 
-    /**
-     * Adds query parameter to the request.
-     *
-     * @param name
-     *         query parameter name
-     * @param value
-     *         query parameter value
-     * @return this request instance
-     * @throws NullPointerException
-     *         when either name or value is null
-     */
-    HttpJsonRequest addQueryParam(@NotNull String name, @NotNull Object value);
-
-    /**
-     * Sets request timeout.
-     *
-     * @param timeout
-     *         request timeout
-     * @return this request instance
-     */
-    HttpJsonRequest setTimeout(int timeout);
 
     /**
      * Makes http request with content type "application/json" and authorization headers
@@ -160,61 +126,4 @@ public interface HttpJsonRequest {
                                       ConflictException,
                                       BadRequestException;
 
-    /**
-     * Uses {@link HttpMethod#GET} as a request method.
-     *
-     * @return this request instance
-     */
-    default HttpJsonRequest useGetMethod() {
-        return setMethod(HttpMethod.GET);
-    }
-
-    /**
-     * Uses {@link HttpMethod#OPTIONS} as a request method.
-     *
-     * @return this request instance
-     */
-    default HttpJsonRequest useOptionsMethod() {
-        return setMethod(HttpMethod.OPTIONS);
-    }
-
-    /**
-     * Uses {@link HttpMethod#POST} as a request method.
-     *
-     * @return this request instance
-     */
-    default HttpJsonRequest usePostMethod() {
-        return setMethod(HttpMethod.POST);
-    }
-
-    /**
-     * Uses {@link HttpMethod#DELETE} as a request method.
-     *
-     * @return this request instance
-     */
-    default HttpJsonRequest useDeleteMethod() {
-        return setMethod(HttpMethod.DELETE);
-    }
-
-    /**
-     * Uses {@link HttpMethod#PUT} as a request method.
-     *
-     * @return this request instance
-     */
-    default HttpJsonRequest usePutMethod() {
-        return setMethod(HttpMethod.PUT);
-    }
-
-    /**
-     * Adds set of query parameters to this request.
-     *
-     * @param params
-     *         query parameters map
-     * @return this request instance
-     */
-    default HttpJsonRequest addQueryParams(@NotNull Map<String, ?> params) {
-        Objects.requireNonNull(params, "Required non-null query parameters");
-        params.forEach(this::addQueryParam);
-        return this;
-    }
 }

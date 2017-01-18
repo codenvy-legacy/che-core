@@ -10,32 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.api.core.rest;
 
-import org.eclipse.che.api.core.rest.shared.dto.Link;
-
-import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
 
+import com.google.common.annotations.Beta;
+import com.google.inject.ImplementedBy;
+
 /**
- * Creates {@link DefaultHttpJsonRequest} instances.
+ * Factory for {@link HttpRequest} instances.
  *
  * @author Yevhenii Voevodin
  */
-@Singleton
-public class DefaultHttpJsonRequestFactory implements HttpJsonRequestFactory {
+@Beta
+@ImplementedBy(DefaultHttpJsonRequestFactory.class)
+public interface HttpRequestFactory {
 
-    @Override
-    public HttpJsonRequest fromUrl(@NotNull String url) {
-        return new DefaultHttpJsonRequest(url);
-    }
-
-    @Override
-    public HttpJsonRequest fromLink(@NotNull Link link) {
-        return new DefaultHttpJsonRequest(link);
-    }
-
-    @Override
-    public HttpRequest target(String url) {
-        return new DefaultHttpRequest(url);
-    }
+    /**
+     * Creates {@link HttpJsonRequest} based on {@code url}, with an initial HTTP method {@code GET}.
+     *
+     * @param url
+     *            request target url
+     * @return new instance of {@link HttpRequest}
+     * @throws NullPointerException
+     *             when url is null
+     */
+    HttpRequest target(@NotNull String url);
 
 }

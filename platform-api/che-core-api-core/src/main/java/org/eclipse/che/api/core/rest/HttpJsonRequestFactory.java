@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
  */
 @Beta
 @ImplementedBy(DefaultHttpJsonRequestFactory.class)
-public interface HttpJsonRequestFactory {
+public interface HttpJsonRequestFactory extends HttpRequestFactory {
 
     /**
      * Creates {@link HttpJsonRequest} based on {@code url}, with an initial HTTP method {@code GET}. 

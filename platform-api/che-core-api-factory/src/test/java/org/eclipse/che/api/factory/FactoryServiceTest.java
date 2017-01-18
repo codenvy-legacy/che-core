@@ -123,6 +123,7 @@ public class FactoryServiceTest {
                                             editValidator,
                                             new LinksHelper(),
                                             factoryBuilder,
+                                            null,
                                             projectManager);
 
         when(accountDao.getByMember(anyString())).thenReturn(Arrays.asList(new Member().withRoles(Arrays.asList("account/owner"))));
