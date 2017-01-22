@@ -799,7 +799,7 @@ public class ProjectTest {
                 .withMixins(Arrays.asList("testDtoConverterWithMixin"))
                 .withAttributes(attributes);
 
-        final ProjectConfig projectConfig = DtoConverter.fromDto2(projectUpdate, pm.getProjectTypeRegistry());
+        final ProjectConfig projectConfig = new DtoConverter().fromDto2(projectUpdate, pm.getProjectTypeRegistry());
 
         Assert.assertEquals(projectConfig.getTypeId(), "blank");
         Assert.assertEquals(projectConfig.getMixinTypes(), Arrays.asList("testDtoConverterWithMixin"));

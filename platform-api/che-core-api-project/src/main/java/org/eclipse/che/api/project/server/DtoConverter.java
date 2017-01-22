@@ -45,6 +45,7 @@ import org.eclipse.che.commons.lang.ws.rs.ExtMediaType;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
 
+import javax.inject.Singleton;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -67,14 +68,12 @@ import static org.eclipse.che.api.core.util.LinksHelper.createLink;
  *
  * @author andrew00x
  */
+@Singleton
 public class DtoConverter {
 
     /*================================ Method for conversion from DTO. ===============================*/
 
-    private DtoConverter() { //converter
-    }
-
-    public static ProjectTemplateDescription fromDto(ProjectTemplateDescriptor dto) {
+    public ProjectTemplateDescription fromDto(ProjectTemplateDescriptor dto) {
         final String category = dto.getCategory();
         final ImportSourceDescriptor importSource = dto.getSource();
         final BuildersDescriptor builders = dto.getBuilders();
@@ -91,7 +90,7 @@ public class DtoConverter {
     }
 
 
-    public static ProjectTemplateDescriptor toDto(ProjectTemplateDescription templateDescription) {
+    public ProjectTemplateDescriptor toDto(ProjectTemplateDescription templateDescription) {
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         ImportSourceDescriptor sources = dtoFactory.createDto(ImportSourceDescriptor.class)
                                                    .withLocation(templateDescription.getLocation())
@@ -105,7 +104,7 @@ public class DtoConverter {
                          .withSource(sources);
     }
 
-    public static ProjectConfig fromDto2(ProjectUpdate dto, ProjectTypeRegistry typeRegistry) throws ServerException,
+    public ProjectConfig fromDto2(ProjectUpdate dto, ProjectTypeRegistry typeRegistry) throws ServerException,
                                                                                                      ProjectTypeConstraintException,
                                                                                                      InvalidValueException,
                                                                                                      ValueStorageException {
@@ -122,7 +121,7 @@ public class DtoConverter {
     }
 
 
-    public static ProjectConfig toProjectConfig(ProjectModule dto, ProjectTypeRegistry typeRegistry) throws ServerException,
+    public ProjectConfig toProjectConfig(ProjectModule dto, ProjectTypeRegistry typeRegistry) throws ServerException,
                                                                                                      ProjectTypeConstraintException,
                                                                                                      InvalidValueException,
                                                                                                      ValueStorageException {
@@ -138,7 +137,7 @@ public class DtoConverter {
                 dto.getRunners(), dto.getBuilders(), typeRegistry);
     }
 
-    private static ProjectConfig createProjectConfig(
+    protected ProjectConfig createProjectConfig(
             ProjectType primaryType,
             String dtoDescription,
             List<String> dtoMixins,
@@ -179,7 +178,7 @@ public class DtoConverter {
 
     /*================================ Methods for conversion to DTO. ===============================*/
 
-    public static Builders fromDto(BuildersDescriptor dto) {
+    public Builders fromDto(BuildersDescriptor dto) {
         if (dto == null)
             return null;
         if (dto.getConfigs() == null) {
@@ -196,7 +195,7 @@ public class DtoConverter {
 
     }
 
-    public static Runners fromDto(RunnersDescriptor dto) {
+    public Runners fromDto(RunnersDescriptor dto) {
         if (dto == null)
             return null;
         if (dto.getConfigs() == null) {
@@ -213,7 +212,7 @@ public class DtoConverter {
     }
 
 
-    public static ProjectTypeDefinition toTypeDescriptor2(ProjectType projectType) {
+    public ProjectTypeDefinition toTypeDescriptor2(ProjectType projectType) {
 
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         final ProjectTypeDefinition definition = dtoFactory.createDto(ProjectTypeDefinition.class)
@@ -254,11 +253,11 @@ public class DtoConverter {
         return definition;
     }
 
-    public static ProjectTemplateDescriptor toTemplateDescriptor(ProjectTemplateDescription projectTemplate, String projectType) {
+    public ProjectTemplateDescriptor toTemplateDescriptor(ProjectTemplateDescription projectTemplate, String projectType) {
         return toTemplateDescriptor(DtoFactory.getInstance(), projectTemplate, projectType);
     }
 
-    private static ProjectTemplateDescriptor toTemplateDescriptor(DtoFactory dtoFactory, ProjectTemplateDescription projectTemplate,
+    protected ProjectTemplateDescriptor toTemplateDescriptor(DtoFactory dtoFactory, ProjectTemplateDescription projectTemplate,
                                                                   String projectType) {
         final ImportSourceDescriptor importSource = dtoFactory.createDto(ImportSourceDescriptor.class)
                                                               .withType(projectTemplate.getImporterType())
@@ -281,7 +280,7 @@ public class DtoConverter {
         return dto;
     }
 
-    public static ProjectImporterDescriptor toImporterDescriptor(ProjectImporter importer) {
+    public ProjectImporterDescriptor toImporterDescriptor(ProjectImporter importer) {
         return DtoFactory.getInstance().createDto(ProjectImporterDescriptor.class)
                          .withId(importer.getId())
                          .withInternal(importer.isInternal())
@@ -289,7 +288,7 @@ public class DtoConverter {
                          .withCategory(importer.getCategory().getValue());
     }
 
-    public static ItemReference toItemReferenceDto(FileEntry file, UriBuilder uriBuilder) throws ServerException {
+    public ItemReference toItemReferenceDto(FileEntry file, UriBuilder uriBuilder) throws ServerException {
         return DtoFactory.getInstance().createDto(ItemReference.class)
                          .withName(file.getName())
                          .withPath(file.getPath())
@@ -302,7 +301,7 @@ public class DtoConverter {
                          .withLinks(generateFileLinks(file, uriBuilder));
     }
 
-    public static ItemReference toItemReferenceDto(FolderEntry folder, UriBuilder uriBuilder) throws ServerException {
+    public ItemReference toItemReferenceDto(FolderEntry folder, UriBuilder uriBuilder) throws ServerException {
         return DtoFactory.getInstance().createDto(ItemReference.class)
                          .withName(folder.getName())
                          .withPath(folder.getPath())
@@ -314,7 +313,7 @@ public class DtoConverter {
                          .withLinks(generateFolderLinks(folder, uriBuilder));
     }
 
-    public static ProjectDescriptor toDescriptorDto2(Project project,
+    public ProjectDescriptor toDescriptorDto2(Project project,
                                                      UriBuilder serviceUriBuilder,
                                                      UriBuilder baseUriBuilder,
                                                      ProjectTypeRegistry ptRegistry,
@@ -434,11 +433,11 @@ public class DtoConverter {
     }
 
 
-    public static BuildersDescriptor toDto(Builders builders) {
+    public BuildersDescriptor toDto(Builders builders) {
         return toDto(DtoFactory.getInstance(), builders);
     }
 
-    private static BuildersDescriptor toDto(DtoFactory dtoFactory, Builders builders) {
+    protected BuildersDescriptor toDto(DtoFactory dtoFactory, Builders builders) {
         BuildersDescriptor dto = dtoFactory.createDto(BuildersDescriptor.class).withDefault(builders.getDefault());
         final Map<String, Builders.Config> configs = builders.getConfigs();
         Map<String, BuilderConfiguration> configsDto = new LinkedHashMap<>(configs.size());
@@ -455,11 +454,11 @@ public class DtoConverter {
         return dto;
     }
 
-    public static RunnersDescriptor toDto(Runners runners) {
+    public RunnersDescriptor toDto(Runners runners) {
         return toDto(DtoFactory.getInstance(), runners);
     }
 
-    private static RunnersDescriptor toDto(DtoFactory dtoFactory, Runners runners) {
+    protected RunnersDescriptor toDto(DtoFactory dtoFactory, Runners runners) {
         final RunnersDescriptor dto = dtoFactory.createDto(RunnersDescriptor.class).withDefault(runners.getDefault());
         final Map<String, Runners.Config> configs = runners.getConfigs();
         Map<String, RunnerConfiguration> configsDto = new LinkedHashMap<>(configs.size());
@@ -477,7 +476,7 @@ public class DtoConverter {
         return dto;
     }
 
-    private static List<Link> generateProjectLinks(Project project, UriBuilder uriBuilder) {
+    protected List<Link> generateProjectLinks(Project project, UriBuilder uriBuilder) {
         final List<Link> links = generateFolderLinks(project.getBaseFolder(), uriBuilder);
         final String relPath = project.getPath().substring(1);
         final String workspace = project.getWorkspace();
@@ -493,7 +492,7 @@ public class DtoConverter {
         return links;
     }
 
-    private static List<Link> generateFolderLinks(FolderEntry folder, UriBuilder uriBuilder) {
+    protected List<Link> generateFolderLinks(FolderEntry folder, UriBuilder uriBuilder) {
         final List<Link> links = new LinkedList<>();
         final String workspace = folder.getWorkspace();
         final String relPath = folder.getPath().substring(1);
@@ -517,7 +516,7 @@ public class DtoConverter {
         return links;
     }
 
-    private static List<Link> generateFileLinks(FileEntry file, UriBuilder uriBuilder) throws ServerException {
+    protected List<Link> generateFileLinks(FileEntry file, UriBuilder uriBuilder) throws ServerException {
         final List<Link> links = new LinkedList<>();
         final String workspace = file.getWorkspace();
         final String relPath = file.getPath().substring(1);
@@ -535,7 +534,7 @@ public class DtoConverter {
     }
 
 
-    public static ProjectReference toReferenceDto2(Project project,
+    public ProjectReference toReferenceDto2(Project project,
                                                    UriBuilder uriBuilder,
                                                    UriBuilder baseUriBuilder) throws InvalidValueException {
         final DtoFactory dtoFactory = DtoFactory.getInstance();
@@ -583,7 +582,7 @@ public class DtoConverter {
         return dto;
     }
 
-    private static String fetchWorkspaceName(String wsId, UriBuilder baseUriBuilder, List<ProjectProblem> problems) {
+    protected String fetchWorkspaceName(String wsId, UriBuilder baseUriBuilder, List<ProjectProblem> problems) {
         try {
             @SuppressWarnings("unchecked") // Generic array is 0 size
             final WorkspaceDescriptor descriptor = HttpJsonHelper.request(WorkspaceDescriptor.class,
@@ -602,7 +601,7 @@ public class DtoConverter {
         return null;
     }
 
-    private static ProjectProblem createProjectProblem(DtoFactory dtoFactory, ApiException error) {
+    protected ProjectProblem createProjectProblem(DtoFactory dtoFactory, ApiException error) {
         // TODO: setup error code
         return dtoFactory.createDto(ProjectProblem.class).withCode(1).withMessage(error.getMessage());
     }

@@ -132,6 +132,8 @@ public class ProjectService extends Service {
     private EventService                eventService;
     @Inject
     private ProjectHandlerRegistry      projectHandlerRegistry;
+    @Inject
+    private DtoConverter                dtoConverter;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(1 + Runtime.getRuntime().availableProcessors(),
                                                                           new ThreadFactoryBuilder()
@@ -178,7 +180,7 @@ public class ProjectService extends Service {
         for (Project project : projects) {
 
             try {
-                projectReferences.add(DtoConverter.toReferenceDto2(project,
+                projectReferences.add(dtoConverter.toReferenceDto2(project,
                                                                    getServiceContext().getServiceUriBuilder(),
                                                                    getServiceContext().getBaseUriBuilder()));
             } catch (RuntimeException e) {
@@ -186,7 +188,7 @@ public class ProjectService extends Service {
                 // In result we won't have them in explorer tree but at least 'bad' projects won't prevent to show 'good' projects.
                 LOG.error(e.getMessage(), e);
                 NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-                projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
+                projectReferences.add(dtoConverter.toReferenceDto2(notValidProject,
                                                                    getServiceContext().getServiceUriBuilder(),
                                                                    getServiceContext().getBaseUriBuilder()));
             }
@@ -199,7 +201,7 @@ public class ProjectService extends Service {
                 if (!folderEntry.isProjectFolder()) {
                     NotValidProject notValidProject = new NotValidProject(folderEntry, projectManager);
 
-                    projectReferences.add(DtoConverter.toReferenceDto2(notValidProject,
+                    projectReferences.add(dtoConverter.toReferenceDto2(notValidProject,
                                                                        getServiceContext().getServiceUriBuilder(),
                                                                        getServiceContext().getBaseUriBuilder()));
                 }
@@ -235,14 +237,14 @@ public class ProjectService extends Service {
         }
 
         try {
-            return DtoConverter.toDescriptorDto2(project,
+            return dtoConverter.toDescriptorDto2(project,
                                                  getServiceContext().getServiceUriBuilder(),
                                                  getServiceContext().getBaseUriBuilder(),
                                                  projectManager.getProjectTypeRegistry(),
                                                  workspace);
         } catch (InvalidValueException e) {
             NotValidProject notValidProject = new NotValidProject(project.getBaseFolder(), projectManager);
-            return DtoConverter.toDescriptorDto2(notValidProject,
+            return dtoConverter.toDescriptorDto2(notValidProject,
                                                  getServiceContext().getServiceUriBuilder(),
                                                  getServiceContext().getBaseUriBuilder(),
                                                  projectManager.getProjectTypeRegistry(),
@@ -285,11 +287,11 @@ public class ProjectService extends Service {
         }
 
         final Project project = projectManager.createProject(workspace, name,
-                                                             DtoConverter.fromDto2(newProject, projectManager.getProjectTypeRegistry()),
+                                                             dtoConverter.fromDto2(newProject, projectManager.getProjectTypeRegistry()),
                                                              options,
                                                              newProject.getVisibility());
 
-        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(project,
+        final ProjectDescriptor descriptor = dtoConverter.toDescriptorDto2(project,
                                                                            getServiceContext().getServiceUriBuilder(),
                                                                            getServiceContext().getBaseUriBuilder(),
                                                                            projectManager.getProjectTypeRegistry(),
@@ -326,7 +328,7 @@ public class ProjectService extends Service {
         }
         final List<ProjectDescriptor> modules = new LinkedList<>();
         for (Project module : projectManager.getProjectModules(parent)) {
-                modules.add(DtoConverter.toDescriptorDto2(module,
+                modules.add(dtoConverter.toDescriptorDto2(module,
                                                           getServiceContext().getServiceUriBuilder(),
                                                           getServiceContext().getBaseUriBuilder(),
                                                           projectManager.getProjectTypeRegistry(),
@@ -365,13 +367,13 @@ public class ProjectService extends Service {
         }
 
         Project module = projectManager.addModule(workspace, parentPath, path,
-                (newProject == null) ? null : DtoConverter
+                (newProject == null) ? null : dtoConverter
                         .fromDto2(newProject, projectManager.getProjectTypeRegistry()),
                 options,
                 (newProject == null) ? null : newProject.getVisibility());
 
 
-        final ProjectDescriptor descriptor = DtoConverter.toDescriptorDto2(module,
+        final ProjectDescriptor descriptor = dtoConverter.toDescriptorDto2(module,
                                                                            getServiceContext().getServiceUriBuilder(),
                                                                            getServiceContext().getBaseUriBuilder(),
                                                                            projectManager.getProjectTypeRegistry(),
@@ -405,10 +407,10 @@ public class ProjectService extends Service {
         requiredNotNull(workspace, "Workspace id");
         requiredNotNull(path, "Project path");
         checkProjectRunners(update.getRunners());
-        ProjectConfig newConfig = DtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry());
+        ProjectConfig newConfig = dtoConverter.fromDto2(update, projectManager.getProjectTypeRegistry());
         String newVisibility = update.getVisibility();
         Project project = projectManager.updateProject(workspace, path, newConfig, newVisibility);
-        return DtoConverter.toDescriptorDto2(project,
+        return dtoConverter.toDescriptorDto2(project,
                                              getServiceContext().getServiceUriBuilder(),
                                              getServiceContext().getBaseUriBuilder(),
                                              projectManager.getProjectTypeRegistry(),
@@ -487,7 +489,7 @@ public class ProjectService extends Service {
             newFile = parent.createFile(fileName, content, (contentType.getType() + '/' + contentType.getSubtype()));
         }
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        final ItemReference fileReference = DtoConverter.toItemReferenceDto(newFile, uriBuilder.clone());
+        final ItemReference fileReference = dtoConverter.toItemReferenceDto(newFile, uriBuilder.clone());
         final URI location = uriBuilder.clone().path(getClass(), "getFile").build(workspace, newFile.getPath().substring(1));
 
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
@@ -514,7 +516,7 @@ public class ProjectService extends Service {
             throws ConflictException, ForbiddenException, ServerException, NotFoundException {
         final FolderEntry newFolder = projectManager.getProjectsRoot(workspace).createFolder(path);
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
-        final ItemReference folderReference = DtoConverter.toItemReferenceDto(newFolder, uriBuilder.clone());
+        final ItemReference folderReference = dtoConverter.toItemReferenceDto(newFolder, uriBuilder.clone());
         final URI location = uriBuilder.clone().path(getClass(), "getChildren").build(workspace, newFolder.getPath().substring(1));
 
         eventService.publish(new ProjectItemModifiedEvent(ProjectItemModifiedEvent.EventType.CREATED,
@@ -869,14 +871,14 @@ public class ProjectService extends Service {
         //try convert folder to project with giving config
         try {
             visibility = newProject.getVisibility();
-            projectConfig = DtoConverter.fromDto2(newProject, projectTypeRegistry);
+            projectConfig = dtoConverter.fromDto2(newProject, projectTypeRegistry);
             project = projectManager.convertFolderToProject(workspace,
                                                             baseProjectFolder.getPath(),
                                                             projectConfig,
                                                             visibility);
 
             for (ProjectModule projectModule : newProject.getModules()) {
-                ProjectConfig moduleConfig = DtoConverter.toProjectConfig(projectModule, projectManager.getProjectTypeRegistry());
+                ProjectConfig moduleConfig = dtoConverter.toProjectConfig(projectModule, projectManager.getProjectTypeRegistry());
                 projectManager.convertFolderToProject(workspace,
                                                       baseProjectFolder.getPath() +
                                                       projectModule.getPath(),
@@ -900,7 +902,7 @@ public class ProjectService extends Service {
                 }
             }
 
-            projectDescriptor = DtoConverter.toDescriptorDto2(project,
+            projectDescriptor = dtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
                                                               getServiceContext().getBaseUriBuilder(),
                                                               projectManager.getProjectTypeRegistry(),
@@ -920,7 +922,7 @@ public class ProjectService extends Service {
             project = new NotValidProject(baseProjectFolder, projectManager);
             project.setVisibility(visibility);
 
-            projectDescriptor = DtoConverter.toDescriptorDto2(project,
+            projectDescriptor = dtoConverter.toDescriptorDto2(project,
                                                               getServiceContext().getServiceUriBuilder(),
                                                               getServiceContext().getBaseUriBuilder(),
                                                               projectManager.getProjectTypeRegistry(),
@@ -1231,9 +1233,9 @@ public class ProjectService extends Service {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         for (VirtualFileEntry child : children) {
             if (child.isFile()) {
-                result.add(DtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone()));
+                result.add(dtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone()));
             } else {
-                result.add(DtoConverter.toItemReferenceDto((FolderEntry)child, uriBuilder.clone()));
+                result.add(dtoConverter.toItemReferenceDto((FolderEntry)child, uriBuilder.clone()));
             }
         }
 
@@ -1264,7 +1266,7 @@ public class ProjectService extends Service {
         final UriBuilder uriBuilder = getServiceContext().getServiceUriBuilder();
         final DtoFactory dtoFactory = DtoFactory.getInstance();
         return dtoFactory.createDto(TreeElement.class)
-                         .withNode(DtoConverter.toItemReferenceDto(folder, uriBuilder.clone()))
+                         .withNode(dtoConverter.toItemReferenceDto(folder, uriBuilder.clone()))
                          .withChildren(getTree(folder, depth, includeFiles, uriBuilder, dtoFactory));
     }
 
@@ -1307,9 +1309,9 @@ public class ProjectService extends Service {
 
         ItemReference item;
         if (entry.isFile()) {
-            item = DtoConverter.toItemReferenceDto((FileEntry)entry, uriBuilder.clone());
+            item = dtoConverter.toItemReferenceDto((FileEntry)entry, uriBuilder.clone());
         } else {
-            item = DtoConverter.toItemReferenceDto((FolderEntry)entry, uriBuilder.clone());
+            item = dtoConverter.toItemReferenceDto((FolderEntry)entry, uriBuilder.clone());
         }
 
         return item;
@@ -1330,9 +1332,9 @@ public class ProjectService extends Service {
         final List<TreeElement> nodes = new ArrayList<>(children.size());
         for (VirtualFileEntry child : children) {
         	if (child.isFolder()) {
-        		nodes.add(dtoFactory.createDto(TreeElement.class).withNode(DtoConverter.toItemReferenceDto((FolderEntry)child, uriBuilder.clone())).withChildren(getTree((FolderEntry)child, depth - 1, includeFiles, uriBuilder, dtoFactory)));
+        		nodes.add(dtoFactory.createDto(TreeElement.class).withNode(dtoConverter.toItemReferenceDto((FolderEntry)child, uriBuilder.clone())).withChildren(getTree((FolderEntry)child, depth - 1, includeFiles, uriBuilder, dtoFactory)));
         	} else { // child.isFile()
-        		nodes.add(dtoFactory.createDto(TreeElement.class).withNode(DtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone())));
+        		nodes.add(dtoFactory.createDto(TreeElement.class).withNode(dtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone())));
         	}
         }
         return nodes;
@@ -1400,7 +1402,7 @@ public class ProjectService extends Service {
                     // Ignore item that user can't access
                 }
                 if (child != null && child.isFile()) {
-                    items.add(DtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone()));
+                    items.add(dtoConverter.toItemReferenceDto((FileEntry)child, uriBuilder.clone()));
                 }
             }
             return items;

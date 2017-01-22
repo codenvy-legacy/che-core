@@ -34,10 +34,12 @@ import java.util.List;
 public class ProjectTypeService extends Service {
 
     private ProjectTypeRegistry registry;
+    private final DtoConverter dtoConverter;
 
     @Inject
-    public ProjectTypeService(ProjectTypeRegistry registry) {
+    public ProjectTypeService(ProjectTypeRegistry registry, DtoConverter dtoConverter) {
         this.registry = registry;
+        this.dtoConverter = dtoConverter;
     }
 
     @GenerateLink(rel = Constants.LINK_REL_PROJECT_TYPES)
@@ -46,7 +48,7 @@ public class ProjectTypeService extends Service {
     public List<ProjectTypeDefinition> getProjectTypes() {
         final List<ProjectTypeDefinition> types = new LinkedList<>();
         for (ProjectType type : registry.getProjectTypes()) {
-            types.add(DtoConverter.toTypeDescriptor2(type));
+            types.add(dtoConverter.toTypeDescriptor2(type));
         }
         return types;
     }

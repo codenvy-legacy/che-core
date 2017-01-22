@@ -81,7 +81,7 @@ public class DtoConverterTest {
         ProjectDescriptor projectDescriptor;
         try {
             EnvironmentContext.setCurrent(customEnvironment);
-             projectDescriptor = DtoConverter.toDescriptorDto2(project, null, new UriBuilderImpl(), null, "workspace");
+             projectDescriptor = new DtoConverter().toDescriptorDto2(project, null, new UriBuilderImpl(), null, "workspace");
         } finally {
             // reset
             EnvironmentContext.setCurrent(old);
@@ -126,7 +126,7 @@ public class DtoConverterTest {
         when(buildersDescriptor.getDefault()).thenReturn(defaultBuilder);
 
         //check
-        Builders builders = DtoConverter.fromDto(buildersDescriptor);
+        Builders builders = new DtoConverter().fromDto(buildersDescriptor);
         Assert.assertNotNull(builders);
         Assert.assertEquals(defaultBuilder, builders.getDefault());
 
