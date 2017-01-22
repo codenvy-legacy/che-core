@@ -25,6 +25,7 @@ import org.eclipse.che.api.factory.dto.Author;
 import org.eclipse.che.api.factory.dto.Button;
 import org.eclipse.che.api.factory.dto.ButtonAttributes;
 import org.eclipse.che.api.factory.dto.Factory;
+import org.eclipse.che.api.project.server.DtoConverter;
 import org.eclipse.che.api.project.server.ProjectManager;
 import org.eclipse.che.api.project.shared.dto.ImportSourceDescriptor;
 import org.eclipse.che.api.project.shared.dto.NewProject;
@@ -123,7 +124,8 @@ public class FactoryServiceTest {
                                             editValidator,
                                             new LinksHelper(),
                                             factoryBuilder,
-                                            projectManager);
+                                            projectManager,
+                                            new DtoConverter());
 
         when(accountDao.getByMember(anyString())).thenReturn(Arrays.asList(new Member().withRoles(Arrays.asList("account/owner"))));
     }

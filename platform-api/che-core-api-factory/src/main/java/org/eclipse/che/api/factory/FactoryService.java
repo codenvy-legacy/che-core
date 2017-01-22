@@ -107,6 +107,7 @@ public class FactoryService extends Service {
     private ProjectManager         projectManager;
     private AccountDao             accountDao;
     private HttpJsonRequestFactory requestFactory;
+    private DtoConverter           dtoConverter;
 
     @Inject
     public FactoryService(@Named("api.endpoint") String baseApiUrl,
@@ -118,7 +119,8 @@ public class FactoryService extends Service {
                           LinksHelper linksHelper,
                           FactoryBuilder factoryBuilder,
                           HttpJsonRequestFactory requestFactory,
-                          ProjectManager projectManager) {
+                          ProjectManager projectManager,
+                          DtoConverter dtoConverter) {
         this.baseApiUrl = baseApiUrl;
         this.accountDao = accountDao;
         this.factoryStore = factoryStore;
@@ -129,6 +131,7 @@ public class FactoryService extends Service {
         this.factoryBuilder = factoryBuilder;
         this.projectManager = projectManager;
         this.requestFactory = requestFactory;
+        this.dtoConverter = dtoConverter;
     }
 
     /**
@@ -628,19 +631,19 @@ public class FactoryService extends Service {
                 newProject.getModules().add(DtoFactory.newDto(ProjectModule.class).withType(moduleConfig.getTypeId())
                                                       .withPath(moduleRelativePath)
                                                       .withAttributes(moduleJson.getAttributes())
-                                                      .withBuilders(DtoConverter.toDto(moduleConfig.getBuilders()))
-                                                      .withRunners(DtoConverter.toDto(moduleConfig.getRunners()))
+                                                      .withBuilders(dtoConverter.toDto(moduleConfig.getBuilders()))
+                                                      .withRunners(dtoConverter.toDto(moduleConfig.getRunners()))
                                                       .withMixins(moduleConfig.getMixinTypes())
                                                       .withDescription(moduleJson.getDescription()));
             }
 
             final Builders builders = projectJson.getBuilders();
             if (builders != null) {
-                newProject.withBuilders(DtoConverter.toDto(builders));
+                newProject.withBuilders(dtoConverter.toDto(builders));
             }
             final Runners runners = projectJson.getRunners();
             if (runners != null) {
-                newProject.withRunners(DtoConverter.toDto(runners));
+                newProject.withRunners(dtoConverter.toDto(runners));
             }
         } catch (IOException e) {
             throw new ServerException(e.getLocalizedMessage());

@@ -76,7 +76,7 @@ public class ProjectTypeTest {
 
         ProjectTypeRegistry registry = injector.getInstance(ProjectTypeRegistry.class);
 
-        ProjectTypeService service = new ProjectTypeService(registry);
+        ProjectTypeService service = new ProjectTypeService(registry, new DtoConverter());
 
         Assert.assertEquals(2, service.getProjectTypes().size());
 

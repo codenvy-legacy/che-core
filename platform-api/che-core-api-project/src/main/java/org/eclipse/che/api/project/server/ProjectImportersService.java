@@ -30,10 +30,12 @@ import java.util.List;
 public class ProjectImportersService extends Service {
 
     private final ProjectImporterRegistry importersRegistry;
+    private final DtoConverter dtoConverter;
 
     @Inject
-    public ProjectImportersService(ProjectImporterRegistry importersRegistry) {
+    public ProjectImportersService(ProjectImporterRegistry importersRegistry, DtoConverter dtoConverter) {
         this.importersRegistry = importersRegistry;
+        this.dtoConverter = dtoConverter;
     }
 
     @GET
@@ -42,7 +44,7 @@ public class ProjectImportersService extends Service {
         final List<ProjectImporter> importers = importersRegistry.getImporters();
         final List<ProjectImporterDescriptor> descriptors = new ArrayList<>(importers.size());
         for (ProjectImporter importer : importers) {
-            descriptors.add(DtoConverter.toImporterDescriptor(importer));
+            descriptors.add(dtoConverter.toImporterDescriptor(importer));
         }
         return descriptors;
     }
