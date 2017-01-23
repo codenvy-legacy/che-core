@@ -72,6 +72,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -175,24 +176,19 @@ public class FSMountPoint implements MountPoint {
 
         @Override
         protected FileLock loadValue(Path key) {
-            DataInputStream dis = null;
-
-            try {
-                final Path lockFilePath = getLockFilePath(key);
-                final java.io.File lockIoFile = new java.io.File(ioRoot, toIoPath(lockFilePath));
-                if (lockIoFile.exists()) {
-                    try (PathLockFactory.PathLock lockFilePathLock = acquireLock(lockFilePath, false)) {
-                        dis = new DataInputStream(new BufferedInputStream(new FileInputStream(lockIoFile)));
-                        return locksSerializer.read(dis);
-                    }
-                }
+            final Path lockFilePath = getLockFilePath(key);
+            final java.io.File lockIoFile = new java.io.File(ioRoot, toIoPath(lockFilePath));
+            // Do not check lockIoFile.exists(), FileInputStream will check anyway and the penalty of catching
+            // FileNotFoundException is marginal compared to checking the file system twice in case it does exist
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(lockIoFile)));
+                    PathLockFactory.PathLock lockFilePathLock = acquireLock(lockFilePath, false)) {
+                return locksSerializer.read(dis);
+            } catch (FileNotFoundException e) {
                 return NO_LOCK;
             } catch (IOException e) {
                 String msg = String.format("Unable read lock for '%s'. ", key);
                 LOG.error(msg + e.getMessage(), e); // More details in log but do not show internal error to caller.
                 throw new RuntimeException(msg);
-            } finally {
-                closeQuietly(dis);
             }
         }
     }
@@ -205,23 +201,17 @@ public class FSMountPoint implements MountPoint {
 
         @Override
         protected Map<String, String[]> loadValue(Path key) {
-            DataInputStream dis = null;
-            try {
-                final Path metadataFilePath = getMetadataFilePath(key);
-                java.io.File metadataIoFile = new java.io.File(ioRoot, toIoPath(metadataFilePath));
-                if (metadataIoFile.exists()) {
-                    try (PathLockFactory.PathLock metadataFilePathLock = acquireLock(metadataFilePath, false)) {
-                        dis = new DataInputStream(new BufferedInputStream(new FileInputStream(metadataIoFile)));
-                        return metadataSerializer.read(dis);
-                    }
-                }
+            final Path metadataFilePath = getMetadataFilePath(key);
+            java.io.File metadataIoFile = new java.io.File(ioRoot, toIoPath(metadataFilePath));
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(metadataIoFile)));
+                    PathLockFactory.PathLock metadataFilePathLock = acquireLock(metadataFilePath, false)) {
+                return metadataSerializer.read(dis);
+            } catch (FileNotFoundException e) { // explained in FileLockCache
                 return Collections.emptyMap();
             } catch (IOException e) {
                 String msg = String.format("Unable read properties for '%s'. ", key);
                 LOG.error(msg + e.getMessage(), e); // More details in log but do not show internal error to caller.
                 throw new RuntimeException(msg);
-            } finally {
-                closeQuietly(dis);
             }
         }
     }
@@ -234,17 +224,12 @@ public class FSMountPoint implements MountPoint {
 
         @Override
         protected AccessControlList loadValue(Path key) {
-            DataInputStream dis = null;
-            try {
-                final Path aclFilePath = getAclFilePath(key);
-                final java.io.File aclIoFile = new java.io.File(ioRoot, toIoPath(aclFilePath));
-                if (aclIoFile.exists()) {
-                    try (PathLockFactory.PathLock aclFilePathLock = acquireLock(aclFilePath, false)) {
-                        dis = new DataInputStream(new BufferedInputStream(new FileInputStream(aclIoFile)));
-                        return aclSerializer.read(dis);
-                    }
-                }
-
+            final Path aclFilePath = getAclFilePath(key);
+            final java.io.File aclIoFile = new java.io.File(ioRoot, toIoPath(aclFilePath));
+            try (DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(aclIoFile)));
+                    PathLockFactory.PathLock aclFilePathLock = acquireLock(aclFilePath, false)) {
+                return aclSerializer.read(dis);
+            } catch (FileNotFoundException e) { // explained in FileLockCache
                 // TODO : REMOVE!!! Temporary default ACL until will have client side for real manage
                 if (key.isRoot()) {
                     final Map<Principal, Set<String>> dummy = new HashMap<>(2);
@@ -261,8 +246,6 @@ public class FSMountPoint implements MountPoint {
                 String msg = String.format("Unable read ACL for '%s'. ", key);
                 LOG.error(msg + e.getMessage(), e); // More details in log but do not show internal error to caller.
                 throw new RuntimeException(msg);
-            } finally {
-                closeQuietly(dis);
             }
         }
     }
