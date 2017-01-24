@@ -36,7 +36,9 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -430,9 +432,7 @@ public class HttpJsonHelper {
                 conn.setRequestMethod(method);
                 //drop a hint for server side that we want to receive application/json
                 conn.addRequestProperty(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-                if (authToken != null) {
-                    conn.setRequestProperty(HttpHeaders.AUTHORIZATION, authToken);
-                }
+                EnvironmentContext.getCurrent().setAuthorization(conn);
                 if (body != null) {
                     conn.addRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
                     conn.setDoOutput(true);

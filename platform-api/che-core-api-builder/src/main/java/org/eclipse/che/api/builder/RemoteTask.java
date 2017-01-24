@@ -221,10 +221,7 @@ public class RemoteTask {
         conn.setConnectTimeout(60 * 1000);
         conn.setReadTimeout(60 * 1000);
         conn.setRequestMethod(HttpMethod.GET);
-        final EnvironmentContext context = EnvironmentContext.getCurrent();
-        if (context.getUser() != null && context.getUser().getToken() != null) {
-            conn.setRequestProperty(HttpHeaders.AUTHORIZATION, context.getUser().getToken());
-        }
+        EnvironmentContext.getCurrent().setAuthorization(conn);
         try {
             output.setStatus(conn.getResponseCode());
             final String contentType = conn.getContentType();

@@ -10,6 +10,13 @@
  *******************************************************************************/
 package org.eclipse.che.commons.env;
 
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+
+import javax.ws.rs.core.HttpHeaders;
+
 import org.eclipse.che.commons.lang.concurrent.ThreadLocalPropagateContext;
 import org.eclipse.che.commons.user.User;
 
@@ -109,4 +116,29 @@ public class EnvironmentContext {
     public void setWorkspaceTemporary(boolean workspaceTemporary) {
         this.workspaceTemporary = workspaceTemporary;
     }
+
+    /**
+     * Set the HTTP Authorization header based on the authorization token of the user.
+     * 
+     * @param conn
+     *            The HTTP connection to modify.
+     */
+    public void setAuthorization(HttpURLConnection conn) {
+        User user = getUser();
+        if (user == null) {
+            return;
+        }
+        String token = user.getToken();
+        if (token == null) {
+            return;
+        }
+        String decodedToken;
+        try {
+            decodedToken = URLDecoder.decode(token, Charset.defaultCharset().name());
+        } catch (UnsupportedEncodingException e) {
+            return;
+        }
+        conn.setRequestProperty(HttpHeaders.AUTHORIZATION, decodedToken);
+    }
+
 }

@@ -1221,6 +1221,7 @@ public class RunQueue {
                     conn.setRequestMethod(requestMethod);
                     conn.setConnectTimeout(1000);
                     conn.setReadTimeout(1000);
+                    EnvironmentContext.getCurrent().setAuthorization(conn);
 
                     LOG.debug(String.format("Response code: %d.", conn.getResponseCode()));
                     if (405 == conn.getResponseCode()) {
