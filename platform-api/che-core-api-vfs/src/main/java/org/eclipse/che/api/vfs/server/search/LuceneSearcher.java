@@ -154,10 +154,8 @@ public abstract class LuceneSearcher implements Searcher {
         try {
             searcherManager.maybeRefresh();
             luceneSearcher = searcherManager.acquire();
-            final TopDocs topDocs = luceneSearcher.search(luceneQuery, RESULT_LIMIT);
-            if (topDocs.totalHits > RESULT_LIMIT) {
-                throw new ServerException(String.format("Too many (%d) matched results found. ", topDocs.totalHits));
-            }
+            final int actualLimit = (query.getMaxItems() > 0 ? query.getMaxItems() : RESULT_LIMIT);
+            final TopDocs topDocs = luceneSearcher.search(luceneQuery, actualLimit);
             final String[] result = new String[topDocs.scoreDocs.length];
             for (int i = 0, length = result.length; i < length; i++) {
                 result[i] = luceneSearcher.doc(topDocs.scoreDocs[i].doc).getField("path").stringValue();
