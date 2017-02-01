@@ -247,6 +247,7 @@ public class ProjectServiceTest {
         dependencies.addComponent(ProjectHandlerRegistry.class, phRegistry);
         dependencies.addComponent(SearcherProvider.class, mmp.getSearcherProvider());
         dependencies.addComponent(EventService.class, eventService);
+        dependencies.addComponent(DtoConverter.class, new DtoConverter());
 
 
         ResourceBinder resources = new ResourceBinderImpl();

@@ -124,6 +124,7 @@ public class FactoryServiceTest {
                                             editValidator,
                                             new LinksHelper(),
                                             factoryBuilder,
+                                            null,
                                             projectManager,
                                             new DtoConverter());
 
