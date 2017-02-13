@@ -21,15 +21,21 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +48,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author andrew00x
  */
 public final class DtoFactory {
-    private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
     private static final Cache<Type, ParameterizedType> listTypeCache = new SynchronizedCache<>(
             new LoadingValueSLRUCache<Type, ParameterizedType>(16, 16) {
@@ -66,6 +71,15 @@ public final class DtoFactory {
     }
 
     /**
+     * Ge a {@link Gson} serializer that is configured to serializes/deserializes DTOs correctly.
+     * 
+     * @return A Gson.
+     */
+    public Gson getGson() {
+        return dtoGson;
+    }
+
+    /**
      * Creates new instance of class which implements specified DTO interface.
      *
      * @param dtoInterface
@@ -81,6 +95,11 @@ public final class DtoFactory {
     // Additional mapping for implementation of DTO interfaces.
     // It helps avoid reflection when need create copy of exited DTO instance.
     private final Map<Class<?>, DtoProvider<?>> dtoImpl2Providers      = new ConcurrentHashMap<>();
+    private final TypeAdapterFactory dtoAdapterFactory = new DtoInterfaceTAF();
+    private final Gson dtoGson = new GsonBuilder()
+            .registerTypeAdapterFactory(new NullAsEmptyTAF<>(Collection.class, Collections.emptyList()))
+            .registerTypeAdapterFactory(new NullAsEmptyTAF<>(Map.class, Collections.emptyMap()))
+            .registerTypeAdapterFactory(dtoAdapterFactory).create();
 
     /**
      * Created deep copy of DTO object.
@@ -165,7 +184,11 @@ public final class DtoFactory {
      *         if can't provide any implementation for specified interface
      */
     public <T> T createDtoFromJson(String json, Class<T> dtoInterface) {
-        return getDtoProvider(dtoInterface).fromJson(json);
+        try {
+            return createDtoFromJson(new StringReader(json), dtoInterface);
+        } catch (IOException e) {
+            throw new RuntimeException(e); // won't happen
+        }
     }
 
     /**
@@ -197,14 +220,8 @@ public final class DtoFactory {
      *         if an i/o error occurs
      */
     public <T> T createDtoFromJson(Reader json, Class<T> dtoInterface) throws IOException {
-        DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = new BufferedReader(json);
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
-        }
-        return dtoProvider.fromJson(sb.toString());
+        getDtoProvider(dtoInterface);
+        return dtoGson.fromJson(json, dtoInterface);
     }
 
     /**
@@ -238,15 +255,12 @@ public final class DtoFactory {
      *         if can't provide any implementation for specified interface
      */
     public <T> JsonArray<T> createListDtoFromJson(String json, Class<T> dtoInterface) {
-        final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
-        final List<JsonElement> list = gson.fromJson(json, listTypeCache.get(JsonElement.class));
-        final List<T> result = new ArrayList<>(list.size());
-        for (JsonElement e : list) {
-            result.add(dtoProvider.fromJson(e));
+        try {
+            return createListDtoFromJson(new StringReader(json), dtoInterface);
+        } catch (IOException e) {
+            throw new RuntimeException(e); // won't happen
         }
-        return new JsonArrayImpl<>(result);
     }
-
 
     /**
      * Parses the JSON data from the specified reader into list of objects of the specified type.
@@ -260,22 +274,9 @@ public final class DtoFactory {
      *         if can't provide any implementation for specified interface
      */
     public <T> JsonArray<T> createListDtoFromJson(Reader json, Class<T> dtoInterface) throws IOException {
-        final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
-        final List<JsonElement> list;
-        try {
-            list = gson.fromJson(json, listTypeCache.get(JsonElement.class));
-        } catch (JsonSyntaxException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof IOException) {
-                throw (IOException)cause;
-            }
-            throw e;
-        }
-        final List<T> result = new ArrayList<>(list.size());
-        for (JsonElement e : list) {
-            result.add(dtoProvider.fromJson(e));
-        }
-        return new JsonArrayImpl<>(result);
+        getDtoProvider(dtoInterface);
+        final List<T> list = parseDto(json, listTypeCache.get(dtoInterface));
+        return new JsonArrayImpl<>(list);
     }
 
     /**
@@ -309,13 +310,11 @@ public final class DtoFactory {
      *         if can't provide any implementation for specified interface
      */
     public <T> JsonStringMap<T> createMapDtoFromJson(String json, Class<T> dtoInterface) {
-        final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
-        final Map<String, JsonElement> map = gson.fromJson(json, mapTypeCache.get(JsonElement.class));
-        final Map<String, T> result = new LinkedHashMap<>(map.size());
-        for (Map.Entry<String, JsonElement> e : map.entrySet()) {
-            result.put(e.getKey(), dtoProvider.fromJson(e.getValue()));
+        try {
+            return createMapDtoFromJson(new StringReader(json), dtoInterface);
+        } catch (IOException e) {
+            throw new RuntimeException(e); // won't happen
         }
-        return new JsonStringMapImpl<>(result);
     }
 
 
@@ -332,24 +331,10 @@ public final class DtoFactory {
      * @throws IOException
      *         if an i/o error occurs
      */
-    @SuppressWarnings("unchecked")
     public <T> JsonStringMap<T> createMapDtoFromJson(Reader json, Class<T> dtoInterface) throws IOException {
-        final DtoProvider<T> dtoProvider = getDtoProvider(dtoInterface);
-        final Map<String, JsonElement> map;
-        try {
-            map = gson.fromJson(json, mapTypeCache.get(JsonElement.class));
-        } catch (JsonSyntaxException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof IOException) {
-                throw (IOException)cause;
-            }
-            throw e;
-        }
-        final Map<String, T> result = new LinkedHashMap<>(map.size());
-        for (Map.Entry<String, JsonElement> e : map.entrySet()) {
-            result.put(e.getKey(), dtoProvider.fromJson(e.getValue()));
-        }
-        return new JsonStringMapImpl<>(result);
+        getDtoProvider(dtoInterface);
+        final Map<String, T> map = parseDto(json, mapTypeCache.get(dtoInterface));
+        return new JsonStringMapImpl<>(map);
     }
 
     /**
@@ -369,6 +354,13 @@ public final class DtoFactory {
         return createMapDtoFromJson(new InputStreamReader(json), dtoInterface);
     }
 
+    /**
+     * Get a type Gson adapter factory that handles DTO types. 
+     */
+    public TypeAdapterFactory getDtoAdapterFactory() {
+        return dtoAdapterFactory;
+    }
+
     //
 
     @SuppressWarnings("unchecked")
@@ -378,6 +370,22 @@ public final class DtoFactory {
             throw new IllegalArgumentException("Unknown DTO type " + dtoInterface);
         }
         return (DtoProvider<T>)dtoProvider;
+    }
+
+    /**
+     * Parse a JSON string that contains DTOs, propagating JSON exceptions correctly if they are caused by failures in
+     * the given Reader. Real JSON syntax exceptions are propagated as-is.
+     */
+    private <T> T parseDto(Reader json, Type type) throws IOException {
+        try {
+            return dtoGson.fromJson(json, type);
+        } catch (JsonSyntaxException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof IOException) {
+                throw (IOException) cause;
+            }
+            throw e;
+        }
     }
 
     /**
@@ -410,6 +418,24 @@ public final class DtoFactory {
     /** Test weather or not this DtoFactory has any DtoProvider which can provide implementation of DTO interface. */
     public boolean hasProvider(Class<?> dtoInterface) {
         return dtoInterface2Providers.get(dtoInterface) != null;
+    }
+
+    /**
+     * A specialization of Gson's {@link ReflectiveTypeAdapterFactory} delegates operation on DTO interfaces to the
+     * corresponding implementation classes. The implementation classes generated correctly by the DTO Gson.
+     * 
+     * @author tareq.sha@gmail.com
+     */
+    private class DtoInterfaceTAF implements TypeAdapterFactory {
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+            DtoProvider<?> prov = dtoInterface2Providers.get(type.getRawType());
+            if (prov != null) {
+                return (TypeAdapter<T>) gson.getAdapter(prov.getImplClass());
+            }
+            return null;
+        }
     }
 
     static {
