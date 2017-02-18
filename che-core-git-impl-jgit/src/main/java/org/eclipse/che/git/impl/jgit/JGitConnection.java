@@ -71,6 +71,7 @@ import org.eclipse.che.api.git.shared.Tag;
 import org.eclipse.che.api.git.shared.TagCreateRequest;
 import org.eclipse.che.api.git.shared.TagDeleteRequest;
 import org.eclipse.che.api.git.shared.TagListRequest;
+import org.eclipse.che.api.git.shared.GitRequest;
 import org.eclipse.che.git.impl.jgit.ssh.SshKeyProvider;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.jgit.api.AddCommand;
@@ -460,7 +461,7 @@ class JGitConnection implements GitConnection {
                 cloneCommand.setBranchesToClone(request.getBranchesToFetch());
             }
 
-            executeRemoteCommand(remoteUri, cloneCommand);
+            executeRemoteCommand(remoteUri, cloneCommand, request);
 
             StoredConfig repositoryConfig = getRepository().getConfig();
             GitUser gitUser = getUser();
@@ -574,7 +575,7 @@ class JGitConnection implements GitConnection {
             }
             fetchCommand.setRemoveDeletedRefs(request.isRemoveDeletedRefs());
 
-            executeRemoteCommand(remoteUri, fetchCommand);
+            executeRemoteCommand(remoteUri, fetchCommand , request);
         } catch (GitException | GitAPIException exception) {
             String errorMessage;
             if (exception.getMessage().contains("Invalid remote: ")) {
@@ -991,7 +992,7 @@ class JGitConnection implements GitConnection {
                 fetchCommand.setTimeout(timeout);
             }
 
-            FetchResult fetchResult = (FetchResult)executeRemoteCommand(remoteUri, fetchCommand);
+            FetchResult fetchResult = (FetchResult)executeRemoteCommand(remoteUri, fetchCommand, request);
 
             Ref remoteBranchRef = fetchResult.getAdvertisedRef(remoteBranch);
             if (remoteBranchRef == null) {
@@ -1062,7 +1063,7 @@ class JGitConnection implements GitConnection {
             }
 
             @SuppressWarnings("unchecked")
-            Iterable<PushResult> pushResults = (Iterable<PushResult>)executeRemoteCommand(remoteUri, pushCommand);
+            Iterable<PushResult> pushResults = (Iterable<PushResult>)executeRemoteCommand(remoteUri, pushCommand, request);
             PushResult pushResult = pushResults.iterator().next();
             return addCommandOutputUpdates(pushResponseDto, request, pushResult);
         } catch (GitAPIException exception) {
@@ -1581,7 +1582,7 @@ class JGitConnection implements GitConnection {
      * @throws GitAPIException
      * @throws UnauthorizedException
      */
-    private Object executeRemoteCommand(String remoteUrl, TransportCommand command)
+    private Object executeRemoteCommand(String remoteUrl, TransportCommand command, GitRequest request)
             throws GitException, GitAPIException, UnauthorizedException {
         String sshKeyDirectoryPath = "";
         try {
@@ -1612,10 +1613,16 @@ class JGitConnection implements GitConnection {
                     }
                 });
             } else {
-                UserCredential credentials = credentialsLoader.getUserCredential(remoteUrl);
-                if (credentials != null) {
-                    command.setCredentialsProvider(new UsernamePasswordCredentialsProvider(credentials.getUserName(),
-                                                                                           credentials.getPassword()));
+                String gitUser = request.getAttributes().get("username");
+                String gitPassword = request.getAttributes().get("password");
+                if (gitUser != null && gitPassword != null) {
+                    command.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUser, gitPassword));
+                } else {
+                    UserCredential credentials = credentialsLoader.getUserCredential(remoteUrl);
+                    if (credentials != null) {
+                        command.setCredentialsProvider(
+                                new UsernamePasswordCredentialsProvider(credentials.getUserName(), credentials.getPassword()));
+                    }
                 }
             }
             return command.call();
