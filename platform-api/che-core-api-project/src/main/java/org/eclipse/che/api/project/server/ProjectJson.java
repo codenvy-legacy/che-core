@@ -15,13 +15,19 @@ import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.project.shared.Builders;
 import org.eclipse.che.api.project.shared.Runners;
-import org.eclipse.che.commons.json.JsonHelper;
-import org.eclipse.che.commons.json.JsonParseException;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +37,9 @@ import java.util.Map;
  * @author andrew00x
  */
 public class ProjectJson {
+
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Charset CHARSET = StandardCharsets.UTF_8;
 
     /**
      * Checks whether the Project's meta information is readable
@@ -82,9 +91,8 @@ public class ProjectJson {
     }
 
     public static ProjectJson load(InputStream inputStream) throws IOException {
-        try {
-
-            return JsonHelper.fromJson(inputStream, ProjectJson.class, null);
+        try (Reader reader = new InputStreamReader(inputStream, CHARSET)) {
+            return GSON.fromJson(reader, ProjectJson.class);
         } catch (JsonParseException e) {
             throw new IOException("Unable to parse the project's property file. " +
                                   "Check the project.json file for corruption or modification. Consider reloading the project. " +
@@ -102,7 +110,7 @@ public class ProjectJson {
                             "Unable to save the project's attributes to the file system. Path %s/%s exists but is not a file.",
                             baseFolder.getPath(), Constants.CODENVY_PROJECT_FILE_RELATIVE_PATH));
                 }
-                ((FileEntry)projectFile).updateContent(JsonHelper.toJson(this).getBytes(), null);
+                ((FileEntry)projectFile).updateContent(GSON.toJson(this).getBytes(CHARSET), null);
             } else {
                 VirtualFileEntry codenvyDir = baseFolder.getChild(Constants.CODENVY_DIR);
                 if (codenvyDir == null) {
@@ -118,7 +126,7 @@ public class ProjectJson {
                             baseFolder.getPath(), Constants.CODENVY_DIR));
                 }
                 try {
-                    ((FolderEntry)codenvyDir).createFile(Constants.CODENVY_PROJECT_FILE, JsonHelper.toJson(this).getBytes(), null);
+                    ((FolderEntry)codenvyDir).createFile(Constants.CODENVY_PROJECT_FILE, GSON.toJson(this).getBytes(CHARSET), null);
                 } catch (ConflictException e) {
                     // Already checked existence of file ".codenvy/project.json".
                     throw new ServerException(e.getServiceError());
@@ -189,17 +197,19 @@ public class ProjectJson {
 
     public Map<String, List<String>> getAttributes() {
         if (attributes == null) {
-            attributes = new HashMap<>();
+            attributes = new LinkedHashMap<>();
         }
         return attributes;
     }
 
     public void setAttributes(Map<String, List<String>> attributes) {
-        this.attributes = attributes;
+        Map<String, List<String>> atts = getAttributes();
+        atts.clear();
+        atts.putAll(attributes);
     }
 
     public ProjectJson withAttributes(Map<String, List<String>> attributes) {
-        this.attributes = attributes;
+        setAttributes(attributes);
         return this;
     }
 
